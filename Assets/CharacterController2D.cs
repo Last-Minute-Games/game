@@ -6,7 +6,10 @@ public class CharacterController2D : MonoBehaviour
 {
     Rigidbody2D rigidbody2d;
     [SerializeField] float speed = 2f;
+
     Vector2 motionVector;
+    Vector2 lastMotionVector;
+    
     Animator animator;
 
     // Awake is called once before the first execution of Update after the MonoBehaviour is created
@@ -21,9 +24,22 @@ public class CharacterController2D : MonoBehaviour
         motionVector = new Vector2(
             Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical")
-            );
-        animator.SetFloat("horizontal", Input.GetAxisRaw("Horizontal"));
-        animator.SetFloat("vertical", Input.GetAxisRaw("Vertical"));
+        );
+
+        // Debug.Log(motionVector);
+
+        if (motionVector.x == 0 && motionVector.y == 0) {
+            Debug.Log(lastMotionVector);
+            animator.speed = 0f;
+            animator.SetFloat("horizontal", lastMotionVector.x);
+            animator.SetFloat("vertical", lastMotionVector.y);
+        } else {
+            animator.SetFloat("horizontal", motionVector.x);
+            animator.SetFloat("vertical", motionVector.y);
+            animator.speed = 1f;
+
+            lastMotionVector = motionVector;
+        }
     }
 
     // Update is called once per frame
