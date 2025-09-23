@@ -26,8 +26,6 @@ public class CharacterController2D : MonoBehaviour
             Input.GetAxisRaw("Vertical")
         );
 
-        // Debug.Log(motionVector);
-
         if (motionVector.x == 0 && motionVector.y == 0) {
             Debug.Log(lastMotionVector);
             animator.speed = 0f;
