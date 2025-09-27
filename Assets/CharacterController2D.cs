@@ -5,6 +5,8 @@ using UnityEngine;
 public class CharacterController2D : MonoBehaviour
 {
     Rigidbody2D rigidbody2d;
+
+    
     [SerializeField] float speed = 2f;
 
     Vector2 motionVector;
@@ -17,6 +19,7 @@ public class CharacterController2D : MonoBehaviour
     {
         rigidbody2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        rigidbody2d.freezeRotation = true;
     }
 
     private void Update()
@@ -48,6 +51,7 @@ public class CharacterController2D : MonoBehaviour
 
     private void Move()
     {
-        rigidbody2d.linearVelocity = motionVector * speed;
+        // Use velocity to allow Unity physics to handle collisions
+        rigidbody2d.linearVelocity = motionVector.normalized * speed;
     }
 }
