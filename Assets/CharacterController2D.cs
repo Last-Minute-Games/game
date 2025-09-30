@@ -30,7 +30,7 @@ public class CharacterController2D : MonoBehaviour
         );
 
         if (motionVector.x == 0 && motionVector.y == 0) {
-            Debug.Log(lastMotionVector);
+            // Debug.Log(lastMotionVector);
             animator.speed = 0f;
             animator.SetFloat("horizontal", lastMotionVector.x);
             animator.SetFloat("vertical", lastMotionVector.y);
