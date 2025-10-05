@@ -2,17 +2,19 @@
 
 public class CardVisual : MonoBehaviour
 {
-    public GameObject targetEnemy;          // assign in BattlefieldLayout
-    public int damage = 25;                 // card damage
-    public float doubleClickTime = 0.3f;    // max time between clicks for double-click
-    public Color glowColor = Color.yellow;  // glow/highlight color
+    public CharacterBase player;         // the card user
+    public CharacterBase targetEnemy;    // target enemy
+    public float doubleClickTime = 0.3f;
+    private float lastClickTime = -1f;
 
-    private float lastClickTime = -1f;      // track last click
+    private CardBase cardBase;
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
+    public Color glowColor = Color.yellow;
 
     void Awake()
     {
+        cardBase = GetComponent<CardBase>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
             originalColor = spriteRenderer.color;
@@ -24,19 +26,23 @@ public class CardVisual : MonoBehaviour
 
         if (timeSinceLastClick <= doubleClickTime)
         {
-            // Double-click detected → attack enemy
-            if (targetEnemy != null)
+            // Double-click → use card
+            if (cardBase != null && player.energy >= cardBase.energy)
             {
-                Enemy enemyScript = targetEnemy.GetComponent<Enemy>();
-                if (enemyScript != null)
-                    enemyScript.TakeDamage(damage);
+                cardBase.Use(player, targetEnemy);
 
-                Destroy(gameObject); // remove card after attack
+                // Hide / remove the card after using
+                gameObject.SetActive(false); // hide
+                // OR Destroy(gameObject); // permanently remove
+            }
+            else
+            {
+                Debug.Log("Not enough energy to play this card!");
             }
         }
         else
         {
-            // First click → glow highlight
+            // First click → glow
             if (spriteRenderer != null)
                 spriteRenderer.color = glowColor;
         }
@@ -46,7 +52,7 @@ public class CardVisual : MonoBehaviour
 
     void Update()
     {
-        // Optional: reset glow after a short time
+        // Reset glow if double-click timer expired
         if (spriteRenderer != null && Time.time - lastClickTime > doubleClickTime)
             spriteRenderer.color = originalColor;
     }

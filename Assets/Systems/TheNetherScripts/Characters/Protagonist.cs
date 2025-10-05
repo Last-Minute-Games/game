@@ -2,19 +2,23 @@ using UnityEngine;
 
 public class Protagonist : CharacterBase
 {
-    private void Start()
+    protected override void Awake()
     {
+        base.Awake();
         characterName = "Player";
-        maxHP = 100;
-        currentHP = maxHP;
-        attack = 25;
-        defense = 5;
+        maxHP = 120;
+        strength = 20;
+        dexterity = 12;
+        vulnerability = 0;
+        energy = 3; // starting energy
+        UpdateStatsUI();
     }
 
-    public virtual void AttackTarget(CharacterBase target)
+    // Optional: Player attack method
+    public void Attack(CharacterBase target)
     {
-        Debug.Log($"{characterName} attacks {target.characterName}!");
-        target.TakeDamage(attack);
+        int damage = strength;
+        Debug.Log($"{characterName} attacks {target.characterName} for {damage} damage!");
+        target.TakeDamage(damage);
     }
-
 }

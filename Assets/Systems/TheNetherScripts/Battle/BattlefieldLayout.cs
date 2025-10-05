@@ -7,15 +7,15 @@ public class BattlefieldLayout : MonoBehaviour
     public GameObject enemyPrefab;
     public GameObject cardPrefab;
 
-    [Header("Positions & Scale")]
+    [Header("Positions")]
     public int handSize = 7;
-    public float curveRadius = 3f;
-    public float cardY = -4f;
+    public float cardY = -4f;       // vertical row position
+    public float cardSpacing = 1.2f; // horizontal spacing between cards
     public float playerX = -6f;
     public float enemyX = 6f;
-    public float cardScale = 0.6f;
 
     private GameObject enemy;
+    private GameObject player;
 
     void Start()
     {
@@ -27,7 +27,7 @@ public class BattlefieldLayout : MonoBehaviour
     void SpawnPlayer()
     {
         Vector3 playerPos = new Vector3(playerX, 0f, 0f);
-        Instantiate(playerPrefab, playerPos, Quaternion.identity);
+        player = Instantiate(playerPrefab, playerPos, Quaternion.identity);
     }
 
     void SpawnEnemy()
@@ -38,28 +38,21 @@ public class BattlefieldLayout : MonoBehaviour
 
     void SpawnCards()
     {
-        Vector3 center = new Vector3(0f, cardY, 0f);
-        float totalAngle = 90f;                // wider fan
-        float startAngle = -totalAngle / 2f;
-        float angleStep = totalAngle / (handSize - 1);
+        // Center the row
+        float startX = -(handSize - 1) * cardSpacing / 2f;
 
         for (int i = 0; i < handSize; i++)
         {
-            float angle = startAngle + i * angleStep;
-            float rad = Mathf.Deg2Rad * angle;
-
-            float x = center.x + Mathf.Sin(rad) * curveRadius;
-            float y = center.y + Mathf.Cos(rad) * curveRadius * 0.35f; // flatter curve
-            Vector3 pos = new Vector3(x, y, 0f);
-
+            Vector3 pos = new Vector3(startX + i * cardSpacing, cardY, 0f);
             GameObject card = Instantiate(cardPrefab, pos, Quaternion.identity);
-            card.transform.rotation = Quaternion.Euler(0, 0, -angle);
-            card.transform.localScale = Vector3.one * cardScale;
 
-            // Assign the enemy target
+            // Assign player and enemy references
             CardVisual cardVisual = card.GetComponent<CardVisual>();
             if (cardVisual != null)
-                cardVisual.targetEnemy = enemy;
+            {
+                cardVisual.player = player.GetComponent<CharacterBase>();
+                cardVisual.targetEnemy = enemy.GetComponent<CharacterBase>();
+            }
         }
     }
 }

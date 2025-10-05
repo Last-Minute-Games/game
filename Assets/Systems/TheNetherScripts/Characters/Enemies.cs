@@ -2,19 +2,23 @@ using UnityEngine;
 
 public class Enemy : CharacterBase
 {
-    private void Start()
+    protected override void Awake()
     {
+        base.Awake();
         characterName = "Enemy";
-        maxHP = 80;
-        currentHP = maxHP;
-        attack = 15;
-        defense = 3;
+        maxHP = 100;
+        strength = 15;
+        dexterity = 10;
+        vulnerability = 0;
+        energy = 0; // enemy may not use energy
+        UpdateStatsUI();
     }
 
-    public virtual void AttackTarget(CharacterBase target)
+    // Optional: Enemy attack method
+    public void Attack(CharacterBase target)
     {
-        Debug.Log($"{characterName} attacks {target.characterName}!");
-        target.TakeDamage(attack);
+        int damage = strength;
+        Debug.Log($"{characterName} attacks {target.characterName} for {damage} damage!");
+        target.TakeDamage(damage);
     }
-
 }

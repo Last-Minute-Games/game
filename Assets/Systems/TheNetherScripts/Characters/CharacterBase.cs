@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI; // for Text (or TMPro for TextMeshPro)
+using UnityEngine.UI;
 
 public class CharacterBase : MonoBehaviour
 {
@@ -7,8 +7,10 @@ public class CharacterBase : MonoBehaviour
     public string characterName;
     public int maxHP = 100;
     public int currentHP;
-    public int attack = 20;
-    public int defense = 10;
+    public int vulnerability = 0; // increases damage taken
+    public int dexterity = 10;    // could affect critical or hit
+    public int strength = 20;     // adds to attack
+    public int energy = 3;        // cards cost energy to play
 
     [Header("UI")]
     public Text statsText; // assign in inspector
@@ -21,8 +23,10 @@ public class CharacterBase : MonoBehaviour
 
     public virtual void TakeDamage(int dmg)
     {
-        int actualDamage = Mathf.Max(dmg - defense, 0);
+        // Increase damage by vulnerability
+        int actualDamage = Mathf.Max(dmg + vulnerability, 0);
         currentHP -= actualDamage;
+
         Debug.Log($"{characterName} took {actualDamage} damage! HP left: {currentHP}");
 
         UpdateStatsUI();
@@ -34,12 +38,22 @@ public class CharacterBase : MonoBehaviour
     public virtual void UpdateStatsUI()
     {
         if (statsText != null)
-            statsText.text = $"{characterName}\nHP: {currentHP}\nATK: {attack}";
+        {
+            statsText.text = $"{characterName}\nHP: {currentHP}\nSTR: {strength}\nDEX: {dexterity}\nVUL: {vulnerability}\nEN: {energy}";
+        }
     }
 
     public virtual void Die()
     {
         Debug.Log($"{characterName} has been defeated!");
         gameObject.SetActive(false);
+    }
+
+    // Optional: basic attack method
+    public virtual void AttackTarget(CharacterBase target)
+    {
+        int damage = strength; // base damage
+        target.TakeDamage(damage);
+        Debug.Log($"{characterName} attacks {target.characterName} for {damage} damage!");
     }
 }
