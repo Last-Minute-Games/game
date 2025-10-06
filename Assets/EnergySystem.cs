@@ -46,10 +46,7 @@ public class EnergySystem : MonoBehaviour
   }
   void Update()
   {
-      if (Input.GetKeyDown(KeyCode.Space))
-          UseEnergy(1);
-
-      if (Input.GetKeyDown(KeyCode.R))
+      if (Input.GetKeyDown(KeyCode.R)) // temporary method for resetting energy
           RefillEnergy();
   }
 }
