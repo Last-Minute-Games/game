@@ -20,4 +20,9 @@ public class CardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     {
         hand?.OnCardPointerExit(this);
     }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+      hand?.OnCardClicked(this);
+    }
 }
