@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 using System.Collections;
- 
+
 public class Startscreen : MonoBehaviour
 {
     public float fadeDuration = 1f;
@@ -30,6 +30,8 @@ public class Startscreen : MonoBehaviour
             yield return null;
         }
         _fadeCanvasGroup.alpha = 1f;
-        SceneManager.LoadSceneAsync("Overworld");
+        SceneManager.LoadScene("Overworld");
     }
 }
+
+
