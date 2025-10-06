@@ -21,6 +21,7 @@ namespace Systems
         void Start()
         {
             _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
+            _fadeCanvasGroup.blocksRaycasts = false;
             
             _tptCollider = transform.gameObject.GetComponent<BoxCollider2D>();
             _tptCollider.isTrigger = true;
@@ -47,10 +48,14 @@ namespace Systems
                 yield return null; // Wait for the next frame
             }
             _fadeCanvasGroup.alpha = 0f; // Ensure it's fully transparent
+            
+            _fadeCanvasGroup.blocksRaycasts = false;
         }
 
         private IEnumerator FadeIn()
         {
+            _fadeCanvasGroup.blocksRaycasts = true;
+            
             float timer = 0f;
             while (timer < fadeDuration)
             {

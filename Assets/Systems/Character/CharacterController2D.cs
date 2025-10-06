@@ -13,6 +13,24 @@ public class CharacterController2D : MonoBehaviour
     Vector2 lastMotionVector;
     
     Animator animator;
+    
+    bool _isDialogueActive = false;
+    
+    public void SetDialogueActive(bool active) {
+        Debug.Log(active);
+        
+        _isDialogueActive = active;
+        
+        if (active) {
+            motionVector = Vector2.zero;
+            animator.speed = 0f;
+            rigidbody2d.linearVelocity = Vector2.zero;
+        } else {
+            animator.speed = 1f;
+        }
+    }
+
+    public bool IsDialogueActive => _isDialogueActive;
 
     // Awake is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -24,6 +42,8 @@ public class CharacterController2D : MonoBehaviour
 
     private void Update()
     {
+        if (_isDialogueActive) return;
+        
         motionVector = new Vector2(
             Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical")
