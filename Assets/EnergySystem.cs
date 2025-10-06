@@ -44,4 +44,14 @@ public class EnergySystem : MonoBehaviour
       energyText.text = $"{currentEnergy}/{maxEnergy}";
     }
   }
+  void Update()
+  {
+      if (Input.GetKeyDown(KeyCode.Space))
+          UseEnergy(1);
+
+      if (Input.GetKeyDown(KeyCode.R))
+          RefillEnergy();
+  }
 }
+
+
