@@ -11,7 +11,7 @@ public class DialogTrigger : MonoBehaviour
     [SerializeField] private KeyCode interactKey = KeyCode.E;   // Default key to trigger dialog
 
     [Header("Detection Settings")]
-    [SerializeField] private float interactionRange = 3f;       // Distance from player to trigger
+    private readonly float _interactionRange = 1f;       // Distance from player to trigger
     
     private GameObject _player;                  // Assign the Player transform in Inspector
     private CharacterController2D _characterController;
@@ -41,7 +41,7 @@ public class DialogTrigger : MonoBehaviour
     {
         // Distance-based check (if no collider)
         if (_player)
-            _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= interactionRange;
+            _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= _interactionRange;
 
         // Listen for E press when near
         if (_isPlayerNear && Input.GetKeyDown(interactKey))
