@@ -1,5 +1,6 @@
 using System;
 using cherrydev;
+using Unity.Cinemachine;
 using UnityEngine;
 
 public class DialogTrigger : MonoBehaviour
@@ -11,16 +12,16 @@ public class DialogTrigger : MonoBehaviour
 
     [Header("Detection Settings")]
     [SerializeField] private float interactionRange = 3f;       // Distance from player to trigger
-    [SerializeField] private GameObject player;                  // Assign the Player transform in Inspector
-
+    
+    private GameObject _player;                  // Assign the Player transform in Inspector
     private CharacterController2D _characterController;
     
     private bool _isPlayerNear = false;
 
     private void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player");
-        _characterController = player.GetComponent<CharacterController2D>();
+        _player = GameObject.FindGameObjectWithTag("Player");
+        _characterController = _player.GetComponent<CharacterController2D>();
         
         dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
         dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
@@ -39,8 +40,8 @@ public class DialogTrigger : MonoBehaviour
     void Update()
     {
         // Distance-based check (if no collider)
-        if (player)
-            _isPlayerNear = Vector3.Distance(transform.position, player.transform.position) <= interactionRange;
+        if (_player)
+            _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= interactionRange;
 
         // Listen for E press when near
         if (_isPlayerNear && Input.GetKeyDown(interactKey))

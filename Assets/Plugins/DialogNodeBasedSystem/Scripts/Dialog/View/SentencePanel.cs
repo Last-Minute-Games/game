@@ -12,6 +12,11 @@ namespace cherrydev
 
         private string _currentFullText;
         
+        public void Awake()
+        {
+            transform.gameObject.SetActive(false);
+        }
+        
         /// <summary>
         /// Setting dialogText max visible characters to zero
         /// </summary>
