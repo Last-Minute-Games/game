@@ -1,65 +1,84 @@
+using Unity.Cinemachine;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 
 public class CharacterController2D : MonoBehaviour
 {
-    Rigidbody2D rigidbody2d;
-
+    private static readonly int Horizontal = Animator.StringToHash("horizontal");
+    private static readonly int Vertical = Animator.StringToHash("vertical");
+    private Rigidbody2D _rigidbody2d;
     
     [SerializeField] float speed = 2f;
 
-    Vector2 motionVector;
-    Vector2 lastMotionVector;
+    private Vector2 _motionVector;
+    private Vector2 _lastMotionVector;
+
+    private Animator _animator;
     
-    Animator animator;
-    
-    bool _isDialogueActive = false;
+    private bool _isDialogueActive = false;
+    private bool _isTeleporting = false;
+
+    private void StopMovement()
+    {
+        _motionVector = Vector2.zero;
+        _animator.speed = 0f;
+        _rigidbody2d.linearVelocity = Vector2.zero;
+    }
     
     public void SetDialogueActive(bool active) {
-        Debug.Log(active);
-        
         _isDialogueActive = active;
         
-        if (active) {
-            motionVector = Vector2.zero;
-            animator.speed = 0f;
-            rigidbody2d.linearVelocity = Vector2.zero;
+        if (active)
+        {
+            StopMovement();
         } else {
-            animator.speed = 1f;
+            _animator.speed = 1f;
         }
     }
 
     public bool IsDialogueActive => _isDialogueActive;
+    
+    public void SetTeleporting(bool teleporting) {
+        _isTeleporting = teleporting;
+        
+        if (teleporting) {
+            StopMovement();
+        } else {
+            _animator.speed = 1f;
+        }
+    }
+    
+    public bool IsTeleporting => _isTeleporting;
 
     // Awake is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        rigidbody2d = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
-        rigidbody2d.freezeRotation = true;
+        _rigidbody2d = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
+        _rigidbody2d.freezeRotation = true;
     }
 
     private void Update()
     {
-        if (_isDialogueActive) return;
+        if (_isDialogueActive || _isTeleporting) return;
         
-        motionVector = new Vector2(
+        _motionVector = new Vector2(
             Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical")
         );
 
-        if (motionVector.x == 0 && motionVector.y == 0) {
+        if (_motionVector is { x: 0, y: 0 }) {
             // Debug.Log(lastMotionVector);
-            animator.speed = 0f;
-            animator.SetFloat("horizontal", lastMotionVector.x);
-            animator.SetFloat("vertical", lastMotionVector.y);
+            _animator.speed = 0f;
+            _animator.SetFloat(Horizontal, _lastMotionVector.x);
+            _animator.SetFloat(Vertical, _lastMotionVector.y);
         } else {
-            animator.SetFloat("horizontal", motionVector.x);
-            animator.SetFloat("vertical", motionVector.y);
-            animator.speed = 1f;
+            _animator.SetFloat(Horizontal, _motionVector.x);
+            _animator.SetFloat(Vertical, _motionVector.y);
+            _animator.speed = 1f;
 
-            lastMotionVector = motionVector;
+            _lastMotionVector = _motionVector;
         }
     }
 
@@ -72,6 +91,6 @@ public class CharacterController2D : MonoBehaviour
     private void Move()
     {
         // Use velocity to allow Unity physics to handle collisions
-        rigidbody2d.linearVelocity = motionVector.normalized * speed;
+        _rigidbody2d.linearVelocity = _motionVector.normalized * speed;
     }
 }
