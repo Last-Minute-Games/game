@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class CardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class CardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [HideInInspector] public HandController hand;      // set by HandController
     [HideInInspector] public RectTransform rectTransform;
@@ -10,7 +10,6 @@ public class CardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     {
         rectTransform = GetComponent<RectTransform>();
     }
-
     public void OnPointerEnter(PointerEventData eventData)
     {
         hand?.OnCardPointerEnter(this);
