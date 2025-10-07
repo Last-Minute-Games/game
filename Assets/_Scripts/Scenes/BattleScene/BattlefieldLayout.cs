@@ -4,14 +4,14 @@ public class BattlefieldLayout : MonoBehaviour
 {
     [Header("Prefabs")]
     public GameObject playerPrefab;
-    public Enemy enemyPrefab;            // use Enemy (not GameObject)
+    public GameObject enemyPrefab;      // switched to GameObject for reliability
     public GameObject cardPrefab;
 
     [Header("Enemy Spawn Settings")]
     public int enemyCount = 3;
     public float enemySpacing = 2.5f;
     public Vector3 enemyStartPos = new Vector3(6f, 0f, 0f);
-    public Sprite[] enemySprites;        // assign sprite pool in Inspector
+    public Sprite[] enemySprites;       // assign in Inspector
 
     [Header("Player Position")]
     public Vector3 playerPos = new Vector3(-6f, 0f, 0f);
@@ -51,10 +51,19 @@ public class BattlefieldLayout : MonoBehaviour
         for (int i = 0; i < enemyCount; i++)
         {
             Vector3 spawnPos = enemyStartPos + Vector3.left * enemySpacing * i;
-            Enemy newEnemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+
+            // instantiate as GameObject first
+            GameObject enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+            Enemy newEnemy = enemyObj.GetComponent<Enemy>();
+
+            if (newEnemy == null)
+            {
+                Debug.LogError($"Spawned prefab {enemyPrefab.name} has no Enemy component!");
+                continue;
+            }
 
             newEnemy.characterName = $"Enemy {i + 1}";
-            newEnemy.possibleSprites = enemySprites;  // optional: randomize sprite inside Enemy.Awake()
+            newEnemy.possibleSprites = enemySprites;
 
             Debug.Log($"Spawned {newEnemy.characterName} at {spawnPos}");
         }

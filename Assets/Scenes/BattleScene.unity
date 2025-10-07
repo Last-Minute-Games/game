@@ -972,12 +972,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattlefieldLayout
   playerPrefab: {fileID: 753829383109311850, guid: af4d270afe9c7844ebf8a57dc8dd84b1, type: 3}
-  enemyPrefab: {fileID: 3708321511512314943, guid: d5609b73670f67a458f277721f09b5dd, type: 3}
+  enemyPrefab: {fileID: 0}
   cardPrefab: {fileID: 315085864848817654, guid: 7c1031cf9a42bb94ea420e29d21301b4, type: 3}
-  handSize: 7
-  cardSpacing: 1.2
-  playerX: -6
-  enemyX: 6
+  enemyCount: 3
+  enemySpacing: 2.5
+  enemyStartPos: {x: 6, y: 0, z: 0}
+  enemySprites: []
+  playerPos: {x: -6, y: 0, z: 0}
 --- !u!4 &1193789999
 Transform:
   m_ObjectHideFlags: 0
@@ -1074,7 +1075,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -200, y: 0}
+  m_AnchoredPosition: {x: -161.2, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1583342733

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 2337002119738078715}
   - component: {fileID: 5005108661368902450}
   - component: {fileID: 8844167180319085808}
-  - component: {fileID: 4986985973400373381}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -101,28 +100,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 3708321511512314943}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 906419527bd82604985c65c5f63b67d3, type: 3}
+  m_Script: {fileID: 11500000, guid: 1ab73e1bc7560d19b8db035b6579bc5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  characterName: Enemy
-  maxHP: 80
-  currentHP: 80
-  attack: 15
-  defense: 3
---- !u!114 &4986985973400373381
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3708321511512314943}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62872320f50ebd24daa1090ca9a2683a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CharacterBase
-  characterName: 
-  maxHP: 100
-  currentHP: 100
-  attack: 20
-  defense: 10
+  characterName: Unnamed
+  portrait: {fileID: 0}
+  maxHealth: 100
+  currentHealth: 0
+  block: 0
+  strength: 0
+  defense: 0
+  inventory:
+    items: []
+  minHealth: 50
+  maxHealthRange: 150
+  minDamage: 5
+  maxDamage: 20
+  possibleSprites: []
