@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,23 @@ public class JournalUI : MonoBehaviour
     CanvasGroup cg;
     bool isOpen;
 
+    public float fadeDuration = 0.2f;      // How long the fade takes
+
+    IEnumerator FadeToAlpha(float endAlpha, float duration)
+    {
+        float startAlpha = cg.alpha;
+        float time = 0f;
+
+        while (time < duration)
+        {
+            cg.alpha = Mathf.Lerp(startAlpha, endAlpha, time / duration);
+            time += Time.deltaTime;
+            yield return null; // Wait for the next frame
+        }
+
+        cg.alpha = endAlpha; // Ensure it ends exactly at the target
+    }
+
     void Awake()
     {
         anim = GetComponent<Animator>();
@@ -23,7 +41,7 @@ public class JournalUI : MonoBehaviour
         if (toggleButton) toggleButton.onClick.AddListener(Toggle);
     }
 
-    public void Toggle() => SetOpen(!isOpen, true);
+    public void Toggle() => SetOpen(!isOpen);
 
     public void Open() => SetOpen(true);
     public void Close() => SetOpen(false);
@@ -41,7 +59,18 @@ public class JournalUI : MonoBehaviour
         {
             cg.blocksRaycasts = open;
             cg.interactable = open;
-            if (instant) cg.alpha = open ? 1f : 0f; // for fade-style animations; harmless if using flipbook only
+
+            float targetAlpha = open ? 1f : 0f;
+
+            if (instant)
+            {
+                cg.alpha = targetAlpha;
+            }
+            else
+            {
+                StartCoroutine(FadeToAlpha(targetAlpha, fadeDuration));
+            }
+            ; // for fade-style animations; harmless if using flipbook only
         }
     }
 }
