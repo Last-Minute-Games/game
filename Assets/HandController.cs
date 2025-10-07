@@ -52,6 +52,22 @@ public class HandController : MonoBehaviour
         if (idx == hoveredIndex) hoveredIndex = -1;
     }
 
+    public void OnCardClicked(CardHover card)
+    {
+      EnergySystem energy = Object.FindFirstObjectByType<EnergySystem>();
+
+      if (energy != null && energy.UseEnergy(1))
+      {
+        Debug.Log($"{card.name} played successfully!");
+
+        // insert the actual card logic here yall! please check method for energysystem.cs
+      }
+      else
+      {
+        Debug.Log("Not enough energy to play this card!");
+      }
+    }
+
     void Update()
     {
         if (cards == null || cards.Count == 0) return;
