@@ -140,4 +140,38 @@ public class HandView : MonoBehaviour
             card.sortingGroup.sortingOrder = cards.IndexOf(card);
         }
     }
+
+    public IEnumerator ClearAllCards()
+    {
+        // make a snapshot so we can safely iterate
+        var toRemove = new List<CardView>(cards);
+
+        foreach (var c in toRemove)
+        {
+            if (c == null) continue;
+
+            DOTween.Kill(c.transform); // stop any animations immediately
+
+            // fade and shrink nicely
+            var sr = c.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                sr.DOFade(0f, 0.15f).SetEase(Ease.OutCubic);
+            }
+
+            c.transform.DOScale(Vector3.zero, 0.15f)
+                .SetEase(Ease.InBack)
+                .OnComplete(() =>
+                {
+                    if (c != null) Destroy(c.gameObject);
+                });
+        }
+
+        cards.Clear();
+        basePos.Clear();
+        hoveredCard = null;
+
+        // wait a short bit for animations
+        yield return new WaitForSeconds(0.2f);
+    }
 }
