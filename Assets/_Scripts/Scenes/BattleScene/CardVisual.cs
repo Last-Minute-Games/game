@@ -15,11 +15,19 @@ public class CardVisual : MonoBehaviour
     void Awake()
     {
         cardBase = GetComponent<CardBase>();
+        if (cardBase == null)
+        {
+            Debug.LogWarning($"CardVisual '{name}' has no CardBase component! Make sure your prefab includes a Card script like AttackCard, DefenseCard, etc.");
+            return;
+        }
+
         Debug.Log($"Card '{name}' energy cost: {cardBase.energy}");
+
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
             originalColor = spriteRenderer.color;
     }
+
 
     void OnMouseDown()
     {
