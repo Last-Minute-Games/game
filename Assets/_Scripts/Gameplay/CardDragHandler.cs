@@ -83,8 +83,7 @@ namespace _Scripts.Gameplay
 
             if (target != null && target.gameObject != gameObject && cardView != null)
             {
-                cardView.UseCard(target);
-                return;
+                if (cardView.UseCard(target)) return;
             }
 
             // Snap back if invalid

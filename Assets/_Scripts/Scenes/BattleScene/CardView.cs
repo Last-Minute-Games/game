@@ -54,9 +54,9 @@ public class CardView : MonoBehaviour
     //     return false;
     // }
 
-    public void UseCard(Collider2D target)
+    public bool UseCard(Collider2D target)
     {
-        if (cardBase == null || player == null) return;
+        if (cardBase == null || player == null) return false;
 
         var targetComponent = target?.GetComponent<CharacterBase>();
         
@@ -73,7 +73,7 @@ public class CardView : MonoBehaviour
         if (targetComponent == null)
         {
             Debug.Log("Invalid target for this card.");
-            return;
+            return false;
         }
         
         if (player is Player p && p.UseEnergy(cardBase.energy))
@@ -93,10 +93,13 @@ public class CardView : MonoBehaviour
 
             transform.DOScale(Vector3.zero, 0.15f).OnComplete(() => gameObject.SetActive(false));
             Debug.Log($"{player.characterName} played {cardBase.cardName}");
+
+            return true;
         }
         else
         {
             Debug.Log("Not enough energy to play this card!");
+            return false;
         }
     }
 

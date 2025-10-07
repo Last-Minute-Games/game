@@ -54,11 +54,11 @@ public class HandView : MonoBehaviour
 
             Vector3 targetPos = new Vector3(x, y, 0f);
             Quaternion targetRot = Quaternion.Euler(0, 0, (normalized - 0.5f) * -30f);
-
+            
             cards[i].transform.DOLocalMove(targetPos, animationTime).SetEase(Ease.OutCubic);
             cards[i].transform.DOLocalRotateQuaternion(targetRot, animationTime).SetEase(Ease.OutCubic);
             cards[i].transform.DOScale(Vector3.one * cardScale, animationTime).SetEase(Ease.OutCubic);
-            cards[i].sortingGroup.sortingOrder = i;
+            cards[i].sortingGroup.sortingOrder = i;   
         }
 
         yield return new WaitForSeconds(animationTime);
