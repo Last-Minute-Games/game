@@ -16,7 +16,6 @@ public class Startscreen : MonoBehaviour
 
     public void StartGame()
     {
-        playButton.SetActive(false); // Hide Play button
         StartCoroutine(FadeAndLoad());
     }
 
@@ -31,6 +30,17 @@ public class Startscreen : MonoBehaviour
         }
         _fadeCanvasGroup.alpha = 1f;
         SceneManager.LoadScene("Overworld");
+    }
+
+    public void QuitGame()
+    {
+        Debug.Log("Quitting game...");
+        Application.Quit();
+
+#if UNITY_EDITOR
+        // This makes the stop button in the editor work properly
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 }
 

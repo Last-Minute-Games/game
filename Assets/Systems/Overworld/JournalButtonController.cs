@@ -1,25 +1,43 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Button), typeof(Animator))]
-public class JournalButtonController : MonoBehaviour
+[RequireComponent(typeof(Animator), typeof(CanvasGroup))]
+public class JournalUI : MonoBehaviour
 {
-    private Animator anim;
-    private bool isOpen;
+    [SerializeField] Button toggleButton;   // Drag your JournalButton here (optional if wiring via inspector)
+    Animator anim;
+    CanvasGroup cg;
+    bool isOpen;
 
     void Awake()
     {
         anim = GetComponent<Animator>();
-        anim.SetBool("Open", false);   // start closed
-        // DO NOT add the listener here when wiring via OnClick()
-        // GetComponent<Button>().onClick.AddListener(Toggle);
+        cg = GetComponent<CanvasGroup>();
+
+        // Start closed
+        SetOpen(false, instant: true);
+
+        // Wire automatically if provided
+        if (toggleButton) toggleButton.onClick.AddListener(Toggle);
     }
 
-    // Must be public for Inspector wiring
-    public void Toggle()
+    public void Toggle() => SetOpen(!isOpen);
+
+    public void Open() => SetOpen(true);
+    public void Close() => SetOpen(false);
+
+    void SetOpen(bool open, bool instant = false)
     {
-        isOpen = !isOpen;
-        anim.SetBool("Open", isOpen);
-        Debug.Log("Journal Toggle clicked. isOpen=" + isOpen);
+        isOpen = open;
+
+        if (anim) anim.SetBool("Open", open);
+
+        // Make it non-clickable when closed so it doesn't block other UI
+        if (cg)
+        {
+            cg.blocksRaycasts = open;
+            cg.interactable = open;
+            if (instant) cg.alpha = open ? 1f : 0f; // for fade-style animations; harmless if using flipbook only
+        }
     }
 }
