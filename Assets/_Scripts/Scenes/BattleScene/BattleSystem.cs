@@ -82,18 +82,8 @@ public class BattleSystem : MonoBehaviour
 
     private IEnumerator ClearHand()
     {
-        List<GameObject> toDestroy = new();
-        foreach (Transform child in handView.transform)
-            toDestroy.Add(child.gameObject);
-
-        foreach (GameObject card in toDestroy)
-        {
-            card.transform.DOScale(Vector3.zero, 0.2f)
-                .SetEase(Ease.InBack)
-                .OnComplete(() => Destroy(card));
-        }
-
-        yield return new WaitForSeconds(0.25f);
+        if (handView != null)
+            yield return handView.ClearAllCards();
     }
 
     private IEnumerator RefreshPlayerHand()
@@ -133,10 +123,17 @@ public class BattleSystem : MonoBehaviour
 
         endTurnButton?.DisableButton();
 
-        // Discard player’s hand right away (for visual feedback)
-        StartCoroutine(ClearHand());
+        // 🔹 Stop everything else until the hand is cleared
+        StartCoroutine(HandleEndTurnFlow());
+    }
 
-        StartCoroutine(EnemyTurn());
+    private IEnumerator HandleEndTurnFlow()
+    {
+        // 1️⃣ Discard all remaining cards and wait until they’re destroyed
+        yield return ClearHand();
+
+        // 2️⃣ Proceed to enemy phase
+        yield return EnemyTurn();
     }
 
     private IEnumerator EnemyTurn()
