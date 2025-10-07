@@ -1,53 +1,93 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using DG.Tweening;
 
-public class CardDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+namespace _Scripts.Gameplay
 {
-    private Vector3 startPos;
-    private CardView cardView;
-    private bool isDragging = false;
-    private SpriteRenderer spriteRenderer;
-
-    private void Awake()
+    public class CardDragHandler : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
-        cardView = GetComponent<CardView>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-    }
+        private Vector3 startPos;
+        private CardView cardView;
+        private SpriteRenderer spriteRenderer;
 
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        startPos = transform.position;
-        isDragging = true;
-
-        spriteRenderer.sortingOrder = 500;
-        transform.DOScale(1.15f, 0.1f);
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-        Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
-        worldPos.z = 0;
-        transform.position = worldPos;
-    }
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        isDragging = false;
-        transform.DOScale(1f, 0.1f);
-
-        Collider2D target = Physics2D.OverlapPoint(transform.position);
-        if (target != null)
+        private bool isDragging = false;
+        private bool pointerOnCard = false;
+    
+        private Vector3 screenPoint;
+        private BoxCollider2D selfCol;
+    
+        private void Awake()
         {
-            Enemy enemy = target.GetComponent<Enemy>();
-            Player player = target.GetComponent<Player>();
-
-            if (cardView != null && cardView.TryUseCardOn(enemy, player))
-                return; // card handled properly
+            cardView = GetComponent<CardView>();
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            selfCol = GetComponent<BoxCollider2D>();
         }
 
-        // Snap back if invalid
-        transform.DOMove(startPos, 0.2f).SetEase(Ease.OutCubic);
-        spriteRenderer.sortingOrder = 0;
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            // check if mouse in on card
+            Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
+            worldPos.z = 0;
+        
+            Debug.Log(worldPos);
+        
+            Collider2D hit = Physics2D.OverlapPoint(worldPos);
+            if (hit != null && hit.gameObject == gameObject)
+            {
+                pointerOnCard = true;
+                startPos = transform.position;
+                spriteRenderer.sortingOrder = 500;
+                transform.DOScale(1.15f, 0.1f);
+            }   
+            else
+            {
+                pointerOnCard = false;
+            }
+        }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if (!pointerOnCard) return;
+            isDragging = true;
+            // startPos = transform.position;
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (!isDragging) return;
+
+            Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
+            worldPos.z = 0;
+            transform.position = worldPos;
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            Debug.Log(isDragging);
+            
+            if (!isDragging) return;
+        
+            isDragging = false;
+            pointerOnCard = false;                            // reset for the next interaction
+            transform.DOScale(1f, 0.1f);
+            
+            var wasEnabled = selfCol.enabled;
+            selfCol.enabled = false;
+
+            Vector3 pos = transform.position; 
+            Collider2D target = Physics2D.OverlapPoint(pos);
+            
+            selfCol.enabled = wasEnabled;  
+
+            if (target != null && target.gameObject != gameObject && cardView != null)
+            {
+                cardView.UseCard(target);
+                return;
+            }
+
+            // Snap back if invalid
+            transform.DOMove(startPos, 0.2f).SetEase(Ease.OutCubic)
+                .OnComplete(() => spriteRenderer.sortingOrder = 0);
+        }
     }
 }

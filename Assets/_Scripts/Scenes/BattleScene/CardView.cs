@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.XR;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class CardView : MonoBehaviour
@@ -9,6 +10,8 @@ public class CardView : MonoBehaviour
     [SerializeField] private GameObject wrapper;
     [SerializeField] public UnityEngine.Rendering.SortingGroup sortingGroup;
 
+    private BoxCollider2D cardCollider;
+    
     [Header("Gameplay")]
     public CharacterBase player;
     public CharacterBase targetEnemy;
@@ -24,13 +27,32 @@ public class CardView : MonoBehaviour
             imageSR = GetComponent<SpriteRenderer>();
     }
 
-    private void OnMouseDown()
+    public void UseCard(Collider2D target)
     {
         if (cardBase == null || player == null) return;
 
+        var targetComponent = target?.GetComponent<CharacterBase>();
+        
+        if (target != null)
+        {
+            // check if target is enemy or player themselves
+            Enemy enemy = target.GetComponent<Enemy>();
+            if (enemy != null)
+                targetComponent = enemy;
+            else if (target.GetComponent<Player>() != null)
+                targetComponent = player; // allow healing/defense on self
+        }
+        
+        if (targetComponent == null)
+        {
+            Debug.Log("Invalid target for this card.");
+            return;
+        }
+        
         if (player is Player p && p.UseEnergy(cardBase.energy))
         {
-            cardBase.Use(player, targetEnemy);
+            cardBase.Use(player, targetComponent);
+            AnimateCardPlay(target.transform);
 
             HandView handView = FindObjectOfType<HandView>();
             if (handView != null)
@@ -45,7 +67,12 @@ public class CardView : MonoBehaviour
         }
     }
 
-    public bool TryUseCardOn(Enemy enemy, Player player)
+    private void OnMouseDown()
+    {
+        // UseCard();
+    }
+
+    public bool TryUseCardOn(Enemy enemy)
     {
         if (cardBase == null || player == null) return false;
 
@@ -67,11 +94,12 @@ public class CardView : MonoBehaviour
 
     private void AnimateCardPlay(Transform target)
     {
+        Debug.Log("Animating card to " + target.name);
         transform.DOMove(target.position, 0.2f)
             .OnComplete(() =>
             {
                 transform.DOScale(Vector3.zero, 0.1f)
-                    .OnComplete(() => gameObject.SetActive(false));
+                    .OnComplete(() => transform.gameObject.SetActive(false));
             });
     }
 
