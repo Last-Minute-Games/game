@@ -8,7 +8,7 @@ namespace Systems
     public class TeleportSystem : MonoBehaviour
     {
         public GameObject tptTo;
-        public bool isRight;
+        public Vector3 direction;
         
         private GameObject _player;
         private CharacterController2D _characterController2D;
@@ -77,15 +77,13 @@ namespace Systems
         {
             _characterController2D.SetTeleporting(true);
             
-            var offset = isRight ? Vector3.left : Vector3.right;
-            
             // Start fade-in
             _fadeCanvasGroup.blocksRaycasts = true;
             yield return StartCoroutine(FadeIn());
 
             // Teleport the object
             
-            other.transform.position = tptTo.transform.position + offset * 1.5f;
+            other.transform.position = tptTo.transform.position + new Vector3(direction.x, direction.y, 0) * 1.5f;
             _cinemachinePositionComposer.Damping = Vector3.zero;
             
             yield return new WaitForSeconds(_fadeTime); // Adjust the wait time as needed
