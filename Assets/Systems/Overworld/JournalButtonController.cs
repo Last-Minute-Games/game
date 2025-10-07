@@ -12,7 +12,7 @@ public class JournalUI : MonoBehaviour
     CanvasGroup cg;
     bool isOpen;
 
-    public float fadeDuration = 0.2f;      // How long the fade takes
+    public float fadeDuration = 0.3f;      // How long the fade takes
 
     IEnumerator FadeToAlpha(float endAlpha, float duration)
     {
