@@ -15,6 +15,8 @@ namespace _Scripts.Gameplay
     
         private Vector3 screenPoint;
         private BoxCollider2D selfCol;
+        
+        public bool IsDragging => isDragging;
     
         private void Awake()
         {

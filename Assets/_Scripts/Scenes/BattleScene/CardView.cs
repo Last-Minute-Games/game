@@ -1,3 +1,4 @@
+using _Scripts.Gameplay;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.XR;
@@ -11,10 +12,13 @@ public class CardView : MonoBehaviour
     [SerializeField] public UnityEngine.Rendering.SortingGroup sortingGroup;
 
     private BoxCollider2D cardCollider;
+    private CardDragHandler dragHandler;
+    private HandView handView;
     
     [Header("Gameplay")]
     public CharacterBase player;
     public CharacterBase targetEnemy;
+    
     private CardBase cardBase;
 
     private void Awake()
@@ -25,6 +29,9 @@ public class CardView : MonoBehaviour
 
         if (imageSR == null)
             imageSR = GetComponent<SpriteRenderer>();
+        
+        dragHandler = GetComponent<CardDragHandler>();
+        handView = FindFirstObjectByType<HandView>();
     }
     
     // public bool ActivateCard(CharacterBase target)
@@ -78,8 +85,7 @@ public class CardView : MonoBehaviour
             {
                 Debug.LogError($"Error using card {cardBase.cardName}: {ex.Message}");
             }
-
-            HandView handView = FindObjectOfType<HandView>();
+            
             Debug.Log(handView);
             
             if (handView != null)
@@ -97,9 +103,8 @@ public class CardView : MonoBehaviour
     private void OnMouseEnter()
     {
         // Find hand and tell it we are hovered
-        HandView hand = FindObjectOfType<HandView>();
-        if (hand != null)
-            hand.OnHover(this);
+        if (handView != null && !dragHandler.IsDragging)
+            handView.OnHover(this);
 
         // Show tooltip
         if (TooltipManager.Instance != null && cardBase != null)
@@ -109,9 +114,8 @@ public class CardView : MonoBehaviour
     private void OnMouseExit()
     {
         // Reset hover on hand
-        HandView hand = FindObjectOfType<HandView>();
-        if (hand != null)
-            hand.OnHoverExit(this);
+        if (handView != null && !dragHandler.IsDragging)
+            handView.OnHoverExit(this);
 
         // Hide tooltip
         if (TooltipManager.Instance != null)
