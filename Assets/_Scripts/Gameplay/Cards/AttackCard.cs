@@ -1,17 +1,23 @@
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "New Attack Card", menuName = "Cards/Attack Card")]
 public class AttackCard : CardBase
 {
-    public int damage = 25;
-
-    private void Start()
-    {
-        cardName = "Strike";
-    }
+    [Header("Attack Settings")]
+    public int baseDamage = 10;
 
     public override void Use(CharacterBase user, CharacterBase target)
     {
-        Debug.Log($"{user.characterName} uses {cardName} on {target.characterName}!");
-        target.TakeDamage(damage + user.strength); // include strength bonus
+        if (target == null)
+        {
+            Debug.LogWarning($"{cardName}: No target selected!");
+            return;
+        }
+
+        int totalDamage = baseDamage;
+        target.TakeDamage(totalDamage);
+
+        string userName = user != null ? user.characterName : "Player";
+        Debug.Log($"{userName} used {cardName}, dealing {totalDamage} damage to {target.characterName}!");
     }
 }
