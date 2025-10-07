@@ -43,10 +43,10 @@ GameObject:
   - component: {fileID: 2816092647931019686}
   - component: {fileID: 4290593201226582602}
   - component: {fileID: 3706004249726771520}
-  - component: {fileID: 4258840464232529573}
   - component: {fileID: 8944526375707295122}
   - component: {fileID: 1260893668401288400}
   - component: {fileID: 4205007133653273675}
+  - component: {fileID: 8629514613465934759}
   m_Layer: 0
   m_Name: DefenseCard
   m_TagString: Untagged
@@ -99,27 +99,6 @@ SortingGroup:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_SortAtRoot: 0
---- !u!65 &4258840464232529573
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 3.2190237, y: 4.613027, z: 1}
-  m_Center: {x: -0.05689794, y: -0.042673826, z: 0}
 --- !u!212 &8944526375707295122
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -208,6 +187,52 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 183f78f78396cee36994f4fa2dc6f835, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardDragHandler
+--- !u!61 &8629514613465934759
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 3.02, y: 4.42}
+    newSize: {x: 3.02, y: 4.42}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 3.02, y: 4.42}
+  m_EdgeRadius: 0
 --- !u!1 &7734680973956290220
 GameObject:
   m_ObjectHideFlags: 0
