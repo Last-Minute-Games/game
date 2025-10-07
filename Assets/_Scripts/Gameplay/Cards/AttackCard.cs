@@ -4,7 +4,7 @@ using UnityEngine;
 public class AttackCard : CardBase
 {
     [Header("Attack Settings")]
-    public int baseDamage = 10;
+    public int baseDamage = 20;
 
     public override void Use(CharacterBase user, CharacterBase target)
     {

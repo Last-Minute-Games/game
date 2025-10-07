@@ -6,9 +6,9 @@ public class Enemy : CharacterBase
 {
     [Header("Enemy Parameters")]
     public int minHealth = 50;
-    public int maxHealthRange = 150;
-    public int minDamage = 5;
-    public int maxDamage = 20;
+    public int maxHealthRange = 85;
+    public int minDamage = 8;
+    public int maxDamage = 30;
     public Sprite[] possibleSprites;
 
     [Header("UI")]
