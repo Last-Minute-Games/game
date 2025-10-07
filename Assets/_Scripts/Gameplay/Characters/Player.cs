@@ -10,12 +10,26 @@ public class Player : CharacterBase
     public Inventory inventory;
     public GameObject cardPrefab;  // for spawning cards later
 
+
+    [Header("UI")]
+    public GameObject healthBarPrefab;
+
+    private HealthBar healthBarInstance;
+
     protected override void Awake()
     {
         base.Awake();
         characterName = "Player";
         currentEnergy = maxEnergy;
         Debug.Log($"{characterName} initialized with {currentEnergy} energy and {maxHealth} HP.");
+
+
+        if (healthBarPrefab != null)
+        {
+            var barObj = Instantiate(healthBarPrefab);
+            healthBarInstance = barObj.GetComponent<HealthBar>();
+            healthBarInstance.Initialize(this);
+        }
     }
 
     // --- ENERGY SYSTEM INTEGRATION ---
