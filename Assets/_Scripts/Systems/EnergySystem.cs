@@ -1,8 +1,17 @@
 using UnityEngine;
 using TMPro;
 
+
 public class EnergySystem : MonoBehaviour
 {
+
+  public static EnergySystem Instance { get; private set; }
+
+  void Awake()
+  {
+      Instance = this;
+  }
+
   // actual energy settings
   public int maxEnergy = 3;
   public int currentEnergy;
