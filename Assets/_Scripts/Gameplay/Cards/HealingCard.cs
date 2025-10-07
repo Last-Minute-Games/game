@@ -8,15 +8,15 @@ public class HealingCard : CardBase
 
     public override void Use(CharacterBase user, CharacterBase target)
     {
-        CharacterBase recipient = target != null ? target : user;
-        if (recipient == null)
+        // Healing cards should *always* heal the player who used it
+        if (user == null)
         {
-            Debug.LogWarning($"{cardName}: No valid target to heal!");
+            Debug.LogWarning($"{cardName}: No valid player to heal!");
             return;
         }
 
-        recipient.Heal(healAmount);
-        recipient.ShowHealFeedback(healAmount);
-        Debug.Log($"{user.characterName} uses {cardName} to heal {recipient.characterName} for {healAmount} HP!");
+        user.Heal(healAmount);
+        user.ShowHealFeedback(healAmount);
+        Debug.Log($"{user.characterName} uses {cardName} and heals for {healAmount} HP!");
     }
 }
