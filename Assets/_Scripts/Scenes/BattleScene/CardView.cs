@@ -26,6 +26,26 @@ public class CardView : MonoBehaviour
         if (imageSR == null)
             imageSR = GetComponent<SpriteRenderer>();
     }
+    
+    // public bool ActivateCard(CharacterBase target)
+    // {
+    //     if (cardBase == null || player == null) return false;
+    //
+    //     if (cardBase.cardType == CardType.Attack && target != null && target is Enemy enemy)
+    //     {
+    //         cardBase.Use(player, target);
+    //         AnimateCardPlay(enemy.transform);
+    //         return true;
+    //     }
+    //     else if ((cardBase.cardType == CardType.Healing || cardBase.cardType == CardType.Defense) && player != null)
+    //     {
+    //         cardBase.Use(player, target);
+    //         AnimateCardPlay(player.transform);
+    //         return true;
+    //     }
+    //
+    //     return false;
+    // }
 
     public void UseCard(Collider2D target)
     {
@@ -51,10 +71,17 @@ public class CardView : MonoBehaviour
         
         if (player is Player p && p.UseEnergy(cardBase.energy))
         {
-            cardBase.Use(player, targetComponent);
-            AnimateCardPlay(target.transform);
+            try {
+                cardBase.Use(player, targetComponent);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Error using card {cardBase.cardName}: {ex.Message}");
+            }
 
             HandView handView = FindObjectOfType<HandView>();
+            Debug.Log(handView);
+            
             if (handView != null)
                 handView.RemoveCard(this);
 
@@ -89,26 +116,6 @@ public class CardView : MonoBehaviour
         // Hide tooltip
         if (TooltipManager.Instance != null)
             TooltipManager.Instance.HideTooltip();
-    }
-
-    public bool TryUseCardOn(Enemy enemy, Player player)
-    {
-        if (cardBase == null || player == null) return false;
-
-        if (cardBase.cardType == CardType.Attack && enemy != null)
-        {
-            cardBase.Use(player, enemy);
-            AnimateCardPlay(enemy.transform);
-            return true;
-        }
-        else if ((cardBase.cardType == CardType.Healing || cardBase.cardType == CardType.Defense) && player != null)
-        {
-            cardBase.Use(player, player);
-            AnimateCardPlay(player.transform);
-            return true;
-        }
-
-        return false;
     }
 
     private void AnimateCardPlay(Transform target)
