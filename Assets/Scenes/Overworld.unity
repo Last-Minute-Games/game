@@ -36137,6 +36137,7 @@ RectTransform:
   m_Children:
   - {fileID: 505201218}
   - {fileID: 504107746}
+  - {fileID: 2574424380047906029}
   - {fileID: 328739489}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -37522,6 +37523,111 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1629169466}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2011612452026458076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728875730655649188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 8848372255090490591, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!224 &2574424380047906029
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728875730655649188}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.2273045, y: 1.2273045, z: 1.2273045}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1941685853}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -960, y: 333.29}
+  m_SizeDelta: {x: 72.9568, y: 102.5089}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &6728875730655649188
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2574424380047906029}
+  - component: {fileID: 7932528898103198711}
+  - component: {fileID: 2011612452026458076}
+  - component: {fileID: 7986103787165232494}
+  m_Layer: 5
+  m_Name: ClockImage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!222 &7932528898103198711
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728875730655649188}
+  m_CullTransparentMesh: 1
+--- !u!114 &7986103787165232494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728875730655649188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: deaf98daafb1eb844b6b81f0c12b6392, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClockTimer
+  clockImage: {fileID: 2011612452026458076}
+  clockFrames:
+  - {fileID: 8848372255090490591, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: 1069308804, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: -959562726, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: -1685970772, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: 1996129943, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: -1599300897, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: -1024885831, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: -329767751, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: -892521437, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: -196862132, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: 816103235, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: 727338659, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  - {fileID: 381109448, guid: 3bb116bdf8d917744b3de6798a1933d5, type: 3}
+  totalTime: 60
+  nextSceneName: BattleScene
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
