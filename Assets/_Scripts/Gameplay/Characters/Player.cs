@@ -7,8 +7,7 @@ public class Player : CharacterBase
     public int currentEnergy;
 
     [Header("Deck & Inventory (optional for later)")]
-    public GameObject cardPrefab;  // for spawning cards later
-
+    public GameObject cardPrefab;  
 
     [Header("UI")]
     public GameObject healthBarPrefab;
@@ -22,7 +21,6 @@ public class Player : CharacterBase
         currentEnergy = maxEnergy;
         Debug.Log($"{characterName} initialized with {currentEnergy} energy and {maxHealth} HP.");
 
-
         if (healthBarPrefab != null)
         {
             var barObj = Instantiate(healthBarPrefab);
@@ -34,20 +32,25 @@ public class Player : CharacterBase
     // --- ENERGY SYSTEM INTEGRATION ---
     public bool UseEnergy(int amount)
     {
-        if (currentEnergy >= amount)
+        if (EnergySystem.Instance == null) return false;
+
+        if (EnergySystem.Instance.UseEnergy(amount))
         {
-            currentEnergy -= amount;
+            currentEnergy = EnergySystem.Instance.currentEnergy;
             Debug.Log($"{characterName} used {amount} energy. Remaining: {currentEnergy}");
             return true;
         }
 
-        Debug.Log($"{characterName} doesn’t have enough energy! ({currentEnergy}/{maxEnergy})");
+        Debug.Log($"{characterName} doesn’t have enough energy! ({EnergySystem.Instance.currentEnergy}/{EnergySystem.Instance.maxEnergy})");
         return false;
     }
 
     public void RefillEnergy()
     {
-        currentEnergy = maxEnergy;
+        if (EnergySystem.Instance == null) return;
+
+        EnergySystem.Instance.RefillEnergy();
+        currentEnergy = EnergySystem.Instance.currentEnergy;
         Debug.Log($"{characterName}'s energy refilled to {currentEnergy}/{maxEnergy}");
     }
 

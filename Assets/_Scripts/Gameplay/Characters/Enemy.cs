@@ -1,4 +1,6 @@
 using UnityEngine;
+using TMPro;
+using System.Collections;
 
 public class Enemy : CharacterBase
 {
@@ -11,33 +13,29 @@ public class Enemy : CharacterBase
 
     [Header("UI")]
     public GameObject healthBarPrefab;
+    public TMP_Text intentionText;
 
     private HealthBar healthBarInstance;
+
+    private enum EnemyIntention { Idle, Attack, Defend }
+    private EnemyIntention currentIntention;
 
     protected override void Awake()
     {
         base.Awake();
         RandomizeStats();
 
+        // Spawn health bar
         if (healthBarPrefab != null)
         {
             var barObj = Instantiate(healthBarPrefab);
             healthBarInstance = barObj.GetComponent<HealthBar>();
             healthBarInstance.Initialize(this);
         }
-    }
 
-    public void Attack(CharacterBase target)
-    {
-        if (target == null)
-        {
-            Debug.LogWarning($"{characterName} has no target to attack!");
-            return;
-        }
-
-        int damage = strength;
-        Debug.Log($"{characterName} attacks {target.characterName} for {damage} damage!");
-        target.TakeDamage(damage);
+        // Start with no intention
+        if (intentionText != null)
+            intentionText.text = "💤 Waiting...";
     }
 
     private void RandomizeStats()
@@ -68,5 +66,50 @@ public class Enemy : CharacterBase
         base.TakeDamage(dmg);
         if (healthBarInstance != null)
             healthBarInstance.UpdateBar();
+    }
+
+    // --- NEW INTENTION SYSTEM ---
+    public void DecideNextIntention()
+    {
+        int roll = Random.Range(0, 3);
+        switch (roll)
+        {
+            case 0:
+                currentIntention = EnemyIntention.Attack;
+                intentionText.text = $"⚔️ Attack ({strength})";
+                break;
+            case 1:
+                currentIntention = EnemyIntention.Defend;
+                intentionText.text = "🛡️ Defend";
+                break;
+            default:
+                currentIntention = EnemyIntention.Idle;
+                intentionText.text = "💤 Idle";
+                break;
+        }
+    }
+
+    public IEnumerator ExecuteIntention(Player player)
+    {
+        if (currentIntention == EnemyIntention.Attack)
+        {
+            yield return new WaitForSeconds(0.5f);
+            Attack(player);
+        }
+        else if (currentIntention == EnemyIntention.Defend)
+        {
+            AddBlock(5);
+            Debug.Log($"{characterName} defends and gains 5 block!");
+        }
+
+        // Reset intention text after acting
+        intentionText.text = "💤 Waiting...";
+    }
+
+    public void Attack(CharacterBase target)
+    {
+        int damage = strength;
+        Debug.Log($"{characterName} attacks {target.characterName} for {damage} damage!");
+        target.TakeDamage(damage);
     }
 }

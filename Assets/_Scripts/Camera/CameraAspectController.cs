@@ -1,4 +1,6 @@
-using UnityEngine;
+using UnityEngine; // deprecated file
+
+// do not use (for now)
 
 [RequireComponent(typeof(Camera))]
 public class CameraAspectController : MonoBehaviour

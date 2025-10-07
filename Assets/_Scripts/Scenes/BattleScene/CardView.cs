@@ -14,17 +14,6 @@ public class CardView : MonoBehaviour
     public CharacterBase targetEnemy;
     private CardBase cardBase;
 
-    [Header("Hover Animation")]
-    public float hoverLift = 0.2f;          // smaller lift height
-    public float hoverScale = 1.08f;        // subtle scaling
-    public float hoverDuration = 0.12f;     // quick but smooth
-    public Color hoverColor = Color.yellow; // tint when hovered
-
-    private Vector3 basePosition;
-    private Vector3 baseScale;
-    private Color baseColor;
-    private bool isHovered = false;
-
     private void Awake()
     {
         cardBase = GetComponent<CardBase>();
@@ -33,43 +22,16 @@ public class CardView : MonoBehaviour
 
         if (imageSR == null)
             imageSR = GetComponent<SpriteRenderer>();
-
-        if (imageSR != null)
-            baseColor = imageSR.color;
-
-        baseScale = transform.localScale;
-    }
-
-    public void Setup(CardBase card)
-    {
-        cardBase = card;
-        if (imageSR != null && card != null)
-            imageSR.sprite = card.artwork;
-
-        wrapper?.SetActive(true);
-    }
-
-
-    private void OnMouseEnter()
-    {
-        FindObjectOfType<HandView>().OnHover(this);
-    }
-
-    private void OnMouseExit()
-    {
-        FindObjectOfType<HandView>().OnHoverExit(this);
     }
 
     private void OnMouseDown()
     {
-        if (cardBase == null || player == null)
-            return;
+        if (cardBase == null || player == null) return;
 
         if (player is Player p && p.UseEnergy(cardBase.energy))
         {
             cardBase.Use(player, targetEnemy);
 
-            // Find HandView and remove this card
             HandView handView = FindObjectOfType<HandView>();
             if (handView != null)
                 handView.RemoveCard(this);
@@ -81,5 +43,18 @@ public class CardView : MonoBehaviour
         {
             Debug.Log("Not enough energy to play this card!");
         }
+    }
+
+
+    // Restores compatibility with CardViewHoverSystem
+    public void Setup(CardBase card)
+    {
+        if (card == null) return;
+
+        cardBase = card;
+        if (imageSR != null)
+            imageSR.sprite = card.artwork;
+
+        wrapper?.SetActive(true);
     }
 }

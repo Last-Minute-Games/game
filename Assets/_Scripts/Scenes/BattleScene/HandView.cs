@@ -6,10 +6,15 @@ using DG.Tweening;
 public class HandView : MonoBehaviour
 {
     [Header("Layout")]
-    public float spacing = 1.5f;         // horizontal spacing like old version
-    public float curveHeight = 1.5f;     // how much curvature (vertical bend)
-    public float verticalOffset = 2f;    // raise entire hand
-    public float liftAmount = 1.2f;      // how high hovered card floats
+    [Tooltip("How far apart cards are horizontally")]
+    public float spacing = 2.5f;         // increase this for wider spacing
+    [Tooltip("How deep the arc bends vertically")]
+    public float curveHeight = 1.2f;     // smaller = flatter hand
+    [Tooltip("Move entire hand up/down")]
+    public float baseHeight = -5.0f;       // pushes all cards lower on screen
+    [Tooltip("Hover lift height")]
+    public float liftAmount = 0.8f;
+    [Tooltip("Animation speed")]
     public float animationTime = 0.25f;
 
     private readonly List<CardView> cards = new();
@@ -34,17 +39,19 @@ public class HandView : MonoBehaviour
     {
         if (cards.Count == 0) yield break;
 
-        float totalWidth = (cards.Count - 1) * spacing;
+        float totalWidth = Mathf.Max((cards.Count - 1) * spacing, 0.01f);
         float startX = -totalWidth / 2f;
 
         for (int i = 0; i < cards.Count; i++)
         {
-            // Position in a gentle arc
             float x = startX + i * spacing;
-            float y = verticalOffset - Mathf.Pow(x / totalWidth * 2f, 2f) * curveHeight;
+            float normalized = (totalWidth == 0) ? 0f : (x / totalWidth);
 
-            Vector3 targetPos = transform.position + new Vector3(x, y, 0f);
-            Quaternion targetRot = Quaternion.Euler(0, 0, -x * 2f); // small rotation proportional to x
+            // Arc curve — smooth parabola
+            float y = baseHeight + Mathf.Cos(normalized * Mathf.PI) * curveHeight;
+
+            Vector3 targetPos = new Vector3(x, y, 0f);
+            Quaternion targetRot = Quaternion.Euler(0, 0, -normalized * 25f);
 
             cards[i].transform.DOLocalMove(targetPos, animationTime).SetEase(Ease.OutCubic);
             cards[i].transform.DOLocalRotateQuaternion(targetRot, animationTime).SetEase(Ease.OutCubic);

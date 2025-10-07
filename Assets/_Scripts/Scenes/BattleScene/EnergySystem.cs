@@ -1,63 +1,64 @@
 using UnityEngine;
 using TMPro;
-
+using DG.Tweening;
 
 public class EnergySystem : MonoBehaviour
 {
+    public static EnergySystem Instance { get; private set; }
 
-  public static EnergySystem Instance { get; private set; }
+    [Header("Energy Settings")]
+    public int maxEnergy = 3;
+    public int currentEnergy;
 
-  void Awake()
-  {
-      Instance = this;
-  }
+    [Header("UI Reference")]
+    public TMP_Text energyText;
 
-  // actual energy settings
-  public int maxEnergy = 3;
-  public int currentEnergy;
-
-  public TMP_Text energyText; // UI reference
-
-  void Start()
-  {
-    currentEnergy = maxEnergy;
-    UpdateUI();
-  }
-
-  public bool UseEnergy(int amount)
-  {
-    if (currentEnergy >= amount)
+    private void Awake()
     {
-      currentEnergy -= amount;
-      UpdateUI();
-      Debug.Log($"Used {amount} energy. Remaining: {currentEnergy}");
-      return true;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        currentEnergy = maxEnergy;
+        UpdateUI();
     }
-    else
-    {
-      Debug.Log("Not enough energy!");
-      return false;
-    }
-  }
-  public void RefillEnergy()
-  {
-    currentEnergy = maxEnergy;
-    UpdateUI();
-    Debug.Log($"Energy refilled! Current: {currentEnergy}");
-  }
 
-  private void UpdateUI()
-  {
-    if (energyText != null)
+    public bool UseEnergy(int amount)
     {
-      energyText.text = $"{currentEnergy}/{maxEnergy}";
+        if (currentEnergy >= amount)
+        {
+            currentEnergy -= amount;
+            AnimateUI();
+            UpdateUI();
+            return true;
+        }
+
+        Debug.Log("Not enough energy!");
+        return false;
     }
-  }
-  void Update()
-  {
-      if (Input.GetKeyDown(KeyCode.R)) // temporary method for resetting energy
-          RefillEnergy();
-  }
+
+    public void RefillEnergy()
+    {
+        currentEnergy = maxEnergy;
+        AnimateUI();
+        UpdateUI();
+    }
+
+    private void AnimateUI()
+    {
+        if (energyText == null) return;
+
+        // Pulse animation (like Slay the Spire)
+        energyText.transform.DOKill();
+        energyText.transform.DOScale(1.25f, 0.1f)
+            .OnComplete(() => energyText.transform.DOScale(1f, 0.15f));
+    }
+
+    public void UpdateUI()
+    {
+        if (energyText)
+            energyText.text = $"<color=#FFD700>⚡</color> {currentEnergy}/{maxEnergy}";
+    }
 }
-
-

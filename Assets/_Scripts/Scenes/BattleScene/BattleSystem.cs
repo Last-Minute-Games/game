@@ -77,7 +77,13 @@ public class BattleSystem : MonoBehaviour
     {
         player.RefillEnergy();
         Debug.Log("🔹 Player's turn started!");
-        // (Later: enable card clicking, show UI indicators, etc.)
+
+        // Enemies decide what to do next turn
+        foreach (Enemy enemy in enemies)
+        {
+            if (enemy != null)
+                enemy.DecideNextIntention();
+        }
     }
 
     public void EndPlayerTurn()
@@ -91,9 +97,8 @@ public class BattleSystem : MonoBehaviour
         foreach (Enemy enemy in enemies)
         {
             if (enemy == null || player == null) continue;
+            yield return enemy.ExecuteIntention(player);
             yield return new WaitForSeconds(0.5f);
-
-            enemy.Attack(player);
         }
 
         StartPlayerTurn();
