@@ -1,59 +1,54 @@
 using UnityEngine;
-using UnityEngine.UI;
 
-public class CharacterBase : MonoBehaviour
+public abstract class CharacterBase : MonoBehaviour
 {
-    [Header("Stats")]
-    public string characterName;
-    public int maxHP = 100;
-    public int currentHP;
-    public int vulnerability = 0; // increases damage taken
-    public int dexterity = 10;    // could affect critical or hit
-    public int strength = 20;     // adds to attack
-    public int energy = 3;        // cards cost energy to play
+    [Header("Identity")]
+    public string characterName = "Unnamed";
+    public Sprite portrait;
 
-    [Header("UI")]
-    public Text statsText; // assign in inspector
+    [Header("Core Stats")]
+    public int maxHealth = 100;
+    public int currentHealth;
+    public int block;         // temporary damage reduction
+    public int strength = 0;  // bonus for attack cards
+    public int defense = 0;   // bonus for defense cards
+
+    [Header("Inventory")]
+    public Inventory inventory; // optional (hook later)
 
     protected virtual void Awake()
     {
-        currentHP = maxHP;
-        UpdateStatsUI();
+        currentHealth = maxHealth;
     }
 
-    public virtual void TakeDamage(int dmg)
+    public virtual void TakeDamage(int amount)
     {
-        // Increase damage by vulnerability
-        int actualDamage = Mathf.Max(dmg + vulnerability, 0);
-        currentHP -= actualDamage;
+        int mitigated = Mathf.Max(amount - block - defense, 0);
+        block = Mathf.Max(block - amount, 0); // block consumed first
+        currentHealth -= mitigated;
+        currentHealth = Mathf.Max(currentHealth, 0);
 
-        Debug.Log($"{characterName} took {actualDamage} damage! HP left: {currentHP}");
+        Debug.Log($"{characterName} took {mitigated} damage! HP: {currentHealth}/{maxHealth}");
 
-        UpdateStatsUI();
-
-        if (currentHP <= 0)
+        if (currentHealth <= 0)
             Die();
     }
 
-    public virtual void UpdateStatsUI()
+    public virtual void Heal(int amount)
     {
-        if (statsText != null)
-        {
-            statsText.text = $"{characterName}\nHP: {currentHP}\nSTR: {strength}\nDEX: {dexterity}\nVUL: {vulnerability}\nEN: {energy}";
-        }
+        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        Debug.Log($"{characterName} healed {amount}! HP: {currentHealth}/{maxHealth}");
     }
 
-    public virtual void Die()
+    public virtual void AddBlock(int amount)
     {
-        Debug.Log($"{characterName} has been defeated!");
+        block += amount;
+        Debug.Log($"{characterName} gains {amount} block! (Total block: {block})");
+    }
+
+    protected virtual void Die()
+    {
+        Debug.Log($"{characterName} has fallen!");
         gameObject.SetActive(false);
-    }
-
-    // Optional: basic attack method
-    public virtual void AttackTarget(CharacterBase target)
-    {
-        int damage = strength; // base damage
-        target.TakeDamage(damage);
-        Debug.Log($"{characterName} attacks {target.characterName} for {damage} damage!");
     }
 }
