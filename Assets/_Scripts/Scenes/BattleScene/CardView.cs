@@ -45,6 +45,31 @@ public class CardView : MonoBehaviour
         }
     }
 
+
+    private void OnMouseEnter()
+    {
+        // Find hand and tell it we are hovered
+        HandView hand = FindObjectOfType<HandView>();
+        if (hand != null)
+            hand.OnHover(this);
+
+        // Show tooltip
+        if (TooltipManager.Instance != null && cardBase != null)
+            TooltipManager.Instance.ShowTooltip(cardBase);
+    }
+
+    private void OnMouseExit()
+    {
+        // Reset hover on hand
+        HandView hand = FindObjectOfType<HandView>();
+        if (hand != null)
+            hand.OnHoverExit(this);
+
+        // Hide tooltip
+        if (TooltipManager.Instance != null)
+            TooltipManager.Instance.HideTooltip();
+    }
+
     public bool TryUseCardOn(Enemy enemy, Player player)
     {
         if (cardBase == null || player == null) return false;
