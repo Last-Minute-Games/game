@@ -16,6 +16,11 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] private int startingHandSize = 5;
     [SerializeField] private float turnResetDelay = 1.5f;
 
+    [Header("Card Draw Chances (must total 1.0)")]
+    [Range(0f, 1f)] public float attackChance = 0.6f;
+    [Range(0f, 1f)] public float defenseChance = 0.25f;
+    [Range(0f, 1f)] public float healthChance = 0.15f;
+
     private Player player;
     private readonly List<Enemy> enemies = new();
 
@@ -29,7 +34,7 @@ public class BattleSystem : MonoBehaviour
 
     private IEnumerator InitializeBattle()
     {
-        yield return null; // Wait for BattlefieldLayout to finish
+        yield return null;
 
         player = FindObjectOfType<Player>();
         enemies.AddRange(FindObjectsOfType<Enemy>());
@@ -60,10 +65,10 @@ public class BattleSystem : MonoBehaviour
     {
         for (int i = 0; i < startingHandSize; i++)
         {
-            GameObject randomCard = cardPrefabs[Random.Range(0, cardPrefabs.Length)];
+            GameObject cardToSpawn = GetWeightedRandomCard();
             Vector3 spawnPos = handSpawnPoint != null ? handSpawnPoint.position : transform.position;
 
-            GameObject cardObj = Instantiate(randomCard, spawnPos, Quaternion.identity);
+            GameObject cardObj = Instantiate(cardToSpawn, spawnPos, Quaternion.identity);
             cardObj.transform.position += Vector3.down * 1f;
             cardObj.transform.DOMove(handSpawnPoint.position, 0.25f).SetEase(Ease.OutBack);
 
@@ -77,6 +82,46 @@ public class BattleSystem : MonoBehaviour
                 yield return handView.AddCard(cardView);
             }
         }
+    }
+
+    private GameObject GetWeightedRandomCard()
+    {
+        // Normalize if the user didn’t exactly make it total 1
+        float total = attackChance + defenseChance + healthChance;
+        if (Mathf.Abs(total - 1f) > 0.001f)
+        {
+            Debug.LogWarning($"⚠️ Card chances don’t sum to 1 (currently {total:F2}). Normalizing automatically.");
+            attackChance /= total;
+            defenseChance /= total;
+            healthChance /= total;
+        }
+
+        float roll = Random.value;
+
+        CardType targetType;
+        if (roll < attackChance)
+            targetType = CardType.Attack;
+        else if (roll < attackChance + defenseChance)
+            targetType = CardType.Defense;
+        else
+            targetType = CardType.Healing;
+
+        // Select random prefab of that type
+        List<GameObject> matchingCards = new();
+        foreach (var prefab in cardPrefabs)
+        {
+            var cb = prefab.GetComponent<CardBase>();
+            if (cb != null && cb.cardType == targetType)
+                matchingCards.Add(prefab);
+        }
+
+        if (matchingCards.Count == 0)
+        {
+            Debug.LogWarning($"⚠️ No prefabs found for {targetType}! Defaulting to random card.");
+            return cardPrefabs[Random.Range(0, cardPrefabs.Length)];
+        }
+
+        return matchingCards[Random.Range(0, matchingCards.Count)];
     }
 
     private IEnumerator ClearHand()
@@ -119,10 +164,8 @@ public class BattleSystem : MonoBehaviour
     {
         isProcessingTurn = true;
 
-        // Discard all cards
         yield return ClearHand();
 
-        // Enemies act
         foreach (Enemy enemy in enemies)
         {
             if (enemy == null || player == null) continue;
@@ -130,11 +173,9 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
-        // Wait briefly for pacing
         Debug.Log("🕒 Resetting for next round...");
         yield return new WaitForSeconds(turnResetDelay);
 
-        // Draw new hand & start next turn
         yield return RefreshPlayerHand();
         StartPlayerTurn();
 

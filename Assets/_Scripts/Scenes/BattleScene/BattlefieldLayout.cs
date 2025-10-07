@@ -31,7 +31,8 @@ public class BattlefieldLayout : MonoBehaviour
             return;
         }
 
-        player = Instantiate(playerPrefab, playerPos, Quaternion.identity);
+        Vector3 adjustedPos = playerPos + new Vector3(0f, -0.0f, 0f); // ↓ move lower
+        player = Instantiate(playerPrefab, adjustedPos, Quaternion.identity);
         player.name = "Player";
 
         CharacterBase playerChar = player.GetComponent<CharacterBase>();

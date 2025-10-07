@@ -12,8 +12,6 @@ public class Player : CharacterBase
     [Header("UI")]
     public GameObject healthBarPrefab;
 
-    private HealthBar healthBarInstance;
-
     protected override void Awake()
     {
         base.Awake();

@@ -18,6 +18,9 @@ public abstract class CharacterBase : MonoBehaviour
     [Header("Inventory")]
     public Inventory inventory; // optional (hook later)
 
+    [Header("UI")]
+    protected HealthBar healthBarInstance;
+
     protected virtual void Awake()
     {
         currentHealth = maxHealth;
@@ -51,6 +54,13 @@ public abstract class CharacterBase : MonoBehaviour
     protected virtual void Die()
     {
         Debug.Log($"{characterName} has fallen!");
+
+        if (healthBarInstance != null)
+        {
+            Destroy(healthBarInstance.gameObject);
+            healthBarInstance = null;
+        }
+
         gameObject.SetActive(false);
     }
 
