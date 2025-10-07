@@ -4,20 +4,22 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Button), typeof(Animator))]
 public class JournalButtonController : MonoBehaviour
 {
-    Animator anim;
-    bool isOpen;
+    private Animator anim;
+    private bool isOpen;
 
     void Awake()
     {
         anim = GetComponent<Animator>();
-        GetComponent<Button>().onClick.AddListener(Toggle);
-        anim.SetBool("Open", false); // start closed
+        anim.SetBool("Open", false);   // start closed
+        // DO NOT add the listener here when wiring via OnClick()
+        // GetComponent<Button>().onClick.AddListener(Toggle);
     }
 
-    void Toggle()
+    // Must be public for Inspector wiring
+    public void Toggle()
     {
-        Debug.Log("journal");
         isOpen = !isOpen;
         anim.SetBool("Open", isOpen);
+        Debug.Log("Journal Toggle clicked. isOpen=" + isOpen);
     }
 }
