@@ -5,6 +5,8 @@ using UnityEngine.UI;
 public class JournalUI : MonoBehaviour
 {
     [SerializeField] Button toggleButton;   // Drag your JournalButton here (optional if wiring via inspector)
+    [SerializeField] GameObject journalPanel;
+
     Animator anim;
     CanvasGroup cg;
     bool isOpen;
@@ -12,7 +14,7 @@ public class JournalUI : MonoBehaviour
     void Awake()
     {
         anim = GetComponent<Animator>();
-        cg = GetComponent<CanvasGroup>();
+        cg = journalPanel.transform.GetComponent<CanvasGroup>();
 
         // Start closed
         SetOpen(false, instant: true);
@@ -21,13 +23,15 @@ public class JournalUI : MonoBehaviour
         if (toggleButton) toggleButton.onClick.AddListener(Toggle);
     }
 
-    public void Toggle() => SetOpen(!isOpen);
+    public void Toggle() => SetOpen(!isOpen, true);
 
     public void Open() => SetOpen(true);
     public void Close() => SetOpen(false);
 
     void SetOpen(bool open, bool instant = false)
     {
+        Debug.Log($"JournalUI SetOpen({open})");
+
         isOpen = open;
 
         if (anim) anim.SetBool("Open", open);
