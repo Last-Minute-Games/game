@@ -15,6 +15,7 @@ public class DefenseCard : CardBase
         }
 
         user.AddBlock(blockAmount);
+        user.ShowBlockFeedback(blockAmount);
         Debug.Log($"{user.characterName} uses {cardName} and gains {blockAmount} block!");
     }
 }

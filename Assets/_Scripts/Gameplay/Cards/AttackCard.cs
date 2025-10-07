@@ -14,8 +14,9 @@ public class AttackCard : CardBase
             return;
         }
 
-        int totalDamage = baseDamage;
+        int totalDamage = baseDamage + (user != null ? user.strength : 0);
         target.TakeDamage(totalDamage);
+        target.ShowDamageFeedback(totalDamage);
 
         string userName = user != null ? user.characterName : "Player";
         Debug.Log($"{userName} used {cardName}, dealing {totalDamage} damage to {target.characterName}!");

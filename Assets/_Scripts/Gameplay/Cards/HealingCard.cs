@@ -16,6 +16,7 @@ public class HealingCard : CardBase
         }
 
         recipient.Heal(healAmount);
+        recipient.ShowHealFeedback(healAmount);
         Debug.Log($"{user.characterName} uses {cardName} to heal {recipient.characterName} for {healAmount} HP!");
     }
 }
