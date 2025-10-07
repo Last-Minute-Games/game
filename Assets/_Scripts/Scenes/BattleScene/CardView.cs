@@ -78,6 +78,15 @@ public class CardView : MonoBehaviour
         
         if (player is Player p && p.UseEnergy(cardBase.energy))
         {
+            if (cardBase.cardType == CardType.Attack)
+            {
+                if (targetComponent is not Enemy)
+                {
+                    Debug.Log("Attack cards must target an enemy!");
+                    return false;
+                }
+            }
+            
             try {
                 cardBase.Use(player, targetComponent);
             }
