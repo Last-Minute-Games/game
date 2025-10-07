@@ -1,32 +1,85 @@
 using UnityEngine;
+using DG.Tweening;
 
+[RequireComponent(typeof(SpriteRenderer))]
 public class CardView : MonoBehaviour
 {
-    [SerializeField] public SpriteRenderer imageSR;
+    [Header("Visuals")]
+    [SerializeField] private SpriteRenderer imageSR;
     [SerializeField] private GameObject wrapper;
     [SerializeField] public UnityEngine.Rendering.SortingGroup sortingGroup;
 
-    public Card Card { get; private set; }
+    [Header("Gameplay")]
+    public CharacterBase player;
+    public CharacterBase targetEnemy;
+    private CardBase cardBase;
 
-    public void Setup(Card card)
+    [Header("Hover Animation")]
+    public float hoverLift = 0.2f;          // smaller lift height
+    public float hoverScale = 1.08f;        // subtle scaling
+    public float hoverDuration = 0.12f;     // quick but smooth
+    public Color hoverColor = Color.yellow; // tint when hovered
+
+    private Vector3 basePosition;
+    private Vector3 baseScale;
+    private Color baseColor;
+    private bool isHovered = false;
+
+    private void Awake()
     {
-        Card = card;
-        imageSR.sprite = card.Image;
-        wrapper.SetActive(true);
+        cardBase = GetComponent<CardBase>();
+        if (cardBase == null)
+            Debug.LogWarning($"CardView '{name}' has no CardBase component! Add one like AttackCard.");
+
+        if (imageSR == null)
+            imageSR = GetComponent<SpriteRenderer>();
+
+        if (imageSR != null)
+            baseColor = imageSR.color;
+
+        baseScale = transform.localScale;
     }
 
-    // Hover in → show enlarged view
-    void OnMouseEnter()
+    public void Setup(CardBase card)
     {
-        wrapper.SetActive(false);
-        Vector3 pos = new(transform.position.x, -2, 0);
-        CardViewHoverSystem.Instance.Show(Card, pos);
+        cardBase = card;
+        if (imageSR != null && card != null)
+            imageSR.sprite = card.artwork;
+
+        wrapper?.SetActive(true);
     }
 
-    // Hover out → restore normal view
-    void OnMouseExit()
+
+    private void OnMouseEnter()
     {
-        CardViewHoverSystem.Instance.Hide();
-        wrapper.SetActive(true);
+        FindObjectOfType<HandView>().OnHover(this);
+    }
+
+    private void OnMouseExit()
+    {
+        FindObjectOfType<HandView>().OnHoverExit(this);
+    }
+
+    private void OnMouseDown()
+    {
+        if (cardBase == null || player == null)
+            return;
+
+        if (player is Player p && p.UseEnergy(cardBase.energy))
+        {
+            cardBase.Use(player, targetEnemy);
+
+            // Find HandView and remove this card
+            HandView handView = FindObjectOfType<HandView>();
+            if (handView != null)
+                handView.RemoveCard(this);
+
+            transform.DOScale(Vector3.zero, 0.15f).OnComplete(() => gameObject.SetActive(false));
+            Debug.Log($"{player.characterName} played {cardBase.cardName}");
+        }
+        else
+        {
+            Debug.Log("Not enough energy to play this card!");
+        }
     }
 }

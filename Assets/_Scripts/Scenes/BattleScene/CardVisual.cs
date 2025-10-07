@@ -46,7 +46,7 @@ public class CardVisual : MonoBehaviour
             }
             else
             {
-                Debug.Log("Not enough energy to play this card!");
+                Debug.Log("Not enough sex to play this card!");
             }
         }
         else

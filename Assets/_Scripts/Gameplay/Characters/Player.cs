@@ -7,7 +7,6 @@ public class Player : CharacterBase
     public int currentEnergy;
 
     [Header("Deck & Inventory (optional for later)")]
-    public Inventory inventory;
     public GameObject cardPrefab;  // for spawning cards later
 
 

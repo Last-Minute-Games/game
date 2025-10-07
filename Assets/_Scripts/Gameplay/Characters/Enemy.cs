@@ -27,6 +27,19 @@ public class Enemy : CharacterBase
         }
     }
 
+    public void Attack(CharacterBase target)
+    {
+        if (target == null)
+        {
+            Debug.LogWarning($"{characterName} has no target to attack!");
+            return;
+        }
+
+        int damage = strength;
+        Debug.Log($"{characterName} attacks {target.characterName} for {damage} damage!");
+        target.TakeDamage(damage);
+    }
+
     private void RandomizeStats()
     {
         maxHealth = Random.Range(minHealth, maxHealthRange);

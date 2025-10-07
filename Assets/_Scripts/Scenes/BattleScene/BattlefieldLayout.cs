@@ -5,7 +5,6 @@ public class BattlefieldLayout : MonoBehaviour
     [Header("Prefabs")]
     public GameObject playerPrefab;
     public GameObject enemyPrefab;      // switched to GameObject for reliability
-    public GameObject cardPrefab;
 
     [Header("Enemy Spawn Settings")]
     public int enemyCount = 3;

@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 30278260}
   - component: {fileID: 30278261}
   m_Layer: 0
-  m_Name: TestSystem
+  m_Name: BattleSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -163,9 +163,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1558363afc7485b46bdba12fd57523a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestSystem
+  battlefieldLayout: {fileID: 0}
   handView: {fileID: 662907433}
-  cardData: {fileID: 11400000, guid: 0a9cc0b3e10e0b04d8be0d0a1b01dba4, type: 2}
-  cardViewPrefab: {fileID: 0}
+  cardPrefabs:
+  - {fileID: 6905502446284140818, guid: 0010c87c7cab9ce93ac677e222ad50cd, type: 3}
+  - {fileID: 6905502446284140818, guid: bd3717f8b40a70b46b9485c5479b2091, type: 3}
+  - {fileID: 6905502446284140818, guid: 2cf171eb07d0403ecaa6d5fac7b50b57, type: 3}
+  handSpawnPoint: {fileID: 0}
+  startingHandSize: 7
 --- !u!1 &82178461
 GameObject:
   m_ObjectHideFlags: 0
@@ -817,6 +822,7 @@ GameObject:
   - component: {fileID: 1154011891}
   - component: {fileID: 1154011890}
   - component: {fileID: 1154011893}
+  - component: {fileID: 1154011894}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -942,6 +948,19 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &1154011894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154011889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11427489c2e0919d89a896b8d7489348, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraAspectController
+  targetAspect: 1.7777778
 --- !u!1 &1193789997
 GameObject:
   m_ObjectHideFlags: 0
@@ -953,7 +972,7 @@ GameObject:
   - component: {fileID: 1193789999}
   - component: {fileID: 1193789998}
   m_Layer: 0
-  m_Name: Battle
+  m_Name: BattlefieldLayout
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -973,7 +992,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BattlefieldLayout
   playerPrefab: {fileID: 753829383109311850, guid: af4d270afe9c7844ebf8a57dc8dd84b1, type: 3}
   enemyPrefab: {fileID: 3708321511512314943, guid: d5609b73670f67a458f277721f09b5dd, type: 3}
-  cardPrefab: {fileID: 315085864848817654, guid: 7c1031cf9a42bb94ea420e29d21301b4, type: 3}
   enemyCount: 3
   enemySpacing: 2.5
   enemyStartPos: {x: 6, y: 0, z: 0}
@@ -1329,7 +1347,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35a9ee7a93c46324bbf3ff4b14042cdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardViewCreator
-  cardViewPrefab: {fileID: 4290593201226582602, guid: f8e68512eed80ec48be3ee5a1de871d0, type: 3}
 --- !u!1 &1789266933
 GameObject:
   m_ObjectHideFlags: 0
@@ -1356,8 +1373,8 @@ Transform:
   m_GameObject: {fileID: 1789266933}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.3, y: 7.6, z: 0}
-  m_LocalScale: {x: 2.3042793, y: 1.9488995, z: 3.9719713}
+  m_LocalPosition: {x: 0.06, y: 9.71, z: 0}
+  m_LocalScale: {x: 2.0647323, y: 1.7462966, z: 3.559055}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 590231580}
