@@ -163,14 +163,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1558363afc7485b46bdba12fd57523a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestSystem
-  battlefieldLayout: {fileID: 1193789998}
+  battlefieldLayout: {fileID: 0}
   handView: {fileID: 662907433}
   cardPrefabs:
   - {fileID: 6905502446284140818, guid: 0010c87c7cab9ce93ac677e222ad50cd, type: 3}
   - {fileID: 6905502446284140818, guid: bd3717f8b40a70b46b9485c5479b2091, type: 3}
   - {fileID: 6905502446284140818, guid: 2cf171eb07d0403ecaa6d5fac7b50b57, type: 3}
   handSpawnPoint: {fileID: 1527048681}
-  startingHandSize: 7
+  startingHandSize: 5
+--- !u!1 &44839956
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 44839957}
+  - component: {fileID: 44839958}
+  m_Layer: 0
+  m_Name: FloatingTextManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &44839957
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 44839956}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -64.900925, y: -22.370628, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 89798587}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &44839958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 44839956}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f676affcf206a9498a0d20b4bcc2481, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FloatingTextManager
+  floatingTextPrefab: {fileID: 5500562584760302725, guid: 13c5433c3bf474ba9aee3c38f1e4a699, type: 3}
+  floatDistance: 1.5
+  duration: 1
 --- !u!1 &82178461
 GameObject:
   m_ObjectHideFlags: 0
@@ -284,6 +331,7 @@ Transform:
   - {fileID: 1151026335}
   - {fileID: 365038987}
   - {fileID: 1574170771}
+  - {fileID: 44839957}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &147414055
@@ -806,6 +854,7 @@ MonoBehaviour:
   baseHeight: -5.5
   liftAmount: 1.5
   animationTime: 0.25
+  cardScale: 0.8
 --- !u!4 &949617182 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2816092647931019686, guid: f8e68512eed80ec48be3ee5a1de871d0, type: 3}
