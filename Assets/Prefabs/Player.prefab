@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2476482829187669490}
   - component: {fileID: 2685892946543545480}
   - component: {fileID: 6059881653677046653}
-  - component: {fileID: 8118380021474231756}
+  - component: {fileID: -696377352479820588}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -28,8 +28,8 @@ Transform:
   m_GameObject: {fileID: 753829383109311850}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.39, y: 1.86, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
+  m_LocalPosition: {x: -9.39, y: -18.71, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -81,8 +81,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.98467696, g: 1, b: 0.50628924, a: 1}
+  m_Sprite: {fileID: 2733749270086336457, guid: ad9cfd7938840b04f9acf6aca185e277, type: 3}
+  m_Color: {r: 0.5377358, g: 0.4438857, b: 0.4438857, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -101,28 +101,65 @@ MonoBehaviour:
   m_GameObject: {fileID: 753829383109311850}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f86ec08a6cffc344b9e2fed9caa307ec, type: 3}
+  m_Script: {fileID: 11500000, guid: 503cb23b40bcb440eb491113c44cde7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Protagonist
-  characterName: 
-  maxHP: 100
-  currentHP: 0
-  attack: 20
-  defense: 10
---- !u!114 &8118380021474231756
-MonoBehaviour:
+  characterName: Unnamed
+  portrait: {fileID: 0}
+  maxHealth: 100
+  currentHealth: 0
+  block: 0
+  strength: 0
+  defense: 0
+  inventory:
+    items: []
+  maxEnergy: 3
+  currentEnergy: 0
+  cardPrefab: {fileID: 0}
+  healthBarPrefab: {fileID: 5486704657143754790, guid: afda42d3aed7d1ab59d13f5c91aba8f0, type: 3}
+--- !u!61 &-696377352479820588
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 753829383109311850}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62872320f50ebd24daa1090ca9a2683a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CharacterBase
-  characterName: 
-  maxHP: 100
-  currentHP: 0
-  attack: 20
-  defense: 10
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 1.6}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0}
+    oldSize: {x: 1.4, y: 3.2}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1.4, y: 3.2}
+  m_EdgeRadius: 0

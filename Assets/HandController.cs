@@ -54,7 +54,7 @@ public class HandController : MonoBehaviour
 
     public void OnCardClicked(CardHover card)
     {
-      EnergySystem energy = FindObjectOfType<EnergySystem>();
+      EnergySystem energy = Object.FindFirstObjectByType<EnergySystem>();
 
       if (energy != null && energy.UseEnergy(1))
       {
