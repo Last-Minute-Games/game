@@ -1,3 +1,4 @@
+using _Scripts.Gameplay;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.XR;
@@ -11,10 +12,13 @@ public class CardView : MonoBehaviour
     [SerializeField] public UnityEngine.Rendering.SortingGroup sortingGroup;
 
     private BoxCollider2D cardCollider;
+    private CardDragHandler dragHandler;
+    private HandView handView;
     
     [Header("Gameplay")]
     public CharacterBase player;
     public CharacterBase targetEnemy;
+    
     private CardBase cardBase;
 
     private void Awake()
@@ -25,6 +29,9 @@ public class CardView : MonoBehaviour
 
         if (imageSR == null)
             imageSR = GetComponent<SpriteRenderer>();
+        
+        dragHandler = GetComponent<CardDragHandler>();
+        handView = FindFirstObjectByType<HandView>();
     }
     
     // public bool ActivateCard(CharacterBase target)
@@ -47,9 +54,9 @@ public class CardView : MonoBehaviour
     //     return false;
     // }
 
-    public void UseCard(Collider2D target)
+    public bool UseCard(Collider2D target)
     {
-        if (cardBase == null || player == null) return;
+        if (cardBase == null || player == null) return false;
 
         var targetComponent = target?.GetComponent<CharacterBase>();
         
@@ -66,7 +73,16 @@ public class CardView : MonoBehaviour
         if (targetComponent == null)
         {
             Debug.Log("Invalid target for this card.");
-            return;
+            return false;
+        }
+        
+        if (cardBase.cardType == CardType.Attack)
+        {
+            if (targetComponent is not Enemy)
+            {
+                Debug.Log("Attack cards must target an enemy!");
+                return false;
+            }
         }
         
         if (player is Player p && p.UseEnergy(cardBase.energy))
@@ -78,8 +94,7 @@ public class CardView : MonoBehaviour
             {
                 Debug.LogError($"Error using card {cardBase.cardName}: {ex.Message}");
             }
-
-            HandView handView = FindObjectOfType<HandView>();
+            
             Debug.Log(handView);
             
             if (handView != null)
@@ -87,19 +102,21 @@ public class CardView : MonoBehaviour
 
             transform.DOScale(Vector3.zero, 0.15f).OnComplete(() => gameObject.SetActive(false));
             Debug.Log($"{player.characterName} played {cardBase.cardName}");
+
+            return true;
         }
         else
         {
             Debug.Log("Not enough energy to play this card!");
+            return false;
         }
     }
 
     private void OnMouseEnter()
     {
         // Find hand and tell it we are hovered
-        HandView hand = FindObjectOfType<HandView>();
-        if (hand != null)
-            hand.OnHover(this);
+        if (handView != null && !dragHandler.IsDragging)
+            handView.OnHover(this);
 
         // Show tooltip
         if (TooltipManager.Instance != null && cardBase != null)
@@ -109,9 +126,8 @@ public class CardView : MonoBehaviour
     private void OnMouseExit()
     {
         // Reset hover on hand
-        HandView hand = FindObjectOfType<HandView>();
-        if (hand != null)
-            hand.OnHoverExit(this);
+        if (handView != null && !dragHandler.IsDragging)
+            handView.OnHoverExit(this);
 
         // Hide tooltip
         if (TooltipManager.Instance != null)

@@ -15,6 +15,8 @@ namespace _Scripts.Gameplay
     
         private Vector3 screenPoint;
         private BoxCollider2D selfCol;
+        
+        public bool IsDragging => isDragging;
     
         private void Awake()
         {
@@ -81,8 +83,7 @@ namespace _Scripts.Gameplay
 
             if (target != null && target.gameObject != gameObject && cardView != null)
             {
-                cardView.UseCard(target);
-                return;
+                if (cardView.UseCard(target)) return;
             }
 
             // Snap back if invalid
