@@ -45,8 +45,7 @@ GameObject:
   - component: {fileID: 3706004249726771520}
   - component: {fileID: 8944526375707295122}
   - component: {fileID: -2353997236966639394}
-  - component: {fileID: -2903353875163973046}
-  - component: {fileID: 328533803936931853}
+  - component: {fileID: 2440125228119010233}
   m_Layer: 0
   m_Name: HealingCard
   m_TagString: Untagged
@@ -175,19 +174,7 @@ MonoBehaviour:
   energy: 1
   cardType: 0
   healAmount: 12
---- !u!114 &-2903353875163973046
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 183f78f78396cee36994f4fa2dc6f835, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_Scripts.Gameplay.CardDragHandler
---- !u!61 &328533803936931853
+--- !u!61 &2440125228119010233
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

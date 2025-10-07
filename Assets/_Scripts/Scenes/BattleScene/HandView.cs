@@ -7,15 +7,17 @@ public class HandView : MonoBehaviour
 {
     [Header("Layout")]
     [Tooltip("How far apart cards are horizontally")]
-    public float spacing = 2.5f;         // increase this for wider spacing
+    public float spacing = 1.5f;
     [Tooltip("How deep the arc bends vertically")]
-    public float curveHeight = 1.2f;     // smaller = flatter hand
+    public float curveHeight = 1.2f;
     [Tooltip("Move entire hand up/down")]
-    public float baseHeight = -5.0f;       // pushes all cards lower on screen
+    public float baseHeight = -5.0f;
     [Tooltip("Hover lift height")]
     public float liftAmount = 0.8f;
     [Tooltip("Animation speed")]
     public float animationTime = 0.25f;
+    [Tooltip("Scale of all cards in the hand")]
+    public float cardScale = 0.8f; // 1 = normal size, <1 smaller, >1 larger
 
     private readonly List<CardView> cards = new();
     private CardView hoveredCard = null;
@@ -39,22 +41,23 @@ public class HandView : MonoBehaviour
     {
         if (cards.Count == 0) yield break;
 
-        float totalWidth = Mathf.Max((cards.Count - 1) * spacing, 0.01f);
+        float totalWidth = (cards.Count - 1) * spacing;
         float startX = -totalWidth / 2f;
 
         for (int i = 0; i < cards.Count; i++)
         {
             float x = startX + i * spacing;
-            float normalized = (totalWidth == 0) ? 0f : (x / totalWidth);
+            float normalized = cards.Count > 1 ? (float)i / (cards.Count - 1) : 0.5f;
 
-            // Arc curve — smooth parabola
-            float y = baseHeight + Mathf.Cos(normalized * Mathf.PI) * curveHeight;
+            // smoother arc (using sine instead of cosine gives nicer spread)
+            float y = baseHeight + Mathf.Sin(normalized * Mathf.PI) * curveHeight;
 
             Vector3 targetPos = new Vector3(x, y, 0f);
-            Quaternion targetRot = Quaternion.Euler(0, 0, -normalized * 25f);
+            Quaternion targetRot = Quaternion.Euler(0, 0, (normalized - 0.5f) * -30f);
 
             cards[i].transform.DOLocalMove(targetPos, animationTime).SetEase(Ease.OutCubic);
             cards[i].transform.DOLocalRotateQuaternion(targetRot, animationTime).SetEase(Ease.OutCubic);
+            cards[i].transform.DOScale(Vector3.one * cardScale, animationTime).SetEase(Ease.OutCubic);
             cards[i].sortingGroup.sortingOrder = i;
         }
 
@@ -71,12 +74,12 @@ public class HandView : MonoBehaviour
             if (c == hoveredCard)
             {
                 c.transform.DOLocalMoveY(c.transform.localPosition.y + liftAmount, 0.15f);
-                c.transform.DOScale(1.1f, 0.15f);
+                c.transform.DOScale(Vector3.one * cardScale * 1.1f, 0.15f);
                 c.sortingGroup.sortingOrder = 100;
             }
             else
             {
-                c.transform.DOScale(1f, 0.15f);
+                c.transform.DOScale(Vector3.one * cardScale, 0.15f);
                 c.sortingGroup.sortingOrder = cards.IndexOf(c);
             }
         }
