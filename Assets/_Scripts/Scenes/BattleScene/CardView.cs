@@ -45,6 +45,35 @@ public class CardView : MonoBehaviour
         }
     }
 
+    public bool TryUseCardOn(Enemy enemy, Player player)
+    {
+        if (cardBase == null || player == null) return false;
+
+        if (cardBase.cardType == CardType.Attack && enemy != null)
+        {
+            cardBase.Use(player, enemy);
+            AnimateCardPlay(enemy.transform);
+            return true;
+        }
+        else if ((cardBase.cardType == CardType.Healing || cardBase.cardType == CardType.Defense) && player != null)
+        {
+            cardBase.Use(player, player);
+            AnimateCardPlay(player.transform);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void AnimateCardPlay(Transform target)
+    {
+        transform.DOMove(target.position, 0.2f)
+            .OnComplete(() =>
+            {
+                transform.DOScale(Vector3.zero, 0.1f)
+                    .OnComplete(() => gameObject.SetActive(false));
+            });
+    }
 
     // Restores compatibility with CardViewHoverSystem
     public void Setup(CardBase card)

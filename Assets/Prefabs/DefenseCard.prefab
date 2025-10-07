@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 4258840464232529573}
   - component: {fileID: 8944526375707295122}
   - component: {fileID: 1260893668401288400}
+  - component: {fileID: 4205007133653273675}
   m_Layer: 0
   m_Name: DefenseCard
   m_TagString: Untagged
@@ -86,7 +87,6 @@ MonoBehaviour:
   sortingGroup: {fileID: 3706004249726771520}
   player: {fileID: 0}
   targetEnemy: {fileID: 0}
-  hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!210 &3706004249726771520
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -196,6 +196,18 @@ MonoBehaviour:
   energy: 1
   cardType: 0
   blockAmount: 10
+--- !u!114 &4205007133653273675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 183f78f78396cee36994f4fa2dc6f835, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardDragHandler
 --- !u!1 &7734680973956290220
 GameObject:
   m_ObjectHideFlags: 0
