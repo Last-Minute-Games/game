@@ -1,35 +1,33 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Button))]
 public class EndTurnButton : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private BattleSystem battleSystem;
-    [SerializeField] private Button button;
 
-    private CanvasGroup canvasGroup;
+    private Button button;
 
     private void Awake()
     {
-        if (button == null)
-            button = GetComponent<Button>();
+        button = GetComponent<Button>();
 
         if (battleSystem == null)
             battleSystem = FindObjectOfType<BattleSystem>();
 
-        if (button != null)
-            button.onClick.AddListener(OnEndTurnClicked);
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(OnEndTurnClicked);
 
-        // 🔹 CanvasGroup lets us fade + disable interaction safely
-        canvasGroup = GetComponent<CanvasGroup>();
-        if (canvasGroup == null)
-            canvasGroup = gameObject.AddComponent<CanvasGroup>();
-    }
+        // ensure fully visible and interactable always
+        var cg = GetComponent<CanvasGroup>();
+        if (cg != null)
+        {
+            cg.alpha = 1f;
+            cg.blocksRaycasts = true;
+        }
 
-    private void OnDestroy()
-    {
-        if (button != null)
-            button.onClick.RemoveListener(OnEndTurnClicked);
+        button.interactable = true;
     }
 
     private void OnEndTurnClicked()
@@ -40,37 +38,7 @@ public class EndTurnButton : MonoBehaviour
             return;
         }
 
-        Debug.Log("⏩ Player ended turn.");
-
-        DisableButton(); // 🔹 immediately disable interaction
+        Debug.Log("⏩ Player ended turn (button always active).");
         battleSystem.EndPlayerTurn();
-    }
-
-    // ✅ Fully enable
-    public void EnableButton()
-    {
-        if (!gameObject.activeInHierarchy) gameObject.SetActive(true);
-        button.interactable = true;
-        canvasGroup.alpha = 1f;
-        canvasGroup.blocksRaycasts = true;
-
-        // 🔹 Fix: re-enable any parent canvas group that may have been disabled
-        CanvasGroup parentGroup = GetComponentInParent<CanvasGroup>();
-        if (parentGroup != null)
-        {
-            parentGroup.alpha = 1f;
-            parentGroup.blocksRaycasts = true;
-        }
-
-        Debug.Log("🟢 End Turn Button ENABLED (fully interactive again).");
-    }
-
-    // 🔒 Visually dim & block input
-    public void DisableButton()
-    {
-        button.interactable = false;
-        canvasGroup.alpha = 0.5f;
-        canvasGroup.blocksRaycasts = false;
-        Debug.Log("🔴 End Turn Button DISABLED");
     }
 }

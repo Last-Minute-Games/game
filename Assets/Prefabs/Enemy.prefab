@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 3896226808844192053, guid: f768914c40f8cfd4a9ccec2fcff7abff, type: 2}
+  - {fileID: -3194917876035781499, guid: f768914c40f8cfd4a9ccec2fcff7abff, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
   m_text: xi hua
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f768914c40f8cfd4a9ccec2fcff7abff, type: 2}
-  m_sharedMaterial: {fileID: 3896226808844192053, guid: f768914c40f8cfd4a9ccec2fcff7abff, type: 2}
+  m_sharedMaterial: {fileID: -3194917876035781499, guid: f768914c40f8cfd4a9ccec2fcff7abff, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -294,9 +294,9 @@ MonoBehaviour:
   inventory:
     items: []
   minHealth: 50
-  maxHealthRange: 150
-  minDamage: 5
-  maxDamage: 20
+  maxHealthRange: 85
+  minDamage: 8
+  maxDamage: 30
   possibleSprites: []
   healthBarPrefab: {fileID: 5486704657143754790, guid: afda42d3aed7d1ab59d13f5c91aba8f0, type: 3}
   intentionText: {fileID: 1438805219164732433}

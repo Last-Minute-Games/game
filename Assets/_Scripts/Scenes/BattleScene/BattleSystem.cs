@@ -29,7 +29,7 @@ public class BattleSystem : MonoBehaviour
 
     private IEnumerator InitializeBattle()
     {
-        yield return null; // Wait for BattlefieldLayout to finish setting up
+        yield return null; // Wait for BattlefieldLayout to finish
 
         player = FindObjectOfType<Player>();
         enemies.AddRange(FindObjectsOfType<Enemy>());
@@ -53,7 +53,7 @@ public class BattleSystem : MonoBehaviour
     }
 
     // ==============================
-    //  SPAWN & REFILL HAND
+    //  HAND MANAGEMENT
     // ==============================
 
     private IEnumerator SpawnStartingHand()
@@ -68,7 +68,6 @@ public class BattleSystem : MonoBehaviour
             cardObj.transform.DOMove(handSpawnPoint.position, 0.25f).SetEase(Ease.OutBack);
 
             CardView cardView = cardObj.GetComponent<CardView>();
-
             if (cardView != null)
             {
                 cardView.player = player;
@@ -102,24 +101,8 @@ public class BattleSystem : MonoBehaviour
         player.RefillEnergy();
         Debug.Log("🔹 Player’s turn started!");
 
-        // Enable visually now
-        endTurnButton?.EnableButton();
-
-        // Re-enable again next frame to guarantee EventSystem registration
-        StartCoroutine(EnsureButtonActiveNextFrame());
-
         foreach (Enemy enemy in enemies)
             enemy?.DecideNextIntention();
-    }
-
-    private IEnumerator EnsureButtonActiveNextFrame()
-    {
-        yield return null; // wait one frame
-        if (endTurnButton != null)
-        {
-            endTurnButton.EnableButton();
-            Debug.Log("🟢 End Turn Button confirmed enabled on next frame.");
-        }
     }
 
     public void EndPlayerTurn()
@@ -129,25 +112,17 @@ public class BattleSystem : MonoBehaviour
         Debug.Log("🔸 Player turn ended → Enemy turn begins...");
         playerTurn = false;
 
-        endTurnButton?.DisableButton(); // 🔹 disable once per click
-
-        StartCoroutine(HandleEndTurnFlow());
+        StartCoroutine(HandleTurnFlow());
     }
 
-    private IEnumerator HandleEndTurnFlow()
-    {
-        // 1️⃣ Discard all remaining cards and wait until they’re destroyed
-        yield return ClearHand();
-
-        // 2️⃣ Proceed to enemy phase
-        yield return EnemyTurn();
-    }
-
-    private IEnumerator EnemyTurn()
+    private IEnumerator HandleTurnFlow()
     {
         isProcessingTurn = true;
 
-        // 1️⃣ Enemies act
+        // Discard all cards
+        yield return ClearHand();
+
+        // Enemies act
         foreach (Enemy enemy in enemies)
         {
             if (enemy == null || player == null) continue;
@@ -155,14 +130,12 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
-        // 2️⃣ Short pause for pacing
+        // Wait briefly for pacing
         Debug.Log("🕒 Resetting for next round...");
         yield return new WaitForSeconds(turnResetDelay);
 
-        // 3️⃣ Discard old hand and draw new 5
+        // Draw new hand & start next turn
         yield return RefreshPlayerHand();
-
-        // 4️⃣ Begin player’s next turn
         StartPlayerTurn();
 
         isProcessingTurn = false;
