@@ -2,9 +2,9 @@
 
 public class CardVisual : MonoBehaviour
 {
-    public CharacterBase player;         // the card user
-    public CharacterBase targetEnemy;    // target enemy
-    public float doubleClickTime = 0.3f;
+    public CharacterBase player;         // The card user (can be assigned later)
+    public CharacterBase targetEnemy;    // Target enemy
+    public float doubleClickTime = 0.3f; // Time window for detecting double-click
     private float lastClickTime = -1f;
 
     private CardBase cardBase;
@@ -24,16 +24,16 @@ public class CardVisual : MonoBehaviour
     {
         float timeSinceLastClick = Time.time - lastClickTime;
 
+        // Detect double-click within allowed time
         if (timeSinceLastClick <= doubleClickTime)
         {
-            // Double-click → use card
-            if (cardBase != null && player.energy >= cardBase.energy)
+            if (cardBase != null && EnergySystem.Instance.UseEnergy(cardBase.energy))
             {
+                // Use card logic (apply effects, damage, etc.)
                 cardBase.Use(player, targetEnemy);
 
-                // Hide / remove the card after using
-                gameObject.SetActive(false); // hide
-                // OR Destroy(gameObject); // permanently remove
+                // Hide or destroy card after using
+                gameObject.SetActive(false);
             }
             else
             {
@@ -42,7 +42,7 @@ public class CardVisual : MonoBehaviour
         }
         else
         {
-            // First click → glow
+            // Single-click → highlight the card
             if (spriteRenderer != null)
                 spriteRenderer.color = glowColor;
         }
@@ -52,8 +52,15 @@ public class CardVisual : MonoBehaviour
 
     void Update()
     {
-        // Reset glow if double-click timer expired
+        // Reset highlight if the click timer expires
         if (spriteRenderer != null && Time.time - lastClickTime > doubleClickTime)
             spriteRenderer.color = originalColor;
+    }
+
+
+    void Awake()
+    {
+        cardBase = GetComponent<CardBase>();
+        Debug.Log($"Card '{name}' energy cost: {cardBase.energy}");
     }
 }
