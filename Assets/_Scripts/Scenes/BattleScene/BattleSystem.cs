@@ -102,16 +102,24 @@ public class BattleSystem : MonoBehaviour
         player.RefillEnergy();
         Debug.Log("🔹 Player’s turn started!");
 
+        // Enable visually now
+        endTurnButton?.EnableButton();
+
+        // Re-enable again next frame to guarantee EventSystem registration
+        StartCoroutine(EnsureButtonActiveNextFrame());
+
+        foreach (Enemy enemy in enemies)
+            enemy?.DecideNextIntention();
+    }
+
+    private IEnumerator EnsureButtonActiveNextFrame()
+    {
+        yield return null; // wait one frame
         if (endTurnButton != null)
         {
-            endTurnButton.gameObject.SetActive(true);  // make sure it’s active
-            endTurnButton.EnableButton();              // re-enable interactivity
+            endTurnButton.EnableButton();
+            Debug.Log("🟢 End Turn Button confirmed enabled on next frame.");
         }
-
-        // Enemies plan their next moves
-        foreach (Enemy enemy in enemies)
-            if (enemy != null)
-                enemy.DecideNextIntention();
     }
 
     public void EndPlayerTurn()
@@ -121,9 +129,8 @@ public class BattleSystem : MonoBehaviour
         Debug.Log("🔸 Player turn ended → Enemy turn begins...");
         playerTurn = false;
 
-        endTurnButton?.DisableButton();
+        endTurnButton?.DisableButton(); // 🔹 disable once per click
 
-        // 🔹 Stop everything else until the hand is cleared
         StartCoroutine(HandleEndTurnFlow());
     }
 

@@ -7,6 +7,8 @@ public class EndTurnButton : MonoBehaviour
     [SerializeField] private BattleSystem battleSystem;
     [SerializeField] private Button button;
 
+    private CanvasGroup canvasGroup;
+
     private void Awake()
     {
         if (button == null)
@@ -17,6 +19,11 @@ public class EndTurnButton : MonoBehaviour
 
         if (button != null)
             button.onClick.AddListener(OnEndTurnClicked);
+
+        // 🔹 CanvasGroup lets us fade + disable interaction safely
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
     }
 
     private void OnDestroy()
@@ -33,23 +40,37 @@ public class EndTurnButton : MonoBehaviour
             return;
         }
 
-        Debug.Log("⏩ Player skipped their turn.");
-        button.interactable = false;
+        Debug.Log("⏩ Player ended turn.");
+
+        DisableButton(); // 🔹 immediately disable interaction
         battleSystem.EndPlayerTurn();
     }
 
-    // called at start of player's turn
+    // ✅ Fully enable
     public void EnableButton()
     {
-        gameObject.SetActive(true);
+        if (!gameObject.activeInHierarchy) gameObject.SetActive(true);
         button.interactable = true;
-        Debug.Log("🟢 End Turn Button re-enabled for player.");
+        canvasGroup.alpha = 1f;
+        canvasGroup.blocksRaycasts = true;
+
+        // 🔹 Fix: re-enable any parent canvas group that may have been disabled
+        CanvasGroup parentGroup = GetComponentInParent<CanvasGroup>();
+        if (parentGroup != null)
+        {
+            parentGroup.alpha = 1f;
+            parentGroup.blocksRaycasts = true;
+        }
+
+        Debug.Log("🟢 End Turn Button ENABLED (fully interactive again).");
     }
 
-    // called when player turn ends
+    // 🔒 Visually dim & block input
     public void DisableButton()
     {
         button.interactable = false;
-        gameObject.SetActive(true); // ensure it stays visible, just dimmed
+        canvasGroup.alpha = 0.5f;
+        canvasGroup.blocksRaycasts = false;
+        Debug.Log("🔴 End Turn Button DISABLED");
     }
 }
