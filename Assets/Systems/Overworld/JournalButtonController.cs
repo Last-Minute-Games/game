@@ -1,76 +1,103 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
-[RequireComponent(typeof(Animator), typeof(CanvasGroup))]
+[RequireComponent(typeof(Animator))]
 public class JournalUI : MonoBehaviour
 {
-    [SerializeField] Button toggleButton;   // Drag your JournalButton here (optional if wiring via inspector)
-    [SerializeField] GameObject journalPanel;
+    [Header("Refs")]
+    public Button journalButton;         // hook your JournalButton here
+    public CanvasGroup journalPanel;     // the content panel that appears when open
+
+    [Header("UI Behavior")]
+    public float fadeDuration = 0.15f;   // fade for the contents
 
     Animator anim;
-    CanvasGroup cg;
     bool isOpen;
-
-    public float fadeDuration = 0.3f;      // How long the fade takes
-
-    IEnumerator FadeToAlpha(float endAlpha, float duration)
-    {
-        float startAlpha = cg.alpha;
-        float time = 0f;
-
-        while (time < duration)
-        {
-            cg.alpha = Mathf.Lerp(startAlpha, endAlpha, time / duration);
-            time += Time.deltaTime;
-            yield return null; // Wait for the next frame
-        }
-
-        cg.alpha = endAlpha; // Ensure it ends exactly at the target
-    }
 
     void Awake()
     {
         anim = GetComponent<Animator>();
-        cg = journalPanel.transform.GetComponent<CanvasGroup>();
+        Debug.Log("[JournalUI] Awake called.");
 
-        // Start closed
+        if (journalButton)
+        {
+            journalButton.onClick.AddListener(Toggle);
+            Debug.Log("[JournalUI] Journal button listener attached.");
+        }
+        else
+        {
+            Debug.LogWarning("[JournalUI] Journal button reference not assigned!");
+        }
+
         SetOpen(false, instant: true);
-
-        // Wire automatically if provided
-        if (toggleButton) toggleButton.onClick.AddListener(Toggle);
     }
 
-    public void Toggle() => SetOpen(!isOpen);
-
-    public void Open() => SetOpen(true);
-    public void Close() => SetOpen(false);
-
-    void SetOpen(bool open, bool instant = false)
+    public void Toggle()
     {
-        Debug.Log($"JournalUI SetOpen({open})");
+        Debug.Log($"[JournalUI] Toggle pressed. Current state: {(isOpen ? "Open" : "Closed")}");
+        SetOpen(!isOpen);
+    }
 
-        isOpen = open;
+    public void Open()
+    {
+        Debug.Log("[JournalUI] Open() called.");
+        SetOpen(true);
+    }
 
-        if (anim) anim.SetBool("Open", open);
+    public void Close()
+    {
+        Debug.Log("[JournalUI] Close() called.");
+        SetOpen(false);
+    }
 
-        // Make it non-clickable when closed so it doesn't block other UI
-        if (cg)
+    void SetOpen(bool value, bool instant = false)
+    {
+        Debug.Log($"[JournalUI] SetOpen called. Target state: {(value ? "Open" : "Closed")}, Instant: {instant}");
+
+        isOpen = value;
+        if (anim != null)
         {
-            cg.blocksRaycasts = open;
-            cg.interactable = open;
-
-            float targetAlpha = open ? 1f : 0f;
-
-            if (instant)
-            {
-                cg.alpha = targetAlpha;
-            }
-            else
-            {
-                StartCoroutine(FadeToAlpha(targetAlpha, fadeDuration));
-            }
-            ; // for fade-style animations; harmless if using flipbook only
+            anim.SetBool("Open", isOpen);
+            Debug.Log($"[JournalUI] Animator parameter 'Open' set to {isOpen}");
         }
+        else
+        {
+            Debug.LogError("[JournalUI] Animator reference missing!");
+        }
+
+        if (!journalPanel)
+        {
+            Debug.LogWarning("[JournalUI] No journalPanel assigned, skipping fade.");
+            return;
+        }
+
+        StopAllCoroutines();
+        StartCoroutine(FadePanel(isOpen, instant ? 0f : fadeDuration));
+    }
+
+    IEnumerator FadePanel(bool show, float dur)
+    {
+        Debug.Log($"[JournalUI] FadePanel started. Show: {show}, Duration: {dur}");
+
+        journalPanel.blocksRaycasts = show;
+        journalPanel.interactable = show;
+
+        float start = journalPanel.alpha;
+        float end = show ? 1f : 0f;
+        float t = 0f;
+
+        while (t < dur)
+        {
+            t += Time.unscaledDeltaTime;
+            float progress = dur <= 0 ? 1f : t / dur;
+            journalPanel.alpha = Mathf.Lerp(start, end, progress);
+
+            Debug.Log($"[JournalUI] Fading... progress={progress:F2}, alpha={journalPanel.alpha:F2}");
+            yield return null;
+        }
+
+        journalPanel.alpha = end;
+        Debug.Log($"[JournalUI] Fade complete. Final alpha={journalPanel.alpha:F2}");
     }
 }
