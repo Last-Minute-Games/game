@@ -15,6 +15,7 @@ public class CardVisual : MonoBehaviour
     void Awake()
     {
         cardBase = GetComponent<CardBase>();
+        Debug.Log($"Card '{name}' energy cost: {cardBase.energy}");
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
             originalColor = spriteRenderer.color;
@@ -55,12 +56,5 @@ public class CardVisual : MonoBehaviour
         // Reset highlight if the click timer expires
         if (spriteRenderer != null && Time.time - lastClickTime > doubleClickTime)
             spriteRenderer.color = originalColor;
-    }
-
-
-    void Awake()
-    {
-        cardBase = GetComponent<CardBase>();
-        Debug.Log($"Card '{name}' energy cost: {cardBase.energy}");
     }
 }
