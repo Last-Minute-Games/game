@@ -6,16 +6,18 @@ using System.Collections.Generic;
 public class BattleSystem : MonoBehaviour
 {
     [Header("Scene References")]
-    [SerializeField] private BattlefieldLayout battlefieldLayout;  // Reference to layout spawner
-    [SerializeField] private HandView handView;                    // Handles card visuals/positions
-    [SerializeField] private GameObject[] cardPrefabs;             // AttackCard, DefenseCard, HealingCard
-    [SerializeField] private Transform handSpawnPoint;             // Where to spawn cards (optional)
+    [SerializeField] private BattlefieldLayout battlefieldLayout;
+    [SerializeField] private HandView handView;
+    [SerializeField] private GameObject[] cardPrefabs;
+    [SerializeField] private Transform handSpawnPoint;
+    [SerializeField] private EndTurnButton endTurnButton;
 
     [Header("Battle Settings")]
     [SerializeField] private int startingHandSize = 5;
+    [SerializeField] private float turnResetDelay = 1.5f;
 
     private Player player;
-    private List<Enemy> enemies = new();
+    private readonly List<Enemy> enemies = new();
 
     private bool playerTurn = true;
     private bool isProcessingTurn = false;
@@ -27,30 +29,32 @@ public class BattleSystem : MonoBehaviour
 
     private IEnumerator InitializeBattle()
     {
-        // Wait a frame to ensure BattlefieldLayout has spawned everything
-        yield return null;
+        yield return null; // Wait for BattlefieldLayout to finish setting up
 
-        // Find player and enemies
         player = FindObjectOfType<Player>();
         enemies.AddRange(FindObjectsOfType<Enemy>());
 
         if (player == null)
         {
-            Debug.LogError("BattleSystem: No Player found in scene!");
+            Debug.LogError("❌ BattleSystem: No Player found in scene!");
             yield break;
         }
 
         if (enemies.Count == 0)
         {
-            Debug.LogError("BattleSystem: No Enemies found in scene!");
+            Debug.LogError("❌ BattleSystem: No Enemies found in scene!");
             yield break;
         }
 
-        Debug.Log($"BattleSystem initialized with {enemies.Count} enemies and player {player.characterName}.");
+        Debug.Log($"✅ BattleSystem initialized with {enemies.Count} enemies ({player.characterName})");
 
         yield return SpawnStartingHand();
         StartPlayerTurn();
     }
+
+    // ==============================
+    //  SPAWN & REFILL HAND
+    // ==============================
 
     private IEnumerator SpawnStartingHand()
     {
@@ -76,26 +80,62 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
+    private IEnumerator ClearHand()
+    {
+        List<GameObject> toDestroy = new();
+        foreach (Transform child in handView.transform)
+            toDestroy.Add(child.gameObject);
+
+        foreach (GameObject card in toDestroy)
+        {
+            card.transform.DOScale(Vector3.zero, 0.2f)
+                .SetEase(Ease.InBack)
+                .OnComplete(() => Destroy(card));
+        }
+
+        yield return new WaitForSeconds(0.25f);
+    }
+
+    private IEnumerator RefreshPlayerHand()
+    {
+        yield return ClearHand();
+        yield return SpawnStartingHand();
+    }
+
+    // ==============================
+    //  TURN SYSTEM
+    // ==============================
+
     private void StartPlayerTurn()
     {
         playerTurn = true;
         player.RefillEnergy();
-        Debug.Log("🔹 Player's turn started!");
+        Debug.Log("🔹 Player’s turn started!");
 
-        // Enemies decide intentions for the next round
-        foreach (Enemy enemy in enemies)
+        if (endTurnButton != null)
         {
+            endTurnButton.gameObject.SetActive(true);  // make sure it’s active
+            endTurnButton.EnableButton();              // re-enable interactivity
+        }
+
+        // Enemies plan their next moves
+        foreach (Enemy enemy in enemies)
             if (enemy != null)
                 enemy.DecideNextIntention();
-        }
     }
 
     public void EndPlayerTurn()
     {
         if (!playerTurn || isProcessingTurn) return;
 
-        Debug.Log("🔸 Player turn ended. Enemy turn begins...");
+        Debug.Log("🔸 Player turn ended → Enemy turn begins...");
         playerTurn = false;
+
+        endTurnButton?.DisableButton();
+
+        // Discard player’s hand right away (for visual feedback)
+        StartCoroutine(ClearHand());
+
         StartCoroutine(EnemyTurn());
     }
 
@@ -103,6 +143,7 @@ public class BattleSystem : MonoBehaviour
     {
         isProcessingTurn = true;
 
+        // 1️⃣ Enemies act
         foreach (Enemy enemy in enemies)
         {
             if (enemy == null || player == null) continue;
@@ -110,23 +151,16 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
-        // brief pause after enemy actions
-        yield return new WaitForSeconds(0.5f);
+        // 2️⃣ Short pause for pacing
+        Debug.Log("🕒 Resetting for next round...");
+        yield return new WaitForSeconds(turnResetDelay);
 
-        yield return RefillHand();
+        // 3️⃣ Discard old hand and draw new 5
+        yield return RefreshPlayerHand();
 
+        // 4️⃣ Begin player’s next turn
         StartPlayerTurn();
+
         isProcessingTurn = false;
-    }
-
-    private IEnumerator RefillHand()
-    {
-        Debug.Log("♻️ Refilling player's hand...");
-
-        // Clear old hand
-        foreach (Transform child in handView.transform)
-            Destroy(child.gameObject);
-
-        yield return SpawnStartingHand();
     }
 }

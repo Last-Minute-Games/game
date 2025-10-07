@@ -33,7 +33,6 @@ public class Enemy : CharacterBase
             healthBarInstance.Initialize(this);
         }
 
-        // Start with no intention
         if (intentionText != null)
             intentionText.text = "💤 Waiting...";
     }
@@ -68,7 +67,7 @@ public class Enemy : CharacterBase
             healthBarInstance.UpdateBar();
     }
 
-    // --- NEW INTENTION SYSTEM ---
+    // --- INTENTION SYSTEM ---
     public void DecideNextIntention()
     {
         int roll = Random.Range(0, 3);
@@ -91,25 +90,47 @@ public class Enemy : CharacterBase
 
     public IEnumerator ExecuteIntention(Player player)
     {
-        if (currentIntention == EnemyIntention.Attack)
+        switch (currentIntention)
         {
-            yield return new WaitForSeconds(0.5f);
-            Attack(player);
-        }
-        else if (currentIntention == EnemyIntention.Defend)
-        {
-            AddBlock(5);
-            Debug.Log($"{characterName} defends and gains 5 block!");
+            case EnemyIntention.Attack:
+                yield return new WaitForSeconds(0.4f);
+                PerformAttack(player);
+                break;
+
+            case EnemyIntention.Defend:
+                AddBlock(5);
+                Debug.Log($"{characterName} defends and gains 5 block!");
+                ShowBlockFeedback(5); // ✅ FIXED: Correct method name
+                break;
+
+            case EnemyIntention.Idle:
+                FloatingTextManager.Instance?.SpawnText(
+                    transform.position + Vector3.up * 2f,
+                    "💤 Idle",
+                    Color.gray
+                );
+                break;
         }
 
-        // Reset intention text after acting
         intentionText.text = "💤 Waiting...";
     }
 
-    public void Attack(CharacterBase target)
+    private void PerformAttack(CharacterBase target)
     {
         int damage = strength;
         Debug.Log($"{characterName} attacks {target.characterName} for {damage} damage!");
+
+        // ✅ Show floating text above the *player*, not the enemy
+        FloatingTextManager.Instance?.SpawnText(
+            target.transform.position + Vector3.up * 2f,
+            $"-{damage}",
+            Color.red
+        );
+
+        // ✅ Apply hit effects (shake, flash, etc.)
+        target.ShowDamageFeedback(damage);
+
+        // ✅ Apply actual damage
         target.TakeDamage(damage);
     }
 }
