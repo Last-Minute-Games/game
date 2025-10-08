@@ -6,7 +6,6 @@ using System.Collections;
 public class Startscreen : MonoBehaviour
 {
     public float fadeDuration = 1f;
-    public float startFadeDuration = 1.5f;
     
     private CanvasGroup _fadeCanvasGroup;
     private CanvasGroup _logoCanvasGroup;
@@ -68,14 +67,33 @@ public class Startscreen : MonoBehaviour
     {
         StartCoroutine(FadeAndLoad());
     }
+    
+    private IEnumerator FlickerButton(GameObject button, float interval)
+    {
+        bool visible = true;
+
+        // run until the fade finishes (you can break when alpha reaches 1)
+        while (_fadeCanvasGroup.alpha < 1f)
+        {
+            visible = !visible;
+            button.SetActive(visible);
+            yield return new WaitForSeconds(interval);
+        }
+
+        // make sure it's visible again at the end (optional)
+        button.SetActive(true);
+    }
 
     private IEnumerator FadeAndLoad()
     {
         quitButton.SetActive(false);
         playButton.SetActive(false);
+        
+        // start flickering the play button
+        StartCoroutine(FlickerButton(playButton, 0.3f));
 
         // Fade to black
-        yield return StartCoroutine(FadeCoroutine(_fadeCanvasGroup, 0f, 1f, startFadeDuration));
+        yield return StartCoroutine(FadeCoroutine(_fadeCanvasGroup, 0f, 1f, fadeDuration * 2.5f));
 
         // Load the next scene asynchronously while screen is black
         AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
@@ -95,10 +113,10 @@ public class Startscreen : MonoBehaviour
         Debug.Log("Quitting game...");
         Application.Quit();
 
-#if UNITY_EDITOR
-        // This makes the stop button in the editor work properly
-        UnityEditor.EditorApplication.isPlaying = false;
-#endif
+        #if UNITY_EDITOR
+                // This makes the stop button in the editor work properly
+                UnityEditor.EditorApplication.isPlaying = false;
+        #endif
     }
 }
 
