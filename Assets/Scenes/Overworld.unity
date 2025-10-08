@@ -4337,7 +4337,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 60, y: -73}
+  m_AnchoredPosition: {x: 59.98, y: -73}
   m_SizeDelta: {x: 1280, y: 720}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &510584599
@@ -56352,7 +56352,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1563426790304946574, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
       propertyPath: m_Volume
-      value: 0.75
+      value: 0.37
       objectReference: {fileID: 0}
     - target: {fileID: 1563426790304946574, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
       propertyPath: m_Resource
@@ -56422,6 +56422,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: MAIN PLAYER
       objectReference: {fileID: 0}
+    - target: {fileID: 9117445185327625466, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
+      propertyPath: concreteFs.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 9117445185327625466, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
+      propertyPath: 'concreteFs.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: e8fe925efb20f3644a1fa98a6a205ae0, type: 3}
+    - target: {fileID: 9117445185327625466, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
+      propertyPath: 'concreteFs.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 1d64ada86a3e97e44bba315ea73f88d0, type: 3}
+    - target: {fileID: 9117445185327625466, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
+      propertyPath: 'concreteFs.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: a34447c9468a2674bb1c5d036ce89659, type: 3}
+    - target: {fileID: 9117445185327625466, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
+      propertyPath: 'concreteFs.Array.data[3]'
+      value: 
+      objectReference: {fileID: 8300000, guid: bcdcb8a2a58da714bbe5dae9520b4873, type: 3}
+    - target: {fileID: 9117445185327625466, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
+      propertyPath: 'concreteFs.Array.data[4]'
+      value: 
+      objectReference: {fileID: 8300000, guid: bc29584c81ac98c4b84cd2cd4b523ec1, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

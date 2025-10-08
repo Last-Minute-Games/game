@@ -1,16 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 [RequireComponent(typeof(AudioSource))]
 public class FootstepSystem : MonoBehaviour
 {
     [Header("Footstep Sounds")]
     public List<AudioClip> woodFs;
+    public List<AudioClip> concreteFs;
 
     [Header("Settings")]
     public float stepInterval = 0.4f;   // seconds between steps while moving
     public float minSpeedForStep = 0.1f; // how fast the player must move to count as walking
 
+    private Tilemap _floorTilemap;
     private AudioSource _audioSource;
     private CharacterController2D _controller;
     private float _stepTimer;
@@ -18,6 +21,7 @@ public class FootstepSystem : MonoBehaviour
     private enum SurfaceType
     {
         Wood,
+        Concrete,
         // Add more surface types here
     }
 
@@ -32,6 +36,9 @@ public class FootstepSystem : MonoBehaviour
             Debug.LogError("[FootstepSystem] No AudioSource component found!");
         if (_controller == null)
             Debug.LogError("[FootstepSystem] No CharacterController2D found!");
+        
+        // Find the ground tilemap in the scene
+        _floorTilemap = GameObject.Find("Floor")?.GetComponent<Tilemap>();
     }
 
     void Update()
@@ -65,18 +72,42 @@ public class FootstepSystem : MonoBehaviour
     {
         AudioClip clip = null;
 
+        Vector3Int cellPosition = _floorTilemap.WorldToCell(transform.position);
+        TileBase tile = _floorTilemap.GetTile(cellPosition);
+        if (tile)
+        {
+            // Here you could check tile properties to determine surface type
+            // For simplicity, we assume all tiles in this tilemap are wood
+                
+            // print tile name
+            Debug.Log("[FootstepSystem] Stepping on tile: " + tile.name);
+
+            var loweredName = tile.name.ToLower();
+            
+            if (loweredName.Contains("wood"))
+            {
+                _surfaceType = SurfaceType.Wood;
+            } else if (loweredName.Contains("concrete") || loweredName.Contains("marble"))
+            {
+                _surfaceType = SurfaceType.Concrete;
+            }
+        }
+
         switch (_surfaceType)
         {
             case SurfaceType.Wood:
-                if (woodFs.Count > 0)
-                {
-                    int index = Random.Range(0, woodFs.Count);
-                    clip = woodFs[index];
-                }
+                clip = woodFs[Random.Range(0, woodFs.Count)];
+                break;
+            case SurfaceType.Concrete:
+                clip = concreteFs[Random.Range(0, concreteFs.Count)];
                 break;
         }
 
-        if (clip != null)
+        if (clip)
+        {
+            // RANDOMIZE PITCH
+            _audioSource.pitch = Random.Range(0.9f, 1.1f); 
             _audioSource.PlayOneShot(clip);
+        }
     }
 }

@@ -8,6 +8,8 @@ public class JournalUI : MonoBehaviour
     [Header("Refs")]
     public Button journalButton;         // hook your JournalButton here
     public CanvasGroup journalPanel;     // the content panel that appears when open
+    
+    private EnvironmentSoundHandler _environmentSoundHandler; 
 
     [Header("UI Behavior")]
     public float fadeDuration = 0.15f;   // fade for the contents
@@ -17,6 +19,8 @@ public class JournalUI : MonoBehaviour
 
     void Awake()
     {
+        _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
+        
         anim = GetComponent<Animator>();
         Debug.Log("[JournalUI] Awake called.");
 
@@ -55,6 +59,8 @@ public class JournalUI : MonoBehaviour
     {
         Debug.Log($"[JournalUI] SetOpen called. Target state: {(value ? "Open" : "Closed")}, Instant: {instant}");
 
+        _environmentSoundHandler.PlayJournalSound(value);
+        
         isOpen = value;
         if (anim != null)
         {
