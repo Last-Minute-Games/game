@@ -2,19 +2,17 @@ using UnityEngine;
 
 public class EnvironmentSoundHandler : MonoBehaviour
 {
-    public AudioSource environmentAudioSource;
-    
-    private AudioClip _doorCloseClip;
+    private AudioSource _doorAudioSource;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        environmentAudioSource = GetComponent<AudioSource>();
+        // get by name in children
+        _doorAudioSource = transform.Find("DoorAudioSource").GetComponent<AudioSource>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void PlayDoorSound()
     {
-        
+        _doorAudioSource.Play();
     }
 }
