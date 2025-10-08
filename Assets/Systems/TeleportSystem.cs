@@ -18,6 +18,8 @@ namespace Systems
         
         private CanvasGroup _fadeCanvasGroup;
         
+        private EnvironmentSoundHandler _environmentSoundHandler;
+        
         private BoxCollider2D _tptCollider;
         private BoxCollider2D _newCollider;
         
@@ -47,6 +49,8 @@ namespace Systems
             _newCollider = gameObject.AddComponent<BoxCollider2D>();
             _newCollider.isTrigger = false;
             _newCollider.size = Vector2.one * 0.99f;
+            
+            _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
         }
         
         private IEnumerator FadeOut()
@@ -99,6 +103,7 @@ namespace Systems
 
         private void OnEnter()
         {
+            _environmentSoundHandler.PlayDoorSound();
             StartCoroutine(TeleportWithFade(_characterCollider2D));
         }
         
