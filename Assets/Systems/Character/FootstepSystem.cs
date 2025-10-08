@@ -15,7 +15,7 @@ public class FootstepSystem : MonoBehaviour
 
     private Tilemap _floorTilemap;
     private AudioSource _audioSource;
-    private CharacterController2D _controller;
+    private CharacterMotor2D _controller;
     private float _stepTimer;
 
     private enum SurfaceType
@@ -30,7 +30,7 @@ public class FootstepSystem : MonoBehaviour
     void Start()
     {
         _audioSource = GetComponent<AudioSource>();
-        _controller = GetComponent<CharacterController2D>(); // same GameObject
+        _controller = GetComponent<CharacterMotor2D>(); // same GameObject
 
         if (_audioSource == null)
             Debug.LogError("[FootstepSystem] No AudioSource component found!");
@@ -93,15 +93,12 @@ public class FootstepSystem : MonoBehaviour
             }
         }
 
-        switch (_surfaceType)
-        {
-            case SurfaceType.Wood:
-                clip = woodFs[Random.Range(0, woodFs.Count)];
-                break;
-            case SurfaceType.Concrete:
-                clip = concreteFs[Random.Range(0, concreteFs.Count)];
-                break;
-        }
+        clip = _surfaceType switch
+        {   
+            SurfaceType.Wood => woodFs[Random.Range(0, woodFs.Count)],
+            SurfaceType.Concrete => concreteFs[Random.Range(0, concreteFs.Count)],
+            _ => null
+        };
 
         if (clip)
         {

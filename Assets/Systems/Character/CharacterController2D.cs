@@ -1,96 +1,78 @@
-using Unity.Cinemachine;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
-
-public class CharacterController2D : MonoBehaviour
+[RequireComponent(typeof(Rigidbody2D), typeof(Animator))]
+public class CharacterMotor2D : MonoBehaviour
 {
     private static readonly int Horizontal = Animator.StringToHash("horizontal");
-    private static readonly int Vertical = Animator.StringToHash("vertical");
-    private Rigidbody2D _rigidbody2d;
-    
-    [SerializeField] float speed = 2f;
+    private static readonly int Vertical   = Animator.StringToHash("vertical");
 
-    private Vector2 _motionVector;
-    private Vector2 _lastMotionVector;
+    [SerializeField] private float speed = 2f;
 
-    private Animator _animator;
-    
-    private bool _isDialogueActive = false;
-    private bool _isTeleporting = false;
+    private Rigidbody2D _rb;
+    private Animator _anim;
+
+    private Vector2 _moveInput;
+    private Vector2 _lastMotion;
+    private bool _isDialogueActive;
+    private bool _isTeleporting;
+
+    void Awake()
+    {
+        _rb = GetComponent<Rigidbody2D>();
+        _anim = GetComponent<Animator>();
+        _rb.freezeRotation = true;
+    }
+
+    void Update()
+    {
+        if (_isDialogueActive || _isTeleporting)
+            return;
+
+        // Animate
+        if (_moveInput.sqrMagnitude < 0.0001f)
+        {
+            _anim.speed = 0f;
+            _anim.SetFloat(Horizontal, _lastMotion.x);
+            _anim.SetFloat(Vertical,   _lastMotion.y);
+        }
+        else
+        {
+            _anim.speed = 1f;
+            _anim.SetFloat(Horizontal, _moveInput.x);
+            _anim.SetFloat(Vertical,   _moveInput.y);
+            _lastMotion = _moveInput;
+        }
+    }
+
+    void FixedUpdate()
+    {
+        // Move using physics
+        _rb.linearVelocity = _moveInput.normalized * speed; // use .velocity if your Unity doesn't have linearVelocity
+    }
 
     private void StopMovement()
     {
-        _motionVector = Vector2.zero;
-        _animator.speed = 0f;
-        _rigidbody2d.linearVelocity = Vector2.zero;
-    }
-    
-    public void SetDialogueActive(bool active) {
-        _isDialogueActive = active;
-        
-        if (active)
-        {
-            StopMovement();
-        } else {
-            _animator.speed = 1f;
-        }
+        _moveInput = Vector2.zero;
+        _anim.speed = 0f;
+        _rb.linearVelocity = Vector2.zero;
     }
 
-    public bool IsDialogueActive => _isDialogueActive;
-    
-    public void SetTeleporting(bool teleporting) {
-        _isTeleporting = teleporting;
-        
-        if (teleporting) {
-            StopMovement();
-        } else {
-            _animator.speed = 1f;
-        }
+    // ===== Public API =====
+    public void SetMoveInput(Vector2 input) => _moveInput = input;
+
+    public void SetDialogueActive(bool active)
+    {
+        _isDialogueActive = active;
+        if (active) StopMovement(); else _anim.speed = 1f;
     }
-    
+    public bool IsDialogueActive => _isDialogueActive;
+
+    public void SetTeleporting(bool t)
+    {
+        _isTeleporting = t;
+        if (t) StopMovement(); else _anim.speed = 1f;
+    }
     public bool IsTeleporting => _isTeleporting;
 
-    // Awake is called once before the first execution of Update after the MonoBehaviour is created
-    void Awake()
-    {
-        _rigidbody2d = GetComponent<Rigidbody2D>();
-        _animator = GetComponent<Animator>();
-        _rigidbody2d.freezeRotation = true;
-    }
-
-    private void Update()
-    {
-        if (_isDialogueActive || _isTeleporting) return;
-        
-        _motionVector = new Vector2(
-            Input.GetAxisRaw("Horizontal"),
-            Input.GetAxisRaw("Vertical")
-        );
-
-        if (_motionVector is { x: 0, y: 0 }) {
-            // Debug.Log(lastMotionVector);
-            _animator.speed = 0f;
-            _animator.SetFloat(Horizontal, _lastMotionVector.x);
-            _animator.SetFloat(Vertical, _lastMotionVector.y);
-        } else {
-            _animator.SetFloat(Horizontal, _motionVector.x);
-            _animator.SetFloat(Vertical, _motionVector.y);
-            _animator.speed = 1f;
-
-            _lastMotionVector = _motionVector;
-        }
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        Move();
-    }
-
-    private void Move()
-    {
-        // Use velocity to allow Unity physics to handle collisions
-        _rigidbody2d.linearVelocity = _motionVector.normalized * speed;
-    }
+    public void SetSpeed(float newSpeed) => speed = newSpeed;
 }

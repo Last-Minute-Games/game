@@ -14,14 +14,14 @@ public class DialogTrigger : MonoBehaviour
     private readonly float _interactionRange = 1f;       // Distance from player to trigger
     
     private GameObject _player;                  // Assign the Player transform in Inspector
-    private CharacterController2D _characterController;
+    private CharacterMotor2D _characterController;
     
     private bool _isPlayerNear = false;
 
     private void Start()
     {
         _player = GameObject.FindGameObjectWithTag("Player");
-        _characterController = _player.GetComponent<CharacterController2D>();
+        _characterController = _player.GetComponent<CharacterMotor2D>();
         
         dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
         dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
