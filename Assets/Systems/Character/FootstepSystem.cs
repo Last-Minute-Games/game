@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 [RequireComponent(typeof(AudioSource))]
 public class FootstepSystem : MonoBehaviour
 {
-    [Header("Footstep Sounds")]
+    [Header("Footstep Sounds")] 
     public List<AudioClip> woodFs;
     public List<AudioClip> concreteFs;
 
