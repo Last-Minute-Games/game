@@ -6,12 +6,62 @@ using System.Collections;
 public class Startscreen : MonoBehaviour
 {
     public float fadeDuration = 1f;
+    public float startFadeDuration = 1.5f;
+    
     private CanvasGroup _fadeCanvasGroup;
+    private CanvasGroup _logoCanvasGroup;
+    
     public GameObject playButton;
+    public GameObject quitButton;
+    
+    private IEnumerator FadeCoroutine(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration)
+    {
+        float timer = 0f;
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            canvasGroup.alpha = Mathf.Lerp(startAlpha, endAlpha, timer / duration);
+            yield return null;
+        }
+        canvasGroup.alpha = endAlpha;
+    }
+
+    private void FadeCanvasGroup(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration)
+    {
+        StartCoroutine(FadeCoroutine(canvasGroup, startAlpha, endAlpha, duration));
+    }
+
+    private IEnumerator LogoStartup()
+    {
+        yield return new WaitForSeconds(1f);
+
+        FadeCanvasGroup(_logoCanvasGroup, 0f, 1f, fadeDuration);
+        
+        _logoCanvasGroup.alpha = 1f;
+        
+        yield return new WaitForSeconds(fadeDuration + 3f);
+        
+        FadeCanvasGroup(_logoCanvasGroup, 1f, 0f, fadeDuration);
+        
+        yield return new WaitForSeconds(fadeDuration + 0.5f);
+        _logoCanvasGroup.gameObject.SetActive(false);
+        
+        FadeCanvasGroup(_fadeCanvasGroup, 1f, 0f, 2f);
+        
+    }
+    
     void Start()
     {
+        playButton = GameObject.Find("PlayButton");
+        quitButton = GameObject.Find("QuitButton");
+        
         _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
-        _fadeCanvasGroup.alpha = 0f; // Start transparent
+        _fadeCanvasGroup.alpha = 1f; // Start transparent
+        
+        _logoCanvasGroup = GameObject.Find("LogoCanvasGroup").GetComponent<CanvasGroup>();
+        _logoCanvasGroup.alpha = 0f; // Start transparent
+        
+        StartCoroutine(LogoStartup());
     }
 
     public void StartGame()
@@ -21,15 +71,23 @@ public class Startscreen : MonoBehaviour
 
     private IEnumerator FadeAndLoad()
     {
-        float timer = 0f;
-        while (timer < fadeDuration)
-        {
-            timer += Time.deltaTime;
-            _fadeCanvasGroup.alpha = timer / fadeDuration;
+        quitButton.SetActive(false);
+        playButton.SetActive(false);
+
+        // Fade to black
+        yield return StartCoroutine(FadeCoroutine(_fadeCanvasGroup, 0f, 1f, startFadeDuration));
+
+        // Load the next scene asynchronously while screen is black
+        AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
+        op.allowSceneActivation = true; // or set false if you want to gate activation
+
+        // Optionally wait until load is done (it’s already black)
+        while (!op.isDone)
             yield return null;
-        }
-        _fadeCanvasGroup.alpha = 1f;
-        SceneManager.LoadScene("Overworld");
+
+        // If you want to fade back in *after* the new scene is ready,
+        // you’ll need a fade canvas in the new scene too, or mark this object as persistent:
+        // DontDestroyOnLoad(gameObject);  (then manage the fade-out there)
     }
 
     public void QuitGame()
