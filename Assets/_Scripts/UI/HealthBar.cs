@@ -30,10 +30,12 @@ public class HealthBar : MonoBehaviour
 
     void LateUpdate()
     {
-        if (character != null)
+        if (character == null)
         {
-            transform.position = character.transform.position + offset;
-            UpdateBar();
+            Destroy(gameObject);
+            return;
         }
+        transform.position = character.transform.position + offset;
+        UpdateBar();
     }
 }
