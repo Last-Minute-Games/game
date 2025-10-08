@@ -55295,9 +55295,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 599872bd5c5c23a4f97c1c6c18ef941d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  closedChest: {fileID: 1087610445}
-  openedChest: {fileID: 1117903159}
-  opened: 0
 --- !u!4 &2062173390
 Transform:
   m_ObjectHideFlags: 0
@@ -56467,6 +56464,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: MAIN PLAYER
       objectReference: {fileID: 0}
+    - target: {fileID: 8621084691326582383, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
+      propertyPath: doorOpenClip
+      value: 
+      objectReference: {fileID: 8300000, guid: bb577a9331ea15544b4d2168ce72d743, type: 3}
+    - target: {fileID: 8621084691326582383, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
+      propertyPath: journalOpenClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0c60c03741c7b5a439e086e2f094b9ac, type: 3}
+    - target: {fileID: 8621084691326582383, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
+      propertyPath: journalCloseClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 090c1c86c23130843b4534794d4a423f, type: 3}
     - target: {fileID: 9117445185327625466, guid: 07b8cae8563c1db43b0dad660f14a413, type: 3}
       propertyPath: concreteFs.Array.size
       value: 5
