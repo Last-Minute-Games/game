@@ -4,7 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterMotor2D))]
 public class NpcBrain2D : MonoBehaviour
 {
-    public enum NpcMode { Idle, Patrol, Wander, Follow }
+    public enum NpcMode { Idle, Patrol, Wander, Follow, Manual }
 
     [Header("Mode")]
     public NpcMode mode = NpcMode.Patrol;
@@ -73,6 +73,21 @@ public class NpcBrain2D : MonoBehaviour
         }
 
         _motor.SetMoveInput(_desiredMove);
+    }
+    
+    public IEnumerator MoveToPosition(Vector2 target)
+    {
+        if (_motor.IsDialogueActive || _motor.IsTeleporting)
+            yield break;
+        
+        while (Vector2.Distance(transform.position, target) > 0.1f)
+        {
+            var to = (target - (Vector2)transform.position).normalized;
+            _desiredMove = to;
+            yield return null;
+        }
+        
+        _desiredMove = Vector2.zero;
     }
 
     private void PatrolTick()
