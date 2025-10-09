@@ -109,9 +109,9 @@ namespace Systems
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (other.CompareTag("Player"))
-            {
-                OnEnter();
+            if (other.CompareTag("NPC"))
+            {   
+                other.transform.position = tptTo.transform.position + new Vector3(direction.x, direction.y, 0) * 1.5f;
             }
         }
         

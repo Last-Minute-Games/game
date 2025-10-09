@@ -43,7 +43,7 @@ public class FootstepSystem : MonoBehaviour
 
     void Update()
     {
-        if (_controller == null || _audioSource == null) return;
+        if (!_controller || !_audioSource) return;
 
         // Skip if in dialogue/teleport or not moving
         if (_controller.IsDialogueActive || _controller.IsTeleporting) return;
