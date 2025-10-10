@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 [RequireComponent(typeof(AudioSource))]
 public class FootstepSystem : MonoBehaviour
 {
-    [Header("Footstep Sounds")]
+    [Header("Footstep Sounds")] 
     public List<AudioClip> woodFs;
     public List<AudioClip> concreteFs;
 
@@ -15,7 +15,7 @@ public class FootstepSystem : MonoBehaviour
 
     private Tilemap _floorTilemap;
     private AudioSource _audioSource;
-    private CharacterController2D _controller;
+    private CharacterMotor2D _controller;
     private float _stepTimer;
 
     private enum SurfaceType
@@ -30,7 +30,7 @@ public class FootstepSystem : MonoBehaviour
     void Start()
     {
         _audioSource = GetComponent<AudioSource>();
-        _controller = GetComponent<CharacterController2D>(); // same GameObject
+        _controller = GetComponent<CharacterMotor2D>(); // same GameObject
 
         if (_audioSource == null)
             Debug.LogError("[FootstepSystem] No AudioSource component found!");
@@ -43,7 +43,7 @@ public class FootstepSystem : MonoBehaviour
 
     void Update()
     {
-        if (_controller == null || _audioSource == null) return;
+        if (!_controller || !_audioSource) return;
 
         // Skip if in dialogue/teleport or not moving
         if (_controller.IsDialogueActive || _controller.IsTeleporting) return;
@@ -93,15 +93,12 @@ public class FootstepSystem : MonoBehaviour
             }
         }
 
-        switch (_surfaceType)
-        {
-            case SurfaceType.Wood:
-                clip = woodFs[Random.Range(0, woodFs.Count)];
-                break;
-            case SurfaceType.Concrete:
-                clip = concreteFs[Random.Range(0, concreteFs.Count)];
-                break;
-        }
+        clip = _surfaceType switch
+        {   
+            SurfaceType.Wood => woodFs[Random.Range(0, woodFs.Count)],
+            SurfaceType.Concrete => concreteFs[Random.Range(0, concreteFs.Count)],
+            _ => null
+        };
 
         if (clip)
         {

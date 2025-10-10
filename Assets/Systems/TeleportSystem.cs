@@ -1,4 +1,4 @@
-using System.Collections;
+    using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -11,7 +11,7 @@ namespace Systems
         public Vector3 direction;
         
         private GameObject _player;
-        private CharacterController2D _characterController2D;
+        private CharacterMotor2D _characterController2D;
         private BoxCollider2D _characterCollider2D;
         
         private CinemachinePositionComposer _cinemachinePositionComposer;
@@ -39,7 +39,7 @@ namespace Systems
             _tptCollider.isTrigger = true;
             
             _player = GameObject.FindGameObjectWithTag("Player");
-            _characterController2D = _player.GetComponent<CharacterController2D>();
+            _characterController2D = _player.GetComponent<CharacterMotor2D>();
             _characterCollider2D = _player.GetComponent<BoxCollider2D>();
             
             // Cinemachine
@@ -105,6 +105,14 @@ namespace Systems
         {
             _environmentSoundHandler.PlayDoorSound();
             StartCoroutine(TeleportWithFade(_characterCollider2D));
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            if (other.CompareTag("NPC"))
+            {   
+                other.transform.position = tptTo.transform.position + new Vector3(direction.x, direction.y, 0) * 1.5f;
+            }
         }
         
         // Update is called once per frame
