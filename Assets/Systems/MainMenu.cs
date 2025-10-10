@@ -96,7 +96,7 @@ public class Startscreen : MonoBehaviour
         yield return StartCoroutine(FadeCoroutine(_fadeCanvasGroup, 0f, 1f, fadeDuration * 2.5f));
 
         // Load the next scene asynchronously while screen is black
-        AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
+        AsyncOperation op = SceneManager.LoadSceneAsync("NewGameIntro");
         op.allowSceneActivation = true; // or set false if you want to gate activation
 
         // Optionally wait until load is done (it’s already black)
