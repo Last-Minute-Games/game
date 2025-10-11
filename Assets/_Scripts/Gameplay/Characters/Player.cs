@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class Player : CharacterBase
 {
@@ -6,28 +7,43 @@ public class Player : CharacterBase
     public int maxEnergy = 3;
     public int currentEnergy;
 
-    [Header("Deck & Inventory (optional for later)")]
-    public GameObject cardPrefab;  
+    [Header("Deck & Inventory")]
+    public GameObject cardPrefab;
 
-    [Header("UI")]
+    [Header("UI Prefabs")]
     public GameObject healthBarPrefab;
+
+    // --- Defense Panel ---
+    private GameObject defensePanelInstance;
+    private TMP_Text defenseText;
 
     protected override void Awake()
     {
         base.Awake();
         characterName = "Player";
         currentEnergy = maxEnergy;
-        Debug.Log($"{characterName} initialized with {currentEnergy} energy and {maxHealth} HP.");
 
+        // Health Bar
         if (healthBarPrefab != null)
         {
             var barObj = Instantiate(healthBarPrefab);
             healthBarInstance = barObj.GetComponent<HealthBar>();
             healthBarInstance.Initialize(this);
+
+            // Find DefensePanel inside HealthBar
+            Transform defensePanel = barObj.transform.Find("DefensePanel");
+            if (defensePanel != null)
+            {
+                defensePanelInstance = defensePanel.gameObject;
+                defenseText = defensePanel.Find("DefenseText").GetComponent<TMP_Text>();
+
+                // Initialize
+                defenseText.text = "0";
+                defensePanelInstance.SetActive(false);
+            }
         }
     }
 
-    // --- ENERGY SYSTEM INTEGRATION ---
     public bool UseEnergy(int amount)
     {
         if (EnergySystem.Instance == null) return false;
@@ -39,7 +55,7 @@ public class Player : CharacterBase
             return true;
         }
 
-        Debug.Log($"{characterName} doesn’t have enough energy! ({EnergySystem.Instance.currentEnergy}/{EnergySystem.Instance.maxEnergy})");
+        Debug.Log($"{characterName} doesn’t have enough energy!");
         return false;
     }
 
@@ -52,17 +68,11 @@ public class Player : CharacterBase
         Debug.Log($"{characterName}'s energy refilled to {currentEnergy}/{maxEnergy}");
     }
 
-    // --- BASIC ACTIONS ---
     public void Attack(CharacterBase target)
     {
-        if (target == null)
-        {
-            Debug.LogWarning("No target to attack!");
-            return;
-        }
+        if (target == null) return;
 
         int damage = strength;
-        Debug.Log($"{characterName} attacks {target.characterName} for {damage} damage!");
         target.TakeDamage(damage);
     }
 
@@ -73,18 +83,40 @@ public class Player : CharacterBase
         if (UseEnergy(card.energy))
         {
             card.Use(this, target);
-            Debug.Log($"{characterName} successfully played {card.cardName}");
-        }
-        else
-        {
-            Debug.Log("Not enough energy to play this card!");
         }
     }
 
-    // --- OPTIONAL ---
-    public void EndTurn()
+    public override void AddBlock(int amount)
     {
-        RefillEnergy();
-        Debug.Log("Player turn ended. Energy refilled.");
+        base.AddBlock(amount);
+
+        if (defensePanelInstance != null)
+        {
+            defensePanelInstance.SetActive(block > 0);
+            defenseText.text = block.ToString();
+        }
+    }
+
+    public override void TakeDamage(int amount)
+    {
+        base.TakeDamage(amount);
+
+        if (defensePanelInstance != null)
+        {
+            defensePanelInstance.SetActive(block > 0);
+            defenseText.text = block.ToString();
+        }
+    }
+
+    public override void ShowBlockFeedback(int amount)
+    {
+        base.ShowBlockFeedback(amount);
+
+        // Update shield for player
+        if (activeShield == null && shieldPrefab != null)
+        {
+            activeShield = Instantiate(shieldPrefab, Vector3.zero, Quaternion.identity);
+            activeShield.transform.localScale = Vector3.one * 5f;
+        }
     }
 }
