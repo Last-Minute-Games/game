@@ -19,7 +19,7 @@ public class JournalUI_Named : MonoBehaviour
     {
         if (!cg) cg = GetComponent<CanvasGroup>();
         allPages = new[] { CharactersPage, EvidencePage, InformationPage, MonstersPage, TutorialsPage };
-
+        SetOnly(CharactersPage);
 
     }
 
