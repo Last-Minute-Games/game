@@ -405,7 +405,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 54.299988, y: 73.100006}
+  m_AnchoredPosition: {x: 54.299927, y: 73.099976}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &233020643
@@ -1239,6 +1239,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BattlefieldLayout
   playerPrefab: {fileID: 753829383109311850, guid: af4d270afe9c7844ebf8a57dc8dd84b1, type: 3}
   enemyPrefab: {fileID: 3708321511512314943, guid: d5609b73670f67a458f277721f09b5dd, type: 3}
+  shieldPrefab: {fileID: 538681123488107889, guid: ea0b062a0f1b38944b7da114e8179cee, type: 3}
   enemyCount: 3
   enemySpacing: 2.5
   enemyStartPos: {x: 6, y: 0, z: 0}
@@ -1752,7 +1753,7 @@ Transform:
   m_GameObject: {fileID: 1789266933}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.2, y: 0.21, z: 0}
+  m_LocalPosition: {x: -0, y: 0.23, z: 0}
   m_LocalScale: {x: 0.9203362, y: 0.77839625, z: 1.5864173}
   m_ConstrainProportionsScale: 0
   m_Children: []

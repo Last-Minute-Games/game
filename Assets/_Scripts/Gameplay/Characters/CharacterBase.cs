@@ -1,6 +1,5 @@
 using DG.Tweening;
 using UnityEngine;
-using DG.Tweening;
 
 public abstract class CharacterBase : MonoBehaviour
 {
@@ -16,10 +15,14 @@ public abstract class CharacterBase : MonoBehaviour
     public int defense = 0;   // bonus for defense cards
 
     [Header("Inventory")]
-    public Inventory inventory; // optional (hook later)
+    public Inventory inventory; // optional
 
     [Header("UI")]
     protected HealthBar healthBarInstance;
+
+    [Header("Shield Visual")]
+    public GameObject shieldPrefab; // Assign in Inspector
+    protected GameObject activeShield;
 
     protected virtual void Awake()
     {
@@ -29,9 +32,13 @@ public abstract class CharacterBase : MonoBehaviour
     public virtual void TakeDamage(int amount)
     {
         int mitigated = Mathf.Max(amount - block - defense, 0);
-        block = Mathf.Max(block - amount, 0); // block consumed first
+        int blockUsed = Mathf.Min(amount, block);
+
+        block -= blockUsed;
         currentHealth -= mitigated;
         currentHealth = Mathf.Max(currentHealth, 0);
+
+        UpdateShieldVisual();
 
         Debug.Log($"{characterName} took {mitigated} damage! HP: {currentHealth}/{maxHealth}");
 
@@ -49,6 +56,9 @@ public abstract class CharacterBase : MonoBehaviour
     {
         block += amount;
         Debug.Log($"{characterName} gains {amount} block! (Total block: {block})");
+
+        ShowBlockFeedback(amount);
+        UpdateShieldVisual();
     }
 
     protected virtual void Die()
@@ -64,6 +74,34 @@ public abstract class CharacterBase : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    protected virtual void UpdateShieldVisual()
+    {
+        // Only Player shows shield visual
+        if (!(this is Player)) return;
+
+        if (block > 0)
+        {
+            if (activeShield == null && shieldPrefab != null)
+            {
+                activeShield = Instantiate(shieldPrefab, Vector3.zero, Quaternion.identity);
+                activeShield.transform.localScale = Vector3.one * 5f;
+
+                var ps = activeShield.GetComponent<ParticleSystem>();
+                if (ps != null)
+                    ps.Play();
+            }
+        }
+        else
+        {
+            if (activeShield != null)
+            {
+                Destroy(activeShield);
+                activeShield = null;
+            }
+        }
+    }
+
+    // --- Visual Feedback ---
     public void ShowDamageFeedback(int amount)
     {
         var sr = GetComponent<SpriteRenderer>();
@@ -73,7 +111,7 @@ public abstract class CharacterBase : MonoBehaviour
         sr.DOColor(Color.red, 0.1f).OnComplete(() => sr.DOColor(baseColor, 0.2f));
         transform.DOShakePosition(0.25f, 0.3f, 15, 90);
 
-        FloatingTextManager.Instance.SpawnText(transform.position + Vector3.up, $"-{amount}", Color.red);
+        FloatingTextManager.Instance?.SpawnText(transform.position + Vector3.up, $"-{amount}", Color.red);
     }
 
     public void ShowHealFeedback(int amount)
@@ -85,17 +123,18 @@ public abstract class CharacterBase : MonoBehaviour
         sr.DOColor(Color.green, 0.1f).OnComplete(() => sr.DOColor(baseColor, 0.2f));
         transform.DOMoveY(transform.position.y + 0.2f, 0.15f).SetLoops(2, LoopType.Yoyo);
 
-        FloatingTextManager.Instance.SpawnText(transform.position + Vector3.up, $"+{amount}", Color.green);
+        FloatingTextManager.Instance?.SpawnText(transform.position + Vector3.up, $"+{amount}", Color.green);
     }
 
-    public void ShowBlockFeedback(int amount)
+    public virtual void ShowBlockFeedback(int amount)
     {
+        // Default feedback; can be overridden in Player
         var sr = GetComponent<SpriteRenderer>();
         if (sr == null) return;
 
         sr.DOColor(Color.cyan, 0.1f).OnComplete(() => sr.DOColor(Color.white, 0.2f));
         transform.DOMoveY(transform.position.y + 0.2f, 0.15f).SetLoops(2, LoopType.Yoyo);
 
-        FloatingTextManager.Instance.SpawnText(transform.position + Vector3.up, $"+{amount} Block", Color.cyan);
+        FloatingTextManager.Instance?.SpawnText(transform.position + Vector3.up, $"+{amount} Block", Color.cyan);
     }
 }

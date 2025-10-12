@@ -6,6 +6,9 @@ public class BattlefieldLayout : MonoBehaviour
     public GameObject playerPrefab;
     public GameObject enemyPrefab;      // switched to GameObject for reliability
 
+    [Header("Shield Prefab")]
+    public GameObject shieldPrefab;
+
     [Header("Enemy Spawn Settings")]
     public int enemyCount = 3;
     public float enemySpacing = 2.5f;
@@ -37,7 +40,12 @@ public class BattlefieldLayout : MonoBehaviour
 
         CharacterBase playerChar = player.GetComponent<CharacterBase>();
         if (playerChar != null)
+        {
             playerChar.characterName = "Player";
+
+            if (shieldPrefab != null)
+                playerChar.shieldPrefab = shieldPrefab;
+        }
     }
 
     private void SpawnEnemies()
