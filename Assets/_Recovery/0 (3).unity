@@ -665,6 +665,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0e7c9edfb746c9409286052ee121315, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JournalButtonController
+  journalButton: {fileID: 0}
+  journalPanel: {fileID: 0}
+  fadeDuration: 0.15
 --- !u!1 &149834173
 GameObject:
   m_ObjectHideFlags: 0
@@ -23248,7 +23251,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 3.375, y: 4}
+    oldSize: {x: 3.375, y: 2.5625}
     newSize: {x: 0.56, y: 0.66}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -23811,7 +23814,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 3.375, y: 4}
+    oldSize: {x: 3.375, y: 2.5625}
     newSize: {x: 3.5, y: 4.125}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -32667,7 +32670,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   tptTo: {fileID: 1472050976}
-  isRight: 1
+  direction: {x: 0, y: 0, z: 0}
 --- !u!61 &1234556166
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -34222,7 +34225,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Systems.TeleportSystem
   tptTo: {fileID: 1234556163}
-  isRight: 0
+  direction: {x: 0, y: 0, z: 0}
 --- !u!222 &1472050982
 CanvasRenderer:
   m_ObjectHideFlags: 0
