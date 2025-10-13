@@ -80,7 +80,7 @@ public class FootstepSystem : MonoBehaviour
             // For simplicity, we assume all tiles in this tilemap are wood
                 
             // print tile name
-            Debug.Log("[FootstepSystem] Stepping on tile: " + tile.name);
+            // Debug.Log("[FootstepSystem] Stepping on tile: " + tile.name);
 
             var loweredName = tile.name.ToLower();
             
