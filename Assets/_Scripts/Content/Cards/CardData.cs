@@ -10,6 +10,10 @@ public class CardData : ScriptableObject
     public CardType cardType;
     public int energy = 1;
 
+    [Header("Targeting Rule")]
+    [Tooltip("Defines how this card selects its target (e.g., self, enemy, all enemies, etc.).")]
+    public TargetingRule targetingRule;
+
     [Header("Intention Display (for Enemies)")]
     public Sprite intentionIcon;
     [TextArea] public string intentionText;
