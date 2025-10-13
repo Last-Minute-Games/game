@@ -10,10 +10,10 @@ public class CharacterMotor2D : MonoBehaviour
     [SerializeField] private float speed = 2f;
 
     [Header("Idle Sprites (static frames)")]
-    [SerializeField] private Sprite idleUp;
-    [SerializeField] private Sprite idleDown;
-    [SerializeField] private Sprite idleLeft;
-    [SerializeField] private Sprite idleRight;
+    [SerializeField] public Sprite idleUp;
+    [SerializeField] public Sprite idleDown;
+    [SerializeField] public Sprite idleLeft;
+    [SerializeField] public Sprite idleRight;
 
     [Header("Direction Tuning")]
     [Tooltip("Vertical must exceed horizontal by at least this amount to count as Up/Down.")]
@@ -28,7 +28,7 @@ public class CharacterMotor2D : MonoBehaviour
     private bool _isDialogueActive;
     private bool _isTeleporting;
 
-    private enum Facing { Down, Left, Right, Up }
+    public enum Facing { Down, Left, Right, Up }
     private Facing _facing = Facing.Down;
 
     void Awake()
@@ -90,6 +90,8 @@ public class CharacterMotor2D : MonoBehaviour
             _facing = (v.x >= 0f) ? Facing.Right : Facing.Left;
         }
     }
+    
+    public Sprite forceIdleSprite;
 
     private void ApplyStaticIdle()
     {
@@ -99,13 +101,14 @@ public class CharacterMotor2D : MonoBehaviour
             _facing == Facing.Down  ? idleDown :
             _facing == Facing.Left  ? idleLeft :
                                       idleRight;
+        
+        if (forceIdleSprite)
+            target = forceIdleSprite;
 
         // Disable animator so it doesn't overwrite SpriteRenderer's sprite this frame
         if (_anim.enabled) _anim.enabled = false;
 
         _sprite.sprite = target;
-        // optional: ensure no unintended flipping while idle
-        //_sprite.flipX = false;
     }
 
     // ===== Public API =====

@@ -5,14 +5,15 @@ namespace Dialogues
 {
     public class DialogTrigger : MonoBehaviour
     {
-        [Header("Dialog Settings")]
-        [SerializeField] private DialogBehaviour dialogBehaviour; // likely shared UI
+        [Header("Dialog Settings")] [SerializeField]
+        private DialogBehaviour dialogBehaviour; // likely shared UI
+
         [SerializeField] private DialogNodeGraph dialogGraph;
         [SerializeField] private KeyCode interactKey = KeyCode.E;
 
-        [Header("Detection Settings")]
-        private readonly float _interactionRange = 1f;
+        [Header("Detection Settings")] private readonly float _interactionRange = 1f;
 
+        private CharacterMotor2D _npcController;
         private NpcBrain2D _npcBrain;
         private NpcBrain2D.NpcMode _previousMode;
 
@@ -27,7 +28,10 @@ namespace Dialogues
             _player = GameObject.FindGameObjectWithTag("Player");
             _playerController = _player.GetComponent<CharacterMotor2D>();
 
-            _npcBrain = GetComponent<NpcBrain2D>();
+            _npcController = GetComponent<CharacterMotor2D>();
+
+            if (_npcController)
+                _npcBrain = GetComponent<NpcBrain2D>();
 
             dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
             dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
@@ -43,6 +47,26 @@ namespace Dialogues
             }
         }
 
+        void FacePlayer()
+        {
+            // Get normalized direction from NPC to player
+            Vector3 currentDirection = (_player.transform.position - transform.position).normalized;
+
+            // Determine main axis of direction
+            if (Mathf.Abs(currentDirection.y) > Mathf.Abs(currentDirection.x))
+            {
+                // Vertical is dominant
+                _npcController.forceIdleSprite =
+                    currentDirection.y > 0 ? _npcController.idleUp : _npcController.idleDown;
+            }
+            else
+            {
+                // Horizontal is dominant
+                _npcController.forceIdleSprite =
+                    currentDirection.x > 0 ? _npcController.idleRight : _npcController.idleLeft;
+            }
+        }
+
         private void OnDialogStart()
         {
             // Ignore global start events unless they were initiated by THIS trigger
@@ -52,6 +76,8 @@ namespace Dialogues
             {
                 _previousMode = _npcBrain.mode;
                 _npcBrain.mode = NpcBrain2D.NpcMode.Idle;
+
+                FacePlayer();
             }
 
             if (_playerController) _playerController.SetDialogueActive(true);
@@ -65,6 +91,7 @@ namespace Dialogues
             if (_npcBrain)
             {
                 _npcBrain.mode = _previousMode;
+                _npcController.forceIdleSprite = null; // clear forced facing
             }
 
             if (_playerController) _playerController.SetDialogueActive(false);
