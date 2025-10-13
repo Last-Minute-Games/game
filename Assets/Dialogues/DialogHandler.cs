@@ -1,66 +1,102 @@
-using System;
 using cherrydev;
-using Unity.Cinemachine;
 using UnityEngine;
 
-public class DialogTrigger : MonoBehaviour
+namespace Dialogues
 {
-    [Header("Dialog Settings")]
-    [SerializeField] private DialogBehaviour dialogBehaviour;   // Drag your Dialog prefab instance here
-    [SerializeField] private DialogNodeGraph dialogGraph;       // Drag your custom DialogNodeGraph asset here
-    [SerializeField] private KeyCode interactKey = KeyCode.E;   // Default key to trigger dialog
-
-    [Header("Detection Settings")]
-    private readonly float _interactionRange = 1f;       // Distance from player to trigger
-    
-    private GameObject _player;                  // Assign the Player transform in Inspector
-    private CharacterMotor2D _characterController;
-    
-    private bool _isPlayerNear = false;
-
-    private void Start()
+    public class DialogTrigger : MonoBehaviour
     {
-        _player = GameObject.FindGameObjectWithTag("Player");
-        _characterController = _player.GetComponent<CharacterMotor2D>();
-        
-        dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
-        dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
-    }
-    
-    private void OnDialogStart()
-    {
-        _characterController.SetDialogueActive(true);
-    }
+        [Header("Dialog Settings")]
+        [SerializeField] private DialogBehaviour dialogBehaviour; // likely shared UI
+        [SerializeField] private DialogNodeGraph dialogGraph;
+        [SerializeField] private KeyCode interactKey = KeyCode.E;
 
-    private void OnDialogFinished()
-    {
-        _characterController.SetDialogueActive(false);
-    }
+        [Header("Detection Settings")]
+        private readonly float _interactionRange = 1f;
 
-    void Update()
-    {
-        // Distance-based check (if no collider)
-        if (_player)
-            _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= _interactionRange;
+        private NpcBrain2D _npcBrain;
+        private NpcBrain2D.NpcMode _previousMode;
 
-        // Listen for E press when near
-        if (_isPlayerNear && Input.GetKeyDown(interactKey))
+        private GameObject _player;
+        private CharacterMotor2D _playerController;
+
+        private bool _isPlayerNear = false;
+        private bool _isMyConversation = false; // <-- key flag
+
+        private void Start()
         {
-            if (_characterController.IsDialogueActive) return;
+            _player = GameObject.FindGameObjectWithTag("Player");
+            _playerController = _player.GetComponent<CharacterMotor2D>();
 
-            StartDialogue();
+            _npcBrain = GetComponent<NpcBrain2D>();
+
+            dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
+            dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
         }
-    }
 
-    private void StartDialogue()
-    {
-        if (dialogBehaviour && dialogGraph)
+        private void OnDestroy()
         {
-            dialogBehaviour.StartDialog(dialogGraph);
+            // Always unsubscribe to prevent ghost callbacks in the editor
+            if (dialogBehaviour)
+            {
+                dialogBehaviour.OnDialogStarted.RemoveListener(OnDialogStart);
+                dialogBehaviour.OnDialogFinished.RemoveListener(OnDialogFinished);
+            }
         }
-        else
+
+        private void OnDialogStart()
         {
-            Debug.LogWarning("DialogTrigger: Missing DialogBehaviour or DialogNodeGraph reference.");
+            // Ignore global start events unless they were initiated by THIS trigger
+            if (!_isMyConversation) return;
+
+            if (_npcBrain)
+            {
+                _previousMode = _npcBrain.mode;
+                _npcBrain.mode = NpcBrain2D.NpcMode.Idle;
+            }
+
+            if (_playerController) _playerController.SetDialogueActive(true);
+        }
+
+        private void OnDialogFinished()
+        {
+            // Only unfreeze if this NPC was the one talking
+            if (!_isMyConversation) return;
+
+            if (_npcBrain)
+            {
+                _npcBrain.mode = _previousMode;
+            }
+
+            if (_playerController) _playerController.SetDialogueActive(false);
+
+            _isMyConversation = false; // reset
+        }
+
+        void Update()
+        {
+            if (_playerController && _playerController.IsDialogueActive) return;
+
+            if (_player)
+                _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= _interactionRange;
+
+            if (_isPlayerNear && Input.GetKeyDown(interactKey))
+            {
+                StartDialogue();
+            }
+        }
+
+        private void StartDialogue()
+        {
+            if (dialogBehaviour && dialogGraph)
+            {
+                // Mark that the NEXT OnDialogStarted/Finished belongs to THIS NPC
+                _isMyConversation = true;
+                dialogBehaviour.StartDialog(dialogGraph);
+            }
+            else
+            {
+                Debug.LogWarning("DialogTrigger: Missing DialogBehaviour or DialogNodeGraph reference.");
+            }
         }
     }
 }
