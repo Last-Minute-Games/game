@@ -19,28 +19,29 @@ public class TooltipUI : MonoBehaviour
         Hide();
     }
 
-    public void Show(CardBase card)
+    public void Show(CardData data)
     {
-        if (card == null) return;
+        if (data == null) return;
 
-        titleText.text = card.cardName;
-        descriptionText.text = card.description;
-        statsText.text = $"Type: {card.cardType}\nCost: {card.energy}";
+        titleText.text = data.cardName;
+        descriptionText.text = data.description;
+        // use energyCost instead of energy (CardData uses energyCost)
+        statsText.text = $"Type: {data.cardType}\nCost: {data.energyCost}";
 
-        canvasGroup.alpha = 1;
+        canvasGroup.alpha = 1f;
         canvasGroup.blocksRaycasts = false;
         gameObject.SetActive(true);
     }
 
     public void Hide()
     {
-        canvasGroup.alpha = 0;
+        canvasGroup.alpha = 0f;
         gameObject.SetActive(false);
     }
 
     void Update()
     {
-        // Follow mouse
+        // Follow mouse position
         if (gameObject.activeSelf)
         {
             Vector2 pos = Input.mousePosition;

@@ -82,8 +82,8 @@ public class CardView : MonoBehaviour
             handView.OnHover(this);
 
         // Show tooltip
-        if (TooltipManager.Instance != null && cardBase != null)
-            TooltipManager.Instance.ShowTooltip(cardBase);
+        if (TooltipManager.Instance != null && runner != null && runner.data != null)
+            TooltipManager.Instance.ShowTooltip(runner.data);
     }
 
     private void OnMouseExit()
