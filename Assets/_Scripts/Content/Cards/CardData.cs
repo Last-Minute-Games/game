@@ -15,13 +15,14 @@ public class CardData : ScriptableObject
     [TextArea] public string intentionText;
 
     [Header("Scaling Range (Randomized Per Use)")]
-    [Tooltip("The card's random power range. For example: damage between 0.8x–1.2x of base.")]
+    [Tooltip("Random power range: e.g. 0.8x–1.2x base.")]
     public float minMultiplier = 0.9f;
     public float maxMultiplier = 1.1f;
 
     [Header("Effects")]
     public CardEffect[] effects;
 
-    [Header("Targeting")]
-    public TargetingRule targetingRule;
+    [Header("Metadata")]
+    [Tooltip("If false, the player cannot obtain or draw this card (enemy-exclusive).")]
+    public bool isPlayerUsable = true;
 }
