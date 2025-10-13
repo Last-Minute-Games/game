@@ -118,7 +118,8 @@ namespace Systems
         // Update is called once per frame
         void Update()
         {
-            if (_characterController2D.IsTeleporting) return;
+            // prevent interaction during teleport or dialogue
+            if (_characterController2D.IsTeleporting || _characterController2D.IsDialogueActive) return;
             
             if (_player)
                 _isPlayerNear = Vector3.Distance(_tptCollider.transform.position, _player.transform.position) < InteractionRange;
