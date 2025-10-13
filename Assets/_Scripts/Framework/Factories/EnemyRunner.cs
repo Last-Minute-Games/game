@@ -22,23 +22,21 @@ public class EnemyRunner : MonoBehaviour
 
         if (spawnedEnemy != null)
         {
-            // ✅ Give it its data reference
             spawnedEnemy.data = data;
 
-            // Apply appearance
-            if (data.animationSet != null && data.animationSet.idleSprite != null)
+            // Appearance
+            if (data.animationSet != null && data.animationSet.idle != null && data.animationSet.idle.Length > 0)
             {
                 SpriteRenderer sr = enemyObj.GetComponent<SpriteRenderer>();
                 if (sr != null)
-                    sr.sprite = data.animationSet.idleSprite;
+                    sr.sprite = data.animationSet.idle[0];
             }
 
-            // Basic stats from data
+            // Core stats
             spawnedEnemy.characterName = data.enemyName;
             spawnedEnemy.maxHealth = data.maxHealth;
             spawnedEnemy.currentHealth = data.maxHealth;
             spawnedEnemy.strength = data.baseDamage;
-            spawnedEnemy.defense = data.defense;
         }
     }
 }

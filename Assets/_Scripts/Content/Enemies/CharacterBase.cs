@@ -1,6 +1,10 @@
-using DG.Tweening;
 using UnityEngine;
+using DG.Tweening;
 
+/// <summary>
+/// Base class for all combat entities (Player and Enemy).
+/// Handles health, block, strength scaling, visuals, and feedback.
+/// </summary>
 public abstract class CharacterBase : MonoBehaviour
 {
     [Header("Identity")]
@@ -10,18 +14,14 @@ public abstract class CharacterBase : MonoBehaviour
     [Header("Core Stats")]
     public int maxHealth = 100;
     public int currentHealth;
-    public int block;         // temporary damage reduction
-    public int strength = 0;  // bonus for attack cards
-    public int defense = 0;   // bonus for defense cards
-
-    [Header("Inventory")]
-    public Inventory inventory; // optional
+    public int strength = 0;  // offensive scaling
+    public int block = 0;     // temporary shield, resets each turn
 
     [Header("UI")]
-    protected HealthBar healthBarInstance;
+    public HealthBar healthBarInstance;
 
-    [Header("Shield Visual")]
-    public GameObject shieldPrefab; // Assign in Inspector
+    [Header("Visuals")]
+    public GameObject shieldPrefab; // optional VFX for player only
     protected GameObject activeShield;
 
     protected virtual void Awake()
@@ -29,95 +29,136 @@ public abstract class CharacterBase : MonoBehaviour
         currentHealth = maxHealth;
     }
 
+    // ==============================
+    // DAMAGE / HEAL / BLOCK
+    // ==============================
+
+    /// <summary>
+    /// Applies incoming damage, consuming block first.
+    /// </summary>
     public virtual void TakeDamage(int amount)
     {
-        int mitigated = Mathf.Max(amount - block - defense, 0);
-        int blockUsed = Mathf.Min(amount, block);
+        if (amount <= 0) return;
 
-        block -= blockUsed;
-        currentHealth -= mitigated;
-        currentHealth = Mathf.Max(currentHealth, 0);
+        int totalDamage = amount;
 
-        UpdateShieldVisual();
+        // 1️⃣ Apply block first
+        if (block > 0)
+        {
+            int absorbed = Mathf.Min(block, totalDamage);
+            block -= absorbed;
+            totalDamage -= absorbed;
+            UpdateBlockUI();
+        }
 
-        Debug.Log($"{characterName} took {mitigated} damage! HP: {currentHealth}/{maxHealth}");
+        // 2️⃣ Apply remaining to HP
+        if (totalDamage > 0)
+        {
+            currentHealth = Mathf.Max(0, currentHealth - totalDamage);
+            healthBarInstance?.UpdateHealth(currentHealth, maxHealth);
+            ShowDamageFeedback(totalDamage);
+        }
+
+        Debug.Log($"{characterName} took {totalDamage} damage (HP {currentHealth}/{maxHealth}, Block {block})");
 
         if (currentHealth <= 0)
             Die();
     }
 
+    /// <summary>
+    /// Heals this entity, unaffected by block.
+    /// </summary>
     public virtual void Heal(int amount)
     {
-        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
-        Debug.Log($"{characterName} healed {amount}! HP: {currentHealth}/{maxHealth}");
+        if (amount <= 0) return;
+
+        currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        healthBarInstance?.UpdateHealth(currentHealth, maxHealth);
+
+        ShowHealFeedback(amount);
+        Debug.Log($"{characterName} healed {amount} (HP {currentHealth}/{maxHealth})");
     }
 
+    /// <summary>
+    /// Adds temporary block (consumed before HP).
+    /// </summary>
     public virtual void AddBlock(int amount)
     {
-        block += amount;
-        Debug.Log($"{characterName} gains {amount} block! (Total block: {block})");
+        if (amount <= 0) return;
 
+        block += amount;
+        UpdateBlockUI();
         ShowBlockFeedback(amount);
-        UpdateShieldVisual();
+
+        Debug.Log($"{characterName} gained {amount} Block (Total {block})");
     }
 
-    protected virtual void Die()
+    /// <summary>
+    /// Clears all block at end of turn.
+    /// </summary>
+    public virtual void EndTurn()
     {
-        Debug.Log($"{characterName} has fallen!");
-
-        if (healthBarInstance != null)
+        if (block > 0)
         {
-            Destroy(healthBarInstance.gameObject);
-            healthBarInstance = null;
+            block = 0;
+            UpdateBlockUI();
+            Debug.Log($"{characterName}'s Block dissipated.");
         }
+    }
 
-        gameObject.SetActive(false);
+    // ==============================
+    // UI / VISUALS
+    // ==============================
+
+    protected virtual void UpdateBlockUI()
+    {
+        if (healthBarInstance != null)
+            healthBarInstance.UpdateBlock(block);
+
+        UpdateShieldVisual();
     }
 
     protected virtual void UpdateShieldVisual()
     {
-        // Only Player shows shield visual
+        // Player-only shield particle feedback
         if (!(this is Player)) return;
 
         if (block > 0)
         {
             if (activeShield == null && shieldPrefab != null)
             {
-                activeShield = Instantiate(shieldPrefab, Vector3.zero, Quaternion.identity);
+                activeShield = Instantiate(shieldPrefab, transform);
                 activeShield.transform.localScale = Vector3.one * 5f;
 
-                var ps = activeShield.GetComponent<ParticleSystem>();
-                if (ps != null)
+                if (activeShield.TryGetComponent(out ParticleSystem ps))
                     ps.Play();
             }
         }
-        else
+        else if (activeShield != null)
         {
-            if (activeShield != null)
-            {
-                Destroy(activeShield);
-                activeShield = null;
-            }
+            Destroy(activeShield);
+            activeShield = null;
         }
     }
 
-    // --- Visual Feedback ---
-    public void ShowDamageFeedback(int amount)
+    // ==============================
+    // FEEDBACK
+    // ==============================
+
+    public virtual void ShowDamageFeedback(int amount)
     {
-        var sr = GetComponent<SpriteRenderer>();
-        if (sr == null) return;
+        if (!TryGetComponent(out SpriteRenderer sr)) return;
 
         Color baseColor = sr.color;
         sr.DOColor(Color.red, 0.1f).OnComplete(() => sr.DOColor(baseColor, 0.2f));
-        transform.DOShakePosition(0.25f, 0.3f, 15, 90);
+        transform.DOShakePosition(0.25f, 0.25f, 15, 90);
 
         FloatingTextManager.Instance?.SpawnText(transform.position + Vector3.up, $"-{amount}", Color.red);
     }
 
-    public void ShowHealFeedback(int amount)
+    public virtual void ShowHealFeedback(int amount)
     {
-        var sr = GetComponent<SpriteRenderer>();
-        if (sr == null) return;
+        if (!TryGetComponent(out SpriteRenderer sr)) return;
 
         Color baseColor = sr.color;
         sr.DOColor(Color.green, 0.1f).OnComplete(() => sr.DOColor(baseColor, 0.2f));
@@ -128,13 +169,28 @@ public abstract class CharacterBase : MonoBehaviour
 
     public virtual void ShowBlockFeedback(int amount)
     {
-        // Default feedback; can be overridden in Player
-        var sr = GetComponent<SpriteRenderer>();
-        if (sr == null) return;
+        if (!TryGetComponent(out SpriteRenderer sr)) return;
 
         sr.DOColor(Color.cyan, 0.1f).OnComplete(() => sr.DOColor(Color.white, 0.2f));
-        transform.DOMoveY(transform.position.y + 0.2f, 0.15f).SetLoops(2, LoopType.Yoyo);
+        transform.DOMoveY(transform.position.y + 0.15f, 0.1f).SetLoops(2, LoopType.Yoyo);
 
         FloatingTextManager.Instance?.SpawnText(transform.position + Vector3.up, $"+{amount} Block", Color.cyan);
+    }
+
+    // ==============================
+    // DEATH
+    // ==============================
+
+    protected virtual void Die()
+    {
+        Debug.Log($"{characterName} has fallen.");
+
+        if (healthBarInstance != null)
+            Destroy(healthBarInstance.gameObject);
+
+        if (activeShield != null)
+            Destroy(activeShield);
+
+        gameObject.SetActive(false);
     }
 }

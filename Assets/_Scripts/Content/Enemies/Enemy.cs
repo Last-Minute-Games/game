@@ -151,5 +151,8 @@ public class Enemy : CharacterBase
             intentionText.text = "Waiting...";
 
         animator?.PlayFloat();
+
+        // Behavior evolution for next turn
+        data.ModifyBehavior(currentCard);
     }
 }

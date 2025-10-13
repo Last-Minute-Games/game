@@ -28,6 +28,31 @@ public class EnemyData : ScriptableObject
     [Header("Behavior Evolution")]
     [Tooltip("Multiplier applied to weighted cards marked 'prioritize when low HP' when enemy health ≤ ⅓ max.")]
     public float lowHPWeightMultiplier = 1.5f;
+
+
+    public void ModifyBehavior(CardData lastUsedCard)
+    {
+        if (lastUsedCard == null) return;
+
+        foreach (var entry in availableCards)
+        {
+            if (entry.card == null) continue;
+
+            // Simple adaptive logic
+            if (lastUsedCard.cardType == CardType.Defense)
+            {
+                entry.baseWeight *= 1.25f; // Attack bias after defense
+            }
+            else if (lastUsedCard.cardType == CardType.Healing)
+            {
+                entry.baseWeight *= 1.1f; // Guard after healing
+            }
+            else if (lastUsedCard.cardType == CardType.Attack)
+            {
+                entry.baseWeight *= 0.95f; // Slight cooldown for aggression
+            }
+        }
+    }
 }
 
 [System.Serializable]

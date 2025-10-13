@@ -86,7 +86,6 @@ public class BattlefieldLayout : MonoBehaviour
             newEnemy.maxHealth = selectedData.maxHealth;
             newEnemy.currentHealth = selectedData.maxHealth;
             newEnemy.strength = selectedData.baseDamage;
-            newEnemy.defense = selectedData.defense;
 
             // Assign animation set
             if (anim != null && selectedData.animationSet != null)
