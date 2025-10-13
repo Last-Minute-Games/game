@@ -41,7 +41,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2816092647931019686}
-  - component: {fileID: 4290593201226582602}
   - component: {fileID: 3706004249726771520}
   - component: {fileID: 8944526375707295122}
   - component: {fileID: 2440125228119010233}
@@ -71,24 +70,6 @@ Transform:
   - {fileID: 1888303767183317296}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4290593201226582602
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f863115260748edca299119c7dee355, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardView
-  cardName: Healing Card
-  description: Card description here
-  artwork: {fileID: 0}
-  energy: 1
-  cardType: 0
-  healAmount: 12
 --- !u!210 &3706004249726771520
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -148,7 +129,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7135091329795504839, guid: 7b7139a1876d4fc4ab9882d787af2008, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -156,7 +137,7 @@ SpriteRenderer:
   m_Size: {x: 3.02, y: 4.42}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!61 &2440125228119010233
@@ -246,7 +227,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 958624bbdd0b0a2a595f1f14cc3f3d03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardRunner
-  data: {fileID: 0}
+  data: {fileID: 11400000, guid: bd4f1a01d18e57259a2b84444be212c7, type: 2}
   owner: {fileID: 0}
 --- !u!1 &7734680973956290220
 GameObject:

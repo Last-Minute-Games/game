@@ -41,7 +41,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2816092647931019686}
-  - component: {fileID: 4290593201226582602}
   - component: {fileID: 3706004249726771520}
   - component: {fileID: 8944526375707295122}
   - component: {fileID: 8629514613465934759}
@@ -71,24 +70,6 @@ Transform:
   - {fileID: 1888303767183317296}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4290593201226582602
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ba4e58d44dd17d5b2bfcb7c1f965bfe8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardView
-  cardName: Defense Card
-  description: Card description here
-  artwork: {fileID: 0}
-  energy: 1
-  cardType: 0
-  blockAmount: 10
 --- !u!210 &3706004249726771520
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -148,7 +129,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -4973404695210688271, guid: b1c20a18415e0f149a5585eadaa0d16a, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -156,7 +137,7 @@ SpriteRenderer:
   m_Size: {x: 3.02, y: 4.42}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!61 &8629514613465934759
@@ -246,7 +227,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 958624bbdd0b0a2a595f1f14cc3f3d03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardRunner
-  data: {fileID: 11400000, guid: bd4f1a01d18e57259a2b84444be212c7, type: 2}
+  data: {fileID: 11400000, guid: d4ce8458f91f1d870aacab7642b5b019, type: 2}
   owner: {fileID: 0}
 --- !u!1 &7734680973956290220
 GameObject:
