@@ -109,7 +109,7 @@ public class BattleSystem : MonoBehaviour
         Debug.Log("🔹 Player’s turn started!");
 
         foreach (Enemy enemy in enemies)
-            enemy?.DecideNextIntention();
+            enemy?.PrepareNextCard();
     }
 
     public void EndPlayerTurn()

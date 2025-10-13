@@ -4,30 +4,27 @@ using System.Collections;
 
 public class Enemy : CharacterBase
 {
-    [Header("Enemy Parameters")]
-    public int minHealth = 50;
-    public int maxHealthRange = 85;
-    public int minDamage = 8;
-    public int maxDamage = 30;
-    public Sprite[] possibleSprites;
-
-    [Header("Behavior Chances")]
-    [Range(0f, 1f)] public float idleChance = 0.2f;
-    [Range(0f, 1f)] public float attackChance = 0.6f;
-    [Range(0f, 1f)] public float defendChance = 0.2f;
-
-    [Header("UI")]
+    [Header("UI References")]
     public GameObject healthBarPrefab;
     public TMP_Text intentionText;
 
-    private enum EnemyIntention { Idle, Attack, Defend }
-    private EnemyIntention currentIntention;
+    [Header("Runtime")]
+    public EnemyData data; // assigned by EnemyRunner
+    private EnemyAnimator2D animator;
+    private CardLibrary library;
+    private CardData currentCard;
 
     protected override void Awake()
     {
         base.Awake();
-        RandomizeStats();
+        animator = GetComponent<EnemyAnimator2D>();
+        library = FindFirstObjectByType<CardLibrary>();
 
+        SetupUI();
+    }
+
+    private void SetupUI()
+    {
         if (healthBarPrefab != null)
         {
             var barObj = Instantiate(healthBarPrefab);
@@ -44,63 +41,54 @@ public class Enemy : CharacterBase
             intentionText.text = "Waiting...";
     }
 
-    private void RandomizeStats()
+    public void PrepareNextCard()
     {
-        maxHealth = Random.Range(minHealth, maxHealthRange);
-        currentHealth = maxHealth;
-        strength = Random.Range(minDamage, maxDamage);
-        defense = Random.Range(0, 5);
+        if (data == null || data.availableCards.Count == 0)
+        {
+            Debug.LogWarning($"{name}: No cards available to choose!");
+            return;
+        }
 
-        if (possibleSprites != null && possibleSprites.Length > 0)
-        {
-            SpriteRenderer sr = GetComponent<SpriteRenderer>();
-            if (sr != null)
-                sr.sprite = possibleSprites[Random.Range(0, possibleSprites.Length)];
-        }
-    }
+        // Weighted or random choice — for now uniform
+        currentCard = data.availableCards[Random.Range(0, data.availableCards.Count)];
 
-    public void DecideNextIntention()
-    {
-        float total = idleChance + attackChance + defendChance;
-        idleChance /= total;
-        attackChance /= total;
-        defendChance /= total;
+        // update UI intention
+        if (intentionText != null)
+        {
+            string text = !string.IsNullOrEmpty(currentCard.intentionText)
+                ? currentCard.intentionText
+                : currentCard.cardName;
+            intentionText.text = text;
+        }
 
-        float roll = Random.value;
-        if (roll < idleChance)
-        {
-            currentIntention = EnemyIntention.Idle;
-            intentionText.text = "Idle";
-        }
-        else if (roll < idleChance + attackChance)
-        {
-            currentIntention = EnemyIntention.Attack;
-            intentionText.text = $"Attack ({strength})";
-        }
-        else
-        {
-            currentIntention = EnemyIntention.Defend;
-            intentionText.text = "Defend";
-        }
+        // optionally animate float/idle while waiting
+        animator?.PlayIdle();
     }
 
     public IEnumerator ExecuteIntention(Player player)
     {
-        switch (currentIntention)
+        if (currentCard == null)
         {
-            case EnemyIntention.Attack:
-                yield return new WaitForSeconds(0.4f);
-                player.TakeDamage(strength);
-                break;
-            case EnemyIntention.Defend:
-                AddBlock(5); // block added internally, no visual
-                ShowBlockFeedback(5); // optional feedback
-                break;
-            case EnemyIntention.Idle:
-                FloatingTextManager.Instance?.SpawnText(transform.position + Vector3.up * 2f, "Idle", Color.gray);
-                break;
+            FloatingTextManager.Instance?.SpawnText(transform.position + Vector3.up * 2f, "Idle", Color.gray);
+            yield break;
         }
 
-        intentionText.text = "Waiting...";
+        animator?.PlayAttack();
+        yield return new WaitForSeconds(0.4f);
+
+        // actually use the card logic
+        var runner = new GameObject("TempCardRunner").AddComponent<CardRunner>();
+        runner.data = currentCard;
+
+        runner.transform.SetParent(this.transform);  // allows CardEffect to find this enemy’s runner
+
+        runner.Execute(this, player);
+        Destroy(runner.gameObject);
+
+        // reset UI
+        if (intentionText != null)
+            intentionText.text = "Waiting...";
+
+        animator?.PlayFloat();
     }
 }

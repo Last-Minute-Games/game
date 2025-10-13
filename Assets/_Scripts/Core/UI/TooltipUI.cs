@@ -25,8 +25,7 @@ public class TooltipUI : MonoBehaviour
 
         titleText.text = data.cardName;
         descriptionText.text = data.description;
-        // use energyCost instead of energy (CardData uses energyCost)
-        statsText.text = $"Type: {data.cardType}\nCost: {data.energyCost}";
+        statsText.text = $"Type: {data.cardType}\nCost: {data.energy}";
 
         canvasGroup.alpha = 1f;
         canvasGroup.blocksRaycasts = false;

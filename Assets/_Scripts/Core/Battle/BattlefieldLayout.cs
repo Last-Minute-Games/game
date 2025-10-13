@@ -1,26 +1,26 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BattlefieldLayout : MonoBehaviour
 {
-    [Header("Prefabs")]
-    public GameObject playerPrefab;
-    public GameObject enemyPrefab;      // switched to GameObject for reliability
+    [Header("Prefabs & Libraries")]
+    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private GameObject enemyPrefab; // generic enemy prefab
+    [SerializeField] private EnemyLibrary enemyLibrary;
 
-    [Header("Shield Prefab")]
-    public GameObject shieldPrefab;
+    [Header("Positions")]
+    [SerializeField] private Vector3 playerPos = new(-6f, 0f, 0f);
+    [SerializeField] private Vector3 enemyStartPos = new(6f, 0f, 0f);
+    [SerializeField] private float enemySpacing = 2.5f;
 
-    [Header("Enemy Spawn Settings")]
-    public int enemyCount = 3;
-    public float enemySpacing = 2.5f;
-    public Vector3 enemyStartPos = new Vector3(6f, 0f, 0f);
-    public Sprite[] enemySprites;       // assign in Inspector
-
-    [Header("Player Position")]
-    public Vector3 playerPos = new Vector3(-6f, 0f, 0f);
+    [Header("Settings")]
+    [SerializeField, Range(1, 5)] private int enemyCount = 3;
+    [SerializeField] private bool randomizeEnemies = true;
 
     private GameObject player;
+    private readonly List<Enemy> activeEnemies = new();
 
-    void Start()
+    private void Start()
     {
         SpawnPlayer();
         SpawnEnemies();
@@ -30,29 +30,34 @@ public class BattlefieldLayout : MonoBehaviour
     {
         if (playerPrefab == null)
         {
-            Debug.LogError("BattlefieldLayout: Missing playerPrefab!");
+            Debug.LogError("❌ BattlefieldLayout: Missing Player Prefab!");
             return;
         }
 
-        Vector3 adjustedPos = playerPos + new Vector3(0f, -0.0f, 0f); // ↓ move lower
-        player = Instantiate(playerPrefab, adjustedPos, Quaternion.identity);
+        player = Instantiate(playerPrefab, playerPos, Quaternion.identity);
         player.name = "Player";
 
         CharacterBase playerChar = player.GetComponent<CharacterBase>();
         if (playerChar != null)
         {
             playerChar.characterName = "Player";
-
-            if (shieldPrefab != null)
-                playerChar.shieldPrefab = shieldPrefab;
+            playerChar.currentHealth = playerChar.maxHealth;
         }
+
+        Debug.Log("✅ Player spawned.");
     }
 
     private void SpawnEnemies()
     {
         if (enemyPrefab == null)
         {
-            Debug.LogError("BattlefieldLayout: Missing enemyPrefab!");
+            Debug.LogError("❌ BattlefieldLayout: Missing Enemy Prefab!");
+            return;
+        }
+
+        if (enemyLibrary == null || enemyLibrary.AvailableEnemies.Count == 0)
+        {
+            Debug.LogError("❌ BattlefieldLayout: No EnemyLibrary or it’s empty!");
             return;
         }
 
@@ -60,20 +65,37 @@ public class BattlefieldLayout : MonoBehaviour
         {
             Vector3 spawnPos = enemyStartPos + Vector3.left * enemySpacing * i;
 
-            // instantiate as GameObject first
+            // Pick enemy data from library
+            EnemyData selectedData = randomizeEnemies
+                ? enemyLibrary.GetRandomEnemy()
+                : enemyLibrary.AvailableEnemies[i % enemyLibrary.AvailableEnemies.Count];
+
             GameObject enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
             Enemy newEnemy = enemyObj.GetComponent<Enemy>();
+            EnemyAnimator2D anim = enemyObj.GetComponent<EnemyAnimator2D>();
 
             if (newEnemy == null)
             {
-                Debug.LogError($"Spawned prefab {enemyPrefab.name} has no Enemy component!");
+                Debug.LogError($"❌ Prefab {enemyPrefab.name} is missing Enemy component!");
                 continue;
             }
 
-            newEnemy.characterName = $"Enemy {i + 1}";
-            newEnemy.possibleSprites = enemySprites;
+            // Assign data
+            newEnemy.data = selectedData;
+            newEnemy.characterName = selectedData.enemyName;
+            newEnemy.maxHealth = selectedData.maxHealth;
+            newEnemy.currentHealth = selectedData.maxHealth;
+            newEnemy.strength = selectedData.baseDamage;
+            newEnemy.defense = selectedData.defense;
 
-            Debug.Log($"Spawned {newEnemy.characterName} at {spawnPos}");
+            // Assign animation set
+            if (anim != null && selectedData.animationSet != null)
+                anim.SetAnimSet(selectedData.animationSet);
+
+            Debug.Log($"🧠 Spawned enemy: {selectedData.enemyName} ({selectedData.maxHealth} HP)");
+            activeEnemies.Add(newEnemy);
         }
     }
+
+    public IReadOnlyList<Enemy> GetEnemies() => activeEnemies;
 }

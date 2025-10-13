@@ -10,6 +10,8 @@ public class EnemyAnimationSet : ScriptableObject
     public Sprite[] hurt;
     public Sprite[] death;
 
+    public Sprite idleSprite => (idle != null && idle.Length > 0) ? idle[0] : null;
+
     [Header("Playback FPS (per animation)")]
     public float defaultFps = 8f;
     public float idleFps = 8f;

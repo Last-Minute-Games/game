@@ -23,7 +23,7 @@ public class CardRunner : MonoBehaviour {
             effect?.Apply(user, target);
     }
 
-    public int EnergyCost => data ? data.energyCost : 0;
+    public int EnergyCost => data ? data.energy : 0;
 
     public bool TryPlay(CharacterBase user, Collider2D hit, out CharacterBase finalTarget) {
         finalTarget = null;

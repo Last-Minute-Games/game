@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f403d73173534e4980b527d11e2ed7d, type: 3}
+  m_Name: Eyeball Enemy
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: Eyeball
+  portrait: {fileID: 4769901569791157120, guid: e17aece5460b40c4ea219bea5a5b61b3, type: 3}
+  maxHealth: 100
+  baseDamage: 10
+  defense: 2
+  damageMultiplier: 1
+  blockMultiplier: 1
+  healMultiplier: 1
+  animationSet: {fileID: 11400000, guid: 739969826b8a44f3083ef011c1a4ad30, type: 2}
+  availableCards:
+  - {fileID: 11400000, guid: 5a4aa64c185bb2565a401248dc27110b, type: 2}
+  intentionIcon: {fileID: 3916248198624648304, guid: f6760e1fb8aef684ebe3ef03b44fa2d1, type: 3}
+  intentionText: Hella mean
+  idleChance: 0.2
+  attackChance: 0.39
+  defendChance: 0.2

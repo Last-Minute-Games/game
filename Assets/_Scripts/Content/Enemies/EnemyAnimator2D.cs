@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class EnemyAnimator2D : MonoBehaviour
 {
-    [SerializeField] private EnemyAnimationSet animSet;
+    [SerializeField] public EnemyAnimationSet animSet;
     private SpriteRenderer sr;
     private EnemyAnim current;
     private float timer;
@@ -37,6 +37,12 @@ public class EnemyAnimator2D : MonoBehaviour
         if (current == state) return;
         ResetState(state);
     }
+
+    public void PlayIdle() => Play(EnemyAnim.Idle);
+    public void PlayFloat() => Play(EnemyAnim.Float);
+    public void PlayAttack() => Play(EnemyAnim.Attack);
+    public void PlayHurt() => Play(EnemyAnim.Hurt);
+    public void PlayDeath() => Play(EnemyAnim.Death);
 
     private void ResetState(EnemyAnim state)
     {
