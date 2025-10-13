@@ -165,7 +165,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TestSystem
   battlefieldLayout: {fileID: 1193789998}
   handView: {fileID: 662907433}
-  cardPrefabs: []
+  cardPrefabs:
+  - {fileID: 6905502446284140818, guid: 2cf171eb07d0403ecaa6d5fac7b50b57, type: 3}
+  - {fileID: 6905502446284140818, guid: bd3717f8b40a70b46b9485c5479b2091, type: 3}
+  - {fileID: 6905502446284140818, guid: 0010c87c7cab9ce93ac677e222ad50cd, type: 3}
   handSpawnPoint: {fileID: 1527048681}
   endTurnButton: {fileID: 1431558357}
   startingHandSize: 5
@@ -1039,7 +1042,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a5e82539f551d791a9971876f3800b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardViewHoverSystem
-  cardViewHover: {fileID: 1741364522}
+  cardViewHover: {fileID: 0}
 --- !u!1 &1154011889
 GameObject:
   m_ObjectHideFlags: 0
@@ -1678,7 +1681,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1741364521}
-  - component: {fileID: 1741364522}
   m_Layer: 0
   m_Name: CardViewCreator
   m_TagString: Untagged
@@ -1701,23 +1703,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 147414056}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1741364522
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1741364520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc7d95d141d4338359f51d56411ac16e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardViewCreator
-  imageSR: {fileID: 0}
-  wrapper: {fileID: 0}
-  sortingGroup: {fileID: 0}
-  player: {fileID: 0}
-  targetEnemy: {fileID: 0}
 --- !u!1 &1789266933
 GameObject:
   m_ObjectHideFlags: 0

@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 8629514613465934759}
   - component: {fileID: 6341569804294204714}
   - component: {fileID: 1393018215711154467}
+  - component: {fileID: 2726655421995634892}
   m_Layer: 0
   m_Name: DefenseCard
   m_TagString: Untagged
@@ -233,6 +234,20 @@ MonoBehaviour:
   sortingGroup: {fileID: 3706004249726771520}
   player: {fileID: 0}
   targetEnemy: {fileID: 0}
+--- !u!114 &2726655421995634892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 958624bbdd0b0a2a595f1f14cc3f3d03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardRunner
+  data: {fileID: 11400000, guid: bd4f1a01d18e57259a2b84444be212c7, type: 2}
+  owner: {fileID: 0}
 --- !u!1 &7734680973956290220
 GameObject:
   m_ObjectHideFlags: 0

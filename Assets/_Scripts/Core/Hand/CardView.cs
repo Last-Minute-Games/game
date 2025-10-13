@@ -20,9 +20,11 @@ public class CardView : MonoBehaviour
     public CharacterBase targetEnemy;
     
     private CardBase cardBase;
+    private CardRunner runner;
 
     private void Awake()
     {
+        runner = GetComponent<CardRunner>();
         cardBase = GetComponent<CardBase>();
         if (cardBase == null)
             Debug.LogWarning($"CardView '{name}' has no CardBase component! Add one like AttackCard.");
@@ -56,60 +58,21 @@ public class CardView : MonoBehaviour
 
     public bool UseCard(Collider2D target)
     {
-        if (cardBase == null || player == null) return false;
-
-        var targetComponent = target?.GetComponent<CharacterBase>();
-        
-        if (target != null)
-        {
-            // check if target is enemy or player themselves
-            Enemy enemy = target.GetComponent<Enemy>();
-            if (enemy != null)
-                targetComponent = enemy;
-            else if (target.GetComponent<Player>() != null)
-                targetComponent = player; // allow healing/defense on self
-        }
-        
-        if (targetComponent == null)
-        {
-            Debug.Log("Invalid target for this card.");
-            return false;
-        }
-        
-        if (cardBase.cardType == CardType.Attack)
-        {
-            if (targetComponent is not Enemy)
-            {
-                Debug.Log("Attack cards must target an enemy!");
+        if (player is Player p) {
+            if (!p.UseEnergy(runner.EnergyCost)) {
+                Debug.Log("Not enough energy");
                 return false;
             }
-        }
-        
-        if (player is Player p && p.UseEnergy(cardBase.energy))
-        {
-            try {
-                cardBase.Use(player, targetComponent);
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"Error using card {cardBase.cardName}: {ex.Message}");
-            }
-            
-            Debug.Log(handView);
-            
-            if (handView != null)
-                handView.RemoveCard(this);
 
-            transform.DOScale(Vector3.zero, 0.15f).OnComplete(() => gameObject.SetActive(false));
-            Debug.Log($"{player.characterName} played {cardBase.cardName}");
+            if (runner.TryPlay(player, target, out _)) {
+                if (handView) handView.RemoveCard(this);
+                transform.DOScale(Vector3.zero, 0.15f).OnComplete(() => gameObject.SetActive(false));
+                return true;
+            }
 
-            return true;
-        }
-        else
-        {
-            Debug.Log("Not enough energy to play this card!");
             return false;
         }
+        return false;
     }
 
     private void OnMouseEnter()
