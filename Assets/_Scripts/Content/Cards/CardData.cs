@@ -1,15 +1,19 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "CardData", menuName = "Cards/Card Data")]
-public class CardData : ScriptableObject {
-    [Header("Info")]
+[CreateAssetMenu(menuName = "Cards/Card Data")]
+public class CardData : ScriptableObject
+{
+    [Header("Basic Info")]
     public string cardName;
     [TextArea] public string description;
     public Sprite artwork;
-    public int energyCost = 1;
-    public CardType type;
 
-    [Header("Logic")]
-    public CardEffect[] effects;           // what happens when played
-    public TargetingRule targetingRule;    // how we pick a target
+    [Header("Gameplay")]
+    public int energyCost = 1;
+
+    public CardType cardType;
+
+    [Header("Card Logic")]
+    public CardEffect[] effects;
+    public TargetingRule targetingRule;
 }

@@ -165,17 +165,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TestSystem
   battlefieldLayout: {fileID: 1193789998}
   handView: {fileID: 662907433}
-  cardPrefabs:
-  - {fileID: 6905502446284140818, guid: 2cf171eb07d0403ecaa6d5fac7b50b57, type: 3}
-  - {fileID: 6905502446284140818, guid: bd3717f8b40a70b46b9485c5479b2091, type: 3}
-  - {fileID: 6905502446284140818, guid: 0010c87c7cab9ce93ac677e222ad50cd, type: 3}
+  cardFactory: {fileID: 0}
   handSpawnPoint: {fileID: 1527048681}
   endTurnButton: {fileID: 1431558357}
   startingHandSize: 5
   turnResetDelay: 1.5
-  attackChance: 0.6
-  defenseChance: 0.25
-  healthChance: 0.15
 --- !u!1 &44839956
 GameObject:
   m_ObjectHideFlags: 0
@@ -337,6 +331,7 @@ Transform:
   - {fileID: 365038987}
   - {fileID: 1574170771}
   - {fileID: 44839957}
+  - {fileID: 522284660}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &147414055
@@ -726,6 +721,54 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 3.02, y: 4.42}
   m_EdgeRadius: 0
+--- !u!1 &522284659
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 522284660}
+  - component: {fileID: 522284661}
+  m_Layer: 0
+  m_Name: CardFactory
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &522284660
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522284659}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 89798587}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &522284661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522284659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b57f414ada53910fc8c2ebfe3d9e9d2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardFactory
+  attackPrefab: {fileID: 6905502446284140818, guid: 2cf171eb07d0403ecaa6d5fac7b50b57, type: 3}
+  defensePrefab: {fileID: 6905502446284140818, guid: bd3717f8b40a70b46b9485c5479b2091, type: 3}
+  healingPrefab: {fileID: 6905502446284140818, guid: 0010c87c7cab9ce93ac677e222ad50cd, type: 3}
+  library: {fileID: 11400000, guid: e9a487c59f4fe338a8ae6b1aefb817b8, type: 2}
 --- !u!1 &590231579
 GameObject:
   m_ObjectHideFlags: 0

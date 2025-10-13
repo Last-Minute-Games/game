@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c5579313ed06a1570a94c9796fef08d0, type: 3}
-  m_Name: Healing Data
+  m_Name: Attack Data
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: 
-  description: 
-  artwork: {fileID: 7135091329795504839, guid: 7b7139a1876d4fc4ab9882d787af2008, type: 3}
+  cardName: Attack Card
+  description: attacks for u
+  artwork: {fileID: 8574915176529702039, guid: 79fbcb0fb24220d4db717f465dbc1cf1, type: 3}
   energyCost: 1
   type: 0
-  effects: []
-  targetingRule: {fileID: 0}
+  effects:
+  - {fileID: 11400000, guid: 854cfdb1168fe7a2ebaa55356159ccd1, type: 2}
+  targetingRule: {fileID: 11400000, guid: 15b47d86db09307ac95a2fdfc0c70258, type: 2}

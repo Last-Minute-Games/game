@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5579313ed06a1570a94c9796fef08d0, type: 3}
   m_Name: Defense Data
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: 
-  description: 
+  cardName: Defense Card
+  description: defends u
   artwork: {fileID: -4973404695210688271, guid: b1c20a18415e0f149a5585eadaa0d16a, type: 3}
   energyCost: 1
-  type: 0
-  effects: []
-  targetingRule: {fileID: 0}
+  type: 1
+  effects:
+  - {fileID: 11400000, guid: 9d003353c520129bba7ef9b1af9f0f70, type: 2}
+  targetingRule: {fileID: 11400000, guid: 1325419bf9a3518e6a5c6b0e76a0fd4a, type: 2}

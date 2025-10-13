@@ -8,18 +8,13 @@ public class BattleSystem : MonoBehaviour
     [Header("Scene References")]
     [SerializeField] private BattlefieldLayout battlefieldLayout;
     [SerializeField] private HandView handView;
-    [SerializeField] private GameObject[] cardPrefabs;
+    [SerializeField] private CardFactory cardFactory;
     [SerializeField] private Transform handSpawnPoint;
     [SerializeField] private EndTurnButton endTurnButton;
 
     [Header("Battle Settings")]
     [SerializeField] private int startingHandSize = 5;
     [SerializeField] private float turnResetDelay = 1.5f;
-
-    [Header("Card Draw Chances (must total 1.0)")]
-    [Range(0f, 1f)] public float attackChance = 0.6f;
-    [Range(0f, 1f)] public float defenseChance = 0.25f;
-    [Range(0f, 1f)] public float healthChance = 0.15f;
 
     private Player player;
     private readonly List<Enemy> enemies = new();
@@ -65,13 +60,20 @@ public class BattleSystem : MonoBehaviour
     {
         for (int i = 0; i < startingHandSize; i++)
         {
-            GameObject cardToSpawn = GetWeightedRandomCard();
-            Vector3 spawnPos = handSpawnPoint != null ? handSpawnPoint.position : transform.position;
+            // Ask the factory to handle random card creation (weighted logic handled inside)
+            GameObject cardObj = cardFactory.CreateRandomCard(handSpawnPoint.position, 0.6f, 0.25f, 0.15f);
 
-            GameObject cardObj = Instantiate(cardToSpawn, spawnPos, Quaternion.identity);
+            if (cardObj == null)
+            {
+                Debug.LogError("❌ BattleSystem: Failed to create card via factory!");
+                continue;
+            }
+
+            // Animate into place
             cardObj.transform.position += Vector3.down * 1f;
             cardObj.transform.DOMove(handSpawnPoint.position, 0.25f).SetEase(Ease.OutBack);
 
+            // Set up CardView
             CardView cardView = cardObj.GetComponent<CardView>();
             if (cardView != null)
             {
@@ -82,46 +84,6 @@ public class BattleSystem : MonoBehaviour
                 yield return handView.AddCard(cardView);
             }
         }
-    }
-
-    private GameObject GetWeightedRandomCard()
-    {
-        // Normalize if the user didn’t exactly make it total 1
-        float total = attackChance + defenseChance + healthChance;
-        if (Mathf.Abs(total - 1f) > 0.001f)
-        {
-            Debug.LogWarning($"⚠️ Card chances don’t sum to 1 (currently {total:F2}). Normalizing automatically.");
-            attackChance /= total;
-            defenseChance /= total;
-            healthChance /= total;
-        }
-
-        float roll = Random.value;
-
-        CardType targetType;
-        if (roll < attackChance)
-            targetType = CardType.Attack;
-        else if (roll < attackChance + defenseChance)
-            targetType = CardType.Defense;
-        else
-            targetType = CardType.Healing;
-
-        // Select random prefab of that type
-        List<GameObject> matchingCards = new();
-        foreach (var prefab in cardPrefabs)
-        {
-            var cb = prefab.GetComponent<CardBase>();
-            if (cb != null && cb.cardType == targetType)
-                matchingCards.Add(prefab);
-        }
-
-        if (matchingCards.Count == 0)
-        {
-            Debug.LogWarning($"⚠️ No prefabs found for {targetType}! Defaulting to random card.");
-            return cardPrefabs[Random.Range(0, cardPrefabs.Length)];
-        }
-
-        return matchingCards[Random.Range(0, matchingCards.Count)];
     }
 
     private IEnumerator ClearHand()

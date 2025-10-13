@@ -21,13 +21,3 @@ public abstract class CardBase : MonoBehaviour
         return $"{cardName}\nCost: {energy}\n\n{description}";
     }
 }
-
-public enum CardType
-{
-    Attack,
-    Defense,
-    Healing,
-    Utility
-}
-
-
