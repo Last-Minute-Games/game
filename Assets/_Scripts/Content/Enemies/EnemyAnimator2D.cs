@@ -54,7 +54,7 @@ public class EnemyAnimator2D : MonoBehaviour
         if (animSet == null || frames == null || frames.Length == 0) return;
 
         timer += Time.deltaTime;
-        float frameDur = 1f / Mathf.Max(1f, animSet.fps);
+        float frameDur = 1f / Mathf.Max(1f, animSet.GetFps(current));
         if (timer >= frameDur)
         {
             timer -= frameDur;
