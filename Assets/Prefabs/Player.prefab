@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2476482829187669490}
   - component: {fileID: 2685892946543545480}
-  - component: {fileID: 6059881653677046653}
   - component: {fileID: -696377352479820588}
+  - component: {fileID: 6631072251925903142}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -92,33 +92,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &6059881653677046653
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 753829383109311850}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 503cb23b40bcb440eb491113c44cde7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Protagonist
-  characterName: Unnamed
-  portrait: {fileID: 0}
-  maxHealth: 100
-  currentHealth: 0
-  block: 0
-  strength: 0
-  defense: 0
-  inventory:
-    items: []
-  shieldPrefab: {fileID: 0}
-  maxEnergy: 3
-  currentEnergy: 0
-  cardPrefab: {fileID: 0}
-  healthBarPrefab: {fileID: 5486704657143754790, guid: afda42d3aed7d1ab59d13f5c91aba8f0, type: 3}
-  defensePanelPrefab: {fileID: 5783426677983101862, guid: 0b7939d6cfc17264ead9bc3351b2efde, type: 3}
 --- !u!61 &-696377352479820588
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -165,3 +138,29 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.4, y: 3.2}
   m_EdgeRadius: 0
+--- !u!114 &6631072251925903142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 753829383109311850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b8cb5b7b730c80dbb65797b09148bf7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player
+  characterName: Unnamed
+  portrait: {fileID: 0}
+  maxHealth: 100
+  currentHealth: 0
+  block: 0
+  strength: 0
+  defense: 0
+  inventory:
+    items: []
+  shieldPrefab: {fileID: 0}
+  maxEnergy: 3
+  currentEnergy: 0
+  cardPrefab: {fileID: 0}
+  healthBarPrefab: {fileID: 5486704657143754790, guid: afda42d3aed7d1ab59d13f5c91aba8f0, type: 3}

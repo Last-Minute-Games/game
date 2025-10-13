@@ -160,17 +160,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 30278259}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1558363afc7485b46bdba12fd57523a6, type: 3}
+  m_Script: {fileID: 11500000, guid: 304f103f0006bb2059b27f040af75c7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestSystem
-  battlefieldLayout: {fileID: 0}
+  battlefieldLayout: {fileID: 1193789998}
   handView: {fileID: 662907433}
-  cardPrefabs:
-  - {fileID: 6905502446284140818, guid: 0010c87c7cab9ce93ac677e222ad50cd, type: 3}
-  - {fileID: 6905502446284140818, guid: bd3717f8b40a70b46b9485c5479b2091, type: 3}
-  - {fileID: 6905502446284140818, guid: 2cf171eb07d0403ecaa6d5fac7b50b57, type: 3}
+  cardPrefabs: []
   handSpawnPoint: {fileID: 1527048681}
-  endTurnButton: {fileID: 0}
+  endTurnButton: {fileID: 1431558357}
   startingHandSize: 5
   turnResetDelay: 1.5
   attackChance: 0.6
@@ -217,7 +214,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 44839956}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f676affcf206a9498a0d20b4bcc2481, type: 3}
+  m_Script: {fileID: 11500000, guid: 23014871d258b0668a1477c591f8ef5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FloatingTextManager
   floatingTextPrefab: {fileID: 5500562584760302725, guid: 13c5433c3bf474ba9aee3c38f1e4a699, type: 3}
@@ -806,7 +803,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 649066124}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe257ca38018f5b5aa26f9fa7d8c6569, type: 3}
+  m_Script: {fileID: 11500000, guid: 5ecd23e97d9b51a34b467649254dc4da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TooltipManager
   tooltipPrefab: {fileID: 3495390030423170514, guid: cfc1acb7d7b560a4595b9d32cb7b7966, type: 3}
@@ -852,13 +849,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 662907431}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6fcf16ecb4cf7514bb258f2b79275b97, type: 3}
+  m_Script: {fileID: 11500000, guid: ef4477904b6a414168de800d28bd86fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HandView
-  spacing: 2.2
-  curveHeight: 1.5
-  baseHeight: -5.5
-  liftAmount: 1.5
+  spacing: 1.5
+  curveHeight: 1.2
+  baseHeight: -5
+  liftAmount: 0.8
   animationTime: 0.25
   cardScale: 0.8
 --- !u!4 &949617182 stripped
@@ -866,17 +863,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2816092647931019686, guid: f8e68512eed80ec48be3ee5a1de871d0, type: 3}
   m_PrefabInstance: {fileID: 1706634701}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &949617185 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4290593201226582602, guid: f8e68512eed80ec48be3ee5a1de871d0, type: 3}
-  m_PrefabInstance: {fileID: 1706634701}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d949f8b357bb3d34fb375b5d8a2a765f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardView
 --- !u!1 &1072305689
 GameObject:
   m_ObjectHideFlags: 0
@@ -1050,10 +1036,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1151026334}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b463252b327baa44848959894c817f7, type: 3}
+  m_Script: {fileID: 11500000, guid: 5a5e82539f551d791a9971876f3800b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardViewHoverSystem
-  cardViewHover: {fileID: 949617185}
+  cardViewHover: {fileID: 1741364522}
 --- !u!1 &1154011889
 GameObject:
   m_ObjectHideFlags: 0
@@ -1234,7 +1220,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1193789997}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 875853368a3c3cd4c823516fb17bd659, type: 3}
+  m_Script: {fileID: 11500000, guid: d492d8642a1d6c7c78d70e1429969ecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattlefieldLayout
   playerPrefab: {fileID: 753829383109311850, guid: af4d270afe9c7844ebf8a57dc8dd84b1, type: 3}
@@ -1391,7 +1377,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1431558352}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9655afccfcc6c4abc9d0e5317733f817, type: 3}
+  m_Script: {fileID: 11500000, guid: 599ee7d707a46e13fbc4d064830e5627, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EndTurnButton
   battleSystem: {fileID: 30278261}
@@ -1569,7 +1555,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1574170770}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2a6631f68f7fab13ae5c674b2ab34c9, type: 3}
+  m_Script: {fileID: 11500000, guid: b7e1c2696895233ea8ed2bcaab51da1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnergySystem
   maxEnergy: 3
@@ -1724,9 +1710,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1741364520}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 35a9ee7a93c46324bbf3ff4b14042cdd, type: 3}
+  m_Script: {fileID: 11500000, guid: dc7d95d141d4338359f51d56411ac16e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardViewCreator
+  imageSR: {fileID: 0}
+  wrapper: {fileID: 0}
+  sortingGroup: {fileID: 0}
+  player: {fileID: 0}
+  targetEnemy: {fileID: 0}
 --- !u!1 &1789266933
 GameObject:
   m_ObjectHideFlags: 0
@@ -1843,10 +1834,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 2007122491}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 990a87c2d8ea0648fb9617eb2437817b, type: 3}
+  m_Script: {fileID: 11500000, guid: 4101cc2ed83c4d8deb1aa4e39e76def1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  musicClip: {fileID: 8300000, guid: 29f6f09b25273d13f9461ca68a47992b, type: 3}
+  musicClip: {fileID: 8300000, guid: 19009d756645345a19ccd3ee97413dac, type: 3}
 --- !u!4 &2007122493
 Transform:
   m_ObjectHideFlags: 0

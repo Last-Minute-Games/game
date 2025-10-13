@@ -44,9 +44,9 @@ GameObject:
   - component: {fileID: 4290593201226582602}
   - component: {fileID: 3706004249726771520}
   - component: {fileID: 8944526375707295122}
-  - component: {fileID: 6136300255659477341}
-  - component: {fileID: 7344560763297497856}
   - component: {fileID: -5729131361915302241}
+  - component: {fileID: -4227244943235401447}
+  - component: {fileID: 5630340743460180521}
   m_Layer: 0
   m_Name: AttackCard
   m_TagString: Untagged
@@ -79,14 +79,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 6905502446284140818}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d949f8b357bb3d34fb375b5d8a2a765f, type: 3}
+  m_Script: {fileID: 11500000, guid: 22f14d44090bfcf2daa2dc68187bee9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardView
-  imageSR: {fileID: 461284025256357750}
-  wrapper: {fileID: 4644818858362849291}
-  sortingGroup: {fileID: 3706004249726771520}
-  player: {fileID: 0}
-  targetEnemy: {fileID: 0}
+  cardName: Attack Card
+  description: Yee yee
+  artwork: {fileID: 0}
+  energy: 1
+  cardType: 0
+  baseDamage: 20
 --- !u!210 &3706004249726771520
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -157,36 +158,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &6136300255659477341
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7868fcb244fd31a4189061f46931e2a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AttackCard
-  cardName: Attack Card
-  description: Card description here
-  artwork: {fileID: 0}
-  energy: 1
-  cardType: 0
-  baseDamage: 25
---- !u!114 &7344560763297497856
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 183f78f78396cee36994f4fa2dc6f835, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardDragHandler
 --- !u!61 &-5729131361915302241
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -233,6 +204,35 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 3.02, y: 4.42}
   m_EdgeRadius: 0
+--- !u!114 &-4227244943235401447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc7d95d141d4338359f51d56411ac16e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardView
+  imageSR: {fileID: 461284025256357750}
+  wrapper: {fileID: 4644818858362849291}
+  sortingGroup: {fileID: 3706004249726771520}
+  player: {fileID: 0}
+  targetEnemy: {fileID: 0}
+--- !u!114 &5630340743460180521
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 259d58243fd8b2149b2bb7e83877d6e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Scripts.Gameplay.CardDragHandler
 --- !u!1 &7734680973956290220
 GameObject:
   m_ObjectHideFlags: 0

@@ -281,7 +281,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3708321511512314943}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ab73e1bc7560d19b8db035b6579bc5d, type: 3}
+  m_Script: {fileID: 11500000, guid: 847c6652a186c3842a3216e6f7e14186, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   characterName: Unnamed
@@ -293,11 +293,15 @@ MonoBehaviour:
   defense: 0
   inventory:
     items: []
-  minHealth: 45
-  maxHealthRange: 60
+  shieldPrefab: {fileID: 0}
+  minHealth: 50
+  maxHealthRange: 85
   minDamage: 8
   maxDamage: 30
   possibleSprites: []
+  idleChance: 0.2
+  attackChance: 0.6
+  defendChance: 0.2
   healthBarPrefab: {fileID: 5486704657143754790, guid: afda42d3aed7d1ab59d13f5c91aba8f0, type: 3}
   intentionText: {fileID: 1438805219164732433}
 --- !u!61 &5390610125405096216

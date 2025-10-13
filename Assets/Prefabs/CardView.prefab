@@ -41,11 +41,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2816092647931019686}
-  - component: {fileID: 4290593201226582602}
   - component: {fileID: 3706004249726771520}
   - component: {fileID: 8944526375707295122}
-  - component: {fileID: 2301740598796200959}
   - component: {fileID: -5385952449837192130}
+  - component: {fileID: 2120951790250767601}
+  - component: {fileID: -858494500013502815}
   m_Layer: 0
   m_Name: CardView
   m_TagString: Untagged
@@ -69,23 +69,6 @@ Transform:
   - {fileID: 1888303767183317296}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4290593201226582602
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d949f8b357bb3d34fb375b5d8a2a765f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardView
-  imageSR: {fileID: 461284025256357750}
-  wrapper: {fileID: 4644818858362849291}
-  sortingGroup: {fileID: 3706004249726771520}
-  player: {fileID: 0}
-  targetEnemy: {fileID: 0}
 --- !u!210 &3706004249726771520
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -156,18 +139,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &2301740598796200959
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 183f78f78396cee36994f4fa2dc6f835, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardDragHandler
 --- !u!61 &-5385952449837192130
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -214,6 +185,35 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.0001, y: 0.0001}
   m_EdgeRadius: 0
+--- !u!114 &2120951790250767601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 259d58243fd8b2149b2bb7e83877d6e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Scripts.Gameplay.CardDragHandler
+--- !u!114 &-858494500013502815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc7d95d141d4338359f51d56411ac16e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardView
+  imageSR: {fileID: 461284025256357750}
+  wrapper: {fileID: 4644818858362849291}
+  sortingGroup: {fileID: 3706004249726771520}
+  player: {fileID: 0}
+  targetEnemy: {fileID: 0}
 --- !u!1 &7734680973956290220
 GameObject:
   m_ObjectHideFlags: 0

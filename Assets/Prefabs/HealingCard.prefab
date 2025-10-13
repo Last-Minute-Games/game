@@ -44,9 +44,9 @@ GameObject:
   - component: {fileID: 4290593201226582602}
   - component: {fileID: 3706004249726771520}
   - component: {fileID: 8944526375707295122}
-  - component: {fileID: -2353997236966639394}
-  - component: {fileID: -4807565121988715133}
   - component: {fileID: 2440125228119010233}
+  - component: {fileID: 2357638510473972951}
+  - component: {fileID: 4088946221556808941}
   m_Layer: 0
   m_Name: HealingCard
   m_TagString: Untagged
@@ -79,14 +79,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 6905502446284140818}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d949f8b357bb3d34fb375b5d8a2a765f, type: 3}
+  m_Script: {fileID: 11500000, guid: 3f863115260748edca299119c7dee355, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardView
-  imageSR: {fileID: 461284025256357750}
-  wrapper: {fileID: 4644818858362849291}
-  sortingGroup: {fileID: 3706004249726771520}
-  player: {fileID: 0}
-  targetEnemy: {fileID: 0}
+  cardName: Healing Card
+  description: Card description here
+  artwork: {fileID: 0}
+  energy: 1
+  cardType: 0
+  healAmount: 12
 --- !u!210 &3706004249726771520
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -157,36 +158,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &-2353997236966639394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60257adf24537513a926b65bf8f0d904, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HealingCard
-  cardName: Healing Card
-  description: Card description here
-  artwork: {fileID: 0}
-  energy: 1
-  cardType: 2
-  healAmount: 12
---- !u!114 &-4807565121988715133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 183f78f78396cee36994f4fa2dc6f835, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_Scripts.Gameplay.CardDragHandler
 --- !u!61 &2440125228119010233
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -233,6 +204,35 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 3.02, y: 4.42}
   m_EdgeRadius: 0
+--- !u!114 &2357638510473972951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 259d58243fd8b2149b2bb7e83877d6e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Scripts.Gameplay.CardDragHandler
+--- !u!114 &4088946221556808941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc7d95d141d4338359f51d56411ac16e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardView
+  imageSR: {fileID: 461284025256357750}
+  wrapper: {fileID: 4644818858362849291}
+  sortingGroup: {fileID: 3706004249726771520}
+  player: {fileID: 0}
+  targetEnemy: {fileID: 0}
 --- !u!1 &7734680973956290220
 GameObject:
   m_ObjectHideFlags: 0
