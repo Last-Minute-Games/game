@@ -11,6 +11,8 @@ namespace Systems.Overworld.Intro
         public Sprite kingBehindSprite;
         public Sprite kingFrontSprite;
         
+        public AnimationClip kingDeadAnimationClip;
+        
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
         private Camera _plrMainCamera;
@@ -37,6 +39,8 @@ namespace Systems.Overworld.Intro
         private MysteriousManIntro _mysteriousManIntro;
         
         private bool _isPlayingIntroMusic = false;
+
+        private GameObject _blackScreen;
     
         private IEnumerator WaitDreamIntro()
         {
@@ -59,6 +63,9 @@ namespace Systems.Overworld.Intro
         void Start()
         {
             _plrObject = GameObject.FindGameObjectWithTag("Player");
+            _blackScreen = GameObject.Find("Blackout");
+            
+            _blackScreen.SetActive(false);
             
             _plrInput = _plrObject.GetComponent<PlayerInput2D>();
             _plrInput.isInputEnabled = false;
@@ -201,12 +208,22 @@ namespace Systems.Overworld.Intro
             yield return _mysteriousManIntro.FadeIn();
             
             yield return new WaitForSeconds(0.5f);
+            
+            _blackScreen.SetActive(true);
+            _mysteriousManIntro.GetComponent<SpriteRenderer>().sortingOrder = 5;
 
             yield return _mysteriousManIntro.PlayAnimationOnce();
             
             yield return new WaitForSeconds(1f);
             
+            _blackScreen.SetActive(false);
+            _mysteriousManIntro.GetComponent<SpriteRenderer>().sortingOrder = 0;
+            
             _kingAnimator.speed = 1; // unfreeze
+            
+            yield return new WaitForSeconds(kingDeadAnimationClip.length);
+            
+            yield return new WaitForSeconds(3f);
         }
 
         // Update is called once per frame

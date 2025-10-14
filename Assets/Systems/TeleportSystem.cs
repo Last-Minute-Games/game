@@ -86,7 +86,7 @@ namespace Systems
             yield return StartCoroutine(FadeIn());
             
             // check if scene is tutorial
-            if (!Object.FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>())
+            if (tptTo.transform.name != "Throne" && !FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>())
             {
                 // Teleport the object
             
