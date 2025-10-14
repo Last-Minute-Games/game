@@ -1,14 +1,15 @@
 using UnityEngine;
 
 [RequireComponent(typeof(SpriteRenderer))]
-public class CardRunner : MonoBehaviour {
+public class CardRunner : MonoBehaviour
+{
     [Header("Card Reference")]
     public CardData data;
     [HideInInspector] public CharacterBase owner;
-
     [HideInInspector] public float cachedPotency = 1f;
 
-    private void Awake() {
+    private void Awake()
+    {
         var sr = GetComponent<SpriteRenderer>();
         if (data && data.artwork && sr) sr.sprite = data.artwork;
     }
@@ -22,12 +23,13 @@ public class CardRunner : MonoBehaviour {
         }
 
         foreach (var effect in data.effects)
-            effect?.Apply(user, target);
+            effect?.Apply(this, user, target);
     }
 
     public int EnergyCost => data ? data.energy : 0;
 
-    public bool TryPlay(CharacterBase user, Collider2D hit, out CharacterBase finalTarget) {
+    public bool TryPlay(CharacterBase user, Collider2D hit, out CharacterBase finalTarget)
+    {
         finalTarget = null;
         if (data == null) return false;
 
@@ -37,10 +39,8 @@ public class CardRunner : MonoBehaviour {
         if (finalTarget == null) return false;
 
         foreach (var eff in data.effects)
-            eff?.Apply(user, finalTarget);
+            eff?.Apply(this, user, finalTarget);
 
         return true;
     }
 }
-
-

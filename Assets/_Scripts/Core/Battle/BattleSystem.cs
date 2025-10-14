@@ -101,11 +101,11 @@ public class BattleSystem : MonoBehaviour
     // ==============================
     //  TURN SYSTEM
     // ==============================
-
     private void StartPlayerTurn()
     {
         playerTurn = true;
         player.RefillEnergy();
+
         Debug.Log("🔹 Player’s turn started!");
 
         foreach (Enemy enemy in enemies)
@@ -121,13 +121,21 @@ public class BattleSystem : MonoBehaviour
 
         StartCoroutine(HandleTurnFlow());
     }
-    
+
     private IEnumerator HandleTurnFlow()
     {
         isProcessingTurn = true;
 
         yield return ClearHand();
 
+        // 🧱 Step 1: Clear player block at the start of enemy turn
+        player?.EndTurn();
+
+        // 🧱 Step 2: Now that enemy turn begins, clear *their* previous block
+        foreach (Enemy enemy in enemies)
+            enemy?.EndTurn();
+
+        // 🧨 Step 3: Enemies act
         foreach (Enemy enemy in enemies)
         {
             if (enemy == null || player == null) continue;
@@ -135,12 +143,7 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
-        // 🧱 End-of-turn cleanup: clear all block before the next round
-        player?.EndTurn();
-
-        foreach (Enemy enemy in enemies)
-            enemy?.EndTurn();
-
+        // 🕒 Step 4: Reset for next round (enemies keep new block until next enemy turn)
         Debug.Log("🕒 Resetting for next round...");
         yield return new WaitForSeconds(turnResetDelay);
 
@@ -149,6 +152,5 @@ public class BattleSystem : MonoBehaviour
 
         isProcessingTurn = false;
     }
+
 }
-
-

@@ -17,10 +17,11 @@ MonoBehaviour:
   artwork: {fileID: -4973404695210688271, guid: b1c20a18415e0f149a5585eadaa0d16a, type: 3}
   cardType: 1
   energy: 1
+  targetingRule: {fileID: 11400000, guid: 1325419bf9a3518e6a5c6b0e76a0fd4a, type: 2}
   intentionIcon: {fileID: 3916248198624648304, guid: f6760e1fb8aef684ebe3ef03b44fa2d1, type: 3}
   intentionText: defending myself tf
-  minMultiplier: 0.9
-  maxMultiplier: 1.1
+  minMultiplier: 0.5
+  maxMultiplier: 1.5
   effects:
   - {fileID: 11400000, guid: 9d003353c520129bba7ef9b1af9f0f70, type: 2}
-  targetingRule: {fileID: 11400000, guid: 1325419bf9a3518e6a5c6b0e76a0fd4a, type: 2}
+  isPlayerUsable: 1

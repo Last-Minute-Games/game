@@ -17,10 +17,11 @@ MonoBehaviour:
   artwork: {fileID: 8574915176529702039, guid: 79fbcb0fb24220d4db717f465dbc1cf1, type: 3}
   cardType: 0
   energy: 1
+  targetingRule: {fileID: 11400000, guid: 15b47d86db09307ac95a2fdfc0c70258, type: 2}
   intentionIcon: {fileID: 3916248198624648304, guid: f6760e1fb8aef684ebe3ef03b44fa2d1, type: 3}
   intentionText: gonna attack u
-  minMultiplier: 0.9
-  maxMultiplier: 1.1
+  minMultiplier: 0.2
+  maxMultiplier: 2
   effects:
   - {fileID: 11400000, guid: 854cfdb1168fe7a2ebaa55356159ccd1, type: 2}
-  targetingRule: {fileID: 11400000, guid: 15b47d86db09307ac95a2fdfc0c70258, type: 2}
+  isPlayerUsable: 1

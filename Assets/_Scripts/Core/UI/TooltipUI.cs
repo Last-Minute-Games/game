@@ -21,22 +21,29 @@ public class TooltipUI : MonoBehaviour
 
     public void Show(CardData data, CardRunner runner = null)
     {
-        if (data == null) return;
-
-        titleText.text = data.cardName;
-
-        // Potency section (if runtime card)
-        string potencyInfo = "";
-        if (runner != null && runner.cachedPotency > 0 && runner.cachedPotency != 1f)
+        if (data == null)
         {
-            potencyInfo = $"Potency: ×{runner.cachedPotency:F2}\n\n";
+            Hide();
+            return;
         }
 
-        // Description
-        descriptionText.text = potencyInfo + data.description;
+        titleText.text = data.cardName;
+        descriptionText.text = data.description;
 
-        // Stats
-        statsText.text = $"Type: {data.cardType}\nCost: {data.energy}";
+        string stats = $"Type: {data.cardType}\nCost: {data.energy}";
+
+        // --- Add potency if runner provided ---
+        if (runner != null)
+        {
+            float potency = runner.cachedPotency;
+
+            // Color-coded potency text
+            Color potColor = potency > 1f ? new Color(0.5f, 1f, 0.5f) : new Color(1f, 0.6f, 0.6f);
+            string hex = ColorUtility.ToHtmlStringRGB(potColor);
+            stats += $"\n<color=#{hex}>Potency: ×{potency:F2}</color>";
+        }
+
+        statsText.text = stats;
 
         canvasGroup.alpha = 1f;
         canvasGroup.blocksRaycasts = false;
@@ -51,7 +58,6 @@ public class TooltipUI : MonoBehaviour
 
     void Update()
     {
-        // Follow mouse position
         if (gameObject.activeSelf)
         {
             Vector2 pos = Input.mousePosition;
