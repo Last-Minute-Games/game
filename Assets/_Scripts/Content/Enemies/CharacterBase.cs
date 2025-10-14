@@ -44,23 +44,45 @@ public abstract class CharacterBase : MonoBehaviour
         int absorbed = Mathf.Min(block, incoming);
         int actualDamage = Mathf.Max(0, incoming - absorbed);
 
-        // Apply block absorption
+        // 🧱 Block absorbs some or all damage
         if (absorbed > 0)
         {
             block -= absorbed;
             UpdateBlockUI();
 
-            // 🟦 Block feedback
-            if (actualDamage == 0)
-                ShowBlockDefenseFeedback(absorbed); // full block
+            // ✅ Feedback when block absorbs *any* damage
+            if (this is Player)
+            {
+                CameraFeedback.Instance?.PlayBlockShake();
+
+                if (healthBarInstance is PlayerHealthBar phb)
+                {
+                    phb.ShowFloatingText($"-{absorbed} Block", new Color(0.5f, 0.8f, 1f));
+                    phb.FlashBlock();
+                }
+            }
+
+            // 🟦 Sprite feedback (full block or partial)
+            ShowBlockDefenseFeedback(absorbed);
         }
 
-        // Apply remaining damage
+        // 💥 Actual HP damage (if any left over)
         if (actualDamage > 0)
         {
             currentHealth = Mathf.Max(0, currentHealth - actualDamage);
             healthBarInstance?.UpdateHealth(currentHealth, maxHealth);
             ShowDamageFeedback(actualDamage);
+
+            if (this is Player)
+            {
+                CameraFeedback.Instance?.PlayDamageShake();
+
+                if (healthBarInstance is PlayerHealthBar phb)
+                {
+                    phb.ShowFloatingText($"-{actualDamage}", Color.red);
+                    phb.FlashDamage();
+                }
+            }
         }
 
         Debug.Log($"{characterName} took {actualDamage} dmg (blocked {absorbed}).");
@@ -80,6 +102,18 @@ public abstract class CharacterBase : MonoBehaviour
         healthBarInstance?.UpdateHealth(currentHealth, maxHealth);
 
         ShowHealFeedback(amount);
+
+        // 💚 Player-only camera + bar feedback
+        if (this is Player)
+        {
+            CameraFeedback.Instance?.PlayHealShake();
+            if (healthBarInstance is PlayerHealthBar phb)
+            {
+                phb.ShowFloatingText($"+{amount}", Color.green);
+                phb.FlashHeal();
+            }
+        }
+
         Debug.Log($"{characterName} healed {amount} (HP {currentHealth}/{maxHealth})");
     }
 
@@ -93,6 +127,17 @@ public abstract class CharacterBase : MonoBehaviour
         block += amount;
         UpdateBlockUI();
         ShowBlockFeedback(amount);
+
+        // 🛡️ Player-only camera + bar feedback
+        if (this is Player)
+        {
+            CameraFeedback.Instance?.PlayBlockShake();
+            if (healthBarInstance is PlayerHealthBar phb)
+            {
+                phb.ShowFloatingText($"+{amount} Block", Color.cyan);
+                phb.FlashBlock();
+            }
+        }
 
         Debug.Log($"{characterName} gained {amount} Block (Total {block})");
     }
@@ -148,12 +193,12 @@ public abstract class CharacterBase : MonoBehaviour
     // ==============================
     // FEEDBACK
     // ==============================
-        
+
     public void ShowBlockDefenseFeedback(int blocked)
     {
         if (!TryGetComponent(out SpriteRenderer sr)) return;
 
-        Color defenseColor = new Color(0.5f, 0.8f, 1f); // softer cyan-blue
+        Color defenseColor = new Color(0.5f, 0.8f, 1f);
         Color baseColor = sr.color;
 
         sr.DOColor(defenseColor, 0.1f).OnComplete(() => sr.DOColor(baseColor, 0.25f));

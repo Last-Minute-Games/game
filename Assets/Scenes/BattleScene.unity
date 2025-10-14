@@ -1431,6 +1431,7 @@ GameObject:
   - component: {fileID: 1154011890}
   - component: {fileID: 1154011894}
   - component: {fileID: 1154011893}
+  - component: {fileID: 1154011895}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1572,6 +1573,25 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_MaxRayIntersections: 0
+--- !u!114 &1154011895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154011889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d5588bf87cd361c0938a4304e024855, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraFeedback
+  damageShakeDuration: 0.25
+  damageShakeStrength: 0.3
+  damageShakeVibrato: 20
+  blockShakeDuration: 0.15
+  blockShakeStrength: 0.15
+  healShakeDuration: 0.1
+  healShakeStrength: 0.1
 --- !u!1 &1193789997
 GameObject:
   m_ObjectHideFlags: 0
