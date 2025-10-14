@@ -7,6 +7,7 @@ public class Enemy : CharacterBase
     [Header("UI References")]
     public GameObject healthBarPrefab;
     public TMP_Text intentionText;
+    public UnityEngine.UI.Image intentionIcon;
 
     [Header("Runtime")]
     public EnemyData data; // assigned by BattlefieldLayout / EnemyRunner
@@ -90,7 +91,11 @@ public class Enemy : CharacterBase
     public void PrepareNextCard()
     {
         if (IsDead) return;
-        if (data == null || data.availableCards.Count == 0) { Debug.LogWarning($"{name}: No cards available!"); return; }
+        if (data == null || data.availableCards.Count == 0)
+        {
+            Debug.LogWarning($"{name}: No cards available!");
+            return;
+        }
 
         currentCard = GetWeightedRandomCard();
         if (currentCard == null) return;
@@ -106,6 +111,7 @@ public class Enemy : CharacterBase
 
         int x = pendingRunner.GetPreviewX(this);
 
+        // Determine color
         string colorHex = "#FFCF40";
         foreach (var eff in currentCard.effects)
         {
@@ -115,11 +121,42 @@ public class Enemy : CharacterBase
         }
         string coloredX = $"<color={colorHex}>{x}</color>";
 
-        string intent = string.IsNullOrEmpty(currentCard.intentionText) ? currentCard.cardName : currentCard.intentionText;
+        // Format intention text
+        string intent = string.IsNullOrEmpty(currentCard.intentionText)
+            ? currentCard.cardName
+            : currentCard.intentionText;
+
         if (!string.IsNullOrEmpty(intent) && intent.Contains("<X>"))
             intent = intent.Replace("<X>", coloredX);
 
-        if (intentionText != null) intentionText.text = intent;
+        // =============================
+        // NEW: Set Intention Icon + Text
+        // =============================
+        if (intentionIcon != null)
+        {
+            if (currentCard.intentionIcon != null)
+            {
+                intentionIcon.sprite = currentCard.intentionIcon;
+                intentionIcon.enabled = true;
+            }
+            else
+            {
+                intentionIcon.enabled = false;
+            }
+        }
+
+        if (intentionText != null)
+        {
+            if (!string.IsNullOrEmpty(intent))
+            {
+                intentionText.text = intent;
+                intentionText.enabled = true;
+            }
+            else
+            {
+                intentionText.enabled = false;
+            }
+        }
 
         animator?.PlayIdle();
     }

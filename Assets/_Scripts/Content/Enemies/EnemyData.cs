@@ -22,13 +22,9 @@ public class EnemyData : ScriptableObject
     [Header("AI Deck (Weighted Cards)")]
     public List<WeightedCard> availableCards = new();
 
-    [Header("Behavior")]
-    [Range(0f, 1f)] public float idleChance = 0.1f;
-
     [Header("Behavior Evolution")]
     [Tooltip("Multiplier applied to weighted cards marked 'prioritize when low HP' when enemy health ≤ ⅓ max.")]
     public float lowHPWeightMultiplier = 1.5f;
-
 
     public void ModifyBehavior(CardData lastUsedCard)
     {
