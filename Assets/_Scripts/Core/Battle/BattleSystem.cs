@@ -121,7 +121,7 @@ public class BattleSystem : MonoBehaviour
 
         StartCoroutine(HandleTurnFlow());
     }
-
+    
     private IEnumerator HandleTurnFlow()
     {
         isProcessingTurn = true;
@@ -135,6 +135,12 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
+        // 🧱 End-of-turn cleanup: clear all block before the next round
+        player?.EndTurn();
+
+        foreach (Enemy enemy in enemies)
+            enemy?.EndTurn();
+
         Debug.Log("🕒 Resetting for next round...");
         yield return new WaitForSeconds(turnResetDelay);
 
@@ -144,3 +150,5 @@ public class BattleSystem : MonoBehaviour
         isProcessingTurn = false;
     }
 }
+
+

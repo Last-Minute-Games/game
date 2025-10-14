@@ -23,8 +23,10 @@ public class PlayerHealthBar : HealthBarBase
     public override void UpdateHealth(int current, int max)
     {
         if (!healthFill) return;
-        float ratio = Mathf.Clamp01((float)current / max);
-        healthFill.fillAmount = ratio;
+
+        // ✅ Same logic as EnemyHealthBar
+        float fill = Mathf.Clamp01((float)current / max);
+        healthFill.rectTransform.localScale = new Vector3(fill, 1f, 1f);
 
         if (healthText)
             healthText.text = $"{current}/{max}";
@@ -40,7 +42,26 @@ public class PlayerHealthBar : HealthBarBase
         if (hasBlock && defenseText)
             defenseText.text = $"+{block}";
 
+        if (hasBlock && defenseIcon)
+        {
+            defenseIcon.color = Color.cyan;
+            defenseIcon.CrossFadeColor(Color.white, 0.5f, false, true);
+        }
+
         if (healthFill)
             healthFill.color = hasBlock ? new Color(0.5f, 0.8f, 1f) : Color.red;
+    }
+
+    private void LateUpdate()
+    {
+        if (!player)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // ✅ Match EnemyHealthBar behavior exactly
+        UpdateHealth(player.currentHealth, player.maxHealth);
+        UpdateBlock(player.block);
     }
 }
