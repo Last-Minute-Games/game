@@ -12,10 +12,10 @@ namespace _Scripts.Gameplay
 
         private bool isDragging = false;
         private bool pointerOnCard = false;
-    
+
         private BoxCollider2D selfCol;
         public bool IsDragging => isDragging;
-    
+
         private void Awake()
         {
             cardView = GetComponent<CardView>();
@@ -27,7 +27,7 @@ namespace _Scripts.Gameplay
         {
             Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
             worldPos.z = 0;
-        
+
             Collider2D hit = Physics2D.OverlapPoint(worldPos);
             if (hit != null && hit.gameObject == gameObject)
             {
@@ -35,7 +35,7 @@ namespace _Scripts.Gameplay
                 startPos = transform.position;
                 spriteRenderer.sortingOrder = 500;
                 transform.DOScale(1.15f, 0.1f);
-            }   
+            }
             else
             {
                 pointerOnCard = false;
@@ -75,6 +75,7 @@ namespace _Scripts.Gameplay
 
             selfCol.enabled = wasEnabled;
 
+            // If we dropped on a target
             if (target != null && target.gameObject != gameObject && cardView != null)
             {
                 if (cardView.UseCard(target))
@@ -84,16 +85,19 @@ namespace _Scripts.Gameplay
                 }
             }
 
-            // Self-targeting instant apply
-            if (cardView != null && cardView.Data.targetingRule != null &&
-                cardView.Data.targetingRule.targetType == TargetType.Self)
+            // If self-targeting (no target under cursor)
+            if (cardView != null && cardView.runner != null && cardView.runner.data != null)
             {
-                var player = FindFirstObjectByType<Player>();
-                if (player != null)
+                var rule = cardView.runner.data.targetingRule;
+                if (rule != null && rule.targetingType == TargetingType.Self) // match your TargetingRule setup
                 {
-                    cardView.UseCard(player.GetComponent<Collider2D>());
-                    ResetEnemyTints();
-                    return;
+                    var player = FindFirstObjectByType<Player>();
+                    if (player != null)
+                    {
+                        cardView.UseCard(player.GetComponent<Collider2D>());
+                        ResetEnemyTints();
+                        return;
+                    }
                 }
             }
 
