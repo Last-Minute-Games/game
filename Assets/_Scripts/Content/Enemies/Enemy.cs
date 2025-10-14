@@ -10,16 +10,15 @@ public class Enemy : CharacterBase
     public UnityEngine.UI.Image intentionIcon;
 
     [Header("Runtime")]
-    public EnemyData data; // assigned by BattlefieldLayout / EnemyRunner
+    public EnemyData data; // assigned at runtime via EnemyRunner
     private EnemyAnimator2D animator;
     private CardLibrary library;
     private CardData currentCard;
+    private CardRunner pendingRunner;
 
     [Header("Scaling")]
     [Tooltip("Affects how strong this character’s card effects are.")]
     public float globalPowerScale = 1.0f;
-
-    private CardRunner pendingRunner; // keep between prepare & execute
 
     public bool IsDead { get; private set; } = false;
 
@@ -45,7 +44,7 @@ public class Enemy : CharacterBase
                 defensePanel.gameObject.SetActive(false);
         }
 
-        // Initialize intention UI in "waiting" state
+        // Initial "waiting" state for intentions
         if (intentionText != null)
         {
             intentionText.text = string.Empty;
@@ -55,10 +54,14 @@ public class Enemy : CharacterBase
         if (intentionIcon != null)
         {
             Color c = intentionIcon.color;
-            c.a = 0f; // make icon invisible
+            c.a = 0f;
             intentionIcon.color = c;
         }
     }
+
+    // =====================================================
+    //  CARD SELECTION
+    // =====================================================
 
     private CardData GetWeightedRandomCard()
     {
@@ -66,15 +69,12 @@ public class Enemy : CharacterBase
             return null;
 
         float totalWeight = 0f;
-
         foreach (var entry in data.availableCards)
         {
             if (entry.card == null) continue;
-
             float weight = Mathf.Max(0f, entry.baseWeight);
             if (entry.prioritizeWhenLowHP && currentHealth <= maxHealth / 3f)
                 weight *= data.lowHPWeightMultiplier;
-
             totalWeight += weight;
         }
 
@@ -87,11 +87,9 @@ public class Enemy : CharacterBase
         foreach (var entry in data.availableCards)
         {
             if (entry.card == null) continue;
-
             float weight = Mathf.Max(0f, entry.baseWeight);
             if (entry.prioritizeWhenLowHP && currentHealth <= maxHealth / 3f)
                 weight *= data.lowHPWeightMultiplier;
-
             cumulative += weight;
             if (roll <= cumulative)
                 return entry.card;
@@ -99,6 +97,10 @@ public class Enemy : CharacterBase
 
         return data.availableCards[0].card;
     }
+
+    // =====================================================
+    //  INTENTION PREPARATION
+    // =====================================================
 
     public void PrepareNextCard()
     {
@@ -118,12 +120,13 @@ public class Enemy : CharacterBase
             go.transform.SetParent(transform);
             pendingRunner = go.AddComponent<CardRunner>();
         }
+
         pendingRunner.data = currentCard;
         pendingRunner.RollIfNeeded(currentCard);
 
         int x = pendingRunner.GetPreviewX(this);
 
-        // Determine color
+        // Colorize <X>
         string colorHex = "#FFCF40";
         foreach (var eff in currentCard.effects)
         {
@@ -133,25 +136,22 @@ public class Enemy : CharacterBase
         }
         string coloredX = $"<color={colorHex}>{x}</color>";
 
-        // Format intention text
+        // Build intention text
         string intent = currentCard.intentionText;
         if (!string.IsNullOrEmpty(intent) && intent.Contains("<X>"))
             intent = intent.Replace("<X>", coloredX);
 
-        // =============================
-        // Set Intention Icon + Text
-        // =============================
         bool hasIcon = currentCard.intentionIcon != null;
         bool hasText = !string.IsNullOrEmpty(intent);
 
-        // Handle icon
+        // ----- ICON -----
         if (intentionIcon != null)
         {
             if (hasIcon)
             {
                 intentionIcon.sprite = currentCard.intentionIcon;
                 Color c = intentionIcon.color;
-                c.a = 1f; // fully visible
+                c.a = 1f;
                 intentionIcon.color = c;
                 intentionIcon.enabled = true;
             }
@@ -161,7 +161,7 @@ public class Enemy : CharacterBase
             }
         }
 
-        // Handle text
+        // ----- TEXT -----
         if (intentionText != null)
         {
             if (hasText)
@@ -178,28 +178,25 @@ public class Enemy : CharacterBase
             }
         }
 
-        // Handle centering
+        // ----- CENTERING -----
         if (intentionIcon != null && intentionText != null)
         {
             if (hasIcon && !hasText)
-            {
-                // Center icon alone
                 intentionIcon.rectTransform.anchoredPosition = Vector2.zero;
-            }
             else if (!hasIcon && hasText)
-            {
-                // Center text alone
                 intentionText.rectTransform.anchoredPosition = Vector2.zero;
-            }
         }
 
         animator?.PlayIdle();
     }
 
+    // =====================================================
+    //  EXECUTION
+    // =====================================================
+
     public IEnumerator ExecuteIntention(Player player)
     {
-        if (IsDead)
-            yield break;
+        if (IsDead) yield break;
 
         if (currentCard == null)
         {
@@ -209,9 +206,7 @@ public class Enemy : CharacterBase
 
         animator?.PlayAttack();
         yield return new WaitForSeconds(0.4f);
-
-        if (IsDead)
-            yield break;
+        if (IsDead) yield break;
 
         if (pendingRunner == null)
         {
@@ -224,7 +219,7 @@ public class Enemy : CharacterBase
 
         pendingRunner.Execute(this, player);
 
-        // Reset to waiting state
+        // Reset to "waiting" state
         if (intentionText != null)
         {
             intentionText.text = string.Empty;
@@ -250,6 +245,10 @@ public class Enemy : CharacterBase
             data.ModifyBehavior(currentCard);
     }
 
+    // =====================================================
+    //  DAMAGE & DEATH
+    // =====================================================
+
     public override void TakeDamage(int amount)
     {
         if (IsDead) return;
@@ -271,7 +270,6 @@ public class Enemy : CharacterBase
     {
         if (IsDead) return;
         IsDead = true;
-
         StopAllCoroutines();
 
         if (intentionText != null) intentionText.text = string.Empty;
@@ -304,13 +302,19 @@ public class Enemy : CharacterBase
         Destroy(gameObject, 0.1f);
     }
 
+    // =====================================================
+    //  INITIALIZATION
+    // =====================================================
+
     public void InitializeFromData(EnemyData baseData)
     {
-        // Create a runtime clone so we don’t mutate the original asset
+        // Clone the template so runtime changes don’t modify the asset
         this.data = Instantiate(baseData);
 
         characterName = data.enemyName;
-        maxHealth = data.maxHealth;
+
+        // Roll health ONCE
+        maxHealth = data.GetRandomizedHealth();
         currentHealth = maxHealth;
 
         globalPowerScale = data.globalCardMultiplier;

@@ -16,27 +16,25 @@ public class EnemyRunner : MonoBehaviour
             return;
         }
 
-        // Instantiate enemy
+        // Instantiate enemy prefab
         GameObject enemyObj = Instantiate(enemyPrefab, transform.position, Quaternion.identity);
         spawnedEnemy = enemyObj.GetComponent<Enemy>();
 
-        if (spawnedEnemy != null)
+        if (spawnedEnemy == null)
         {
-            spawnedEnemy.data = data;
+            Debug.LogError("❌ Spawned prefab has no Enemy component!");
+            return;
+        }
 
-            // Appearance
-            if (data.animationSet != null && data.animationSet.idle != null && data.animationSet.idle.Length > 0)
-            {
-                SpriteRenderer sr = enemyObj.GetComponent<SpriteRenderer>();
-                if (sr != null)
-                    sr.sprite = data.animationSet.idle[0];
-            }
+        // ✅ Initialize enemy with runtime-safe clone of data
+        spawnedEnemy.InitializeFromData(data);
 
-            // Core stats
-            spawnedEnemy.characterName = data.enemyName;
-            spawnedEnemy.maxHealth = data.maxHealth;
-            spawnedEnemy.currentHealth = data.maxHealth;
-            spawnedEnemy.strength = data.baseDamage;
+        // ✅ Set initial appearance
+        if (data.animationSet != null && data.animationSet.idle != null && data.animationSet.idle.Length > 0)
+        {
+            SpriteRenderer sr = enemyObj.GetComponent<SpriteRenderer>();
+            if (sr != null)
+                sr.sprite = data.animationSet.idle[0];
         }
     }
 }

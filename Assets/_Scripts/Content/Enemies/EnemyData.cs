@@ -8,13 +8,14 @@ public class EnemyData : ScriptableObject
     public string enemyName = "Unnamed Enemy";
     public Sprite portrait;
 
-    [Header("Core Stats")]
-    public int maxHealth = 100;
-    public int baseDamage = 10;
-    public int defense = 2;
+    [Header("Core Stats (Health Range)")]
+    [Tooltip("The minimum and maximum possible health this enemy can spawn with.")]
+    public int minHealth = 80;
+    public int maxHealthRange = 150;
 
     [Header("Global Scaling (applies to all cards)")]
-    [Range(0.5f, 3f)] public float globalCardMultiplier = 1f;
+    [Range(0.5f, 3f)]
+    public float globalCardMultiplier = 1f;
 
     [Header("Animations")]
     public EnemyAnimationSet animationSet;
@@ -35,19 +36,29 @@ public class EnemyData : ScriptableObject
             if (entry.card == null) continue;
 
             // Simple adaptive logic
-            if (lastUsedCard.cardType == CardType.Defense)
+            switch (lastUsedCard.cardType)
             {
-                entry.baseWeight *= 1.25f; // Attack bias after defense
-            }
-            else if (lastUsedCard.cardType == CardType.Healing)
-            {
-                entry.baseWeight *= 1.1f; // Guard after healing
-            }
-            else if (lastUsedCard.cardType == CardType.Attack)
-            {
-                entry.baseWeight *= 0.95f; // Slight cooldown for aggression
+                case CardType.Defense:
+                    entry.baseWeight *= 1.25f; // Attack bias after defense
+                    break;
+
+                case CardType.Healing:
+                    entry.baseWeight *= 1.1f; // Guard after healing
+                    break;
+
+                case CardType.Attack:
+                    entry.baseWeight *= 0.95f; // Slight cooldown for aggression
+                    break;
             }
         }
+    }
+
+    /// <summary>
+    /// Returns a randomized health value between minHealth and maxHealthRange.
+    /// </summary>
+    public int GetRandomizedHealth()
+    {
+        return Random.Range(minHealth, maxHealthRange + 1);
     }
 }
 
