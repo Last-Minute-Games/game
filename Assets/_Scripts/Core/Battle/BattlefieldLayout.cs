@@ -1,50 +1,23 @@
+// BattlefieldLayout.cs
 using UnityEngine;
 using System.Collections.Generic;
 
 public class BattlefieldLayout : MonoBehaviour
 {
     [Header("Prefabs & Libraries")]
-    [SerializeField] private GameObject playerPrefab;
-    [SerializeField] private GameObject enemyPrefab; // generic enemy prefab
+    [SerializeField] private GameObject enemyPrefab; 
     [SerializeField] private EnemyLibrary enemyLibrary;
 
-    [Header("Positions")]
-    [SerializeField] private Vector3 playerPos = new(-6f, 0f, 0f);
-    [SerializeField] private Vector3 enemyStartPos = new(6f, 0f, 0f);
-    [SerializeField] private float enemySpacing = 2.5f;
+    [Header("Enemy Positioning")]
+    [SerializeField] private float horizontalSpacing = 2.5f;
+    [SerializeField] private float rearOffsetY = 0.5f;
+    [SerializeField] private float rearScale = 0.8f;
 
-    [Header("Settings")]
-    [SerializeField, Range(1, 5)] private int enemyCount = 3;
-    [SerializeField] private bool randomizeEnemies = true;
-
-    private GameObject player;
     private readonly List<Enemy> activeEnemies = new();
 
     private void Start()
     {
-        SpawnPlayer();
         SpawnEnemies();
-    }
-
-    private void SpawnPlayer()
-    {
-        if (playerPrefab == null)
-        {
-            Debug.LogError("❌ BattlefieldLayout: Missing Player Prefab!");
-            return;
-        }
-
-        player = Instantiate(playerPrefab, playerPos, Quaternion.identity);
-        player.name = "Player";
-
-        CharacterBase playerChar = player.GetComponent<CharacterBase>();
-        if (playerChar != null)
-        {
-            playerChar.characterName = "Player";
-            playerChar.currentHealth = playerChar.maxHealth;
-        }
-
-        Debug.Log("✅ Player spawned.");
     }
 
     private void SpawnEnemies()
@@ -61,19 +34,16 @@ public class BattlefieldLayout : MonoBehaviour
             return;
         }
 
+        int enemyCount = Random.Range(enemyLibrary.minEnemies, enemyLibrary.maxEnemies + 1);
+        Vector3 center = Vector3.zero;
+
         for (int i = 0; i < enemyCount; i++)
         {
-            Vector3 spawnPos = enemyStartPos + Vector3.left * enemySpacing * i;
-
-            // Pick enemy data from library
-            EnemyData selectedData = randomizeEnemies
-                ? enemyLibrary.GetRandomEnemy()
-                : enemyLibrary.AvailableEnemies[i % enemyLibrary.AvailableEnemies.Count];
-
+            Vector3 spawnPos = GetSpawnPosition(i, enemyCount, center);
+            EnemyData selectedData = enemyLibrary.GetRandomEnemy();
             GameObject enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-            Enemy newEnemy = enemyObj.GetComponent<Enemy>();
-            EnemyAnimator2D anim = enemyObj.GetComponent<EnemyAnimator2D>();
 
+            Enemy newEnemy = enemyObj.GetComponent<Enemy>();
             if (newEnemy == null)
             {
                 Debug.LogError($"❌ Prefab {enemyPrefab.name} is missing Enemy component!");
@@ -85,15 +55,39 @@ public class BattlefieldLayout : MonoBehaviour
             newEnemy.characterName = selectedData.enemyName;
             newEnemy.maxHealth = selectedData.maxHealth;
             newEnemy.currentHealth = selectedData.maxHealth;
-            newEnemy.strength = selectedData.baseDamage;
 
-            // Assign animation set
-            if (anim != null && selectedData.animationSet != null)
-                anim.SetAnimSet(selectedData.animationSet);
+            // Apply perspective scaling if behind others
+            if (enemyCount == 3 && i == 2)
+            {
+                enemyObj.transform.localScale *= rearScale;
+                enemyObj.transform.position += Vector3.up * rearOffsetY;
+            }
 
-            Debug.Log($"🧠 Spawned enemy: {selectedData.enemyName} ({selectedData.maxHealth} HP)");
             activeEnemies.Add(newEnemy);
         }
+    }
+
+    private Vector3 GetSpawnPosition(int index, int total, Vector3 center)
+    {
+        if (total == 1)
+            return center;
+
+        if (total == 2)
+        {
+            return index == 0
+                ? center + Vector3.left * horizontalSpacing / 2f
+                : center + Vector3.right * horizontalSpacing / 2f;
+        }
+
+        if (total == 3)
+        {
+            if (index == 0) return center + Vector3.left * horizontalSpacing;
+            if (index == 1) return center + Vector3.right * horizontalSpacing;
+            return center + Vector3.back * 0.1f; // “behind” (slightly deeper in Z)
+        }
+
+        // Default fallback
+        return center + Vector3.right * (index - total / 2f) * horizontalSpacing;
     }
 
     public IReadOnlyList<Enemy> GetEnemies() => activeEnemies;
