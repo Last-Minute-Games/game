@@ -98,7 +98,7 @@ public class TooltipUI : MonoBehaviour
         if (gameObject.activeSelf)
         {
             Vector2 pos = Input.mousePosition;
-            rectTransform.position = pos + new Vector2(120f, -80f);
+            rectTransform.position = pos + new Vector2(120f, 80f);
         }
     }
 }
