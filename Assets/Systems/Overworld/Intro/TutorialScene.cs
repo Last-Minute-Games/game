@@ -1,6 +1,8 @@
 using System.Collections;
 using DG.Tweening;
+using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Systems.Overworld.Intro
@@ -11,9 +13,12 @@ namespace Systems.Overworld.Intro
         public Sprite kingBehindSprite;
         public Sprite kingFrontSprite;
         
+        public AnimationClip kingDeadAnimationClip;
+        
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
         private Camera _plrMainCamera;
+        private CinemachinePositionComposer _cinemachinePositionComposer;
         
         private CharacterMotor2D _characterMotor2D;
         private CanvasGroup _fadeCanvasGroup;
@@ -31,12 +36,15 @@ namespace Systems.Overworld.Intro
         
         private SpriteRenderer _kingSpriteRenderer;
         private Animator _kingAnimator;
+        private AudioSource _kingAudioSource;
         
         private Camera _throneRoomCamera;
         
         private MysteriousManIntro _mysteriousManIntro;
         
         private bool _isPlayingIntroMusic = false;
+
+        private GameObject _blackScreen;
     
         private IEnumerator WaitDreamIntro()
         {
@@ -55,10 +63,18 @@ namespace Systems.Overworld.Intro
                 page.gameObject.SetActive(page.name == pageName);
             }
         }
+        
+        public void SetCinecamYOffset(float yOffset)
+        {
+            _cinemachinePositionComposer.TargetOffset.y = yOffset;
+        }
     
         void Start()
         {
             _plrObject = GameObject.FindGameObjectWithTag("Player");
+            _blackScreen = GameObject.Find("Blackout");
+            
+            _blackScreen.SetActive(false);
             
             _plrInput = _plrObject.GetComponent<PlayerInput2D>();
             _plrInput.isInputEnabled = false;
@@ -66,7 +82,11 @@ namespace Systems.Overworld.Intro
             _characterMotor2D = _plrObject.GetComponent<CharacterMotor2D>();
             
             _plrMainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
-        
+            _cinemachinePositionComposer = GameObject.Find("CinemachineCamera").GetComponent<CinemachinePositionComposer>();
+            
+            // change cinecam offset
+            SetCinecamYOffset(0);
+            
             _journalPanel = GameObject.Find("JournalPanel").GetComponent<CanvasGroup>();
             _journalPanel.alpha = 0f;
 
@@ -92,6 +112,8 @@ namespace Systems.Overworld.Intro
             
             _kingAnimator = GameObject.Find("KingNPC").GetComponent<Animator>();
             _kingAnimator.speed = 0; // freeze at start
+            
+            _kingAudioSource = GameObject.Find("KingNPC").GetComponent<AudioSource>();
             
             _mysteriousManIntro = GameObject.Find("MysteriousManNPC").GetComponent<MysteriousManIntro>();
             
@@ -187,7 +209,7 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(3f);
 
-            _introMusicManager.FadeAndStop(0f, 6f);
+            _introMusicManager.FadeAndStop(0f, 8f);
             
             // TWEEN king camera slightly up
             _throneRoomCamera.transform.DOMoveY( _throneRoomCamera.transform.position.y + 5.45f, 6f).SetEase(Ease.Linear);
@@ -201,12 +223,36 @@ namespace Systems.Overworld.Intro
             yield return _mysteriousManIntro.FadeIn();
             
             yield return new WaitForSeconds(0.5f);
+            
+            _blackScreen.SetActive(true);
+            _mysteriousManIntro.GetComponent<SpriteRenderer>().sortingOrder = 5;
 
+            // play sound asynchrously
+            _kingAudioSource.Play();
             yield return _mysteriousManIntro.PlayAnimationOnce();
             
             yield return new WaitForSeconds(1f);
             
+            _blackScreen.SetActive(false);
+            _mysteriousManIntro.GetComponent<SpriteRenderer>().sortingOrder = 0;
+            
             _kingAnimator.speed = 1; // unfreeze
+            
+            yield return new WaitForSeconds(kingDeadAnimationClip.length * 0.97f);
+            
+            _kingAnimator.speed = 0;
+            
+            yield return new WaitForSeconds(2f);
+            
+            
+            
+            // go to overworld scene
+            AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
+            op.allowSceneActivation = true; // or set false if you want to gate activation
+
+            // Optionally wait until load is done (it’s already black)
+            while (!op.isDone)
+                yield return null;
         }
 
         // Update is called once per frame
