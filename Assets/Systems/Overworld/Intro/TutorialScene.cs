@@ -195,7 +195,7 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(3f);
 
-            _introMusicManager.FadeAndStop(0f, 6f);
+            _introMusicManager.FadeAndStop(0f, 8f);
             
             // TWEEN king camera slightly up
             _throneRoomCamera.transform.DOMoveY( _throneRoomCamera.transform.position.y + 5.45f, 6f).SetEase(Ease.Linear);
@@ -222,7 +222,7 @@ namespace Systems.Overworld.Intro
             
             _kingAnimator.speed = 1; // unfreeze
             
-            yield return new WaitForSeconds(kingDeadAnimationClip.length);
+            yield return new WaitForSeconds(kingDeadAnimationClip.length * 0.97f);
             
             _kingAnimator.speed = 0;
             
