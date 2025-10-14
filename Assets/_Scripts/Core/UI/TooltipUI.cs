@@ -19,12 +19,23 @@ public class TooltipUI : MonoBehaviour
         Hide();
     }
 
-    public void Show(CardData data)
+    public void Show(CardData data, CardRunner runner = null)
     {
         if (data == null) return;
 
         titleText.text = data.cardName;
-        descriptionText.text = data.description;
+
+        // Potency section (if runtime card)
+        string potencyInfo = "";
+        if (runner != null && runner.cachedPotency > 0 && runner.cachedPotency != 1f)
+        {
+            potencyInfo = $"Potency: ×{runner.cachedPotency:F2}\n\n";
+        }
+
+        // Description
+        descriptionText.text = potencyInfo + data.description;
+
+        // Stats
         statsText.text = $"Type: {data.cardType}\nCost: {data.energy}";
 
         canvasGroup.alpha = 1f;
