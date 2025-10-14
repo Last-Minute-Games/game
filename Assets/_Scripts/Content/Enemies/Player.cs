@@ -14,6 +14,11 @@ public class Player : CharacterBase
     [Header("UI Prefabs")]
     public GameObject healthBarPrefab;
 
+
+    [Header("Scaling")]
+    [Tooltip("Affects how strong this character’s card effects are.")]
+    public float globalPowerScale = 1.0f;
+
     // --- Defense Panel ---
     private GameObject defensePanelInstance;
     private TMP_Text defenseText;

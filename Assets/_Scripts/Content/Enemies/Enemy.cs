@@ -14,6 +14,11 @@ public class Enemy : CharacterBase
     private CardLibrary library;
     private CardData currentCard;
 
+
+    [Header("Scaling")]
+    [Tooltip("Affects how strong this character’s card effects are.")]
+    public float globalPowerScale = 1.0f;
+
     protected override void Awake()
     {
         base.Awake();
