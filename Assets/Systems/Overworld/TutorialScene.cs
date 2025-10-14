@@ -16,7 +16,20 @@ public class TutorialScene : MonoBehaviour
     private CanvasGroup _journalMovementPage;
     private Button _movementContinueButton;
     
-    private EnvironmentSoundHandler _environmentSoundHandler; 
+    private EnvironmentSoundHandler _environmentSoundHandler;
+    private MusicManager _introMusicManager;
+
+    private GameObject _tutorialTriggers;
+    
+    private IEnumerator WaitDreamIntro()
+    {
+        yield return new WaitForSeconds(_introMusicManager.dreamLoop.length);
+        // Your event code here
+        Debug.Log("Dream intro finished playing!");
+        // Example: Call a function, activate a GameObject, etc.
+        _introMusicManager.SetAudioClip(_introMusicManager.dreamLoop, true);
+        _introMusicManager.Play();
+    }
     
     void Start()
     {
@@ -38,9 +51,17 @@ public class TutorialScene : MonoBehaviour
         
         _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
         
+        _introMusicManager = GameObject.Find("IntroMusic").GetComponent<MusicManager>();
+        _introMusicManager.SetAudioClip(_introMusicManager.dreamIntro);
+        
         _movementContinueButton.onClick.AddListener(() =>
         {
             StartCoroutine(CloseJournal());
+            
+            _introMusicManager.GetAudioSource().volume = 0f;
+            _introMusicManager.FadeAndPlay(0.35f, 15f);
+            
+            StartCoroutine(WaitDreamIntro());
         });
         
         StartCoroutine(BeginTutorialSeq());
