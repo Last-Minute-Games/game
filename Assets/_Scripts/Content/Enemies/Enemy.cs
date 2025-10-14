@@ -14,7 +14,6 @@ public class Enemy : CharacterBase
     private CardLibrary library;
     private CardData currentCard;
 
-
     [Header("Scaling")]
     [Tooltip("Affects how strong this character’s card effects are.")]
     public float globalPowerScale = 1.0f;
@@ -110,18 +109,72 @@ public class Enemy : CharacterBase
 
         // 🎯 Weighted random draw
         currentCard = GetWeightedRandomCard();
+        if (currentCard == null)
+        {
+            Debug.LogWarning($"{name}: No valid card selected!");
+            return;
+        }
 
-        // 🪧 Update intention UI
+        // 🎲 Simulate potency preview for intention display
+        float randomScale = Random.Range(currentCard.minMultiplier, currentCard.maxMultiplier);
+        float totalScale = randomScale * globalPowerScale;
+
+        // 💪 Calculate effective value based on card type
+        float effectiveValue = 0f;
+        if (currentCard.effects != null)
+        {
+            foreach (var eff in currentCard.effects)
+            {
+                if (eff is DamageEffect dmg)
+                    effectiveValue = dmg.baseDamage * totalScale;
+                else if (eff is HealEffect heal)
+                    effectiveValue = heal.baseHeal * totalScale;
+                else if (eff is BlockEffect blk)
+                    effectiveValue = blk.baseBlock * totalScale;
+            }
+        }
+
+        // 🎨 Choose color depending on effect type (damage/gain)
+        string colorHex = "#FFCF40"; // gold default
+        foreach (var eff in currentCard.effects)
+        {
+            if (eff is DamageEffect) colorHex = "#FF4040"; // red
+            if (eff is HealEffect) colorHex = "#40FF70";   // green
+            if (eff is BlockEffect) colorHex = "#40BFFF";  // blue
+        }
+
+        string coloredValue = $"<color={colorHex}>{effectiveValue:F0}</color>";
+
+        // 🧩 Substitute into intention text
+        string intentDisplay = currentCard.intentionText;
+        if (!string.IsNullOrEmpty(intentDisplay) && intentDisplay.Contains("<X>"))
+            intentDisplay = intentDisplay.Replace("<X>", coloredValue);
+
+        // 🪧 Dynamic prefix logic for naming
+        float range = currentCard.maxMultiplier - currentCard.minMultiplier;
+        string prefix = "";
+        if (range > 0.5f)
+        {
+            float normalized = (randomScale - currentCard.minMultiplier) / range;
+            if (normalized < 0.33f) prefix = "Poor ";
+            else if (normalized > 0.66f) prefix = "Potent ";
+        }
+
+        string cardDisplayName = prefix + currentCard.cardName.Split(' ')[^1];
+
+        // 🧾 Update UI text
         if (intentionText != null)
         {
-            string text = !string.IsNullOrEmpty(currentCard.intentionText)
-                ? currentCard.intentionText
-                : currentCard.cardName;
-            intentionText.text = text;
+            string finalText = !string.IsNullOrEmpty(intentDisplay)
+                ? intentDisplay
+                : cardDisplayName;
+            intentionText.text = finalText;
         }
 
         // 🎞️ Animate idle while preparing
         animator?.PlayIdle();
+
+        Debug.Log($"🎯 {name} preparing: {cardDisplayName} → {intentionText.text} (scale={totalScale:F2})");
     }
 
     // ===========================
