@@ -32,7 +32,12 @@ public class MusicManager : MonoBehaviour
     public void FadeAndPlay(float endValue, float duration)
     {
         source.Play();
-        source.DOFade(endValue, duration);
+        source.DOFade(endValue, duration).SetEase(Ease.Linear);
+    }
+    
+    public void FadeAndStop(float endValue, float duration)
+    {
+        source.DOFade(endValue, duration).SetEase(Ease.Linear).OnComplete(() => source.Stop());
     }
     
     public void Play()

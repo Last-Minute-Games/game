@@ -84,21 +84,30 @@ namespace Systems
             // Start fade-in
             _fadeCanvasGroup.blocksRaycasts = true;
             yield return StartCoroutine(FadeIn());
+            
+            // check if scene is tutorial
+            if (!Object.FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>())
+            {
+                // Teleport the object
+            
+                other.transform.position = tptTo.transform.position + new Vector3(direction.x, direction.y, 0) * 1.5f;
+                _cinemachinePositionComposer.Damping = Vector3.zero;
+            
+                yield return new WaitForSeconds(_fadeTime); // Adjust the wait time as needed
+                
+                // Start fade-out
+                _characterController2D.SetTeleporting(false);
+            
+                _cinemachinePositionComposer.Damping = Vector3.one;
+            
+                yield return StartCoroutine(FadeOut());
+                _fadeCanvasGroup.blocksRaycasts = false;
 
-            // Teleport the object
+                yield break;
+            }
             
-            other.transform.position = tptTo.transform.position + new Vector3(direction.x, direction.y, 0) * 1.5f;
-            _cinemachinePositionComposer.Damping = Vector3.zero;
-            
-            yield return new WaitForSeconds(_fadeTime); // Adjust the wait time as needed
-            
-            // Start fade-out
-            _characterController2D.SetTeleporting(false);
-            
-            _cinemachinePositionComposer.Damping = Vector3.one;
-            
-            yield return StartCoroutine(FadeOut());
-            _fadeCanvasGroup.blocksRaycasts = false;
+            var tutorialScene = FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>();
+            if (tutorialScene) tutorialScene.StartCoroutine(tutorialScene.BeginKingSeq());
         }
 
         private void OnEnter()
