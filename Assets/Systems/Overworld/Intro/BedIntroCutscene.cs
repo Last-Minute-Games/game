@@ -1,10 +1,9 @@
 using System.Collections;
 using cherrydev;
 using DG.Tweening;
-using DG.Tweening.Core;
 using UnityEngine;
 
-namespace Systems.Overworld
+namespace Systems.Overworld.Intro
 {
     public class BedIntroCutscene : MonoBehaviour
     {
