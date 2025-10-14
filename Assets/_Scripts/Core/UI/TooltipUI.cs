@@ -23,15 +23,40 @@ public class TooltipUI : MonoBehaviour
     {
         if (data == null) return;
 
-        string title = data.cardName;      // no mutation
+        string title = data.cardName;      // original title
         string desc  = data.description;   // no mutation
 
-        // Build <X> with the SAME roll + viewer scale
+        // ===========================
+        //  Determine Roll Label ("Poor", "Potent", etc.)
+        // ===========================
+        if (runner != null)
+        {
+            runner.RollIfNeeded(data); // ensure it has a roll
+            float roll = runner.randomScale;
+
+            float range = data.maxMultiplier - data.minMultiplier;
+            if (range > 0f)
+            {
+                float bottomThreshold = data.minMultiplier + range / 3f;
+                float topThreshold    = data.maxMultiplier - range / 3f;
+
+                if (roll <= bottomThreshold)
+                {
+                    title = $"<color=#6A6A6A>Poor</color> {data.cardName}";
+                }
+                else if (roll >= topThreshold)
+                {
+                    title = $"<color=#FFD700>Potent</color> {data.cardName}";
+                }
+                // else: keep title normal
+            }
+        }
+
+        // ===========================
+        //   Build Description (<X> values)
+        // ===========================
         if (runner != null && viewer != null && !string.IsNullOrEmpty(desc) && desc.Contains("<X>"))
         {
-            // Lock roll on first show (if not already rolled)
-            runner.RollIfNeeded(data);
-
             int x = runner.GetPreviewX(viewer);
 
             // Color by effect kind (same heuristic as enemy)
@@ -45,10 +70,14 @@ public class TooltipUI : MonoBehaviour
                     else if (eff is BlockEffect) colorHex = "#40BFFF";
                 }
             }
+
             string coloredX = $"<color={colorHex}>{x}</color>";
             desc = desc.Replace("<X>", coloredX);
         }
 
+        // ===========================
+        //   Display in Tooltip
+        // ===========================
         titleText.text = title;
         descriptionText.text = desc;
         statsText.text = $"Type: {data.cardType}\nCost: {data.energy}";
@@ -57,7 +86,6 @@ public class TooltipUI : MonoBehaviour
         canvasGroup.blocksRaycasts = false;
         gameObject.SetActive(true);
     }
-
 
     public void Hide()
     {
