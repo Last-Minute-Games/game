@@ -1,6 +1,7 @@
 using System.Collections;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Systems.Overworld.Intro
@@ -224,6 +225,14 @@ namespace Systems.Overworld.Intro
             yield return new WaitForSeconds(kingDeadAnimationClip.length);
             
             yield return new WaitForSeconds(3f);
+            
+            // go to overworld scene
+            AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
+            op.allowSceneActivation = true; // or set false if you want to gate activation
+
+            // Optionally wait until load is done (it’s already black)
+            while (!op.isDone)
+                yield return null;
         }
 
         // Update is called once per frame
