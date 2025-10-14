@@ -10,7 +10,7 @@ public class DamageEffect : CardEffect
         if (target == null) return;
         int total = Mathf.RoundToInt(baseDamage * totalScale + (user != null ? user.strength : 0));
         target.TakeDamage(total);
-        target.ShowDamageFeedback(total);
+        // target.ShowDamageFeedback(total); (not needed)
     }
 
     protected override int GetBaseValue() => baseDamage;
