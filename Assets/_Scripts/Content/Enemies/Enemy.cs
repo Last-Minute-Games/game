@@ -122,9 +122,7 @@ public class Enemy : CharacterBase
         string coloredX = $"<color={colorHex}>{x}</color>";
 
         // Format intention text
-        string intent = string.IsNullOrEmpty(currentCard.intentionText)
-            ? currentCard.cardName
-            : currentCard.intentionText;
+        string intent = currentCard.intentionText;
 
         if (!string.IsNullOrEmpty(intent) && intent.Contains("<X>"))
             intent = intent.Replace("<X>", coloredX);
@@ -147,6 +145,7 @@ public class Enemy : CharacterBase
 
         if (intentionText != null)
         {
+            // Hide text if empty or missing entirely
             if (!string.IsNullOrEmpty(intent))
             {
                 intentionText.text = intent;
@@ -158,6 +157,18 @@ public class Enemy : CharacterBase
             }
         }
 
+        // Center the icon if text is hidden
+        if (intentionIcon != null && intentionText != null)
+        {
+            bool iconOnly = !intentionText.enabled && intentionIcon.enabled;
+
+            if (iconOnly)
+            {
+                // Re-center icon manually if the layout group doesn’t auto-handle it
+                var iconRT = intentionIcon.rectTransform;
+                iconRT.anchoredPosition = Vector2.zero;
+            }
+        }
         animator?.PlayIdle();
     }
 
