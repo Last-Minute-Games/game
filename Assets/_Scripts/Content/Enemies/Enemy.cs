@@ -330,4 +330,4 @@ public class Enemy : CharacterBase
 
         animator?.PlayIdle();
     }
-}
+} 
