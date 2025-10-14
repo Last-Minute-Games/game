@@ -8,7 +8,12 @@ namespace Systems.Overworld.Intro
     public class TutorialScene : MonoBehaviour
     {
         // Start is called once before the first execution of Update after the MonoBehaviour is created
+        public Sprite kingBehindSprite;
+        public Sprite kingFrontSprite;
+        
+        private GameObject _plrObject;
         private PlayerInput2D _plrInput;
+        private Camera _plrMainCamera;
         
         private CharacterMotor2D _characterMotor2D;
         private CanvasGroup _fadeCanvasGroup;
@@ -23,6 +28,13 @@ namespace Systems.Overworld.Intro
         private MusicManager _introMusicManager;
 
         private GameObject _tutorialTriggers;
+        
+        private SpriteRenderer _kingSpriteRenderer;
+        private Animator _kingAnimator;
+        
+        private Camera _throneRoomCamera;
+        
+        private MysteriousManIntro _mysteriousManIntro;
         
         private bool _isPlayingIntroMusic = false;
     
@@ -46,10 +58,14 @@ namespace Systems.Overworld.Intro
     
         void Start()
         {
-            _plrInput = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerInput2D>();
+            _plrObject = GameObject.FindGameObjectWithTag("Player");
+            
+            _plrInput = _plrObject.GetComponent<PlayerInput2D>();
             _plrInput.isInputEnabled = false;
             
-            _characterMotor2D = GameObject.FindGameObjectWithTag("Player").GetComponent<CharacterMotor2D>();
+            _characterMotor2D = _plrObject.GetComponent<CharacterMotor2D>();
+            
+            _plrMainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         
             _journalPanel = GameObject.Find("JournalPanel").GetComponent<CanvasGroup>();
             _journalPanel.alpha = 0f;
@@ -68,7 +84,17 @@ namespace Systems.Overworld.Intro
         
             _introMusicManager = GameObject.Find("IntroMusic").GetComponent<MusicManager>();
             _introMusicManager.SetAudioClip(_introMusicManager.dreamIntro);
-        
+            
+            _throneRoomCamera = GameObject.Find("Throne Assets").transform.Find("Main Camera").GetComponent<Camera>();
+            _throneRoomCamera.gameObject.SetActive(false);
+            
+            _kingSpriteRenderer = GameObject.Find("KingNPC").GetComponent<SpriteRenderer>();
+            
+            _kingAnimator = GameObject.Find("KingNPC").GetComponent<Animator>();
+            _kingAnimator.speed = 0; // freeze at start
+            
+            _mysteriousManIntro = GameObject.Find("MysteriousManNPC").GetComponent<MysteriousManIntro>();
+            
             // iterate buttons
             foreach (Transform page in _journalPages.transform)
             {
@@ -102,23 +128,25 @@ namespace Systems.Overworld.Intro
             {
                 _journalPanel.blocksRaycasts = true; // Enable blocking after fade-in
             });
+            
+            _fadeCanvasGroup.DOFade(0.6f, 0.15f).SetEase(Ease.InOutQuad);
         
             yield return null;
         }
     
         public IEnumerator CloseJournal()
         {
-            _plrInput.isInputEnabled = true;
-            _environmentSoundHandler.PlayJournalSound(false);
-        
             _journalPanel.DOFade(0f, 0.15f).SetEase(Ease.InOutQuad).OnComplete(() =>
             {
                 _journalPanel.blocksRaycasts = false; // Disable blocking after fade-out
             });
-
-            _fadeCanvasGroup.DOFade(0f, .15f).SetEase(Ease.InOutQuad);
+            
+            _fadeCanvasGroup.DOFade(0f, 0.15f).SetEase(Ease.InOutQuad);
         
             yield return new WaitForSeconds(0.2f);
+            
+            _plrInput.isInputEnabled = true;
+            _environmentSoundHandler.PlayJournalSound(false);
             
             yield return null;
         }
@@ -137,6 +165,48 @@ namespace Systems.Overworld.Intro
             yield return OpenJournal();
         
             yield return null;
+        }
+
+        public IEnumerator BeginKingSeq()
+        {
+            _plrMainCamera.gameObject.SetActive(false);
+            _throneRoomCamera.gameObject.SetActive(true);
+            
+            _kingSpriteRenderer.sprite = kingBehindSprite;
+            
+            _characterMotor2D.forceIdleSprite = _characterMotor2D.idleUp;
+            
+            _plrInput.isInputEnabled = false;
+            
+            yield return new WaitForSeconds(1f);
+            
+            _fadeCanvasGroup.DOFade(0f, 4f).SetEase(Ease.InOutQuad).OnComplete(() =>
+            {
+                _fadeCanvasGroup.blocksRaycasts = false; // Disable blocking after fade-in
+            });
+            
+            yield return new WaitForSeconds(3f);
+
+            _introMusicManager.FadeAndStop(0f, 6f);
+            
+            // TWEEN king camera slightly up
+            _throneRoomCamera.transform.DOMoveY( _throneRoomCamera.transform.position.y + 5.45f, 6f).SetEase(Ease.Linear);
+            
+            yield return new WaitForSeconds(5f);
+            
+            _kingSpriteRenderer.sprite = kingFrontSprite;
+            
+            yield return new WaitForSeconds(2f);
+            
+            yield return _mysteriousManIntro.FadeIn();
+            
+            yield return new WaitForSeconds(0.5f);
+
+            yield return _mysteriousManIntro.PlayAnimationOnce();
+            
+            yield return new WaitForSeconds(1f);
+            
+            _kingAnimator.speed = 1; // unfreeze
         }
 
         // Update is called once per frame
