@@ -102,6 +102,8 @@ namespace Systems.Overworld.Intro
             {
                 _journalPanel.blocksRaycasts = true; // Enable blocking after fade-in
             });
+            
+            _fadeCanvasGroup.DOFade(0.6f, 0.15f).SetEase(Ease.InOutQuad);
         
             yield return null;
         }
@@ -115,8 +117,8 @@ namespace Systems.Overworld.Intro
             {
                 _journalPanel.blocksRaycasts = false; // Disable blocking after fade-out
             });
-
-            _fadeCanvasGroup.DOFade(0f, .15f).SetEase(Ease.InOutQuad);
+            
+            _fadeCanvasGroup.DOFade(0f, 0.15f).SetEase(Ease.InOutQuad);
         
             yield return new WaitForSeconds(0.2f);
             
