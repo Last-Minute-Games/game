@@ -18,7 +18,7 @@ public abstract class CharacterBase : MonoBehaviour
     public int block = 0;     // temporary shield, resets each turn
 
     [Header("UI")]
-    public HealthBar healthBarInstance;
+    public HealthBarBase healthBarInstance;
 
     [Header("Visuals")]
     public GameObject shieldPrefab; // optional VFX for player only
