@@ -1,3 +1,4 @@
+// EnemyLibrary.cs
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -6,6 +7,10 @@ public class EnemyLibrary : ScriptableObject
 {
     [Header("Registered Enemies")]
     public List<EnemyData> AvailableEnemies = new();
+
+    [Header("Encounter Settings")]
+    [Range(1, 5)] public int minEnemies = 1;
+    [Range(1, 5)] public int maxEnemies = 3;
 
     public EnemyData GetRandomEnemy()
     {
