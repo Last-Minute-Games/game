@@ -26,7 +26,15 @@ public class CardData : ScriptableObject
     [Header("Effects")]
     public CardEffect[] effects;
 
+    [Header("Player Draw Weighting")]
+    [Tooltip("Relative chance (0–1) that this card appears when the player draws. 1 = most common, 0 = never.")]
+    [Range(0f, 1f)] public float playerDrawWeight = 1f;
+
     [Header("Metadata")]
     [Tooltip("If false, the player cannot obtain or draw this card (enemy-exclusive).")]
     public bool isPlayerUsable = true;
+
+    [Header("Identification")]
+    [Tooltip("A unique ID to directly pull this card from code.")]
+    public int uniqueId = 0;
 }

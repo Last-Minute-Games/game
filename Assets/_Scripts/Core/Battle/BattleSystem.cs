@@ -59,13 +59,49 @@ public class BattleSystem : MonoBehaviour
 
     private IEnumerator SpawnStartingHand()
     {
-        for (int i = 0; i < startingHandSize; i++)
+        int guaranteedAttackId = 0; // Attack card ID
+        int guaranteedDefenseId = 1; // Defense card ID
+
+        // First: Spawn the guaranteed Attack card
+        GameObject attackCard = cardFactory.PullCardById(guaranteedAttackId, handSpawnPoint.position);
+        if (attackCard != null)
         {
-            GameObject cardObj = cardFactory.CreateRandomCard(handSpawnPoint.position, 0.6f, 0.25f, 0.15f, forPlayer: true);
+            CardView cv = attackCard.GetComponent<CardView>();
+            if (cv != null)
+            {
+                cv.player = player;
+                if (enemies.Count > 0)
+                    cv.targetEnemy = enemies[Random.Range(0, enemies.Count)];
+                yield return handView.AddCard(cv);
+            }
+        }
+
+        // Next: Spawn the guaranteed Defense card
+        GameObject defenseCard = cardFactory.PullCardById(guaranteedDefenseId, handSpawnPoint.position);
+        if (defenseCard != null)
+        {
+            CardView cv = defenseCard.GetComponent<CardView>();
+            if (cv != null)
+            {
+                cv.player = player;
+                if (enemies.Count > 0)
+                    cv.targetEnemy = enemies[Random.Range(0, enemies.Count)];
+                yield return handView.AddCard(cv);
+            }
+        }
+
+        // Then: Fill the rest of the hand randomly
+        for (int i = 0; i < startingHandSize - 2; i++)
+        {
+            GameObject cardObj = cardFactory.CreateRandomCard(
+                handSpawnPoint.position, 
+                0.6f, 0.25f, 0.15f, 
+                forPlayer: true
+            );
 
             if (cardObj == null)
             {
-                Debug.LogError("❌ BattleSystem: Failed to create card via factory!");
+                Debug.LogError("❌ BattleSystem: Failed to create random card!");
                 continue;
             }
 

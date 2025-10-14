@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class CardFactory : MonoBehaviour
 {
@@ -17,6 +16,9 @@ public class CardFactory : MonoBehaviour
             library.Initialize();
     }
 
+    // =============================
+    //  RANDOM / WEIGHTED CREATION
+    // =============================
     public GameObject CreateRandomCard(Vector3 position, float attackChance, float defenseChance, float healChance, bool forPlayer = true)
     {
         CardData data = library.GetRandomCardWeighted(attackChance, defenseChance, healChance, forPlayer);
@@ -30,7 +32,25 @@ public class CardFactory : MonoBehaviour
         return CreateCard(data, position);
     }
 
-    public GameObject CreateCard(CardData data, Vector3 position)
+    // =============================
+    //  DIRECT CREATION BY ID / NAME
+    // =============================
+    public GameObject PullCardById(int id, Vector3 position)
+    {
+        CardData data = library.GetById(id);
+        return CreateCard(data, position);
+    }
+
+    public GameObject PullCardByName(string name, Vector3 position)
+    {
+        CardData data = library.GetByName(name);
+        return CreateCard(data, position);
+    }
+
+    // =============================
+    //  INTERNAL CREATION
+    // =============================
+    private GameObject CreateCard(CardData data, Vector3 position)
     {
         if (data == null)
         {
