@@ -36,8 +36,8 @@ public class BattleSystem : MonoBehaviour
     {
         yield return null;
 
-        // player = FindObjectOfType<Player>(); ❌ remove this
         enemies.AddRange(FindObjectsOfType<Enemy>());
+        enemies.RemoveAll(e => e == null || e.IsDead);
 
         if (player == null)
         {
@@ -57,15 +57,10 @@ public class BattleSystem : MonoBehaviour
         StartPlayerTurn();
     }
 
-    // ==============================
-    //  HAND MANAGEMENT
-    // ==============================
-
     private IEnumerator SpawnStartingHand()
     {
         for (int i = 0; i < startingHandSize; i++)
         {
-            // Ask the factory to handle random card creation (weighted logic handled inside)
             GameObject cardObj = cardFactory.CreateRandomCard(handSpawnPoint.position, 0.6f, 0.25f, 0.15f, forPlayer: true);
 
             if (cardObj == null)
@@ -74,11 +69,9 @@ public class BattleSystem : MonoBehaviour
                 continue;
             }
 
-            // Animate into place
             cardObj.transform.position += Vector3.down * 1f;
             cardObj.transform.DOMove(handSpawnPoint.position, 0.25f).SetEase(Ease.OutBack);
 
-            // Set up CardView
             CardView cardView = cardObj.GetComponent<CardView>();
             if (cardView != null)
             {
@@ -103,9 +96,6 @@ public class BattleSystem : MonoBehaviour
         yield return SpawnStartingHand();
     }
 
-    // ==============================
-    //  TURN SYSTEM
-    // ==============================
     private void StartPlayerTurn()
     {
         playerTurn = true;
@@ -113,6 +103,7 @@ public class BattleSystem : MonoBehaviour
 
         Debug.Log("🔹 Player’s turn started!");
 
+        enemies.RemoveAll(e => e == null || e.IsDead);
         foreach (Enemy enemy in enemies)
             enemy?.PrepareNextCard();
     }
@@ -133,22 +124,24 @@ public class BattleSystem : MonoBehaviour
 
         yield return ClearHand();
 
-        // 🧱 Step 1: (DON’T clear player block here)
-        // The player’s block should persist while enemies attack.
-
-        // 🧱 Step 2: Start enemy turn → clear THEIR previous block
         foreach (Enemy enemy in enemies)
             enemy?.EndTurn();
 
-        // 🧨 Step 3: Enemies act
         foreach (Enemy enemy in enemies)
         {
-            if (enemy == null || player == null) continue;
+            if (enemy == null || enemy.IsDead || player == null) continue;
             yield return enemy.ExecuteIntention(player);
             yield return new WaitForSeconds(0.5f);
         }
 
-        // 🕒 Step 4: After enemies act, player’s block now expires
+        enemies.RemoveAll(e => e == null || e.IsDead);
+
+        if (enemies.Count == 0)
+        {
+            Debug.Log("🏆 All enemies defeated! Battle over!");
+            yield break;
+        }
+
         player?.EndTurn();
 
         Debug.Log("🕒 Resetting for next round...");
@@ -159,5 +152,4 @@ public class BattleSystem : MonoBehaviour
 
         isProcessingTurn = false;
     }
-
 }

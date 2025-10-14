@@ -20,18 +20,16 @@ public class Enemy : CharacterBase
 
     private CardRunner pendingRunner; // keep between prepare & execute
 
+    public bool IsDead { get; private set; } = false;
+
     protected override void Awake()
     {
         base.Awake();
         animator = GetComponent<EnemyAnimator2D>();
         library = FindFirstObjectByType<CardLibrary>();
-
         SetupUI();
     }
 
-    // ===========================
-    //   UI SETUP
-    // ===========================
     private void SetupUI()
     {
         if (healthBarPrefab != null)
@@ -40,7 +38,6 @@ public class Enemy : CharacterBase
             healthBarInstance = barObj.GetComponent<EnemyHealthBar>();
             healthBarInstance.Initialize(this);
 
-            // Hide defense panel for enemies
             Transform defensePanel = barObj.transform.Find("DefensePanel");
             if (defensePanel != null)
                 defensePanel.gameObject.SetActive(false);
@@ -50,24 +47,18 @@ public class Enemy : CharacterBase
             intentionText.text = "Waiting...";
     }
 
-    // ===========================
-    //   CARD SELECTION (Weighted)
-    // ===========================
     private CardData GetWeightedRandomCard()
     {
-        if (data == null || data.availableCards.Count == 0)
+        if (IsDead || data == null || data.availableCards.Count == 0)
             return null;
 
         float totalWeight = 0f;
 
-        // Calculate total weight (with low HP scaling)
         foreach (var entry in data.availableCards)
         {
             if (entry.card == null) continue;
 
             float weight = Mathf.Max(0f, entry.baseWeight);
-
-            // 🧠 Behavior evolution — boost when HP ≤ ⅓ max
             if (entry.prioritizeWhenLowHP && currentHealth <= maxHealth / 3f)
                 weight *= data.lowHPWeightMultiplier;
 
@@ -75,13 +66,11 @@ public class Enemy : CharacterBase
         }
 
         if (totalWeight <= 0f)
-            return data.availableCards[0].card; // fallback
+            return data.availableCards[0].card;
 
-        // Roll between 0 and totalWeight
         float roll = Random.value * totalWeight;
         float cumulative = 0f;
 
-        // Select the card
         foreach (var entry in data.availableCards)
         {
             if (entry.card == null) continue;
@@ -95,20 +84,17 @@ public class Enemy : CharacterBase
                 return entry.card;
         }
 
-        return data.availableCards[0].card; // safety fallback
+        return data.availableCards[0].card;
     }
 
-    // ===========================
-    //   PREPARE NEXT MOVE
-    // ===========================
     public void PrepareNextCard()
     {
+        if (IsDead) return;
         if (data == null || data.availableCards.Count == 0) { Debug.LogWarning($"{name}: No cards available!"); return; }
 
         currentCard = GetWeightedRandomCard();
         if (currentCard == null) return;
 
-        // Create/keep a runner that locks the roll now
         if (pendingRunner == null)
         {
             var go = new GameObject("EnemyPendingRunner");
@@ -116,12 +102,10 @@ public class Enemy : CharacterBase
             pendingRunner = go.AddComponent<CardRunner>();
         }
         pendingRunner.data = currentCard;
-        pendingRunner.RollIfNeeded(currentCard); // lock the randomScale now
+        pendingRunner.RollIfNeeded(currentCard);
 
-        // Compute preview X with SAME roll + this enemy’s scale
         int x = pendingRunner.GetPreviewX(this);
 
-        // Build colored <X> & prefix (purely display; no asset mutation)
         string colorHex = "#FFCF40";
         foreach (var eff in currentCard.effects)
         {
@@ -140,11 +124,11 @@ public class Enemy : CharacterBase
         animator?.PlayIdle();
     }
 
-    // ===========================
-    //   EXECUTE MOVE
-    // ===========================
     public IEnumerator ExecuteIntention(Player player)
     {
+        if (IsDead)
+            yield break;
+
         if (currentCard == null)
         {
             FloatingTextManager.Instance?.SpawnText(transform.position + Vector3.up * 2f, "Idle", Color.gray);
@@ -154,64 +138,86 @@ public class Enemy : CharacterBase
         animator?.PlayAttack();
         yield return new WaitForSeconds(0.4f);
 
-        // Use the SAME runner so the roll matches the intention
+        if (IsDead)
+            yield break;
+
         if (pendingRunner == null)
         {
             var go = new GameObject("EnemyPendingRunner_Fallback");
             go.transform.SetParent(transform);
             pendingRunner = go.AddComponent<CardRunner>();
             pendingRunner.data = currentCard;
-            pendingRunner.RollIfNeeded(currentCard); // fallback lock
+            pendingRunner.RollIfNeeded(currentCard);
         }
 
         pendingRunner.Execute(this, player);
 
-        // cleanup
         if (intentionText != null) intentionText.text = "Waiting...";
         animator?.PlayIdle();
 
-        Destroy(pendingRunner.gameObject);
-        pendingRunner = null;
+        if (pendingRunner != null)
+        {
+            Destroy(pendingRunner.gameObject);
+            pendingRunner = null;
+        }
 
-        data.ModifyBehavior(currentCard);
+        if (!IsDead) // avoid behavior changes after death from reaction effects
+            data.ModifyBehavior(currentCard);
     }
 
     public override void TakeDamage(int amount)
     {
+        if (IsDead) return;
         base.TakeDamage(amount);
 
         if (amount > 0 && currentHealth > 0)
-        {
             StartCoroutine(HurtRoutine());
-        }
     }
 
     private IEnumerator HurtRoutine()
     {
+        if (IsDead) yield break;
         animator?.PlayHurt();
-        yield return new WaitForSeconds(0.5f); // adjust to hurt animation length
-        animator?.PlayIdle();
+        yield return new WaitForSeconds(0.5f);
+        if (!IsDead) animator?.PlayIdle();
     }
 
     protected override void Die()
     {
+        if (IsDead) return;
+        IsDead = true;
+
+        StopAllCoroutines();
+
+        if (intentionText != null) intentionText.text = string.Empty;
+
+        if (pendingRunner != null)
+        {
+            Destroy(pendingRunner.gameObject);
+            pendingRunner = null;
+        }
+
+        var col = GetComponent<Collider2D>();
+        if (col) col.enabled = false;
+
         if (animator != null)
-        {
             StartCoroutine(DeathRoutine());
-        }
         else
-        {
-            base.Die();
-        }
+            FinalizeDeath();
     }
 
     private IEnumerator DeathRoutine()
     {
         animator.PlayDeath();
-        yield return new WaitForSeconds(0.8f); // match death animation duration
-        base.Die(); // now clean up
+        yield return new WaitForSeconds(0.8f);
+        FinalizeDeath();
     }
 
+    private void FinalizeDeath()
+    {
+        base.Die();
+        Destroy(gameObject, 0.1f);
+    }
 
     public void InitializeFromData(EnemyData data)
     {
@@ -222,18 +228,15 @@ public class Enemy : CharacterBase
 
         globalPowerScale = data.globalCardMultiplier;
 
-        // --- Assign animations dynamically ---
         if (animator == null)
             animator = GetComponent<EnemyAnimator2D>();
 
         if (animator != null && data.animationSet != null)
             animator.SetAnimSet(data.animationSet);
 
-        // --- Optional: portrait for UI ---
         if (data.portrait != null && TryGetComponent(out SpriteRenderer sr))
             sr.sprite = data.portrait;
 
-        // --- Reset visuals ---
         animator?.PlayIdle();
     }
 }
