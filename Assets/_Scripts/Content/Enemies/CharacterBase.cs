@@ -40,26 +40,30 @@ public abstract class CharacterBase : MonoBehaviour
     {
         if (amount <= 0) return;
 
-        int totalDamage = amount;
+        int incoming = amount;
+        int absorbed = Mathf.Min(block, incoming);
+        int actualDamage = Mathf.Max(0, incoming - absorbed);
 
-        // 1️⃣ Apply block first
-        if (block > 0)
+        // Apply block absorption
+        if (absorbed > 0)
         {
-            int absorbed = Mathf.Min(block, totalDamage);
             block -= absorbed;
-            totalDamage -= absorbed;
             UpdateBlockUI();
+
+            // 🟦 Block feedback
+            if (actualDamage == 0)
+                ShowBlockDefenseFeedback(absorbed); // full block
         }
 
-        // 2️⃣ Apply remaining to HP
-        if (totalDamage > 0)
+        // Apply remaining damage
+        if (actualDamage > 0)
         {
-            currentHealth = Mathf.Max(0, currentHealth - totalDamage);
+            currentHealth = Mathf.Max(0, currentHealth - actualDamage);
             healthBarInstance?.UpdateHealth(currentHealth, maxHealth);
-            ShowDamageFeedback(totalDamage);
+            ShowDamageFeedback(actualDamage);
         }
 
-        Debug.Log($"{characterName} took {totalDamage} damage (HP {currentHealth}/{maxHealth}, Block {block})");
+        Debug.Log($"{characterName} took {actualDamage} dmg (blocked {absorbed}).");
 
         if (currentHealth <= 0)
             Die();
@@ -144,6 +148,23 @@ public abstract class CharacterBase : MonoBehaviour
     // ==============================
     // FEEDBACK
     // ==============================
+        
+    public void ShowBlockDefenseFeedback(int blocked)
+    {
+        if (!TryGetComponent(out SpriteRenderer sr)) return;
+
+        Color defenseColor = new Color(0.5f, 0.8f, 1f); // softer cyan-blue
+        Color baseColor = sr.color;
+
+        sr.DOColor(defenseColor, 0.1f).OnComplete(() => sr.DOColor(baseColor, 0.25f));
+        transform.DOShakePosition(0.2f, 0.15f, 10, 90);
+
+        FloatingTextManager.Instance?.SpawnText(
+            transform.position + Vector3.up,
+            $"-{blocked} (blocked)",
+            defenseColor
+        );
+    }
 
     public virtual void ShowDamageFeedback(int amount)
     {

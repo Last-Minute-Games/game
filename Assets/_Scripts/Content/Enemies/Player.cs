@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class Player : CharacterBase
 {
@@ -17,30 +18,25 @@ public class Player : CharacterBase
     private GameObject defensePanelInstance;
     private TMP_Text defenseText;
 
+    // ============================
+    //  HEALTH BAR SETUP
+    // ============================
     protected override void Awake()
     {
         base.Awake();
         characterName = "Player";
         currentEnergy = maxEnergy;
 
-        // Health Bar
-        if (healthBarPrefab != null)
+        // Find existing HealthBar in scene
+        healthBarInstance = FindObjectOfType<PlayerHealthBar>();
+        if (healthBarInstance != null)
         {
-            var barObj = Instantiate(healthBarPrefab);
-            healthBarInstance = barObj.GetComponent<HealthBar>();
             healthBarInstance.Initialize(this);
-
-            // Find DefensePanel inside HealthBar
-            Transform defensePanel = barObj.transform.Find("DefensePanel");
-            if (defensePanel != null)
-            {
-                defensePanelInstance = defensePanel.gameObject;
-                defenseText = defensePanel.Find("DefenseText").GetComponent<TMP_Text>();
-
-                // Initialize
-                defenseText.text = "0";
-                defensePanelInstance.SetActive(false);
-            }
+            Debug.Log("✅ Player HealthBar linked successfully!");
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ PlayerHealthBar not found in scene!");
         }
     }
 

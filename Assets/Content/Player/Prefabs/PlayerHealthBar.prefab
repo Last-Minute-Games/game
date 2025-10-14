@@ -376,9 +376,9 @@ GameObject:
   - component: {fileID: 4977261479343425973}
   - component: {fileID: 6562772357882058711}
   - component: {fileID: 7986577363737867266}
-  - component: {fileID: 8513336617500814640}
+  - component: {fileID: 1538425474376015940}
   m_Layer: 5
-  m_Name: HealthBarCanvas
+  m_Name: PlayerHealthBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -393,7 +393,7 @@ RectTransform:
   m_GameObject: {fileID: 5486704657143754790}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6035413251916279941}
@@ -401,11 +401,11 @@ RectTransform:
   - {fileID: 2313871985237524361}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 0}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -40, y: -40}
+  m_SizeDelta: {x: 250, y: 80}
+  m_Pivot: {x: 1, y: 1}
 --- !u!223 &4977261479343425973
 Canvas:
   m_ObjectHideFlags: 0
@@ -451,7 +451,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &7986577363737867266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -469,7 +469,7 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &8513336617500814640
+--- !u!114 &1538425474376015940
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -478,14 +478,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 5486704657143754790}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ad9dd8f10dfb6bf7ae3f27da90661a8, type: 3}
+  m_Script: {fileID: 11500000, guid: 22cfe09347cced38b91110f2b8d6116b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HealthBar
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealthBar
   healthFill: {fileID: 1329358581845548895}
   healthText: {fileID: 5516301256761595394}
   defensePanel: {fileID: 2539884337757948846}
-  defenseIcon: {fileID: 4887264832684610533}
   defenseText: {fileID: 5062883702583082674}
+  defenseIcon: {fileID: 4887264832684610533}
 --- !u!1 &6463286562531094908
 GameObject:
   m_ObjectHideFlags: 0

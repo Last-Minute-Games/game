@@ -31,7 +31,7 @@ public class Enemy : CharacterBase
         if (healthBarPrefab != null)
         {
             var barObj = Instantiate(healthBarPrefab);
-            healthBarInstance = barObj.GetComponent<HealthBar>();
+            healthBarInstance = barObj.GetComponent<EnemyHealthBar>();
             healthBarInstance.Initialize(this);
 
             // Hide defense panel for enemies
