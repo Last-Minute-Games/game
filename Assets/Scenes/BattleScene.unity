@@ -866,7 +866,6 @@ MonoBehaviour:
   defensePanel: {fileID: 1376326305}
   defenseText: {fileID: 1032399557}
   defenseIcon: {fileID: 2019164900}
-  smoothSpeed: 5
 --- !u!114 &647209743
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1602,14 +1601,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d492d8642a1d6c7c78d70e1429969ecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattlefieldLayout
-  playerPrefab: {fileID: 753829383109311850, guid: af4d270afe9c7844ebf8a57dc8dd84b1, type: 3}
   enemyPrefab: {fileID: 3708321511512314943, guid: d5609b73670f67a458f277721f09b5dd, type: 3}
   enemyLibrary: {fileID: 11400000, guid: 0aeea9a1cf79597fba7d3b243d74a608, type: 2}
-  playerPos: {x: -6, y: 0, z: 0}
-  enemyStartPos: {x: 6, y: 0, z: 0}
-  enemySpacing: 2.5
-  enemyCount: 3
-  randomizeEnemies: 1
+  playerPrefab: {fileID: 753829383109311850, guid: af4d270afe9c7844ebf8a57dc8dd84b1, type: 3}
+  horizontalSpacing: 2.5
+  rearOffsetY: 0.5
+  rearScale: 0.8
 --- !u!4 &1193789999
 Transform:
   m_ObjectHideFlags: 0
@@ -2303,7 +2300,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4101cc2ed83c4d8deb1aa4e39e76def1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  musicClip: {fileID: 8300000, guid: 19009d756645345a19ccd3ee97413dac, type: 3}
+  dreamIntro: {fileID: 0}
+  dreamLoop: {fileID: 0}
 --- !u!4 &2007122493
 Transform:
   m_ObjectHideFlags: 0

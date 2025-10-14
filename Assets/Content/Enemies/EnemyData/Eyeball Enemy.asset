@@ -13,21 +13,21 @@ MonoBehaviour:
   m_Name: Eyeball Enemy
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   enemyName: Eyeball
-  portrait: {fileID: 4769901569791157120, guid: e17aece5460b40c4ea219bea5a5b61b3, type: 3}
-  maxHealth: 50
+  portrait: {fileID: 4351495876197429195, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  maxHealth: 40
   baseDamage: 10
   defense: 2
   globalCardMultiplier: 3
   animationSet: {fileID: 11400000, guid: 739969826b8a44f3083ef011c1a4ad30, type: 2}
   availableCards:
   - card: {fileID: 11400000, guid: 5a4aa64c185bb2565a401248dc27110b, type: 2}
-    baseWeight: 1.0270413
+    baseWeight: 0.97568923
     prioritizeWhenLowHP: 0
   - card: {fileID: 11400000, guid: d4ce8458f91f1d870aacab7642b5b019, type: 2}
-    baseWeight: 0.50906634
+    baseWeight: 0.483613
     prioritizeWhenLowHP: 0
   - card: {fileID: 11400000, guid: bd4f1a01d18e57259a2b84444be212c7, type: 2}
-    baseWeight: 0.19471787
+    baseWeight: 0.18498197
     prioritizeWhenLowHP: 0
   idleChance: 0.1
   lowHPWeightMultiplier: 1.5

@@ -54,11 +54,7 @@ public class BattlefieldLayout : MonoBehaviour
                 continue;
             }
 
-            // Assign data
-            newEnemy.data = selectedData;
-            newEnemy.characterName = selectedData.enemyName;
-            newEnemy.maxHealth = selectedData.maxHealth;
-            newEnemy.currentHealth = selectedData.maxHealth;
+            newEnemy.InitializeFromData(selectedData);
 
             // Apply perspective scaling if behind others
             if (enemyCount == 3 && i == 2)

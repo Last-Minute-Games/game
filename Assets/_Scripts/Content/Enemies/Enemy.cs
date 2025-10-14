@@ -168,11 +168,72 @@ public class Enemy : CharacterBase
 
         // cleanup
         if (intentionText != null) intentionText.text = "Waiting...";
-        animator?.PlayFloat();
+        animator?.PlayIdle();
 
         Destroy(pendingRunner.gameObject);
         pendingRunner = null;
 
         data.ModifyBehavior(currentCard);
+    }
+
+    public override void TakeDamage(int amount)
+    {
+        base.TakeDamage(amount);
+
+        if (amount > 0 && currentHealth > 0)
+        {
+            StartCoroutine(HurtRoutine());
+        }
+    }
+
+    private IEnumerator HurtRoutine()
+    {
+        animator?.PlayHurt();
+        yield return new WaitForSeconds(0.5f); // adjust to hurt animation length
+        animator?.PlayIdle();
+    }
+
+    protected override void Die()
+    {
+        if (animator != null)
+        {
+            StartCoroutine(DeathRoutine());
+        }
+        else
+        {
+            base.Die();
+        }
+    }
+
+    private IEnumerator DeathRoutine()
+    {
+        animator.PlayDeath();
+        yield return new WaitForSeconds(0.8f); // match death animation duration
+        base.Die(); // now clean up
+    }
+
+
+    public void InitializeFromData(EnemyData data)
+    {
+        this.data = data;
+        characterName = data.enemyName;
+        maxHealth = data.maxHealth;
+        currentHealth = maxHealth;
+
+        globalPowerScale = data.globalCardMultiplier;
+
+        // --- Assign animations dynamically ---
+        if (animator == null)
+            animator = GetComponent<EnemyAnimator2D>();
+
+        if (animator != null && data.animationSet != null)
+            animator.SetAnimSet(data.animationSet);
+
+        // --- Optional: portrait for UI ---
+        if (data.portrait != null && TryGetComponent(out SpriteRenderer sr))
+            sr.sprite = data.portrait;
+
+        // --- Reset visuals ---
+        animator?.PlayIdle();
     }
 }

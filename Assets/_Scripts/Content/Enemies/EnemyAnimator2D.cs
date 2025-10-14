@@ -13,7 +13,6 @@ public class EnemyAnimator2D : MonoBehaviour
         current switch
         {
             EnemyAnim.Idle   => animSet?.idle,
-            EnemyAnim.Float  => animSet?.floatLoop,
             EnemyAnim.Attack => animSet?.attack,
             EnemyAnim.Hurt   => animSet?.hurt,
             EnemyAnim.Death  => animSet?.death,
@@ -39,7 +38,6 @@ public class EnemyAnimator2D : MonoBehaviour
     }
 
     public void PlayIdle() => Play(EnemyAnim.Idle);
-    public void PlayFloat() => Play(EnemyAnim.Float);
     public void PlayAttack() => Play(EnemyAnim.Attack);
     public void PlayHurt() => Play(EnemyAnim.Hurt);
     public void PlayDeath() => Play(EnemyAnim.Death);
