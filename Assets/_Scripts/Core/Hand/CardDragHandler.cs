@@ -89,6 +89,54 @@ namespace _Scripts.Gameplay
             // Snap back if invalid
             transform.DOMove(startPos, 0.2f).SetEase(Ease.OutCubic)
                 .OnComplete(() => spriteRenderer.sortingOrder = 0);
+
+
+            foreach (var e in FindObjectsOfType<Enemy>())
+            {
+                var sr = e.GetComponent<SpriteRenderer>();
+                if (sr) sr.color = Color.white;
+            }
+        }
+    }
+
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (!isDragging) return;
+
+        Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
+        worldPos.z = 0;
+        transform.position = worldPos;
+
+        HighlightNearestEnemy(worldPos);
+    }
+
+    private void HighlightNearestEnemy(Vector3 cardPos)
+    {
+        BattlefieldLayout layout = FindFirstObjectByType<BattlefieldLayout>();
+        if (layout == null) return;
+
+        Enemy nearest = null;
+        float minDist = float.MaxValue;
+
+        foreach (var e in layout.GetEnemies())
+        {
+            if (e == null) continue;
+            float d = Vector2.Distance(cardPos, e.transform.position);
+            if (d < minDist)
+            {
+                minDist = d;
+                nearest = e;
+            }
+            // clear tint for all
+            var sr = e.GetComponent<SpriteRenderer>();
+            if (sr) sr.color = Color.white;
+        }
+
+        if (nearest != null)
+        {
+            var sr = nearest.GetComponent<SpriteRenderer>();
+            if (sr) sr.color = Color.yellow; // highlight target
         }
     }
 }
