@@ -21,7 +21,7 @@ namespace Systems.Overworld.Intro
                 tmp.a = alphaVal;
                 _mysteriousSpriteRenderer.color = tmp;
 
-                yield return new WaitForSeconds(0.015f); // update interval
+                yield return new WaitForSeconds(0.005f); // update interval
             }
         }
 
@@ -36,7 +36,7 @@ namespace Systems.Overworld.Intro
                 tmp.a = alphaVal;
                 _mysteriousSpriteRenderer.color = tmp;
 
-                yield return new WaitForSeconds(0.015f); // update interval
+                yield return new WaitForSeconds(0.005f); // update interval
             }
         }
         

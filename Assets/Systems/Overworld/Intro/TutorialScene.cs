@@ -45,6 +45,7 @@ namespace Systems.Overworld.Intro
         private bool _isPlayingIntroMusic = false;
 
         private GameObject _blackScreen;
+        private GameObject _corruptScreen;
     
         private IEnumerator WaitDreamIntro()
         {
@@ -72,9 +73,12 @@ namespace Systems.Overworld.Intro
         void Start()
         {
             _plrObject = GameObject.FindGameObjectWithTag("Player");
+            
             _blackScreen = GameObject.Find("Blackout");
+            _corruptScreen = GameObject.Find("CorruptScreen");
             
             _blackScreen.SetActive(false);
+            _corruptScreen.SetActive(false);
             
             _plrInput = _plrObject.GetComponent<PlayerInput2D>();
             _plrInput.isInputEnabled = false;
@@ -241,10 +245,12 @@ namespace Systems.Overworld.Intro
             yield return new WaitForSeconds(kingDeadAnimationClip.length * 0.97f);
             
             _kingAnimator.speed = 0;
+                
+            yield return new WaitForSeconds(0.5f);
             
-            yield return new WaitForSeconds(2f);
-            
-            
+            _corruptScreen.SetActive(true);
+
+            yield return new WaitForSeconds(1f);
             
             // go to overworld scene
             AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
