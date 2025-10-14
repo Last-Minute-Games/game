@@ -304,9 +304,11 @@ public class Enemy : CharacterBase
         Destroy(gameObject, 0.1f);
     }
 
-    public void InitializeFromData(EnemyData data)
+    public void InitializeFromData(EnemyData baseData)
     {
-        this.data = data;
+        // Create a runtime clone so we don’t mutate the original asset
+        this.data = Instantiate(baseData);
+
         characterName = data.enemyName;
         maxHealth = data.maxHealth;
         currentHealth = maxHealth;
