@@ -15,6 +15,8 @@ public class CardLibrary : ScriptableObject
 
         foreach (CardData card in allCards)
         {
+            if (card == null) continue;
+
             if (!cardLookup.ContainsKey(card.cardType))
                 cardLookup[card.cardType] = new List<CardData>();
 
@@ -22,7 +24,7 @@ public class CardLibrary : ScriptableObject
         }
     }
 
-    public CardData GetRandomCard(CardType type)
+    public CardData GetRandomCard(CardType type, bool forPlayer = true)
     {
         if (cardLookup == null || cardLookup.Count == 0)
             Initialize();
@@ -30,15 +32,35 @@ public class CardLibrary : ScriptableObject
         if (!cardLookup.ContainsKey(type) || cardLookup[type].Count == 0)
             return null;
 
-        return cardLookup[type][Random.Range(0, cardLookup[type].Count)];
+        // Filter player usable cards if needed
+        List<CardData> pool = new List<CardData>();
+        foreach (var card in cardLookup[type])
+        {
+            if (!forPlayer || card.isPlayerUsable)
+                pool.Add(card);
+        }
+
+        if (pool.Count == 0)
+        {
+            Debug.LogWarning($"⚠️ CardLibrary: No {(forPlayer ? "player-usable " : "")}{type} cards found!");
+            return null;
+        }
+
+        return pool[Random.Range(0, pool.Count)];
     }
 
-    public CardData GetRandomCardWeighted(float attackChance, float defenseChance, float healChance)
+    public CardData GetRandomCardWeighted(float attackChance, float defenseChance, float healChance, bool forPlayer = true)
     {
         if (cardLookup == null || cardLookup.Count == 0)
             Initialize();
 
         float total = attackChance + defenseChance + healChance;
+        if (total <= 0)
+        {
+            Debug.LogError("❌ CardLibrary: Invalid weights — all zero!");
+            return null;
+        }
+
         attackChance /= total;
         defenseChance /= total;
         healChance /= total;
@@ -53,6 +75,24 @@ public class CardLibrary : ScriptableObject
         else
             type = CardType.Healing;
 
-        return GetRandomCard(type);
+        CardData selected = GetRandomCard(type, forPlayer);
+
+        // 🔁 fallback: if this type had no usable cards, try any usable card
+        if (selected == null && forPlayer)
+        {
+            List<CardData> allUsable = new();
+            foreach (var list in cardLookup.Values)
+                allUsable.AddRange(list.FindAll(c => c.isPlayerUsable));
+
+            if (allUsable.Count == 0)
+            {
+                Debug.LogError("❌ CardLibrary: No usable cards available for player!");
+                return null;
+            }
+
+            selected = allUsable[Random.Range(0, allUsable.Count)];
+        }
+
+        return selected;
     }
 }

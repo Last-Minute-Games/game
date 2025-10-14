@@ -66,7 +66,7 @@ public class BattleSystem : MonoBehaviour
         for (int i = 0; i < startingHandSize; i++)
         {
             // Ask the factory to handle random card creation (weighted logic handled inside)
-            GameObject cardObj = cardFactory.CreateRandomCard(handSpawnPoint.position, 0.6f, 0.25f, 0.15f);
+            GameObject cardObj = cardFactory.CreateRandomCard(handSpawnPoint.position, 0.6f, 0.25f, 0.15f, forPlayer: true);
 
             if (cardObj == null)
             {

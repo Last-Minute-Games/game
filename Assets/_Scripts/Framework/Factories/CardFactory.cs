@@ -1,6 +1,5 @@
-// spawns prefab instances using the correct carddata
-
 using UnityEngine;
+using System.Collections.Generic;
 
 public class CardFactory : MonoBehaviour
 {
@@ -12,16 +11,22 @@ public class CardFactory : MonoBehaviour
     [Header("Data")]
     [SerializeField] private CardLibrary library;
 
-
     private void Awake()
     {
         if (library != null)
             library.Initialize();
     }
 
-    public GameObject CreateRandomCard(Vector3 position, float attackChance, float defenseChance, float healChance)
+    public GameObject CreateRandomCard(Vector3 position, float attackChance, float defenseChance, float healChance, bool forPlayer = true)
     {
-        CardData data = library.GetRandomCardWeighted(attackChance, defenseChance, healChance);
+        CardData data = library.GetRandomCardWeighted(attackChance, defenseChance, healChance, forPlayer);
+
+        if (data == null)
+        {
+            Debug.LogError("❌ CardFactory: No valid card found for this request!");
+            return null;
+        }
+
         return CreateCard(data, position);
     }
 
