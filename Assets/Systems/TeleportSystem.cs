@@ -28,12 +28,16 @@ namespace Systems
         
         private float _fadeTime = 0.3f;
         private float _fadeDuration = 0.2f;
+        
+        private Systems.Overworld.Intro.TutorialScene _tutorialScene;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
             _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
             _fadeCanvasGroup.blocksRaycasts = false;
+            _tutorialScene = FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>();
+
             
             _tptCollider = transform.gameObject.GetComponent<BoxCollider2D>();
             _tptCollider.isTrigger = true;
@@ -102,12 +106,16 @@ namespace Systems
             
                 yield return StartCoroutine(FadeOut());
                 _fadeCanvasGroup.blocksRaycasts = false;
+                
+                if (tptTo.transform.name == "Hallway")
+                {
+                    _tutorialScene.SetCinecamYOffset(2.5f);   
+                }
 
                 yield break;
             }
             
-            var tutorialScene = FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>();
-            if (tutorialScene) tutorialScene.StartCoroutine(tutorialScene.BeginKingSeq());
+            if (_tutorialScene) _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
         }
 
         private void OnEnter()
