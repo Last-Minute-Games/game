@@ -18,6 +18,8 @@ public class Enemy : CharacterBase
     [Tooltip("Affects how strong this character’s card effects are.")]
     public float globalPowerScale = 1.0f;
 
+    private CardRunner pendingRunner; // keep between prepare & execute
+
     protected override void Awake()
     {
         base.Awake();
@@ -101,80 +103,41 @@ public class Enemy : CharacterBase
     // ===========================
     public void PrepareNextCard()
     {
-        if (data == null || data.availableCards.Count == 0)
-        {
-            Debug.LogWarning($"{name}: No cards available to choose!");
-            return;
-        }
+        if (data == null || data.availableCards.Count == 0) { Debug.LogWarning($"{name}: No cards available!"); return; }
 
-        // 🎯 Weighted random draw
         currentCard = GetWeightedRandomCard();
-        if (currentCard == null)
+        if (currentCard == null) return;
+
+        // Create/keep a runner that locks the roll now
+        if (pendingRunner == null)
         {
-            Debug.LogWarning($"{name}: No valid card selected!");
-            return;
+            var go = new GameObject("EnemyPendingRunner");
+            go.transform.SetParent(transform);
+            pendingRunner = go.AddComponent<CardRunner>();
         }
+        pendingRunner.data = currentCard;
+        pendingRunner.RollIfNeeded(currentCard); // lock the randomScale now
 
-        // 🎲 Simulate potency preview for intention display
-        float randomScale = Random.Range(currentCard.minMultiplier, currentCard.maxMultiplier);
-        float totalScale = randomScale * globalPowerScale;
+        // Compute preview X with SAME roll + this enemy’s scale
+        int x = pendingRunner.GetPreviewX(this);
 
-        // 💪 Calculate effective value based on card type
-        float effectiveValue = 0f;
-        if (currentCard.effects != null)
-        {
-            foreach (var eff in currentCard.effects)
-            {
-                if (eff is DamageEffect dmg)
-                    effectiveValue = dmg.baseDamage * totalScale;
-                else if (eff is HealEffect heal)
-                    effectiveValue = heal.baseHeal * totalScale;
-                else if (eff is BlockEffect blk)
-                    effectiveValue = blk.baseBlock * totalScale;
-            }
-        }
-
-        // 🎨 Choose color depending on effect type (damage/gain)
-        string colorHex = "#FFCF40"; // gold default
+        // Build colored <X> & prefix (purely display; no asset mutation)
+        string colorHex = "#FFCF40";
         foreach (var eff in currentCard.effects)
         {
-            if (eff is DamageEffect) colorHex = "#FF4040"; // red
-            if (eff is HealEffect) colorHex = "#40FF70";   // green
-            if (eff is BlockEffect) colorHex = "#40BFFF";  // blue
+            if (eff is DamageEffect) colorHex = "#FF4040";
+            else if (eff is HealEffect) colorHex = "#40FF70";
+            else if (eff is BlockEffect) colorHex = "#40BFFF";
         }
+        string coloredX = $"<color={colorHex}>{x}</color>";
 
-        string coloredValue = $"<color={colorHex}>{effectiveValue:F0}</color>";
+        string intent = string.IsNullOrEmpty(currentCard.intentionText) ? currentCard.cardName : currentCard.intentionText;
+        if (!string.IsNullOrEmpty(intent) && intent.Contains("<X>"))
+            intent = intent.Replace("<X>", coloredX);
 
-        // 🧩 Substitute into intention text
-        string intentDisplay = currentCard.intentionText;
-        if (!string.IsNullOrEmpty(intentDisplay) && intentDisplay.Contains("<X>"))
-            intentDisplay = intentDisplay.Replace("<X>", coloredValue);
+        if (intentionText != null) intentionText.text = intent;
 
-        // 🪧 Dynamic prefix logic for naming
-        float range = currentCard.maxMultiplier - currentCard.minMultiplier;
-        string prefix = "";
-        if (range > 0.5f)
-        {
-            float normalized = (randomScale - currentCard.minMultiplier) / range;
-            if (normalized < 0.33f) prefix = "Poor ";
-            else if (normalized > 0.66f) prefix = "Potent ";
-        }
-
-        string cardDisplayName = prefix + currentCard.cardName.Split(' ')[^1];
-
-        // 🧾 Update UI text
-        if (intentionText != null)
-        {
-            string finalText = !string.IsNullOrEmpty(intentDisplay)
-                ? intentDisplay
-                : cardDisplayName;
-            intentionText.text = finalText;
-        }
-
-        // 🎞️ Animate idle while preparing
         animator?.PlayIdle();
-
-        Debug.Log($"🎯 {name} preparing: {cardDisplayName} → {intentionText.text} (scale={totalScale:F2})");
     }
 
     // ===========================
@@ -184,33 +147,32 @@ public class Enemy : CharacterBase
     {
         if (currentCard == null)
         {
-            FloatingTextManager.Instance?.SpawnText(
-                transform.position + Vector3.up * 2f,
-                "Idle",
-                Color.gray
-            );
+            FloatingTextManager.Instance?.SpawnText(transform.position + Vector3.up * 2f, "Idle", Color.gray);
             yield break;
         }
 
         animator?.PlayAttack();
         yield return new WaitForSeconds(0.4f);
 
-        // 💥 Execute card logic
-        var runnerObj = new GameObject("TempCardRunner");
-        var runner = runnerObj.AddComponent<CardRunner>();
-        runner.data = currentCard;
-        runner.transform.SetParent(transform);
+        // Use the SAME runner so the roll matches the intention
+        if (pendingRunner == null)
+        {
+            var go = new GameObject("EnemyPendingRunner_Fallback");
+            go.transform.SetParent(transform);
+            pendingRunner = go.AddComponent<CardRunner>();
+            pendingRunner.data = currentCard;
+            pendingRunner.RollIfNeeded(currentCard); // fallback lock
+        }
 
-        runner.Execute(this, player);
-        Destroy(runnerObj);
+        pendingRunner.Execute(this, player);
 
-        // 🧾 Reset UI & return to float animation
-        if (intentionText != null)
-            intentionText.text = "Waiting...";
-
+        // cleanup
+        if (intentionText != null) intentionText.text = "Waiting...";
         animator?.PlayFloat();
 
-        // Behavior evolution for next turn
+        Destroy(pendingRunner.gameObject);
+        pendingRunner = null;
+
         data.ModifyBehavior(currentCard);
     }
 }

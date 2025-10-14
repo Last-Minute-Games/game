@@ -9,8 +9,7 @@ public class HealEffect : CardEffect
     {
         int total = Mathf.RoundToInt(baseHeal * totalScale);
         user?.Heal(total);
-
-        Debug.Log($"{user.characterName} healed {total} HP (scale {totalScale:F2})");
     }
-    protected override float GetEffectiveValue(float totalScale) => baseHeal * totalScale;
+
+    protected override int GetBaseValue() => baseHeal;
 }

@@ -9,8 +9,7 @@ public class BlockEffect : CardEffect
     {
         int total = Mathf.RoundToInt(baseBlock * totalScale);
         user?.AddBlock(total);
-
-        Debug.Log($"{user.characterName} gained {total} Block (scale {totalScale:F2})");
     }
-    protected override float GetEffectiveValue(float totalScale) => baseBlock * totalScale;
+
+    protected override int GetBaseValue() => baseBlock;
 }

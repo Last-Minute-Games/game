@@ -18,9 +18,9 @@ public class TooltipManager : MonoBehaviour
         tooltipInstance.Hide();
     }
 
-    public void ShowTooltip(CardData card, CardRunner runner = null)
+    public void ShowTooltip(CardData card, CardRunner runner = null, CharacterBase viewer = null)
     {
-        tooltipInstance.Show(card, runner);
+        tooltipInstance.Show(card, runner, viewer);
     }
 
     public void HideTooltip()

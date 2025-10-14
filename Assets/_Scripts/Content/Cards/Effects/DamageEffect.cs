@@ -8,13 +8,16 @@ public class DamageEffect : CardEffect
     protected override void ApplyEffect(CharacterBase user, CharacterBase target, float totalScale)
     {
         if (target == null) return;
-
         int total = Mathf.RoundToInt(baseDamage * totalScale + (user != null ? user.strength : 0));
         target.TakeDamage(total);
         target.ShowDamageFeedback(total);
-
-        Debug.Log($"{user.characterName} dealt {total} damage to {target.characterName} (scale {totalScale:F2})");
     }
 
-    protected override float GetEffectiveValue(float totalScale) => baseDamage * totalScale;
+    protected override int GetBaseValue() => baseDamage;
+
+    public override int PreviewAmount(CardRunner runner, CharacterBase user, float totalScale)
+    {
+        int total = Mathf.RoundToInt(baseDamage * totalScale + (user != null ? user.strength : 0));
+        return total;
+    }
 }
