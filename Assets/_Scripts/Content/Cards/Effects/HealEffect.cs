@@ -12,4 +12,5 @@ public class HealEffect : CardEffect
 
         Debug.Log($"{user.characterName} healed {total} HP (scale {totalScale:F2})");
     }
+    protected override float GetEffectiveValue(float totalScale) => baseHeal * totalScale;
 }

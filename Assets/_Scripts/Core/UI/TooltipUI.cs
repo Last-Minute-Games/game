@@ -21,33 +21,65 @@ public class TooltipUI : MonoBehaviour
 
     public void Show(CardData data, CardRunner runner = null)
     {
-        if (data == null)
+        if (data == null) return;
+
+        // ============ BASE VALUES ============
+        float potency = runner ? runner.cachedPotency : 1f;
+
+        // Determine prefix dynamically (same logic as CardEffect)
+        float range = data.maxMultiplier - data.minMultiplier;
+        string prefix = "";
+        if (range > 0.5f)
         {
-            Hide();
-            return;
+            float normalized = (potency / (data.maxMultiplier * (runner ? (runner.owner is Enemy e ? e.globalPowerScale : 1f) : 1f)));
+            if (normalized < 0.33f) prefix = "Poor ";
+            else if (normalized > 0.66f) prefix = "Potent ";
         }
 
-        titleText.text = data.cardName;
-        descriptionText.text = data.description;
+        string displayName = prefix + data.cardName.Split(' ')[^1];
 
-        string stats = $"Type: {data.cardType}\nCost: {data.energy}";
+        // Compute substituted text
+        string desc = data.description;
+        string intent = data.intentionText;
+        string coloredValue = "<color=#FFCF40>";
 
-        // --- Add potency if runner provided ---
         if (runner != null)
         {
-            float potency = runner.cachedPotency;
+            // Approximate potency-adjusted value if effect provides it
+            float effectiveValue = 0f;
 
-            // Color-coded potency text
-            Color potColor = potency > 1f ? new Color(0.5f, 1f, 0.5f) : new Color(1f, 0.6f, 0.6f);
-            string hex = ColorUtility.ToHtmlStringRGB(potColor);
-            stats += $"\n<color=#{hex}>Potency: ×{potency:F2}</color>";
+            if (data.effects != null)
+            {
+                foreach (var eff in data.effects)
+                {
+                    if (eff is DamageEffect dmg)
+                        effectiveValue = dmg.baseDamage * potency;
+                    else if (eff is HealEffect heal)
+                        effectiveValue = heal.baseHeal * potency;
+                    else if (eff is BlockEffect blk)
+                        effectiveValue = blk.baseBlock * potency;
+                }
+            }
+
+            coloredValue += $"{effectiveValue:F0}</color>";
+
+            if (!string.IsNullOrEmpty(desc) && desc.Contains("<X>"))
+                desc = desc.Replace("<X>", coloredValue);
+
+            if (!string.IsNullOrEmpty(intent) && intent.Contains("<X>"))
+                intent = intent.Replace("<X>", coloredValue);
         }
 
-        statsText.text = stats;
+        // ============ APPLY TO UI ============
+        titleText.text = displayName;
+        descriptionText.text = desc;
+        statsText.text = $"Type: {data.cardType}\nCost: {data.energy}";
 
         canvasGroup.alpha = 1f;
         canvasGroup.blocksRaycasts = false;
         gameObject.SetActive(true);
+
+        Debug.Log($"🟨 Tooltip updated: {displayName} | potency={potency:F2}");
     }
 
     public void Hide()

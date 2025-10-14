@@ -15,4 +15,6 @@ public class DamageEffect : CardEffect
 
         Debug.Log($"{user.characterName} dealt {total} damage to {target.characterName} (scale {totalScale:F2})");
     }
+
+    protected override float GetEffectiveValue(float totalScale) => baseDamage * totalScale;
 }

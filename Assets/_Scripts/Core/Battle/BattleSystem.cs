@@ -128,10 +128,10 @@ public class BattleSystem : MonoBehaviour
 
         yield return ClearHand();
 
-        // 🧱 Step 1: Clear player block at the start of enemy turn
-        player?.EndTurn();
+        // 🧱 Step 1: (DON’T clear player block here)
+        // The player’s block should persist while enemies attack.
 
-        // 🧱 Step 2: Now that enemy turn begins, clear *their* previous block
+        // 🧱 Step 2: Start enemy turn → clear THEIR previous block
         foreach (Enemy enemy in enemies)
             enemy?.EndTurn();
 
@@ -143,7 +143,9 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
-        // 🕒 Step 4: Reset for next round (enemies keep new block until next enemy turn)
+        // 🕒 Step 4: After enemies act, player’s block now expires
+        player?.EndTurn();
+
         Debug.Log("🕒 Resetting for next round...");
         yield return new WaitForSeconds(turnResetDelay);
 

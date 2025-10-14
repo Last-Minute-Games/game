@@ -12,4 +12,5 @@ public class BlockEffect : CardEffect
 
         Debug.Log($"{user.characterName} gained {total} Block (scale {totalScale:F2})");
     }
+    protected override float GetEffectiveValue(float totalScale) => baseBlock * totalScale;
 }
