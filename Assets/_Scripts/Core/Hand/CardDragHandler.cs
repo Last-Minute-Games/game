@@ -75,7 +75,7 @@ namespace _Scripts.Gameplay
 
             selfCol.enabled = wasEnabled;
 
-            // If we dropped on a target
+            // ========== Enemy Target ==========
             if (target != null && target.gameObject != gameObject && cardView != null)
             {
                 if (cardView.UseCard(target))
@@ -85,11 +85,11 @@ namespace _Scripts.Gameplay
                 }
             }
 
-            // If self-targeting (no target under cursor)
+            // ========== Self Target ==========
             if (cardView != null && cardView.runner != null && cardView.runner.data != null)
             {
                 var rule = cardView.runner.data.targetingRule;
-                if (rule != null && rule.targetingType == TargetingType.Self) // match your TargetingRule setup
+                if (rule != null && rule is SelfTargetingRule)
                 {
                     var player = FindFirstObjectByType<Player>();
                     if (player != null)
@@ -101,7 +101,7 @@ namespace _Scripts.Gameplay
                 }
             }
 
-            // Snap back if invalid
+            // ========== Invalid Target → Snap Back ==========
             transform.DOMove(startPos, 0.2f).SetEase(Ease.OutCubic)
                 .OnComplete(() => spriteRenderer.sortingOrder = 0);
 
