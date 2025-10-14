@@ -224,8 +224,9 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(kingDeadAnimationClip.length);
             
-            yield return new WaitForSeconds(3f);
+            _kingAnimator.speed = 0;
             
+            yield return new WaitForSeconds(2f);
             // go to overworld scene
             AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
             op.allowSceneActivation = true; // or set false if you want to gate activation
