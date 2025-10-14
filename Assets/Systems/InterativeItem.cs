@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using cherrydev;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 [RequireComponent(typeof(Collider2D))]
 public class InteractiveItem : MonoBehaviour
 {
@@ -29,6 +33,9 @@ public class InteractiveItem : MonoBehaviour
     [SerializeField] private string[] setTrueOnRepeat;
     [SerializeField] private string[] unlockJournalOnFirst;
     [SerializeField] private string[] unlockJournalOnRepeat;
+
+    [Header("Debug Only")]
+    [SerializeField, ReadOnly] private bool debugHasInteracted; // Shows runtime state in Inspector
 
     // Runtime
     private GameObject player;
@@ -73,6 +80,8 @@ public class InteractiveItem : MonoBehaviour
                 flags.Set(hasInteractedFlagKey, value);
             else
                 localHasInteracted = value;
+
+            debugHasInteracted = value; // Mirror to Inspector for debugging
         }
     }
 
@@ -251,3 +260,19 @@ public class InteractiveItem : MonoBehaviour
     }
 #endif
 }
+
+#if UNITY_EDITOR
+// ReadOnly attribute for Inspector
+[CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
+public class ReadOnlyDrawer : PropertyDrawer
+{
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+        GUI.enabled = false;
+        EditorGUI.PropertyField(position, property, label);
+        GUI.enabled = true;
+    }
+}
+
+public class ReadOnlyAttribute : PropertyAttribute { }
+#endif
