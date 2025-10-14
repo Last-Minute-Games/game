@@ -6,6 +6,8 @@ public class CardRunner : MonoBehaviour {
     public CardData data;
     [HideInInspector] public CharacterBase owner;
 
+    [HideInInspector] public float cachedPotency = 1f;
+
     private void Awake() {
         var sr = GetComponent<SpriteRenderer>();
         if (data && data.artwork && sr) sr.sprite = data.artwork;
