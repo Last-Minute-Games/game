@@ -1,5 +1,409 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8333123798764518470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 846.5
+    y: 975
+    width: 190
+    height: 155
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - You always seem so composed.
+  - How do you stay calm in all this?
+  - You speak like a priest, not a warrior.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -6450880358720330715}
+  ChildNodes:
+  - {fileID: -3577293743234578200}
+  - {fileID: -4373929847951927469}
+  - {fileID: 4010211495396166290}
+--- !u!114 &-8056149912860033968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1562
+    y: 1080
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: His men saved me from chains of the infidels' ship. I owe him more than
+      loyalty. Perhaps... yes, in my own way.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -6613814892437995513}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-7079409306374727649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1363
+    y: 373
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - You seem to know how they think.
+  - That's unsettling, Avant.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 3525353723836732485}
+  ChildNodes:
+  - {fileID: 6009734573094534318}
+--- !u!114 &-6613814892437995513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1319.5
+    y: 1027.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - He must've trusted you deeply.
+  - Did you have unbreakable loyalty to him?
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -4373929847951927469}
+  ChildNodes:
+  - {fileID: 3619054982381633695}
+  - {fileID: -8056149912860033968}
+--- !u!114 &-6450880358720330715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 597
+    y: 987.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Good. Keep your head steady, Nikolaus. The truth needs a calm hand, not
+      a shaking one.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 9197129819389211062}
+  ChildNode: {fileID: -8333123798764518470}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-5131676773994111287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1561
+    y: 1347
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: No but I've been a sailor for years.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -3895463668414377287}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-5051715272586582717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 666
+    y: 132.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: I've seen kings die on fields of mud and fire. Grief comes later and action
+      comes first.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 9197129819389211062}
+  ChildNode: {fileID: 1443942691229048682}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-4373929847951927469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1088
+    y: 1018.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Because fear serves no one. The King taught me that courage isn't fire.
+      It's silence under pressure.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -8333123798764518470}
+  ChildNode: {fileID: -6613814892437995513}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-3895463668414377287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1303.5
+    y: 1212.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - Maybe that's why the King trusted you.
+  - You think you're better than the rest of us?
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 4010211495396166290}
+  ChildNodes:
+  - {fileID: 8123607859091394042}
+  - {fileID: -5131676773994111287}
+--- !u!114 &-3577293743234578200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1096.5
+    y: 860
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Composure is armor, my friend. The mind breaks it faster than the bone
+      if left unguarded.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -8333123798764518470}
+  ChildNode: {fileID: 2411292812090739422}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-2556465912128616888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 927.5
+    y: -171.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - Then help me find the assassin.
+  - You talk as if you already know.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 4114979443074297604}
+  ChildNodes:
+  - {fileID: 7421751323505110175}
+  - {fileID: 2478138586121827307}
+--- !u!114 &-1211290618911506022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1369.5
+    y: 681
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - You must've regretted it.
+  - Purpose or not, it's still blood.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 5556831087485632282}
+  ChildNodes: []
+--- !u!114 &-548675456962137107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1790
+    y: 304
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - That must haunt you.
+  - Then you understand killers too well...
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 6009734573094534318}
+  ChildNodes: []
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14,12 +418,457 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.DialogNodeGraph
   NodesList:
   - {fileID: 5062585804381860848}
+  - {fileID: 9197129819389211062}
+  - {fileID: 4114979443074297604}
+  - {fileID: -2556465912128616888}
+  - {fileID: -5051715272586582717}
+  - {fileID: 1443942691229048682}
+  - {fileID: 8669339819452921154}
+  - {fileID: 7421751323505110175}
+  - {fileID: 2478138586121827307}
+  - {fileID: 1398888787272522711}
+  - {fileID: 2007037592141891531}
+  - {fileID: 8097817019629068892}
+  - {fileID: -6450880358720330715}
+  - {fileID: 803300941970166249}
+  - {fileID: 3525353723836732485}
+  - {fileID: 6009734573094534318}
+  - {fileID: -7079409306374727649}
+  - {fileID: -548675456962137107}
+  - {fileID: 3814038482352303004}
+  - {fileID: 5901472082633425495}
+  - {fileID: 3870713394486022290}
+  - {fileID: 5007725830726681822}
+  - {fileID: 5556831087485632282}
+  - {fileID: -1211290618911506022}
+  - {fileID: -8333123798764518470}
+  - {fileID: -3577293743234578200}
+  - {fileID: 2411292812090739422}
+  - {fileID: -4373929847951927469}
+  - {fileID: -6613814892437995513}
+  - {fileID: 3619054982381633695}
+  - {fileID: -8056149912860033968}
+  - {fileID: 4010211495396166290}
+  - {fileID: -3895463668414377287}
+  - {fileID: 8123607859091394042}
+  - {fileID: -5131676773994111287}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
   NodeToDrawLineFrom: {fileID: 0}
   LinePosition: {x: 0, y: 0}
   IsLocalizationSetUp: 0
+--- !u!114 &803300941970166249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 893
+    y: 463.5
+    width: 190
+    height: 155
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - You're saying the killer feels guilt?
+  - You think it's someone close to the King?
+  - You sound like you've done this before
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 8669339819452921154}
+  ChildNodes:
+  - {fileID: 3525353723836732485}
+  - {fileID: 3814038482352303004}
+  - {fileID: 5556831087485632282}
+--- !u!114 &1398888787272522711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1474
+    y: -270.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - That's useful. Thank you.
+  - Strange that you'd know that...
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 7421751323505110175}
+  ChildNodes: []
+--- !u!114 &1443942691229048682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 899
+    y: 139.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - Then act with me.
+  - You're hiding something behind that calm.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -5051715272586582717}
+  ChildNodes:
+  - {fileID: 2007037592141891531}
+  - {fileID: 8097817019629068892}
+--- !u!114 &2007037592141891531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1143
+    y: 64
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: No. I must relish my time at sea.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 1443942691229048682}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &2411292812090739422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1328.5
+    y: 863.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - That's wisdowm earned the hard way.
+  - Armor cracks eventually
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -3577293743234578200}
+  ChildNodes: []
+--- !u!114 &2478138586121827307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1230.5
+    y: -105
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Careful, Nikolaus. Doubt breeds like rot. My loyalty was forged in the
+      seas, not in court whispers.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -2556465912128616888}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &3525353723836732485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1142
+    y: 378.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Guilt? Perhaps. But some killers take pride in their art. Watch the confident
+      ones. Their calm is often rehearsed.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 803300941970166249}
+  ChildNode: {fileID: -7079409306374727649}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &3619054982381633695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1560
+    y: 940
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Indeed.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -6613814892437995513}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &3814038482352303004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1143
+    y: 510.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Murder rarely comes from afar. Betrayal feasts best at the same table.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 803300941970166249}
+  ChildNode: {fileID: 5901472082633425495}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &3870713394486022290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1583
+    y: 440.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Perhaps.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 5901472082633425495}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &4010211495396166290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1085.5
+    y: 1210.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: A man can swing a cutlass without losing his soul. I fight so others won't
+      have to.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -8333123798764518470}
+  ChildNode: {fileID: -3895463668414377287}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &4114979443074297604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 660.5
+    y: -174
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Word travels quickly, even in locked halls. His majesty was my redeemer...
+      whoever did this will answer for it.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 9197129819389211062}
+  ChildNode: {fileID: -2556465912128616888}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &5007725830726681822
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1580.5
+    y: 575
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: If you think loyalty can be feigned, test me. I've bled for that crown
+      more than any courtier here.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 5901472082633425495}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &5062585804381860848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -35,19 +884,282 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 638.6667
-    y: 338.66672
+    x: 152.16675
+    y: 318.16675
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 1
   _sentence:
     CharacterName: Avant
-    Text: Good day!
+    Text: Hello Nikolaus, how was your day? You look like a burdened man.
     CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
   ParentNodes: []
+  ChildNode: {fileID: 9197129819389211062}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &5556831087485632282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1138.5
+    y: 674.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: In war, I've killed hundreds I never met. Murder in peacetime feels colder.
+      At least in battle, the gunpowdered guns has purpose.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 803300941970166249}
+  ChildNode: {fileID: -1211290618911506022}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &5901472082633425495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1365
+    y: 513
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - So one of the council members?
+  - That includes you, doesn't it?
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 3814038482352303004}
+  ChildNodes:
+  - {fileID: 3870713394486022290}
+  - {fileID: 5007725830726681822}
+--- !u!114 &6009734573094534318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1584
+    y: 305.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: 'When I was a sailor in Norway, they made us fight to amuse the naval admiral.
+      I''ve seen men kill, then smile. It taught me something: the calm ones are
+      the most dangerous.'
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -7079409306374727649}
+  ChildNode: {fileID: -548675456962137107}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &7421751323505110175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1224
+    y: -271.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: If I were you, I'd start where the king used to take counsel. His sword
+      was removed from its display in the throne room. No one touches that blade
+      without permission.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -2556465912128616888}
+  ChildNode: {fileID: 1398888787272522711}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &8097817019629068892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1149.5
+    y: 222.5
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Hiding? No, Nikolaus. I follow orders. Sometimes the King's orders outlive
+      the King himself.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 1443942691229048682}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &8123607859091394042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1559
+    y: 1211
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Indeed. Trust is built through battles.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: -3895463668414377287}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &8669339819452921154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 670
+    y: 446
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Avant
+    Text: Assassination leaves its mark on not just bodies but in eyes. Look for
+      those who avoid your gaze.
+    CharacterSprite: {fileID: -4583758162744181447, guid: 308da7f8ff69dc04190585d5e3c6e8da, type: 3}
+  ParentNodes:
+  - {fileID: 9197129819389211062}
+  ChildNode: {fileID: 803300941970166249}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &9197129819389211062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 405.5
+    y: 279
+    width: 190
+    height: 175
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - You've heard about the king's death?
+  - You seem calm, Avant. Don't you care?
+  - You've seen battle before. Now you're a fisherman. Any thoughts on who did this?
+  - I'm fine, just... thinking.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 5062585804381860848}
+  ChildNodes:
+  - {fileID: 4114979443074297604}
+  - {fileID: -5051715272586582717}
+  - {fileID: 8669339819452921154}
+  - {fileID: -6450880358720330715}

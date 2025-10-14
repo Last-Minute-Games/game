@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5579313ed06a1570a94c9796fef08d0, type: 3}
+  m_Name: Healing Data
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: Heal
+  description: Heal <X> points of health.
+  artwork: {fileID: 7135091329795504839, guid: 7b7139a1876d4fc4ab9882d787af2008, type: 3}
+  cardType: 2
+  energy: 1
+  targetingRule: {fileID: 11400000, guid: 1325419bf9a3518e6a5c6b0e76a0fd4a, type: 2}
+  intentionIcon: {fileID: -6170200246483313154, guid: 021295fd949e92e308b82bd22d491444, type: 3}
+  intentionText: <X>
+  minMultiplier: 0.5
+  maxMultiplier: 2
+  effects:
+  - {fileID: 11400000, guid: ad01ae6e30ea927da8600a9a47a46554, type: 2}
+  playerDrawWeight: 0.833
+  isPlayerUsable: 1
+  uniqueId: 2
