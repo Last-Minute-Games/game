@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5579313ed06a1570a94c9796fef08d0, type: 3}
+  m_Name: Defense Data
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: Block
+  description: Add <X> of block for the round.
+  artwork: {fileID: -4973404695210688271, guid: b1c20a18415e0f149a5585eadaa0d16a, type: 3}
+  cardType: 1
+  energy: 1
+  targetingRule: {fileID: 11400000, guid: 1325419bf9a3518e6a5c6b0e76a0fd4a, type: 2}
+  intentionIcon: {fileID: -4522177544444092189, guid: 021295fd949e92e308b82bd22d491444, type: 3}
+  intentionText: <X>
+  minMultiplier: 0.5
+  maxMultiplier: 1.5
+  effects:
+  - {fileID: 11400000, guid: 9d003353c520129bba7ef9b1af9f0f70, type: 2}
+  isPlayerUsable: 1

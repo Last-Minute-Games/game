@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5579313ed06a1570a94c9796fef08d0, type: 3}
+  m_Name: Attack Data
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: Strike
+  description: Strike your enemy and deal <X> damage.
+  artwork: {fileID: 8574915176529702039, guid: 79fbcb0fb24220d4db717f465dbc1cf1, type: 3}
+  cardType: 0
+  energy: 1
+  targetingRule: {fileID: 11400000, guid: 15b47d86db09307ac95a2fdfc0c70258, type: 2}
+  intentionIcon: {fileID: -178955127988386463, guid: 021295fd949e92e308b82bd22d491444, type: 3}
+  intentionText: '<X>
+
+'
+  minMultiplier: 0.2
+  maxMultiplier: 2
+  effects:
+  - {fileID: 11400000, guid: 854cfdb1168fe7a2ebaa55356159ccd1, type: 2}
+  isPlayerUsable: 1

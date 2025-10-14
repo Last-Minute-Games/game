@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f403d73173534e4980b527d11e2ed7d, type: 3}
+  m_Name: Eyeball Enemy
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: Eyeball
+  portrait: {fileID: 4351495876197429195, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  maxHealth: 40
+  baseDamage: 10
+  defense: 2
+  globalCardMultiplier: 0.88
+  animationSet: {fileID: 11400000, guid: 739969826b8a44f3083ef011c1a4ad30, type: 2}
+  availableCards:
+  - card: {fileID: 11400000, guid: 5a4aa64c185bb2565a401248dc27110b, type: 2}
+    baseWeight: 1.5887116
+    prioritizeWhenLowHP: 0
+  - card: {fileID: 11400000, guid: d4ce8458f91f1d870aacab7642b5b019, type: 2}
+    baseWeight: 0.13928057
+    prioritizeWhenLowHP: 1
+  - card: {fileID: 11400000, guid: bd4f1a01d18e57259a2b84444be212c7, type: 2}
+    baseWeight: 0.08356834
+    prioritizeWhenLowHP: 1
+  - card: {fileID: 11400000, guid: f13555728fac1e2d991332ea81eaf4f4, type: 2}
+    baseWeight: 0.21278974
+    prioritizeWhenLowHP: 0
+  lowHPWeightMultiplier: 1.5
