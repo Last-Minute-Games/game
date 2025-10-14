@@ -86,10 +86,10 @@ namespace _Scripts.Gameplay
             }
 
             // ========== Self Target ==========
-            if (cardView != null && cardView.runner != null && cardView.runner.data != null)
+            if (cardView != null && cardView.Runner != null && cardView.Runner.data != null)
             {
-                var rule = cardView.runner.data.targetingRule;
-                if (rule != null && rule is SelfTargetingRule)
+                var rule = cardView.Runner.data.targetingRule;
+                if (rule != null && rule is SelfTargeting)
                 {
                     var player = FindFirstObjectByType<Player>();
                     if (player != null)

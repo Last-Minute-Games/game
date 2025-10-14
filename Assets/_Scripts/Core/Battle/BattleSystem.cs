@@ -27,16 +27,21 @@ public class BattleSystem : MonoBehaviour
         StartCoroutine(InitializeBattle());
     }
 
+    public void RegisterPlayer(Player p)
+    {
+        player = p;
+    }
+
     private IEnumerator InitializeBattle()
     {
         yield return null;
 
-        player = FindObjectOfType<Player>();
+        // player = FindObjectOfType<Player>(); ❌ remove this
         enemies.AddRange(FindObjectsOfType<Enemy>());
 
         if (player == null)
         {
-            Debug.LogError("❌ BattleSystem: No Player found in scene!");
+            Debug.LogError("❌ BattleSystem: Player not registered!");
             yield break;
         }
 

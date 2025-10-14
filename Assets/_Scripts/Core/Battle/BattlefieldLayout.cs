@@ -7,16 +7,20 @@ public class BattlefieldLayout : MonoBehaviour
     [Header("Prefabs & Libraries")]
     [SerializeField] private GameObject enemyPrefab; 
     [SerializeField] private EnemyLibrary enemyLibrary;
+    [SerializeField] private GameObject playerPrefab;
+    private Player playerInstance;
 
     [Header("Enemy Positioning")]
     [SerializeField] private float horizontalSpacing = 2.5f;
     [SerializeField] private float rearOffsetY = 0.5f;
     [SerializeField] private float rearScale = 0.8f;
 
+
     private readonly List<Enemy> activeEnemies = new();
 
     private void Start()
     {
+        SpawnPlayer();
         SpawnEnemies();
     }
 
@@ -65,6 +69,33 @@ public class BattlefieldLayout : MonoBehaviour
 
             activeEnemies.Add(newEnemy);
         }
+    }
+
+    private void SpawnPlayer()
+    {
+        if (playerPrefab == null)
+        {
+            Debug.LogError("❌ BattlefieldLayout: Missing Player Prefab!");
+            return;
+        }
+
+        GameObject playerObj = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+        playerObj.name = "Player";
+
+        playerInstance = playerObj.GetComponent<Player>();
+        if (playerInstance == null)
+        {
+            Debug.LogError("❌ Player prefab missing Player component!");
+            return;
+        }
+
+        playerInstance.characterName = "Player";
+        playerInstance.currentHealth = playerInstance.maxHealth;
+
+        // Register player with BattleSystem
+        var battleSystem = FindFirstObjectByType<BattleSystem>();
+        if (battleSystem != null)
+            battleSystem.RegisterPlayer(playerInstance);
     }
 
     private Vector3 GetSpawnPosition(int index, int total, Vector3 center)

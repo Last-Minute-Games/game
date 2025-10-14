@@ -14,13 +14,14 @@ public class CardView : MonoBehaviour
     private BoxCollider2D cardCollider;
     private CardDragHandler dragHandler;
     private HandView handView;
-    
+
     [Header("Gameplay")]
     public CharacterBase player;
     public CharacterBase targetEnemy;
-    
+
     private CardBase cardBase;
-    private CardRunner runner;
+    private CardRunner runner;          // 👈 actually declare the field
+    public CardRunner Runner => runner; // 👈 public read-only accessor
 
     private void Awake()
     {
@@ -31,40 +32,23 @@ public class CardView : MonoBehaviour
 
         if (imageSR == null)
             imageSR = GetComponent<SpriteRenderer>();
-        
+
         dragHandler = GetComponent<CardDragHandler>();
         handView = FindFirstObjectByType<HandView>();
     }
-    
-    // public bool ActivateCard(CharacterBase target)
-    // {
-    //     if (cardBase == null || player == null) return false;
-    //
-    //     if (cardBase.cardType == CardType.Attack && target != null && target is Enemy enemy)
-    //     {
-    //         cardBase.Use(player, target);
-    //         AnimateCardPlay(enemy.transform);
-    //         return true;
-    //     }
-    //     else if ((cardBase.cardType == CardType.Healing || cardBase.cardType == CardType.Defense) && player != null)
-    //     {
-    //         cardBase.Use(player, target);
-    //         AnimateCardPlay(player.transform);
-    //         return true;
-    //     }
-    //
-    //     return false;
-    // }
 
     public bool UseCard(Collider2D target)
     {
-        if (player is Player p) {
-            if (!p.UseEnergy(runner.EnergyCost)) {
+        if (player is Player p)
+        {
+            if (!p.UseEnergy(runner.EnergyCost))
+            {
                 Debug.Log("Not enough energy");
                 return false;
             }
 
-            if (runner.TryPlay(player, target, out _)) {
+            if (runner.TryPlay(player, target, out _))
+            {
                 if (handView) handView.RemoveCard(this);
                 transform.DOScale(Vector3.zero, 0.15f).OnComplete(() => gameObject.SetActive(false));
                 return true;
@@ -81,16 +65,14 @@ public class CardView : MonoBehaviour
             handView.OnHover(this);
 
         if (TooltipManager.Instance != null && runner != null && runner.data != null)
-            TooltipManager.Instance.ShowTooltip(runner.data, runner, player); // << pass player
+            TooltipManager.Instance.ShowTooltip(runner.data, runner, player);
     }
 
     private void OnMouseExit()
     {
-        // Reset hover on hand
         if (handView != null && !dragHandler.IsDragging)
             handView.OnHoverExit(this);
 
-        // Hide tooltip
         if (TooltipManager.Instance != null)
             TooltipManager.Instance.HideTooltip();
     }
@@ -106,7 +88,6 @@ public class CardView : MonoBehaviour
             });
     }
 
-    // Restores compatibility with CardViewHoverSystem
     public void Setup(CardBase card)
     {
         if (card == null) return;
