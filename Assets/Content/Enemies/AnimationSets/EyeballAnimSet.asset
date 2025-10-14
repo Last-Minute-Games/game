@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dab02450675e757ad970128d1f7d4452, type: 3}
+  m_Name: EyeballAnimSet
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationSet
+  idle:
+  - {fileID: 4351495876197429195, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 4819174616921792962, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 5427041664428718538, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -912345921981223801, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -3169425037468793228, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 6942707639034967933, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -6592511960874365888, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 2809074352962671072, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -6187413521113534469, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 6407242012280710804, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -1701513327998453272, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  attack:
+  - {fileID: -5045275388138628523, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 9154509870226193235, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 3858998208418137855, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 7331074776794111180, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -3987654660421497115, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -5752708838093954546, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  hurt:
+  - {fileID: -6926424054620255043, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -8421602326006254375, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -5892914091934495290, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 3660936552530897312, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 102024407682163283, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 5996474895142923872, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 8126604308995046687, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 4521778597709307379, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  death:
+  - {fileID: 102024407682163283, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 5996474895142923872, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 8126604308995046687, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: -5892914091934495290, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  - {fileID: 3660936552530897312, guid: c6d6fca793c0de19fbf62769186be102, type: 3}
+  defaultFps: 8
+  idleFps: 8
+  attackFps: 12
+  hurtFps: 14
+  deathFps: 6

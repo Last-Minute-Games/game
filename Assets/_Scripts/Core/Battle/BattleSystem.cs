@@ -1,0 +1,195 @@
+using UnityEngine;
+using DG.Tweening;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+
+public class BattleSystem : MonoBehaviour
+{
+    [Header("Scene References")]
+    [SerializeField] private BattlefieldLayout battlefieldLayout;
+    [SerializeField] private HandView handView;
+    [SerializeField] private CardFactory cardFactory;
+    [SerializeField] private Transform handSpawnPoint;
+    [SerializeField] private EndTurnButton endTurnButton;
+
+    [Header("Battle Settings")]
+    [SerializeField] private int startingHandSize = 5;
+    [SerializeField] private float turnResetDelay = 1.5f;
+
+    private Player player;
+    private readonly List<Enemy> enemies = new();
+
+    private bool playerTurn = true;
+    private bool isProcessingTurn = false;
+
+    private void Start()
+    {
+        StartCoroutine(InitializeBattle());
+    }
+
+    public void RegisterPlayer(Player p)
+    {
+        player = p;
+    }
+
+    private IEnumerator InitializeBattle()
+    {
+        yield return null;
+
+        enemies.AddRange(FindObjectsOfType<Enemy>());
+        enemies.RemoveAll(e => e == null || e.IsDead);
+
+        if (player == null)
+        {
+            Debug.LogError("❌ BattleSystem: Player not registered!");
+            yield break;
+        }
+
+        if (enemies.Count == 0)
+        {
+            Debug.LogError("❌ BattleSystem: No Enemies found in scene!");
+            yield break;
+        }
+
+        Debug.Log($"✅ BattleSystem initialized with {enemies.Count} enemies ({player.characterName})");
+
+        yield return SpawnStartingHand();
+        StartPlayerTurn();
+    }
+
+    private IEnumerator SpawnStartingHand()
+    {
+        int guaranteedAttackId = 0; // Attack card ID
+        int guaranteedDefenseId = 1; // Defense card ID
+
+        // First: Spawn the guaranteed Attack card
+        GameObject attackCard = cardFactory.PullCardById(guaranteedAttackId, handSpawnPoint.position);
+        if (attackCard != null)
+        {
+            CardView cv = attackCard.GetComponent<CardView>();
+            if (cv != null)
+            {
+                cv.player = player;
+                if (enemies.Count > 0)
+                    cv.targetEnemy = enemies[Random.Range(0, enemies.Count)];
+                yield return handView.AddCard(cv);
+            }
+        }
+
+        // Next: Spawn the guaranteed Defense card
+        GameObject defenseCard = cardFactory.PullCardById(guaranteedDefenseId, handSpawnPoint.position);
+        if (defenseCard != null)
+        {
+            CardView cv = defenseCard.GetComponent<CardView>();
+            if (cv != null)
+            {
+                cv.player = player;
+                if (enemies.Count > 0)
+                    cv.targetEnemy = enemies[Random.Range(0, enemies.Count)];
+                yield return handView.AddCard(cv);
+            }
+        }
+
+        // Then: Fill the rest of the hand randomly
+        for (int i = 0; i < startingHandSize - 2; i++)
+        {
+            GameObject cardObj = cardFactory.CreateRandomCard(
+                handSpawnPoint.position, 
+                0.6f, 0.25f, 0.15f, 
+                forPlayer: true
+            );
+
+            if (cardObj == null)
+            {
+                Debug.LogError("❌ BattleSystem: Failed to create random card!");
+                continue;
+            }
+
+            cardObj.transform.position += Vector3.down * 1f;
+            cardObj.transform.DOMove(handSpawnPoint.position, 0.25f).SetEase(Ease.OutBack);
+
+            CardView cardView = cardObj.GetComponent<CardView>();
+            if (cardView != null)
+            {
+                cardView.player = player;
+                if (enemies.Count > 0)
+                    cardView.targetEnemy = enemies[Random.Range(0, enemies.Count)];
+
+                yield return handView.AddCard(cardView);
+            }
+        }
+    }
+
+    private IEnumerator ClearHand()
+    {
+        if (handView != null)
+            yield return handView.ClearAllCards();
+    }
+
+    private IEnumerator RefreshPlayerHand()
+    {
+        yield return ClearHand();
+        yield return SpawnStartingHand();
+    }
+
+    private void StartPlayerTurn()
+    {
+        playerTurn = true;
+        player.RefillEnergy();
+
+        Debug.Log("🔹 Player’s turn started!");
+
+        enemies.RemoveAll(e => e == null || e.IsDead);
+        foreach (Enemy enemy in enemies)
+            enemy?.PrepareNextCard();
+    }
+
+    public void EndPlayerTurn()
+    {
+        if (!playerTurn || isProcessingTurn) return;
+
+        Debug.Log("🔸 Player turn ended → Enemy turn begins...");
+        playerTurn = false;
+
+        StartCoroutine(HandleTurnFlow());
+    }
+
+    private IEnumerator HandleTurnFlow()
+    {
+        isProcessingTurn = true;
+
+        yield return ClearHand();
+
+        foreach (Enemy enemy in enemies)
+            enemy?.EndTurn();
+
+        foreach (Enemy enemy in enemies)
+        {
+            if (enemy == null || enemy.IsDead || player == null) continue;
+            yield return enemy.ExecuteIntention(player);
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        enemies.RemoveAll(e => e == null || e.IsDead);
+
+        // ✅ Check win/lose conditions
+        if (enemies.Count == 0 || player == null || player.currentHealth <= 0)
+        {
+            Debug.Log("🏁 Battle finished! Returning to Overworld...");
+            yield return new WaitForSeconds(1f);
+            SceneManager.LoadScene("Overworld");
+            yield break;
+        }
+
+        player?.EndTurn();
+
+        Debug.Log("🕒 Resetting for next round...");
+        yield return new WaitForSeconds(turnResetDelay);
+
+        yield return RefreshPlayerHand();
+        StartPlayerTurn();
+
+        isProcessingTurn = false;
+    }
+}
