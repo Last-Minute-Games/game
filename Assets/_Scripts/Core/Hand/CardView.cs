@@ -77,13 +77,11 @@ public class CardView : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        // Find hand and tell it we are hovered
         if (handView != null && !dragHandler.IsDragging)
             handView.OnHover(this);
 
-        // Show tooltip
         if (TooltipManager.Instance != null && runner != null && runner.data != null)
-            TooltipManager.Instance.ShowTooltip(runner.data);
+            TooltipManager.Instance.ShowTooltip(runner.data, runner); // pass runner here
     }
 
     private void OnMouseExit()
