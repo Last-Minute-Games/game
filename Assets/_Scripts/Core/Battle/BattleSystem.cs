@@ -2,6 +2,7 @@ using UnityEngine;
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class BattleSystem : MonoBehaviour
 {
@@ -172,9 +173,12 @@ public class BattleSystem : MonoBehaviour
 
         enemies.RemoveAll(e => e == null || e.IsDead);
 
-        if (enemies.Count == 0)
+        // ✅ Check win/lose conditions
+        if (enemies.Count == 0 || player == null || player.currentHealth <= 0)
         {
-            Debug.Log("🏆 All enemies defeated! Battle over!");
+            Debug.Log("🏁 Battle finished! Returning to Overworld...");
+            yield return new WaitForSeconds(1f);
+            SceneManager.LoadScene("Overworld");
             yield break;
         }
 
