@@ -33,6 +33,7 @@ public class Enemy : CharacterBase
 
     private void SetupUI()
     {
+        // Health bar
         if (healthBarPrefab != null)
         {
             var barObj = Instantiate(healthBarPrefab);
@@ -44,8 +45,19 @@ public class Enemy : CharacterBase
                 defensePanel.gameObject.SetActive(false);
         }
 
+        // Initialize intention UI in "waiting" state
         if (intentionText != null)
-            intentionText.text = "Waiting...";
+        {
+            intentionText.text = string.Empty;
+            intentionText.alpha = 0f;
+        }
+
+        if (intentionIcon != null)
+        {
+            Color c = intentionIcon.color;
+            c.a = 0f; // make icon invisible
+            intentionIcon.color = c;
+        }
     }
 
     private CardData GetWeightedRandomCard()
@@ -123,18 +135,24 @@ public class Enemy : CharacterBase
 
         // Format intention text
         string intent = currentCard.intentionText;
-
         if (!string.IsNullOrEmpty(intent) && intent.Contains("<X>"))
             intent = intent.Replace("<X>", coloredX);
 
         // =============================
-        // NEW: Set Intention Icon + Text
+        // Set Intention Icon + Text
         // =============================
+        bool hasIcon = currentCard.intentionIcon != null;
+        bool hasText = !string.IsNullOrEmpty(intent);
+
+        // Handle icon
         if (intentionIcon != null)
         {
-            if (currentCard.intentionIcon != null)
+            if (hasIcon)
             {
                 intentionIcon.sprite = currentCard.intentionIcon;
+                Color c = intentionIcon.color;
+                c.a = 1f; // fully visible
+                intentionIcon.color = c;
                 intentionIcon.enabled = true;
             }
             else
@@ -143,32 +161,38 @@ public class Enemy : CharacterBase
             }
         }
 
+        // Handle text
         if (intentionText != null)
         {
-            // Hide text if empty or missing entirely
-            if (!string.IsNullOrEmpty(intent))
+            if (hasText)
             {
                 intentionText.text = intent;
                 intentionText.enabled = true;
+                intentionText.alpha = 1f;
             }
             else
             {
+                intentionText.text = string.Empty;
                 intentionText.enabled = false;
+                intentionText.alpha = 0f;
             }
         }
 
-        // Center the icon if text is hidden
+        // Handle centering
         if (intentionIcon != null && intentionText != null)
         {
-            bool iconOnly = !intentionText.enabled && intentionIcon.enabled;
-
-            if (iconOnly)
+            if (hasIcon && !hasText)
             {
-                // Re-center icon manually if the layout group doesn’t auto-handle it
-                var iconRT = intentionIcon.rectTransform;
-                iconRT.anchoredPosition = Vector2.zero;
+                // Center icon alone
+                intentionIcon.rectTransform.anchoredPosition = Vector2.zero;
+            }
+            else if (!hasIcon && hasText)
+            {
+                // Center text alone
+                intentionText.rectTransform.anchoredPosition = Vector2.zero;
             }
         }
+
         animator?.PlayIdle();
     }
 
@@ -200,7 +224,20 @@ public class Enemy : CharacterBase
 
         pendingRunner.Execute(this, player);
 
-        if (intentionText != null) intentionText.text = "Waiting...";
+        // Reset to waiting state
+        if (intentionText != null)
+        {
+            intentionText.text = string.Empty;
+            intentionText.alpha = 0f;
+        }
+
+        if (intentionIcon != null)
+        {
+            Color c = intentionIcon.color;
+            c.a = 0f;
+            intentionIcon.color = c;
+        }
+
         animator?.PlayIdle();
 
         if (pendingRunner != null)
@@ -209,7 +246,7 @@ public class Enemy : CharacterBase
             pendingRunner = null;
         }
 
-        if (!IsDead) // avoid behavior changes after death from reaction effects
+        if (!IsDead)
             data.ModifyBehavior(currentCard);
     }
 
