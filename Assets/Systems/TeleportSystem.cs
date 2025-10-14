@@ -96,6 +96,11 @@ namespace Systems
             
                 other.transform.position = tptTo.transform.position + new Vector3(direction.x, direction.y, 0) * 1.5f;
                 _cinemachinePositionComposer.Damping = Vector3.zero;
+                
+                if (tptTo.transform.name == "Hallway")
+                {
+                    _tutorialScene.SetCinecamYOffset(2.5f);   
+                }
             
                 yield return new WaitForSeconds(_fadeTime); // Adjust the wait time as needed
                 
@@ -106,11 +111,6 @@ namespace Systems
             
                 yield return StartCoroutine(FadeOut());
                 _fadeCanvasGroup.blocksRaycasts = false;
-                
-                if (tptTo.transform.name == "Hallway")
-                {
-                    _tutorialScene.SetCinecamYOffset(2.5f);   
-                }
 
                 yield break;
             }
