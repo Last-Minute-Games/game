@@ -29,15 +29,35 @@ public class TutorialScene : MonoBehaviour
         _journalPages = _journalPanel.transform.Find("Pages").gameObject;
         
         _journalMovementPage = _journalPages.transform.Find("Movement").GetComponent<CanvasGroup>();
-
+        _movementContinueButton = _journalMovementPage.transform.Find("Continue").GetComponent<Button>();
+        
         _journalMovementPage.alpha = 0f;
         
         _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
         _fadeCanvasGroup.alpha = 1f; // Start opaque
         
         _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
-
+        
+        _movementContinueButton.onClick.AddListener(() =>
+        {
+            StartCoroutine(CloseJournal());
+        });
+        
         StartCoroutine(BeginTutorialSeq());
+    }
+
+    private IEnumerator OpenJournal()
+    {
+        _characterMotor2D.SetSpeed(0f);
+        
+        _environmentSoundHandler.PlayJournalSound(true);
+            
+        _journalPanel.DOFade(1f, 0.15f).SetEase(Ease.InOutQuad).OnComplete(() =>
+        {
+            _journalPanel.blocksRaycasts = true; // Enable blocking after fade-in
+        });
+        
+        yield return null;
     }
     
     private IEnumerator CloseJournal()
@@ -48,6 +68,8 @@ public class TutorialScene : MonoBehaviour
         {
             _journalPanel.blocksRaycasts = false; // Disable blocking after fade-out
         });
+
+        _fadeCanvasGroup.DOFade(0f, .15f).SetEase(Ease.InOutQuad);
         
         yield return new WaitForSeconds(0.2f);
         
@@ -67,14 +89,8 @@ public class TutorialScene : MonoBehaviour
         yield return new WaitForSeconds(4f);
         
         _journalMovementPage.alpha = 1f;
-        
-        _environmentSoundHandler.PlayJournalSound(true);
-        
-        // fade in journal
-        _journalPanel.DOFade(1f, 0.15f).SetEase(Ease.InOutQuad).OnComplete(() =>
-        {
-            _journalPanel.blocksRaycasts = true; // Enable blocking after fade-in
-        });
+
+        yield return OpenJournal();
         
         // _characterMotor2D.SetSpeed(3f);
         
