@@ -11,14 +11,6 @@ on:
       - develop
   workflow_dispatch:
     inputs:
-      runnerMain:
-        type: string
-        required: true
-        default: 'ubuntu-latest'
-      runnerMacos:
-        type: string
-        required: true
-        default: 'macos-latest'
       buildTargets:
         type: string
         required: true
@@ -38,7 +30,7 @@ permissions:
 jobs:
   unpack_inputs:
     name: Unpack Inputs
-    runs-on: ${{ inputs.runnerMain || 'ubuntu-latest' }}
+    runs-on: self-hosted
     environment: main
     outputs:
       projectName: ${{ steps.unpack.outputs.projectName }}
@@ -47,8 +39,6 @@ jobs:
       requiresCombined: ${{ steps.unpack.outputs.requiresCombined }}
       unityVersion: ${{ steps.unpack.outputs.unityVersion }}
       timeoutMinutesBuild: ${{ steps.unpack.outputs.timeoutMinutesBuild }}
-      runnerMain: ${{ steps.unpack.outputs.runnerMain }}
-      runnerMacos: ${{ steps.unpack.outputs.runnerMacos }}
       buildTargets: ${{ steps.unpack.outputs.buildTargets }}
     steps:
       - id: unpack
@@ -57,15 +47,11 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             meta='${{ inputs.metadataConfig }}'
             artifact='${{ inputs.artifactConfig }}'
-            runnerMain='${{ inputs.runnerMain }}'
-            runnerMacos='${{ inputs.runnerMacos }}'
             buildTargets='${{ inputs.buildTargets }}'
           else
             # Default values for push/PR
             meta='{"projectName":"game","buildVersion":"1.0.0","retentionDays":"7","timeoutMinutesBuild":"60","unityVersion":"2022.3.0f1"}'
             artifact='{"requiresCombined":"false"}'
-            runnerMain='ubuntu-latest'
-            runnerMacos='macos-latest'
             buildTargets='["StandaloneWindows64", "StandaloneLinux64"]'
           fi
 
@@ -79,9 +65,7 @@ jobs:
           # Artifacts Config
           echo "requiresCombined=$(echo "$artifact" | jq -r .requiresCombined)" >> "$GITHUB_OUTPUT"
           
-          # Runner Config
-          echo "runnerMain=$runnerMain" >> "$GITHUB_OUTPUT"
-          echo "runnerMacos=$runnerMacos" >> "$GITHUB_OUTPUT"
+          # Build Targets
           echo "buildTargets=$buildTargets" >> "$GITHUB_OUTPUT"
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -92,8 +76,8 @@ jobs:
     needs: unpack_inputs
     uses: avalin/unity-ci-templates/.github/workflows/step-2-build.yml@v1
     with:
-      runnerMain: ${{ needs.unpack_inputs.outputs.runnerMain }}
-      runnerMacos: ${{ needs.unpack_inputs.outputs.runnerMacos }}
+      runnerMain: self-hosted
+      runnerMacos: self-hosted
       projectName: ${{ needs.unpack_inputs.outputs.projectName }}
       unityVersion: ${{ needs.unpack_inputs.outputs.unityVersion }}
       buildVersion: ${{ needs.unpack_inputs.outputs.buildVersion }}
