@@ -42,6 +42,7 @@ jobs:
       buildTargets: ${{ steps.unpack.outputs.buildTargets }}
     steps:
       - id: unpack
+        shell: bash
         run: |
           # Set defaults for push/PR events
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
