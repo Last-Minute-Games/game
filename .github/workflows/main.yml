@@ -77,8 +77,8 @@ jobs:
     needs: unpack_inputs
     uses: avalin/unity-ci-templates/.github/workflows/step-2-build.yml@v1
     with:
-      runnerMain: self-hosted
-      runnerMacos: self-hosted
+      runnerMain: '["self-hosted", "Linux"]'
+      runnerMacos: '["self-hosted", "Linux"]'
       projectName: ${{ needs.unpack_inputs.outputs.projectName }}
       unityVersion: ${{ needs.unpack_inputs.outputs.unityVersion }}
       buildVersion: ${{ needs.unpack_inputs.outputs.buildVersion }}
