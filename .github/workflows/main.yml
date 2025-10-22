@@ -42,32 +42,31 @@ jobs:
       buildTargets: ${{ steps.unpack.outputs.buildTargets }}
     steps:
       - id: unpack
-        shell: bash
+        shell: pwsh
         run: |
           # Set defaults for push/PR events
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            meta='${{ inputs.metadataConfig }}'
-            artifact='${{ inputs.artifactConfig }}'
-            buildTargets='${{ inputs.buildTargets }}'
-          else
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $meta = '${{ inputs.metadataConfig }}'
+            $artifact = '${{ inputs.artifactConfig }}'
+            $buildTargets = '${{ inputs.buildTargets }}'
+          } else {
             # Default values for push/PR
-            meta='{"projectName":"game","buildVersion":"1.0.0","retentionDays":"7","timeoutMinutesBuild":"60","unityVersion":"2022.3.0f1"}'
-            artifact='{"requiresCombined":"false"}'
-            buildTargets='["StandaloneWindows64", "StandaloneLinux64"]'
-          fi
+            $meta = '{"projectName":"game","buildVersion":"1.0.0","retentionDays":"7","timeoutMinutesBuild":"60","unityVersion":"2022.3.0f1"}'
+            $artifact = '{"requiresCombined":"false"}'
+            $buildTargets = '["StandaloneWindows64", "StandaloneLinux64"]'
+          }
 
           # Metadata Config
-          echo "projectName=$(echo "$meta" | jq -r .projectName)" >> "$GITHUB_OUTPUT"
-          echo "buildVersion=$(echo "$meta" | jq -r .buildVersion)" >> "$GITHUB_OUTPUT"
-          echo "retentionDays=$(echo "$meta" | jq -r .retentionDays)" >> "$GITHUB_OUTPUT"
-          echo "timeoutMinutesBuild=$(echo "$meta" | jq -r .timeoutMinutesBuild)" >> "$GITHUB_OUTPUT"
-          echo "unityVersion=$(echo "$meta" | jq -r .unityVersion)" >> "$GITHUB_OUTPUT"
-
-          # Artifacts Config
-          echo "requiresCombined=$(echo "$artifact" | jq -r .requiresCombined)" >> "$GITHUB_OUTPUT"
+          $metaObj = $meta | ConvertFrom-Json
+          $artifactObj = $artifact | ConvertFrom-Json
           
-          # Build Targets
-          echo "buildTargets=$buildTargets" >> "$GITHUB_OUTPUT"
+          "projectName=$($metaObj.projectName)" >> $env:GITHUB_OUTPUT
+          "buildVersion=$($metaObj.buildVersion)" >> $env:GITHUB_OUTPUT
+          "retentionDays=$($metaObj.retentionDays)" >> $env:GITHUB_OUTPUT
+          "timeoutMinutesBuild=$($metaObj.timeoutMinutesBuild)" >> $env:GITHUB_OUTPUT
+          "unityVersion=$($metaObj.unityVersion)" >> $env:GITHUB_OUTPUT
+          "requiresCombined=$($artifactObj.requiresCombined)" >> $env:GITHUB_OUTPUT
+          "buildTargets=$buildTargets" >> $env:GITHUB_OUTPUT
 
   # ─────────────────────────────────────────────────────────────────────────────
   # Build and Create Zipped Artifacts
