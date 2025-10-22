@@ -33,21 +33,41 @@ jobs:
             Library-${{ matrix.targetPlatform }}-
             Library-
 
+      - name: Detect Docker OSType
+        id: detect-docker
+        shell: pwsh
+        run: |
+          # Query the Docker daemon for its OSType (linux or windows). If docker isn't
+          # available or the query fails, set 'unknown'. This is used to avoid passing
+          # Windows-only isolation options to a Linux daemon.
+          try {
+            $dockerOs = docker info --format '{{.OSType}}' 2>$null
+          } catch {
+            $dockerOs = ''
+          }
+          if (-not $dockerOs) { $dockerOs = 'unknown' }
+          Write-Host "Detected Docker OSType: $dockerOs"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "docker_os=$dockerOs"
+
       - name: Build with GameCI
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}   # base64 .ulf license file
           UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          # When running Linux containers from a Windows self-hosted runner, Docker's
+          # --workdir must be a valid absolute POSIX path. Set GITHUB_WORKSPACE to the
+          # POSIX path for Linux container runs; keep default for Windows runs.
+          GITHUB_WORKSPACE: ${{ matrix.targetPlatform == 'StandaloneLinux64' && '/github/workspace' || github.workspace }}
         with:
           targetPlatform:      ${{ matrix.targetPlatform }}
           # Use POSIX-style path for dockerWorkspacePath on Windows self-hosted runners.
           # This prevents duplicate drive-letter prefixes like "c:C:\github\workspace"
           # which cause Docker "too many colons" mount errors.
           dockerWorkspacePath: '/github/workspace'
-          # Use 'process' isolation only for Windows builds. Linux/docker on Linux only supports 'default'.
-          # The expression sets 'process' when targetPlatform is Windows, otherwise 'default'.
-          dockerIsolationMode: ${{ matrix.targetPlatform == 'StandaloneWindows64' && 'process' || 'default' }}
+          # Use 'process' isolation only when the target is Windows AND the Docker daemon
+          # itself reports a Windows OSType. Otherwise fall back to 'default'.
+          dockerIsolationMode: ${{ (matrix.targetPlatform == 'StandaloneWindows64' && steps.detect-docker.outputs.docker_os == 'windows') && 'process' || 'default' }}
           runAsHostUser:       true
 
       - name: Compress build output (zip)
