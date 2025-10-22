@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     name: Build ${{ matrix.targetPlatform }}
-    runs-on: hci-server
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
