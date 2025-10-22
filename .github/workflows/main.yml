@@ -1,0 +1,57 @@
+name: Build (Windows + macOS + Linux)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Build ${{ matrix.targetPlatform }}
+    runs-on: hci-server
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - StandaloneWindows64   # Windows x86_64
+          - StandaloneOSX         # macOS (Intel)
+          - StandaloneLinux64     # Linux x86_64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true               # Enables Git LFS if you're using large assets
+
+      - name: Cache Unity Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-${{ matrix.targetPlatform }}-
+            Library-
+
+      - name: Build with GameCI
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
+          # unityVersion: auto         # Reads from ProjectSettings/ProjectVersion.txt
+          # projectPath: .             # Adjust if Unity project lives in subfolder
+          # buildName: MyGame          # Optional custom build name
+          # buildsPath: build          # Default build output path
+
+      - name: Compress build output
+        run: |
+          cd build
+          zip -r ${{ matrix.targetPlatform }}.zip ${{ matrix.targetPlatform }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}.zip
