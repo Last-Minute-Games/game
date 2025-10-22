@@ -1,28 +1,28 @@
-name: Build (Windows + macOS + Linux)
+name: Build (Windows + Linux)
 
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     name: Build ${{ matrix.targetPlatform }}
     environment: main
-    runs-on: self-hosted
+    runs-on: [self-hosted, windows]        # your local Windows runner
     strategy:
       fail-fast: false
       matrix:
         targetPlatform:
-          - StandaloneWindows64   # Windows x86_64
-          - StandaloneOSX         # macOS (Intel)
-          - StandaloneLinux64     # Linux x86_64
+          - StandaloneWindows64            # Windows x86_64
+          - StandaloneLinux64              # Linux x86_64
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          lfs: true               # Enables Git LFS if you're using large assets
+          lfs: true                        # supports large assets if you use LFS
 
       - name: Cache Unity Library
         uses: actions/cache@v3
@@ -36,20 +36,20 @@ jobs:
       - name: Build with GameCI
         uses: game-ci/unity-builder@v4
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}   # base64 .ulf license file
+          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: ${{ matrix.targetPlatform }}
-          # unityVersion: auto         # Reads from ProjectSettings/ProjectVersion.txt
-          # projectPath: .             # Adjust if Unity project lives in subfolder
-          # buildName: MyGame          # Optional custom build name
-          # buildsPath: build          # Default build output path
+          targetPlatform:      ${{ matrix.targetPlatform }}
+          dockerWorkspacePath: 'C:\github\workspace'     # required for Windows containers
+          dockerIsolationMode: 'process'                 # best for self-hosted Windows
+          runAsHostUser:       true
 
-      - name: Compress build output
+      - name: Compress build output (zip)
+        shell: pwsh
         run: |
-          cd build
-          zip -r ${{ matrix.targetPlatform }}.zip ${{ matrix.targetPlatform }}
+          $target = "${{ matrix.targetPlatform }}"
+          Compress-Archive -Path "build\$target" -DestinationPath "build\$target.zip"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
