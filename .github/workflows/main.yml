@@ -57,10 +57,6 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform:      ${{ matrix.targetPlatform }}
-          # Use POSIX-style path for dockerWorkspacePath on Windows self-hosted runners.
-          # This prevents duplicate drive-letter prefixes like "c:C:\github\workspace"
-          # which cause Docker "too many colons" mount errors.
-          dockerWorkspacePath: '/github/workspace'
           # Use 'process' isolation only when the target is Windows AND the Docker daemon
           # itself reports a Windows OSType. Otherwise fall back to 'default'.
           dockerIsolationMode: ${{ (matrix.targetPlatform == 'StandaloneWindows64' && steps.detect-docker.outputs.docker_os == 'windows') && 'process' || 'default' }}
