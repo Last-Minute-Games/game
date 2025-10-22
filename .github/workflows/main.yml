@@ -45,7 +45,9 @@ jobs:
           # This prevents duplicate drive-letter prefixes like "c:C:\github\workspace"
           # which cause Docker "too many colons" mount errors.
           dockerWorkspacePath: '/github/workspace'
-          dockerIsolationMode: 'process'                 # best for self-hosted Windows
+          # Use 'process' isolation only for Windows builds. Linux/docker on Linux only supports 'default'.
+          # The expression sets 'process' when targetPlatform is Windows, otherwise 'default'.
+          dockerIsolationMode: ${{ matrix.targetPlatform == 'StandaloneWindows64' && 'process' || 'default' }}
           runAsHostUser:       true
 
       - name: Compress build output (zip)
