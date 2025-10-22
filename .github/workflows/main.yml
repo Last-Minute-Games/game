@@ -41,7 +41,10 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform:      ${{ matrix.targetPlatform }}
-          dockerWorkspacePath: 'C:\github\workspace'     # required for Windows containers
+          # Use POSIX-style path for dockerWorkspacePath on Windows self-hosted runners.
+          # This prevents duplicate drive-letter prefixes like "c:C:\github\workspace"
+          # which cause Docker "too many colons" mount errors.
+          dockerWorkspacePath: '/github/workspace'
           dockerIsolationMode: 'process'                 # best for self-hosted Windows
           runAsHostUser:       true
 
