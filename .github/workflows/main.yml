@@ -10,84 +10,48 @@ on:
       - main
       - develop
   workflow_dispatch:
-    inputs:
-      buildTargets:
-        type: string
-        required: true
-        default: '["StandaloneWindows64", "StandaloneLinux64"]'
-      metadataConfig:
-        type: string
-        required: true
-        default: '{"projectName":"game","buildVersion":"1.0.0","retentionDays":"7","timeoutMinutesBuild":"60","unityVersion":"2022.3.0f1"}'
-      artifactConfig:
-        type: string
-        required: true
-        default: '{"requiresCombined":"false"}'
 
 permissions:
   contents: write
 
 jobs:
-  unpack_inputs:
-    name: Unpack Inputs
+  build:
+    name: Build for ${{ matrix.targetPlatform }}
     runs-on: [self-hosted, Linux]
     environment: main
-    outputs:
-      projectName: ${{ steps.unpack.outputs.projectName }}
-      buildVersion: ${{ steps.unpack.outputs.buildVersion }}
-      retentionDays: ${{ steps.unpack.outputs.retentionDays }}
-      requiresCombined: ${{ steps.unpack.outputs.requiresCombined }}
-      unityVersion: ${{ steps.unpack.outputs.unityVersion }}
-      timeoutMinutesBuild: ${{ steps.unpack.outputs.timeoutMinutesBuild }}
-      buildTargets: ${{ steps.unpack.outputs.buildTargets }}
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - StandaloneWindows64
+          - StandaloneLinux64
     steps:
-      - id: unpack
-        shell: bash
-        run: |
-          # Set defaults for push/PR events
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            meta='${{ inputs.metadataConfig }}'
-            artifact='${{ inputs.artifactConfig }}'
-            buildTargets='${{ inputs.buildTargets }}'
-          else
-            # Default values for push/PR
-            meta='{"projectName":"game","buildVersion":"1.0.0","retentionDays":"7","timeoutMinutesBuild":"60","unityVersion":"2022.3.0f1"}'
-            artifact='{"requiresCombined":"false"}'
-            buildTargets='["StandaloneWindows64", "StandaloneLinux64"]'
-          fi
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
 
-          # Metadata Config
-          echo "projectName=$(echo "$meta" | jq -r .projectName)" >> "$GITHUB_OUTPUT"
-          echo "buildVersion=$(echo "$meta" | jq -r .buildVersion)" >> "$GITHUB_OUTPUT"
-          echo "retentionDays=$(echo "$meta" | jq -r .retentionDays)" >> "$GITHUB_OUTPUT"
-          echo "timeoutMinutesBuild=$(echo "$meta" | jq -r .timeoutMinutesBuild)" >> "$GITHUB_OUTPUT"
-          echo "unityVersion=$(echo "$meta" | jq -r .unityVersion)" >> "$GITHUB_OUTPUT"
+      - name: Cache Unity Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-${{ matrix.targetPlatform }}-
+            Library-
 
-          # Artifacts Config
-          echo "requiresCombined=$(echo "$artifact" | jq -r .requiresCombined)" >> "$GITHUB_OUTPUT"
-          
-          # Build Targets
-          echo "buildTargets=$buildTargets" >> "$GITHUB_OUTPUT"
+      - name: Build with Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Build and Create Zipped Artifacts
-  # ─────────────────────────────────────────────────────────────────────────────
-  build:
-    name: Build
-    needs: unpack_inputs
-    uses: avalin/unity-ci-templates/.github/workflows/step-2-build.yml@v1
-    with:
-      runnerMain: '["self-hosted", "Linux"]'
-      runnerMacos: '["self-hosted", "Linux"]'
-      projectName: ${{ needs.unpack_inputs.outputs.projectName }}
-      unityVersion: ${{ needs.unpack_inputs.outputs.unityVersion }}
-      buildVersion: ${{ needs.unpack_inputs.outputs.buildVersion }}
-      buildType: 'development'
-      buildTargets: ${{ needs.unpack_inputs.outputs.buildTargets }}
-      combineArtifacts: ${{ needs.unpack_inputs.outputs.requiresCombined }}
-      timeoutMinutes: ${{ fromJson(needs.unpack_inputs.outputs.timeoutMinutesBuild) }}
-      retentionDays: ${{ fromJson(needs.unpack_inputs.outputs.retentionDays) }}
-    secrets:
-      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}
