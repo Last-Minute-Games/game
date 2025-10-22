@@ -41,6 +41,11 @@ jobs:
             Library-${{ matrix.targetPlatform }}-
             Library-
 
+      - name: Fix permissions for Docker
+        run: |
+          sudo chown -R 1000:1000 ${{ github.workspace }}
+          sudo chmod -R 755 ${{ github.workspace }}
+
       - name: Build with Unity
         uses: game-ci/unity-builder@v4
         env:
