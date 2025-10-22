@@ -55,10 +55,6 @@ jobs:
           UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}   # base64 .ulf license file
           UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          # When running Linux containers from a Windows self-hosted runner, Docker's
-          # --workdir must be a valid absolute POSIX path. Set GITHUB_WORKSPACE to the
-          # POSIX path for Linux container runs; keep default for Windows runs.
-          GITHUB_WORKSPACE: ${{ matrix.targetPlatform == 'StandaloneLinux64' && '/github/workspace' || github.workspace }}
         with:
           targetPlatform:      ${{ matrix.targetPlatform }}
           # Use POSIX-style path for dockerWorkspacePath on Windows self-hosted runners.
