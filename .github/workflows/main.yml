@@ -35,19 +35,14 @@ jobs:
 
       - name: Detect Docker OSType
         id: detect-docker
-        shell: pwsh
+        shell: bash
         run: |
           # Query the Docker daemon for its OSType (linux or windows). If docker isn't
           # available or the query fails, set 'unknown'. This is used to avoid passing
           # Windows-only isolation options to a Linux daemon.
-          try {
-            $dockerOs = docker info --format '{{.OSType}}' 2>$null
-          } catch {
-            $dockerOs = ''
-          }
-          if (-not $dockerOs) { $dockerOs = 'unknown' }
-          Write-Host "Detected Docker OSType: $dockerOs"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "docker_os=$dockerOs"
+          dockerOs=$(docker info --format '{{.OSType}}' 2>/dev/null || echo 'unknown')
+          echo "Detected Docker OSType: $dockerOs"
+          echo "docker_os=$dockerOs" >> $GITHUB_OUTPUT
 
       - name: Build with GameCI
         uses: game-ci/unity-builder@v4
