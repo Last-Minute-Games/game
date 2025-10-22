@@ -49,6 +49,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
+          customImage: 'unityci/editor:ubuntu-6000.0.2f1-base-3.1.0'
           chownFilesTo: '1000:1000'
 
       - name: Upload build artifact
