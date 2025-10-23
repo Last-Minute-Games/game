@@ -52,7 +52,7 @@ namespace Systems
             // make the new collider
             _newCollider = gameObject.AddComponent<BoxCollider2D>();
             _newCollider.isTrigger = false;
-            _newCollider.size = Vector2.one * 0.99f;
+            _newCollider.size = _tptCollider.size * 0.99f;
             
             _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
         }

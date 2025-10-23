@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace Systems.Overworld.Intro
 {
@@ -7,6 +9,17 @@ namespace Systems.Overworld.Intro
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         private BoxCollider2D _boxCollider;
         private TutorialScene _tutorialScene;
+        
+        // create enum
+        public enum TriggerType { Unknown, Journal, Lighting }
+        
+        [Header("Trigger Settings")]
+        public TriggerType currentType = TriggerType.Unknown;
+        public bool onlyTriggerOnce = true;
+        
+        [Header("Lighting Settings")]
+        public Light2D selectedLight2D;
+        public bool setLightActive = false;
     
         void Start()
         {
@@ -27,10 +40,19 @@ namespace Systems.Overworld.Intro
             
             // Optionally, disable the trigger after activation to prevent repeated triggers
 
-            _tutorialScene.SwitchJournalPage(transform.name);
-            StartCoroutine(_tutorialScene.OpenJournal());
+            if (currentType == TriggerType.Journal)
+            {
+                _tutorialScene.SwitchJournalPage(transform.name);
+                StartCoroutine(_tutorialScene.OpenJournal());
+            } else if (currentType == TriggerType.Lighting) 
+            {
+                if (selectedLight2D)
+                {
+                    selectedLight2D.enabled = setLightActive;
+                }
+            }
             
-            transform.gameObject.SetActive(false);
+            if (onlyTriggerOnce) transform.gameObject.SetActive(false);
         }
     }
 }
