@@ -33,12 +33,8 @@ namespace Systems.Overworld.Intro
         void OnTriggerEnter2D(Collider2D other)
         {
             if (!other.CompareTag("Player")) return;
-        
-            // Trigger the tutorial event here
+
             Debug.Log("Player entered the tutorial trigger area.");
-            // You can add your tutorial logic here, such as displaying UI elements or starting a tutorial sequence.
-            
-            // Optionally, disable the trigger after activation to prevent repeated triggers
 
             if (currentType == TriggerType.Journal)
             {
@@ -49,6 +45,8 @@ namespace Systems.Overworld.Intro
                 if (selectedLight2D)
                 {
                     selectedLight2D.enabled = setLightActive;
+                    var lightAudioSource = selectedLight2D.GetComponent<AudioSource>();
+                    if (lightAudioSource) lightAudioSource.Play();
                 }
             }
             
