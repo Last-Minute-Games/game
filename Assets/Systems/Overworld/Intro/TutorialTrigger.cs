@@ -20,6 +20,7 @@ namespace Systems.Overworld.Intro
         [Header("Lighting Settings")]
         public Light2D selectedLight2D;
         public bool setLightActive = false;
+        private float lastLightIntensity;
     
         void Start()
         {
@@ -27,7 +28,10 @@ namespace Systems.Overworld.Intro
             _boxCollider.isTrigger = true;
         
             _tutorialScene = FindFirstObjectByType<TutorialScene>();
+            
+            lastLightIntensity  = selectedLight2D.intensity;
         }
+        
 
         // Update is called once per frame
         void OnTriggerEnter2D(Collider2D other)
@@ -40,19 +44,26 @@ namespace Systems.Overworld.Intro
             
             // Optionally, disable the trigger after activation to prevent repeated triggers
 
-            if (currentType == TriggerType.Journal)
+            switch (currentType)
             {
-                _tutorialScene.SwitchJournalPage(transform.name);
-                StartCoroutine(_tutorialScene.OpenJournal());
-            } else if (currentType == TriggerType.Lighting) 
-            {
-                if (selectedLight2D)
+                case TriggerType.Journal:
+                    _tutorialScene.SwitchJournalPage(transform.name);
+                    StartCoroutine(_tutorialScene.OpenJournal());
+                    break;
+                case TriggerType.Lighting:
                 {
-                    selectedLight2D.enabled = setLightActive;
+                    if (selectedLight2D)
+                    {
+                        selectedLight2D.intensity = setLightActive  ? lastLightIntensity : 0;
+                        var audioSource = selectedLight2D.transform.GetComponent<AudioSource>();
+                        if (audioSource) audioSource.Play();
+                    }
+
+                    break;
                 }
             }
             
-            if (onlyTriggerOnce) transform.gameObject.SetActive(false);
+            if (onlyTriggerOnce) _boxCollider.enabled = false;
         }
     }
 }
