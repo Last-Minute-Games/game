@@ -32,6 +32,11 @@ jobs:
           fetch-depth: 0
           lfs: true
 
+      - name: Clean up previous Unity builder files
+        run: |
+          sudo rm -rf /home/siru/actions-runner/_work/_actions/game-ci/unity-builder/v4/dist/BlankProject || true
+        continue-on-error: true
+
       - name: Cache Unity Library
         uses: actions/cache@v3
         with:
