@@ -25,6 +25,12 @@ jobs:
         targetPlatform:
           - StandaloneWindows64
     steps:
+      - name: Clean workspace
+        run: |
+          sudo rm -rf * || true
+          sudo rm -rf .* || true
+        continue-on-error: true
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
