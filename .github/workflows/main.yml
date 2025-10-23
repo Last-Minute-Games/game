@@ -1,27 +1,45 @@
-name: Build (Windows + macOS + Linux)
+name: 🚀 Build Pipeline
 
 on:
   push:
+    branches:
+      - main
+      - develop
   pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    name: Build ${{ matrix.targetPlatform }}
-    runs-on: self-hosted
+    name: Build for ${{ matrix.targetPlatform }}
+    runs-on: [self-hosted, Linux]
+    environment: main
     strategy:
       fail-fast: false
       matrix:
         targetPlatform:
-          - StandaloneWindows64   # Windows x86_64
-          - StandaloneOSX         # macOS (Intel)
-          - StandaloneLinux64     # Linux x86_64
-
+          - StandaloneWindows64
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          lfs: true               # Enables Git LFS if you're using large assets
+          lfs: true
+          clean: false
+
+      - name: Fix action permissions
+        run: |
+          sudo chown -R siru:siru /home/siru/actions-runner/_work/_actions/game-ci/unity-builder/v4/dist/BlankProject 2>/dev/null || true
+        continue-on-error: true
+
+      - name: Get user ID
+        id: user-id
+        run: echo "uid=$(id -u)" >> $GITHUB_OUTPUT
 
       - name: Cache Unity Library
         uses: actions/cache@v3
@@ -32,26 +50,27 @@ jobs:
             Library-${{ matrix.targetPlatform }}-
             Library-
 
-      - name: Build with GameCI
+      - name: Build with Unity
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          TMPDIR: /tmp
         with:
+          unityVersion: 6000.0.2f1
           targetPlatform: ${{ matrix.targetPlatform }}
-          # unityVersion: auto         # Reads from ProjectSettings/ProjectVersion.txt
-          # projectPath: .             # Adjust if Unity project lives in subfolder
-          # buildName: MyGame          # Optional custom build name
-          # buildsPath: build          # Default build output path
+          customImage: 'unityci/editor:ubuntu-6000.0.2f1-windows-mono-3.1.0'
+          chownFilesTo: ${{ steps.user-id.outputs.uid }}:${{ steps.user-id.outputs.uid }}
 
-      - name: Compress build output
+      - name: Fix remaining permissions
+        if: always()
         run: |
-          cd build
-          zip -r ${{ matrix.targetPlatform }}.zip ${{ matrix.targetPlatform }}
+          sudo chown -R siru:siru ${{ github.workspace }} || true
+        continue-on-error: true
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: Build-${{ matrix.targetPlatform }}
-          path: build/${{ matrix.targetPlatform }}.zip
+          path: build/${{ matrix.targetPlatform }}
