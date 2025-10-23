@@ -32,10 +32,14 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Clean up previous Unity builder files
+      - name: Fix action permissions
         run: |
-          sudo rm -rf /home/siru/actions-runner/_work/_actions/game-ci/unity-builder/v4/dist/BlankProject || true
+          sudo chown -R siru:siru /home/siru/actions-runner/_work/_actions/game-ci/unity-builder/v4/dist/BlankProject 2>/dev/null || true
         continue-on-error: true
+
+      - name: Get user ID
+        id: user-id
+        run: echo "uid=$(id -u)" >> $GITHUB_OUTPUT
 
       - name: Cache Unity Library
         uses: actions/cache@v3
