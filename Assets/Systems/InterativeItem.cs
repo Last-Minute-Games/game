@@ -43,8 +43,8 @@ public class InteractiveItem : MonoBehaviour
     private bool isPlayerNear = false;
 
     private bool localHasInteracted = false;
-    private List<string> pendingFlags = new();
-    private List<string> pendingJournal = new();
+    private readonly List<string> pendingFlags = new();
+    private readonly List<string> pendingJournal = new();
 
     [Serializable]
     public class ConditionalDialog
@@ -261,18 +261,22 @@ public class InteractiveItem : MonoBehaviour
 #endif
 }
 
+/// <summary>
+/// Simple attribute so the field is visible but not editable in the Inspector (runtime-safe).
+/// </summary>
+public class ReadOnlyAttribute : PropertyAttribute { }
+
 #if UNITY_EDITOR
-// ReadOnly attribute for Inspector
+// Editor-only drawer so fields marked [ReadOnly] appear disabled in Inspector.
 [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
 public class ReadOnlyDrawer : PropertyDrawer
 {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
+        bool prev = GUI.enabled;
         GUI.enabled = false;
-        EditorGUI.PropertyField(position, property, label);
-        GUI.enabled = true;
+        EditorGUI.PropertyField(position, property, label, true);
+        GUI.enabled = prev;
     }
 }
-
-public class ReadOnlyAttribute : PropertyAttribute { }
 #endif
