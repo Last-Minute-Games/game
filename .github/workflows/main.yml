@@ -4,6 +4,12 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      buildTarget:
+        description: 'Unity build target'
+        required: false
+        default: 'StandaloneWindows64'
 
 jobs:
   build:
@@ -71,4 +77,28 @@ jobs:
         with:
           name: WindowsBuild-${{ github.run_number }}
           path: ${{ env.ZIP_PATH }}
+          retention-days: 14
+
+      - name: Collect logs
+        if: always()
+        run: |
+          $logs = Join-Path $env:RUNNER_TEMP "unity-logs"
+          New-Item -ItemType Directory -Force -Path $logs | Out-Null
+
+          # Editor & UPM logs (Windows)
+          $editor = Join-Path $env:LOCALAPPDATA "Unity\Editor\Editor.log"
+          if (Test-Path $editor) { Copy-Item $editor $logs -Force }
+
+          $upm = Join-Path $env:LOCALAPPDATA "Unity\cache\upm\logs"
+          if (Test-Path $upm) { Copy-Item $upm $logs -Recurse -Force }
+
+          # Build Report / Player.log if your script writes them into OUT_DIR
+          if (Test-Path $env:OUT_DIR) { Copy-Item $env:OUT_DIR $logs -Recurse -Force }
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: UnityLogs-${{ github.run_number }}
+          path: ${{ runner.temp }}/unity-logs
           retention-days: 14
