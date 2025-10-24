@@ -53,8 +53,8 @@ jobs:
       # (Optional) Preflight: make sure no GUI editor is locking the project
       - name: Kill stray Unity processes / clear lock
         run: |
-          taskkill /IM "Unity.exe" /F /T 2>$null; $LASTEXITCODE=0
-          taskkill /IM "UnityPackageManager.exe" /F /T 2>$null; $LASTEXITCODE=0
+          Get-Process -Name "Unity" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          Get-Process -Name "UnityPackageManager" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
           $lock = Join-Path $env:PROJECT_PATH "Temp\UnityLockfile"
           if (Test-Path $lock) { Remove-Item $lock -Force -ErrorAction SilentlyContinue }
 
