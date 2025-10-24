@@ -22,16 +22,20 @@ if (Get-Process Unity -ErrorAction SilentlyContinue) {
 
 Write-Host "Starting Unity build to $OutDir"
 
-& $unity `
-  -batchmode -nographics -quit `
-  -projectPath "$ProjectPath" `
-  -buildTarget StandaloneWindows64 `
-  -logFile "$OutDir\unity-build.log" -stackTraceLogType Full `
-  -executeMethod BuildScript.BuildWindows `
-  -customBuildPath "$OutDir" `
-  -buildVersion $Env:GITHUB_RUN_NUMBER
+$process = Start-Process -FilePath $unity -ArgumentList @(
+  "-batchmode",
+  "-nographics",
+  "-quit",
+  "-projectPath", "`"$ProjectPath`"",
+  "-buildTarget", "StandaloneWindows64",
+  "-logFile", "`"$OutDir\unity-build.log`"",
+  "-stackTraceLogType", "Full",
+  "-executeMethod", "BuildScript.BuildWindows",
+  "-customBuildPath", "`"$OutDir`"",
+  "-buildVersion", "$Env:GITHUB_RUN_NUMBER"
+) -PassThru -Wait
 
-$exit = $LASTEXITCODE
+$exit = $process.ExitCode
 if ($exit -ne 0) {
   Write-Host "❌ Unity build failed with exit code: $exit"
   Write-Host "Waiting 10 seconds for log file to be written..."
