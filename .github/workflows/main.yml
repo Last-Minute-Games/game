@@ -138,4 +138,14 @@ jobs:
           
           $json = $payload | ConvertTo-Json -Depth 10 -Compress
           
-          Invoke-RestMethod -Uri $webhook -Method Post -Body $json -ContentType "application/json"
+          Write-Host "Generated JSON:"
+          Write-Host $json
+          
+          try {
+            Invoke-RestMethod -Uri $webhook -Method Post -Body ([System.Text.Encoding]::UTF8.GetBytes($json)) -ContentType "application/json; charset=utf-8"
+            Write-Host "Webhook sent successfully"
+          } catch {
+            Write-Host "Failed to send webhook: $_"
+            Write-Host "JSON Length: $($json.Length)"
+            exit 1
+          }
