@@ -81,6 +81,18 @@ namespace Systems
             _fadeCanvasGroup.alpha = 1f; // Ensure it's fully opaque
         }
         
+        Vector3 GetTeleportPosition(Collider2D other)
+        {
+            var tptPos = tptTo.transform.position + new Vector3(direction.x, direction.y, 0) * 1.5f;
+            
+            if (direction.x != 0 && direction.y == 0)
+            {
+                tptPos.y -= (_tptCollider.bounds.size.y / 2);
+            }
+            
+            return tptPos;
+        }
+        
         private IEnumerator TeleportWithFade(Collider2D other)
         {
             _characterController2D.SetTeleporting(true);
@@ -94,7 +106,8 @@ namespace Systems
             {
                 // Teleport the object
             
-                other.transform.position = tptTo.transform.position + new Vector3(direction.x, direction.y, 0) * 1.5f;
+                other.transform.position = GetTeleportPosition(other);
+                
                 _cinemachinePositionComposer.Damping = Vector3.zero;
                 
                 if (tptTo.transform.name == "Hallway")
@@ -126,15 +139,15 @@ namespace Systems
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (other.CompareTag("NPC"))
-            {   
-                other.transform.position = tptTo.transform.position + new Vector3(direction.x, direction.y, 0) * 1.5f;
-            }
+            if (!tptTo || !other.CompareTag("NPC")) return;
+            other.transform.position = GetTeleportPosition(other);
         }
         
         // Update is called once per frame
         void Update()
         {
+            if (!tptTo) return;
+            
             // prevent interaction during teleport or dialogue
             if (_characterController2D.IsTeleporting || _characterController2D.IsDialogueActive) return;
             
