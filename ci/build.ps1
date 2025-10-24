@@ -7,10 +7,10 @@ param(
 $unity = "C:\Program Files\Unity\Hub\Editor\$UnityVersion\Editor\Unity.exe"
 if (-not (Test-Path $unity)) { throw "Unity not found at $unity" }
 
-# If CI passes an explicit folder, use it; otherwise make a timestamped one.
+# If CI passes an explicit folder, use it; otherwise use run number or fallback
 if ([string]::IsNullOrWhiteSpace($OutDir)) {
-  $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-  $OutDir = "C:\Builds\Build_$timestamp"
+  $runNumber = if ($Env:GITHUB_RUN_NUMBER) { $Env:GITHUB_RUN_NUMBER } else { "local" }
+  $OutDir = "C:\Builds\CastleOfTime-$runNumber"
 }
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 

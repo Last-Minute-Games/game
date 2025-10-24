@@ -3,7 +3,6 @@ name: Build Windows (self-hosted)
 on:
   push:
     branches: [ main ]
-  pull_request:
   workflow_dispatch:
     inputs:
       buildTarget:
@@ -41,8 +40,7 @@ jobs:
       - name: Compute output dir
         id: paths
         run: |
-          $ts = Get-Date -Format "yyyyMMdd_HHmmss"
-          $outDir = Join-Path $env:BUILDS_ROOT "Build_${ts}_run${{ github.run_number }}"
+          $outDir = Join-Path $env:BUILDS_ROOT "CastleOfTime-${{ github.run_number }}"
           "OUT_DIR=$outDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "OUT_DIR = $outDir"
 
@@ -61,23 +59,6 @@ jobs:
       # Run your PowerShell build (no credentials; license must already be active for the runner account)
       - name: Build (StandaloneWindows64)
         run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR
-
-      # Zip the build folder
-      - name: Zip build
-        run: |
-          $zipPath = "$env:OUT_DIR.zip"
-          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-          Compress-Archive -Path "$env:OUT_DIR\*" -DestinationPath $zipPath
-          "ZIP_PATH=$zipPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          Write-Host "ZIP_PATH = $zipPath"
-
-      # Upload as an artifact (kept by GitHub; downloadable from the run)
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: WindowsBuild-${{ github.run_number }}
-          path: ${{ env.ZIP_PATH }}
-          retention-days: 14
 
       - name: Collect logs
         if: always()
@@ -98,7 +79,54 @@ jobs:
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
+        id: upload-logs
         with:
-          name: UnityLogs-${{ github.run_number }}
+          name: CastleOfTime-${{ github.run_number }}
           path: ${{ runner.temp }}/unity-logs
           retention-days: 14
+
+      - name: Send webhook notification
+        if: always()
+        run: |
+          $status = "${{ job.status }}"
+          $runUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          $artifactUrl = "$runUrl#artifacts"
+          
+          $webhook = "${{ secrets.DISCORD_WEBHOOK_URL }}"
+          if ([string]::IsNullOrWhiteSpace($webhook)) {
+            Write-Host "No webhook URL configured, skipping notification"
+            exit 0
+          }
+          
+          $color = if ($status -eq "success") { 3066993 } else { 15158332 }
+          $emoji = if ($status -eq "success") { "✅" } else { "❌" }
+          
+          $payload = @{
+            embeds = @(
+              @{
+                title = "$emoji CastleOfTime-${{ github.run_number }}"
+                description = "Build $status"
+                color = $color
+                fields = @(
+                  @{
+                    name = "Status"
+                    value = $status
+                    inline = $true
+                  }
+                  @{
+                    name = "Commit"
+                    value = "[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
+                    inline = $true
+                  }
+                  @{
+                    name = "Logs"
+                    value = "[View Artifacts]($artifactUrl)"
+                    inline = $false
+                  }
+                )
+                timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+              }
+            )
+          } | ConvertTo-Json -Depth 10
+          
+          Invoke-RestMethod -Uri $webhook -Method Post -Body $payload -ContentType "application/json"
