@@ -1,82 +1,74 @@
-name: 🚀 Build Pipeline
+name: Build Windows (self-hosted)
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
-      - develop
-  workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   build:
-    name: Build for ${{ matrix.targetPlatform }}
-    runs-on: [self-hosted, Linux]
-    environment: main
-    strategy:
-      fail-fast: false
-      matrix:
-        targetPlatform:
-          - StandaloneWindows64
+    runs-on: self-hosted          # your Windows 11 runner
+    defaults:
+      run:
+        shell: pwsh
+
+    env:
+      UNITY_VERSION: "6000.2.2f1"
+      PROJECT_PATH:  ${{ github.workspace }}
+      BUILDS_ROOT:   "C:\\Builds"
+
     steps:
-      - name: Clean workspace
-        run: |
-          sudo rm -rf * || true
-          sudo rm -rf .* || true
-        continue-on-error: true
-
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
-          clean: false
 
-      - name: Fix action permissions
-        run: |
-          sudo chown -R siru:siru /home/siru/actions-runner/_work/_actions/game-ci/unity-builder/v4/dist/BlankProject 2>/dev/null || true
-        continue-on-error: true
-
-      - name: Get user ID
-        id: user-id
-        run: echo "uid=$(id -u)" >> $GITHUB_OUTPUT
-
+      # Optional but recommended: speed up subsequent builds
       - name: Cache Unity Library
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt') }}
+          key: Library-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
           restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
+            Library-${{ env.UNITY_VERSION }}-
             Library-
 
-      - name: Build with Unity
-        uses: game-ci/unity-builder@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          TMPDIR: /tmp
-        with:
-          unityVersion: 6000.0.2f1
-          targetPlatform: ${{ matrix.targetPlatform }}
-          customImage: 'unityci/editor:ubuntu-6000.2.2f1-windows-mono-3.1.0'
-          chownFilesTo: ${{ steps.user-id.outputs.uid }}:${{ steps.user-id.outputs.uid }}
-
-      - name: Fix remaining permissions
-        if: always()
+      # Make a unique output dir for this run and expose it to later steps
+      - name: Compute output dir
+        id: paths
         run: |
-          sudo chown -R siru:siru ${{ github.workspace }} || true
-        continue-on-error: true
+          $ts = Get-Date -Format "yyyyMMdd_HHmmss"
+          $outDir = Join-Path $env:BUILDS_ROOT "Build_${ts}_run${{ github.run_number }}"
+          "OUT_DIR=$outDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "OUT_DIR = $outDir"
 
-      - name: Upload build artifact
+      # (Optional) Ensure the output root exists
+      - name: Ensure builds root exists
+        run: New-Item -ItemType Directory -Force -Path $env:BUILDS_ROOT | Out-Null
+
+      # (Optional) Preflight: make sure no GUI editor is locking the project
+      - name: Kill stray Unity processes / clear lock
+        run: |
+          taskkill /IM "Unity.exe" /F /T 2>$null; $LASTEXITCODE=0
+          taskkill /IM "UnityPackageManager.exe" /F /T 2>$null; $LASTEXITCODE=0
+          $lock = Join-Path $env:PROJECT_PATH "Temp\UnityLockfile"
+          if (Test-Path $lock) { Remove-Item $lock -Force -ErrorAction SilentlyContinue }
+
+      # Run your PowerShell build (no credentials; license must already be active for the runner account)
+      - name: Build (StandaloneWindows64)
+        run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR
+
+      # Zip the build folder
+      - name: Zip build
+        run: |
+          $zipPath = "$env:OUT_DIR.zip"
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Compress-Archive -Path "$env:OUT_DIR\*" -DestinationPath $zipPath
+          "ZIP_PATH=$zipPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "ZIP_PATH = $zipPath"
+
+      # Upload as an artifact (kept by GitHub; downloadable from the run)
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Build-${{ matrix.targetPlatform }}
-          path: build/${{ matrix.targetPlatform }}
+          name: WindowsBuild-${{ github.run_number }}
+          path: ${{ env.ZIP_PATH }}
+          retention-days: 14
