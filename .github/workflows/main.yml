@@ -16,7 +16,7 @@ jobs:
     runs-on: self-hosted          # your Windows 11 runner
     defaults:
       run:
-        shell: pwsh
+        shell: powershell
 
     env:
       UNITY_VERSION: "6000.2.2f1"
