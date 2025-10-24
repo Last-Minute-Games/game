@@ -33,8 +33,15 @@ Write-Host "Starting Unity build to $OutDir"
 
 $exit = $LASTEXITCODE
 if ($exit -ne 0) {
-  Write-Host "❌ Unity failed. Tail of log:"
-  Get-Content "$OutDir\unity-build.log" -Tail 120
+  Write-Host "❌ Unity failed with exit code: $exit"
+  $logFile = "$OutDir\unity-build.log"
+  if (Test-Path $logFile) {
+    Write-Host "Tail of log:"
+    Get-Content $logFile -Tail 120
+  } else {
+    Write-Host "Log file not found at: $logFile"
+    Write-Host "Unity may have crashed before creating the log file."
+  }
   exit $exit
 }
 
