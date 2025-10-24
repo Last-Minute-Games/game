@@ -26,22 +26,13 @@ Write-Host "Starting Unity build to $OutDir"
   -batchmode -nographics -quit `
   -projectPath "$ProjectPath" `
   -buildTarget StandaloneWindows64 `
-  -logFile "$OutDir\unity-build.log" -stackTraceLogType Full `
   -executeMethod BuildScript.BuildWindows `
   -customBuildPath "$OutDir" `
   -buildVersion $Env:GITHUB_RUN_NUMBER
 
 $exit = $LASTEXITCODE
 if ($exit -ne 0) {
-  Write-Host "❌ Unity failed with exit code: $exit"
-  $logFile = "$OutDir\unity-build.log"
-  if (Test-Path $logFile) {
-    Write-Host "Tail of log:"
-    Get-Content $logFile -Tail 120
-  } else {
-    Write-Host "Log file not found at: $logFile"
-    Write-Host "Unity may have crashed before creating the log file."
-  }
+  Write-Host "❌ Unity build failed with exit code: $exit"
   exit $exit
 }
 
