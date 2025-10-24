@@ -16,7 +16,7 @@ jobs:
     environment: main
     defaults:
       run:
-        shell: powershell
+        shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
 
     env:
       UNITY_VERSION: "6000.2.2f1"
