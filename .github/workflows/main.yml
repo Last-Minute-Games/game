@@ -102,32 +102,11 @@ jobs:
           $color = if ($status -eq "success") { 3066993 } else { 15158332 }
           $emoji = if ($status -eq "success") { "✅" } else { "❌" }
           
-          $payload = @{
-            embeds = @(
-              @{
-                title = "$emoji CastleOfTime-${{ github.run_number }}"
-                description = "Build $status"
-                color = $color
-                fields = @(
-                  @{
-                    name = "Status"
-                    value = $status
-                    inline = $true
-                  }
-                  @{
-                    name = "Commit"
-                    value = "[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
-                    inline = $true
-                  }
-                  @{
-                    name = "Logs"
-                    value = "[View Artifacts]($artifactUrl)"
-                    inline = $false
-                  }
-                )
-                timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-              }
-            )
-          } | ConvertTo-Json -Depth 10
+          $commitShort = "${{ github.sha }}".Substring(0, 7)
+          $commitUrl = "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
           
-          Invoke-RestMethod -Uri $webhook -Method Post -Body $payload -ContentType "application/json"
+          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffK")
+          
+          $json = "{`"embeds`":[{`"title`":`"$emoji CastleOfTime-${{ github.run_number }}`",`"description`":`"Build $status`",`"color`":$color,`"fields`":[{`"name`":`"Status`",`"value`":`"$status`",`"inline`":true},{`"name`":`"Commit`",`"value`":`"[$commitShort]($commitUrl)`",`"inline`":true},{`"name`":`"Logs`",`"value`":`"[View Artifacts]($artifactUrl)`",`"inline`":false}],`"timestamp`":`"$timestamp`"}]}"
+          
+          Invoke-RestMethod -Uri $webhook -Method Post -Body $json -ContentType "application/json"
