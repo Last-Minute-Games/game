@@ -13,6 +13,7 @@ on:
 jobs:
   build:
     runs-on: self-hosted          # your Windows 11 runner
+    environment: main
     defaults:
       run:
         shell: powershell
