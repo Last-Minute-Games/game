@@ -24,67 +24,67 @@ jobs:
       BUILDS_ROOT:   "C:\\Builds"
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      # - name: Checkout
+      #   uses: actions/checkout@v4
 
-      # Optional but recommended: speed up subsequent builds
-      - name: Cache Unity Library
-        uses: actions/cache@v4
-        with:
-          path: Library
-          key: Library-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
-          restore-keys: |
-            Library-${{ env.UNITY_VERSION }}-
-            Library-
+      # # Optional but recommended: speed up subsequent builds
+      # - name: Cache Unity Library
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: Library
+      #     key: Library-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
+      #     restore-keys: |
+      #       Library-${{ env.UNITY_VERSION }}-
+      #       Library-
 
-      # Make a unique output dir for this run and expose it to later steps
-      - name: Compute output dir
-        id: paths
-        run: |
-          $outDir = Join-Path $env:BUILDS_ROOT "CastleOfTime-${{ github.run_number }}"
-          "OUT_DIR=$outDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          Write-Host "OUT_DIR = $outDir"
+      # # Make a unique output dir for this run and expose it to later steps
+      # - name: Compute output dir
+      #   id: paths
+      #   run: |
+      #     $outDir = Join-Path $env:BUILDS_ROOT "CastleOfTime-${{ github.run_number }}"
+      #     "OUT_DIR=$outDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      #     Write-Host "OUT_DIR = $outDir"
 
-      # (Optional) Ensure the output root exists
-      - name: Ensure builds root exists
-        run: New-Item -ItemType Directory -Force -Path $env:BUILDS_ROOT | Out-Null
+      # # (Optional) Ensure the output root exists
+      # - name: Ensure builds root exists
+      #   run: New-Item -ItemType Directory -Force -Path $env:BUILDS_ROOT | Out-Null
 
-      # (Optional) Preflight: make sure no GUI editor is locking the project
-      - name: Kill stray Unity processes / clear lock
-        run: |
-          Get-Process -Name "Unity" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-          Get-Process -Name "UnityPackageManager" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-          $lock = Join-Path $env:PROJECT_PATH "Temp\UnityLockfile"
-          if (Test-Path $lock) { Remove-Item $lock -Force -ErrorAction SilentlyContinue }
+      # # (Optional) Preflight: make sure no GUI editor is locking the project
+      # - name: Kill stray Unity processes / clear lock
+      #   run: |
+      #     Get-Process -Name "Unity" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+      #     Get-Process -Name "UnityPackageManager" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+      #     $lock = Join-Path $env:PROJECT_PATH "Temp\UnityLockfile"
+      #     if (Test-Path $lock) { Remove-Item $lock -Force -ErrorAction SilentlyContinue }
 
-      # Run your PowerShell build (no credentials; license must already be active for the runner account)
-      - name: Build (StandaloneWindows64)
-        run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR
+      # # Run your PowerShell build (no credentials; license must already be active for the runner account)
+      # - name: Build (StandaloneWindows64)
+      #   run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR
 
-      - name: Collect logs
-        if: always()
-        run: |
-          $logs = Join-Path $env:RUNNER_TEMP "unity-logs"
-          New-Item -ItemType Directory -Force -Path $logs | Out-Null
+      # - name: Collect logs
+      #   if: always()
+      #   run: |
+      #     $logs = Join-Path $env:RUNNER_TEMP "unity-logs"
+      #     New-Item -ItemType Directory -Force -Path $logs | Out-Null
 
-          # Editor & UPM logs (Windows)
-          $editor = Join-Path $env:LOCALAPPDATA "Unity\Editor\Editor.log"
-          if (Test-Path $editor) { Copy-Item $editor $logs -Force }
+      #     # Editor & UPM logs (Windows)
+      #     $editor = Join-Path $env:LOCALAPPDATA "Unity\Editor\Editor.log"
+      #     if (Test-Path $editor) { Copy-Item $editor $logs -Force }
 
-          $upm = Join-Path $env:LOCALAPPDATA "Unity\cache\upm\logs"
-          if (Test-Path $upm) { Copy-Item $upm $logs -Recurse -Force }
+      #     $upm = Join-Path $env:LOCALAPPDATA "Unity\cache\upm\logs"
+      #     if (Test-Path $upm) { Copy-Item $upm $logs -Recurse -Force }
 
-          # Build Report / Player.log if your script writes them into OUT_DIR
-          if (Test-Path $env:OUT_DIR) { Copy-Item $env:OUT_DIR $logs -Recurse -Force }
+      #     # Build Report / Player.log if your script writes them into OUT_DIR
+      #     if (Test-Path $env:OUT_DIR) { Copy-Item $env:OUT_DIR $logs -Recurse -Force }
 
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        id: upload-logs
-        with:
-          name: CastleOfTime-${{ github.run_number }}
-          path: ${{ runner.temp }}/unity-logs
-          retention-days: 14
+      # - name: Upload logs
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   id: upload-logs
+      #   with:
+      #     name: CastleOfTime-${{ github.run_number }}
+      #     path: ${{ runner.temp }}/unity-logs
+      #     retention-days: 14
 
       - name: Send webhook notification
         if: always()
@@ -105,8 +105,37 @@ jobs:
           $commitShort = "${{ github.sha }}".Substring(0, 7)
           $commitUrl = "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
           
-          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffK")
+          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
           
-          $json = "{`"embeds`":[{`"title`":`"$emoji CastleOfTime-${{ github.run_number }}`",`"description`":`"Build $status`",`"color`":$color,`"fields`":[{`"name`":`"Status`",`"value`":`"$status`",`"inline`":true},{`"name`":`"Commit`",`"value`":`"[$commitShort]($commitUrl)`",`"inline`":true},{`"name`":`"Logs`",`"value`":`"[View Artifacts]($artifactUrl)`",`"inline`":false}],`"timestamp`":`"$timestamp`"}]}"
+          # Build JSON using PSCustomObject and ConvertTo-Json
+          $payload = [PSCustomObject]@{
+            embeds = @(
+              [PSCustomObject]@{
+                title = "$emoji CastleOfTime-${{ github.run_number }}"
+                description = "Build $status"
+                color = $color
+                fields = @(
+                  [PSCustomObject]@{
+                    name = "Status"
+                    value = $status
+                    inline = $true
+                  }
+                  [PSCustomObject]@{
+                    name = "Commit"
+                    value = "[$commitShort]($commitUrl)"
+                    inline = $true
+                  }
+                  [PSCustomObject]@{
+                    name = "Logs"
+                    value = "[View Artifacts]($artifactUrl)"
+                    inline = $false
+                  }
+                )
+                timestamp = $timestamp
+              }
+            )
+          }
+          
+          $json = $payload | ConvertTo-Json -Depth 10 -Compress
           
           Invoke-RestMethod -Uri $webhook -Method Post -Body $json -ContentType "application/json"
