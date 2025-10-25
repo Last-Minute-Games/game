@@ -26,17 +26,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Optional but recommended: speed up subsequent builds
+      # Cache Unity Library using PowerShell compression for Windows runners
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
-          path: |
-            Library
-            Library/ShaderCache
+          path: Library
           key: Library-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
           restore-keys: |
             Library-${{ env.UNITY_VERSION }}-
             Library-
+          enableCrossOsArchive: true
 
       # Make a unique output dir for this run and expose it to later steps
       - name: Compute output dir
