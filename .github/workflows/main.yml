@@ -1,22 +1,21 @@
-name: Build Windows (self-hosted)
+name: Build Multi-Platform (self-hosted)
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-    inputs:
-      buildTarget:
-        description: 'Unity build target'
-        required: false
-        default: 'StandaloneWindows64'
 
 jobs:
   build:
-    runs-on: self-hosted          # your Windows 11 runner
+    runs-on: self-hosted
     environment: main
     defaults:
       run:
         shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
+
+    strategy:
+      matrix:
+        platform: [Windows, Linux]
 
     env:
       UNITY_VERSION: "6000.2.2f1"
@@ -41,7 +40,7 @@ jobs:
       - name: Compute output dir
         id: paths
         run: |
-          $outDir = Join-Path $env:BUILDS_ROOT "CastleOfTime-${{ github.run_number }}"
+          $outDir = Join-Path $env:BUILDS_ROOT "CastleOfTime-${{ github.run_number }}-${{ matrix.platform }}"
           "OUT_DIR=$outDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "OUT_DIR = $outDir"
 
@@ -57,14 +56,38 @@ jobs:
           $lock = Join-Path $env:PROJECT_PATH "Temp\UnityLockfile"
           if (Test-Path $lock) { Remove-Item $lock -Force -ErrorAction SilentlyContinue }
 
-      # Run your PowerShell build (no credentials; license must already be active for the runner account)
-      - name: Build (StandaloneWindows64)
-        run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR
+      # Run your PowerShell build
+      - name: Build (${{ matrix.platform }})
+        run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR -BuildTarget "${{ matrix.platform }}"
+
+      # Clean up log files from build output
+      - name: Clean up logs
+        run: |
+          Get-ChildItem -Path $env:OUT_DIR -Filter "*.log" -Recurse | Remove-Item -Force
+          Write-Host "Removed all .log files from build output"
+
+      # Zip the build folder
+      - name: Zip build
+        run: |
+          $zipPath = Join-Path $env:BUILDS_ROOT "CastleOfTime-${{ github.run_number }}-${{ matrix.platform }}.zip"
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Compress-Archive -Path "$env:OUT_DIR\*" -DestinationPath $zipPath
+          "ZIP_PATH=$zipPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "ZIP_PATH = $zipPath"
+
+      # Upload the zipped build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CastleOfTime-${{ github.run_number }}-${{ matrix.platform }}
+          path: ${{ env.ZIP_PATH }}
+          retention-days: 14
+          compression-level: 0
 
       - name: Collect logs
         if: always()
         run: |
-          $logs = Join-Path $env:RUNNER_TEMP "unity-logs"
+          $logs = Join-Path $env:RUNNER_TEMP "unity-logs-${{ matrix.platform }}"
           New-Item -ItemType Directory -Force -Path $logs | Out-Null
 
           # Editor & UPM logs (Windows)
@@ -74,22 +97,34 @@ jobs:
           $upm = Join-Path $env:LOCALAPPDATA "Unity\cache\upm\logs"
           if (Test-Path $upm) { Copy-Item $upm $logs -Recurse -Force }
 
-          # Build Report / Player.log if your script writes them into OUT_DIR
-          if (Test-Path $env:OUT_DIR) { Copy-Item $env:OUT_DIR $logs -Recurse -Force }
+          # Build output logs only (no build files)
+          $buildLogs = Join-Path $env:OUT_DIR "*.log"
+          if (Test-Path $buildLogs) { 
+            Get-ChildItem -Path $env:OUT_DIR -Filter "*.log" | Copy-Item -Destination $logs -Force
+          }
 
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
-        id: upload-logs
         with:
-          name: CastleOfTime-${{ github.run_number }}
-          path: ${{ runner.temp }}/unity-logs
+          name: Logs-${{ github.run_number }}-${{ matrix.platform }}
+          path: ${{ runner.temp }}/unity-logs-${{ matrix.platform }}
           retention-days: 14
+          compression-level: 6
 
+  notify:
+    runs-on: self-hosted
+    needs: build
+    if: always()
+    environment: main
+    defaults:
+      run:
+        shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
+
+    steps:
       - name: Send webhook notification
-        if: always()
         run: |
-          $status = "${{ job.status }}"
+          $status = "${{ needs.build.result }}"
           $runUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           $artifactUrl = "$runUrl#artifacts"
           
@@ -112,12 +147,17 @@ jobs:
             embeds = @(
               [PSCustomObject]@{
                 title = "$emoji CastleOfTime-${{ github.run_number }}"
-                description = "Build $status"
+                description = "Multi-platform build $status"
                 color = $color
                 fields = @(
                   [PSCustomObject]@{
                     name = "Status"
                     value = $status
+                    inline = $true
+                  }
+                  [PSCustomObject]@{
+                    name = "Platforms"
+                    value = "Windows + Linux"
                     inline = $true
                   }
                   [PSCustomObject]@{
@@ -138,14 +178,10 @@ jobs:
           
           $json = $payload | ConvertTo-Json -Depth 10 -Compress
           
-          Write-Host "Generated JSON:"
-          Write-Host $json
-          
           try {
             Invoke-RestMethod -Uri $webhook -Method Post -Body ([System.Text.Encoding]::UTF8.GetBytes($json)) -ContentType "application/json; charset=utf-8"
             Write-Host "Webhook sent successfully"
           } catch {
             Write-Host "Failed to send webhook: $_"
-            Write-Host "JSON Length: $($json.Length)"
             exit 1
           }

@@ -14,10 +14,30 @@ public static class BuildScript
         string customPath = GetArg("-customBuildPath");
         string buildPath = string.IsNullOrEmpty(customPath)
             ? "Builds/Windows/Game.exe"
-            : System.IO.Path.Combine(customPath, "Game.exe");
+            : System.IO.Path.Combine(customPath, "CastleOfTime.exe");
 
         var report = BuildPipeline.BuildPlayer(
             scenes, buildPath, BuildTarget.StandaloneWindows64, BuildOptions.None);
+
+        if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
+            throw new System.Exception("Build failed: " + report.summary.result);
+    }
+
+    public static void BuildLinux()
+    {
+        string[] scenes = EditorBuildSettings.scenes
+            .Where(s => s.enabled)
+            .Select(s => s.path)
+            .ToArray();
+
+        // Read custom output path from command line if provided
+        string customPath = GetArg("-customBuildPath");
+        string buildPath = string.IsNullOrEmpty(customPath)
+            ? "Builds/Linux/Game.x86_64"
+            : System.IO.Path.Combine(customPath, "CastleOfTime.x86_64");
+
+        var report = BuildPipeline.BuildPlayer(
+            scenes, buildPath, BuildTarget.StandaloneLinux64, BuildOptions.None);
 
         if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
             throw new System.Exception("Build failed: " + report.summary.result);
