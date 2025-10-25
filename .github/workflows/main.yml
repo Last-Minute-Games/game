@@ -60,6 +60,12 @@ jobs:
       - name: Build (${{ matrix.platform }})
         run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR -BuildTarget "${{ matrix.platform }}"
 
+      # Clean up log files from build output
+      - name: Clean up logs
+        run: |
+          Get-ChildItem -Path $env:OUT_DIR -Filter "*.log" -Recurse | Remove-Item -Force
+          Write-Host "Removed all .log files from build output"
+
       # Zip the build folder
       - name: Zip build
         run: |
@@ -76,6 +82,7 @@ jobs:
           name: CastleOfTime-${{ github.run_number }}-${{ matrix.platform }}
           path: ${{ env.ZIP_PATH }}
           retention-days: 14
+          compression-level: 0
 
       - name: Collect logs
         if: always()
@@ -90,8 +97,11 @@ jobs:
           $upm = Join-Path $env:LOCALAPPDATA "Unity\cache\upm\logs"
           if (Test-Path $upm) { Copy-Item $upm $logs -Recurse -Force }
 
-          # Build Report / Player.log if your script writes them into OUT_DIR
-          if (Test-Path $env:OUT_DIR) { Copy-Item $env:OUT_DIR $logs -Recurse -Force }
+          # Build output logs only (no build files)
+          $buildLogs = Join-Path $env:OUT_DIR "*.log"
+          if (Test-Path $buildLogs) { 
+            Get-ChildItem -Path $env:OUT_DIR -Filter "*.log" | Copy-Item -Destination $logs -Force
+          }
 
       - name: Upload logs
         if: always()
@@ -100,6 +110,7 @@ jobs:
           name: Logs-${{ github.run_number }}-${{ matrix.platform }}
           path: ${{ runner.temp }}/unity-logs-${{ matrix.platform }}
           retention-days: 14
+          compression-level: 6
 
   notify:
     runs-on: self-hosted
