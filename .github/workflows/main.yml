@@ -86,7 +86,7 @@ jobs:
 
       # Upload to itch.io using Butler action
       - name: Upload to itch.io (${{ matrix.platform }})
-        uses: Ayowel/butler-to-itch@v1.0.0
+        uses: Ayowel/butler-to-itch@v1.2.0
         with:
           butler_key: ${{ secrets.BUTLER_API_KEY }}
           itch_user: playlastminutegames
