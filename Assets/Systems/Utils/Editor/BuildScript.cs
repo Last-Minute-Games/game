@@ -39,7 +39,7 @@ public static class BuildScript
 
     public static void BuildLinux()
     {
-        UnityEngine.Debug.Log("[BuildScript] Starting Linux build...");
+        UnityEngine.Debug.Log("[BuildScript] Starting Linux build with Mono backend...");
         UnityEngine.Debug.Log($"[BuildScript] Current BuildTarget: {EditorUserBuildSettings.activeBuildTarget}");
         
         // Check if Linux build support is installed
@@ -49,13 +49,19 @@ public static class BuildScript
             throw new System.Exception("Linux build target is not supported. Please install Linux Build Support module in Unity Hub.");
         }
         
-        // Force IL2CPP for Linux builds (Mono is deprecated/broken in Unity 6)
-        var linuxTarget = NamedBuildTarget.Standalone;
-        var originalBackend = PlayerSettings.GetScriptingBackend(linuxTarget);
-        UnityEngine.Debug.Log($"[BuildScript] Original scripting backend: {originalBackend}");
+        // NOTE: We're using Mono for now because switching to IL2CPP at build time doesn't work.
+        // The scripting backend must be set in Project Settings BEFORE the build starts.
+        // To use IL2CPP, manually set it in Edit > Project Settings > Player > Other Settings > Scripting Backend
         
-        PlayerSettings.SetScriptingBackend(linuxTarget, ScriptingImplementation.IL2CPP);
-        UnityEngine.Debug.Log("[BuildScript] Set scripting backend to IL2CPP for Linux build");
+        var linuxTarget = NamedBuildTarget.Standalone;
+        var currentBackend = PlayerSettings.GetScriptingBackend(linuxTarget);
+        UnityEngine.Debug.Log($"[BuildScript] Current scripting backend: {currentBackend}");
+        
+        if (currentBackend == ScriptingImplementation.Mono2x)
+        {
+            UnityEngine.Debug.LogWarning("[BuildScript] Building with Mono backend. For Unity 6 on Linux, IL2CPP is recommended.");
+            UnityEngine.Debug.LogWarning("[BuildScript] To use IL2CPP: Set it in Project Settings, commit the change, then rebuild.");
+        }
         
         string[] scenes = EditorBuildSettings.scenes
             .Where(s => s.enabled)
