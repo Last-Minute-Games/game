@@ -14,6 +14,7 @@ public class ClockTimer : MonoBehaviour
     private int frameCount;
     private int lastFrameIndex = -1;
     private bool hasEnded = false;
+    private bool isPaused = false;
 
     void Start()
     {
@@ -40,6 +41,8 @@ public class ClockTimer : MonoBehaviour
 
     void Update()
     {
+        if (isPaused || hasEnded) return;
+
         if (timeLeft > 0f)
         {
             float previousTime = timeLeft;
@@ -78,7 +81,38 @@ public class ClockTimer : MonoBehaviour
         timeLeft = totalTime;
         lastFrameIndex = -1;
         hasEnded = false;
+        isPaused = false;
         Debug.Log($"[ClockTimer] Timer started for {totalTime} seconds");
+    }
+
+    public void PauseTimer(bool pause)
+    {
+        isPaused = pause;
+        Debug.Log(pause ? "[ClockTimer] Timer paused" : "[ClockTimer] Timer resumed");
+    }
+
+    public void AddTime(float seconds)
+    {
+        if (seconds <= 0f) return;
+        timeLeft += seconds;
+        totalTime += seconds; // Optional: affects frame pacing
+        Debug.Log($"[ClockTimer] Added {seconds} seconds. New time left: {timeLeft:F2}s");
+    }
+
+    public void RemoveTime(float seconds)
+    {
+        if (seconds <= 0f) return;
+        timeLeft = Mathf.Max(0f, timeLeft - seconds);
+        totalTime = Mathf.Max(0.01f, totalTime - seconds); // Optional: shrink total scale
+        Debug.Log($"[ClockTimer] Removed {seconds} seconds. New time left: {timeLeft:F2}s");
+
+        // trigger end early if time hits zero
+        if (timeLeft <= 0f && !hasEnded)
+        {
+            hasEnded = true;
+            Debug.Log("[ClockTimer] Timer manually ended after time removal!");
+            StartCoroutine(LoadNextScene());
+        }
     }
 
     private System.Collections.IEnumerator LoadNextScene()
