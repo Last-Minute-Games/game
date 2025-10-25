@@ -86,14 +86,43 @@ jobs:
 
       # Upload to itch.io using Butler action
       - name: Upload to itch.io (${{ matrix.platform }})
-        uses: Ayowel/butler-to-itch@v1.2.0
-        with:
-          butler_key: ${{ secrets.BUTLER_API_KEY }}
-          itch_user: playlastminutegames
-          itch_game: castle-of-time
-          version: ${{ github.run_number }}
-          files: |
-            ${{ matrix.platform }} ${{ env.OUT_DIR }}/*
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          # Install butler if not present
+          $butlerPath = "$env:LOCALAPPDATA\Butler\butler.exe"
+          if (-not (Test-Path $butlerPath)) {
+            Write-Host "Installing butler..."
+            $butlerZip = "$env:TEMP\butler.zip"
+            $butlerDir = "$env:LOCALAPPDATA\Butler"
+            
+            # Download butler (allows HTTP redirect)
+            Invoke-WebRequest -Uri "https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default" -OutFile $butlerZip -UseBasicParsing
+            
+            # Extract
+            New-Item -ItemType Directory -Force -Path $butlerDir | Out-Null
+            Expand-Archive -Path $butlerZip -DestinationPath $butlerDir -Force
+            Remove-Item $butlerZip
+            
+            Write-Host "Butler installed to $butlerDir"
+          }
+          
+          # Upload to itch.io
+          $channel = "${{ matrix.platform }}".ToLower()
+          $itchTarget = "playlastminutegames/castle-of-time:$channel"
+          
+          Write-Host "Uploading to itch.io: $itchTarget"
+          Write-Host "  Build directory: $env:OUT_DIR"
+          Write-Host "  Version: ${{ github.run_number }}"
+          
+          & $butlerPath push "$env:OUT_DIR" $itchTarget --userversion "${{ github.run_number }}"
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Butler upload failed with exit code: $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+          
+          Write-Host "Successfully uploaded to itch.io!"
 
       - name: Collect logs
         if: always()
