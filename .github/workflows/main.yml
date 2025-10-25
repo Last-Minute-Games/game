@@ -30,7 +30,9 @@ jobs:
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
-          path: Library
+          path: |
+            Library
+            Library/ShaderCache
           key: Library-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
           restore-keys: |
             Library-${{ env.UNITY_VERSION }}-
@@ -175,7 +177,7 @@ jobs:
           }
           
           $color = if ($status -eq "success") { 3066993 } else { 15158332 }
-          $emoji = if ($status -eq "success") { "🎮" } else { "❌" }
+          $emoji = if ($status -eq "success") { "Test Build" } else { "Failed Build" }
           
           $commitShort = "${{ github.sha }}".Substring(0, 7)
           $commitUrl = "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
@@ -210,7 +212,7 @@ jobs:
                   }
                   [PSCustomObject]@{
                     name = "Play on itch.io"
-                    value = "[$itchUrl]($itchUrl)"
+                    value = $itchUrl
                     inline = $false
                   }
                   [PSCustomObject]@{
