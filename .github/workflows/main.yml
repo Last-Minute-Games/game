@@ -100,7 +100,7 @@ jobs:
           }
           
           $color = if ($status -eq "success") { 3066993 } else { 15158332 }
-          $emoji = if ($status -eq "success") { "✅" } else { "❌" }
+          $emoji = if ($status -eq "success") { "Test Build" } else { "Failed Buildx" }
           
           $commitShort = "${{ github.sha }}".Substring(0, 7)
           $commitUrl = "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
