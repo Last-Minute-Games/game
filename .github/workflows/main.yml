@@ -84,6 +84,17 @@ jobs:
           retention-days: 14
           compression-level: 0
 
+      # Upload to itch.io using Butler action
+      - name: Upload to itch.io (${{ matrix.platform }})
+        uses: Ayowel/butler-to-itch@v1.0.0
+        with:
+          butler_key: ${{ secrets.BUTLER_API_KEY }}
+          itch_user: playlastminutegames
+          itch_game: castle-of-time
+          version: ${{ github.run_number }}
+          files: |
+            ${{ matrix.platform }} ${{ env.OUT_DIR }}/*
+
       - name: Collect logs
         if: always()
         run: |
@@ -135,10 +146,12 @@ jobs:
           }
           
           $color = if ($status -eq "success") { 3066993 } else { 15158332 }
-          $emoji = if ($status -eq "success") { "Test Build" } else { "Failed Buildx" }
+          $emoji = if ($status -eq "success") { "🎮" } else { "❌" }
           
           $commitShort = "${{ github.sha }}".Substring(0, 7)
           $commitUrl = "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          
+          $itchUrl = "https://playlastminutegames.itch.io/castle-of-time"
           
           $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
           
@@ -146,8 +159,9 @@ jobs:
           $payload = [PSCustomObject]@{
             embeds = @(
               [PSCustomObject]@{
-                title = "$emoji CastleOfTime-${{ github.run_number }}"
-                description = "Multi-platform build $status"
+                title = "$emoji CastleOfTime Build #${{ github.run_number }}"
+                description = "Multi-platform build $status and uploaded to itch.io"
+                url = $itchUrl
                 color = $color
                 fields = @(
                   [PSCustomObject]@{
@@ -166,12 +180,20 @@ jobs:
                     inline = $true
                   }
                   [PSCustomObject]@{
-                    name = "Download"
+                    name = "Play on itch.io"
+                    value = "[$itchUrl]($itchUrl)"
+                    inline = $false
+                  }
+                  [PSCustomObject]@{
+                    name = "Download Artifacts"
                     value = "[View Artifacts]($artifactUrl)"
                     inline = $false
                   }
                 )
                 timestamp = $timestamp
+                footer = [PSCustomObject]@{
+                  text = "Castle of Time • Last Minute Games"
+                }
               }
             )
           }
