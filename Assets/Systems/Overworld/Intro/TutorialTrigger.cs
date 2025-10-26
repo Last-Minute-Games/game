@@ -36,17 +36,22 @@ namespace Systems.Overworld.Intro
 
             Debug.Log("Player entered the tutorial trigger area.");
 
-            if (currentType == TriggerType.Journal)
+            switch (currentType)
             {
-                _tutorialScene.SwitchJournalPage(transform.name);
-                StartCoroutine(_tutorialScene.OpenJournal());
-            } else if (currentType == TriggerType.Lighting) 
-            {
-                if (selectedLight2D)
+                case TriggerType.Journal:
+                    _tutorialScene.SwitchJournalPage(transform.name);
+                    StartCoroutine(_tutorialScene.OpenJournal());
+                    break;
+                case TriggerType.Lighting:
                 {
-                    selectedLight2D.enabled = setLightActive;
-                    var lightAudioSource = selectedLight2D.GetComponent<AudioSource>();
-                    if (lightAudioSource) lightAudioSource.Play();
+                    if (selectedLight2D)
+                    {
+                        selectedLight2D.enabled = setLightActive;
+                        var lightAudioSource = selectedLight2D.GetComponent<AudioSource>();
+                        if (lightAudioSource) lightAudioSource.Play();
+                    }
+
+                    break;
                 }
             }
             
