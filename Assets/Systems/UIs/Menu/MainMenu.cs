@@ -11,6 +11,8 @@ public class Startscreen : MonoBehaviour
     private CanvasGroup _logoCanvasGroup;
     
     public GameObject playButton;
+    public GameObject settingsButton;
+    public GameObject creditsButton;
     public GameObject quitButton;
     
     private IEnumerator FadeCoroutine(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration)
@@ -53,7 +55,8 @@ public class Startscreen : MonoBehaviour
     {
         playButton = GameObject.Find("PlayButton");
         quitButton = GameObject.Find("QuitButton");
-        
+        settingsButton = GameObject.Find("SettingsButton");
+        creditsButton = GameObject.Find("CreditsButton");
         _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
         _fadeCanvasGroup.alpha = 1f; // Start transparent
         
@@ -87,6 +90,8 @@ public class Startscreen : MonoBehaviour
     private IEnumerator FadeAndLoad()
     {
         quitButton.SetActive(false);
+        settingsButton.SetActive(false);
+        creditsButton.SetActive(false); 
         playButton.SetActive(false);
         
         // start flickering the play button
