@@ -20,6 +20,11 @@ public class UIButtonFX : MonoBehaviour,
     private float lastHoverTime = 0f;
     public float hoverCooldown = 0.2f;   // Minimum time between hover sounds
 
+    // --- Global audio control ---
+    // Set these from other scripts (e.g. main menu) to suppress UI sounds
+    public static bool globalAudioEnabled = true;     // master on/off for UI sounds
+    public static bool suppressClickInMainMenu = false; // when true, click sound won't play (used by main menu)
+
     // --- Private variables ---
     private RectTransform rect;
     private Vector3 baseScale;
@@ -43,7 +48,7 @@ public class UIButtonFX : MonoBehaviour,
     public void OnPointerEnter(PointerEventData e)
     {
         // Prevents sound spam if cursor moves in/out quickly
-        if (Time.unscaledTime - lastHoverTime > hoverCooldown)
+        if (globalAudioEnabled && Time.unscaledTime - lastHoverTime > hoverCooldown)
         {
             lastHoverTime = Time.unscaledTime;
             if (hoverClip && audioSource)
@@ -75,7 +80,8 @@ public class UIButtonFX : MonoBehaviour,
     // When button is clicked
     public void OnPointerClick(PointerEventData e)
     {
-        if (clickClip && audioSource)
+        // Respect global audio toggle and optional main-menu click suppression
+        if (clickClip && audioSource && globalAudioEnabled && !suppressClickInMainMenu)
             audioSource.PlayOneShot(clickClip);
     }
 

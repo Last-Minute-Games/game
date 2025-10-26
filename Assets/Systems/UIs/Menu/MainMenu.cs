@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using System;
 using System.Collections;
 
@@ -9,6 +10,9 @@ public class Startscreen : MonoBehaviour
     
     private CanvasGroup _fadeCanvasGroup;
     private CanvasGroup _logoCanvasGroup;
+    
+    // Drag your main menu Canvas (the one containing Play/Settings/Credits/Quit) here
+    [SerializeField] private GraphicRaycaster mainMenuRaycaster;
     
     public GameObject playButton;
     public GameObject settingsButton;
@@ -31,26 +35,40 @@ public class Startscreen : MonoBehaviour
     {
         StartCoroutine(FadeCoroutine(canvasGroup, startAlpha, endAlpha, duration));
     }
-
     private IEnumerator LogoStartup()
     {
-        yield return new WaitForSeconds(1f);
+        // Disable the main menu raycaster to block all clicks/hover on that canvas while the logo plays
+        if (mainMenuRaycaster) mainMenuRaycaster.enabled = false;
 
-        FadeCanvasGroup(_logoCanvasGroup, 0f, 1f, fadeDuration);
-        
-        _logoCanvasGroup.alpha = 1f;
-        
-        yield return new WaitForSeconds(fadeDuration + 3f);
-        
-        FadeCanvasGroup(_logoCanvasGroup, 1f, 0f, fadeDuration);
-        
-        yield return new WaitForSeconds(fadeDuration + 0.5f);
+        // Make sure the logo overlay is active and catching input
+        _logoCanvasGroup.gameObject.SetActive(true);
+        _logoCanvasGroup.blocksRaycasts = true;   // <- blocks all UI beneath
+        _logoCanvasGroup.interactable = true;   // if you have a Skip button, etc.
+        _logoCanvasGroup.alpha = 0f;
+
+        // Fade logo in
+        yield return StartCoroutine(FadeCoroutine(_logoCanvasGroup, 0f, 1f, fadeDuration));
+
+        yield return new WaitForSeconds(3f); // your logo hold time (no need to add fadeDuration again)
+
+        // Fade logo out
+        yield return StartCoroutine(FadeCoroutine(_logoCanvasGroup, 1f, 0f, fadeDuration));
+
+        // Stop blocking and hide
+        _logoCanvasGroup.blocksRaycasts = false;
+        _logoCanvasGroup.interactable = false;
         _logoCanvasGroup.gameObject.SetActive(false);
-        
-        FadeCanvasGroup(_fadeCanvasGroup, 1f, 0f, 2f);
-        
+
+        // While the screen is black, also block input on the fade CG
+        _fadeCanvasGroup.blocksRaycasts = true;
+        yield return StartCoroutine(FadeCoroutine(_fadeCanvasGroup, 1f, 0f, 2f));
+        _fadeCanvasGroup.blocksRaycasts = false;
+
+        // Re-enable menu input and UI audio
+        if (mainMenuRaycaster) mainMenuRaycaster.enabled = true;
+        UIButtonFX.globalAudioEnabled = true;
     }
-    
+
     void Start()
     {
         playButton = GameObject.Find("PlayButton");
@@ -62,6 +80,10 @@ public class Startscreen : MonoBehaviour
         
         _logoCanvasGroup = GameObject.Find("LogoCanvasGroup").GetComponent<CanvasGroup>();
         _logoCanvasGroup.alpha = 0f; // Start transparent
+
+        // Suppress UI sounds during logo loading and suppress clicks on menu buttons
+        UIButtonFX.globalAudioEnabled = false; // disable hover/click audio while loading logo
+        UIButtonFX.suppressClickInMainMenu = true; // ensure clicks in main menu don't play click sounds
         
         StartCoroutine(LogoStartup());
     }
