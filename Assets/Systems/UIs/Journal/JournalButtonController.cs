@@ -11,6 +11,7 @@ public class JournalUI : MonoBehaviour
     
     private EnvironmentSoundHandler _environmentSoundHandler;
     private PlayerInput2D _playerInput;
+    private ClockTimer _clockTimer;
     private Animator anim;
 
     [Header("UI Behavior")]
@@ -28,6 +29,11 @@ public class JournalUI : MonoBehaviour
         
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player) _playerInput = player.GetComponent<PlayerInput2D>();
+        
+        // Find the ClockTimer in the scene
+        _clockTimer = FindFirstObjectByType<ClockTimer>();
+        if (_clockTimer == null)
+            Debug.LogWarning("[JournalUI] ClockTimer not found in scene");
         
         // Get animator from journalRoot if assigned, otherwise try this GameObject
         if (journalRoot)
@@ -64,7 +70,6 @@ public class JournalUI : MonoBehaviour
 
     void Update()
     {
-
         // Check if Q is pressed
         if (Input.GetKeyDown(toggleKey))
         {
@@ -110,6 +115,12 @@ public class JournalUI : MonoBehaviour
         
         isOpen = value;
 
+        // Pause/unpause the clock timer
+        if (_clockTimer != null)
+        {
+            _clockTimer.PauseTimer(isOpen);
+            Debug.Log($"[JournalUI] ClockTimer paused: {isOpen}");
+        }
 
         // Disable/enable player input
         if (_playerInput != null)
