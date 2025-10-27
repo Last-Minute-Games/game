@@ -435,6 +435,65 @@ MonoBehaviour:
   pressScale: 0.98
   tweenTime: 0.08
   hoverCooldown: 0.2
+--- !u!1 &348999930
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 348999933}
+  - component: {fileID: 348999932}
+  - component: {fileID: 348999931}
+  m_Layer: 0
+  m_Name: PauseSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &348999931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 348999930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 382eb0798897ec448ad9021fe69083c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseSpawner
+  pauseUIPrefab: {fileID: 8994636114322185289, guid: 038576810afe2b34b9599f0540bdeaef, type: 3}
+--- !u!114 &348999932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 348999930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d721adaaa98818b45b683f4965ea9f8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseManager
+  useTimeScale: 1
+--- !u!4 &348999933
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 348999930}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 715.80023, y: 285.60913, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &602648422
 GameObject:
   m_ObjectHideFlags: 0
@@ -2132,7 +2191,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 872214828364514801, guid: 1e3e03f85c82fca4f8bd34a68926ff5c, type: 3}
       propertyPath: m_Alpha
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1748513690828473570, guid: 1e3e03f85c82fca4f8bd34a68926ff5c, type: 3}
       propertyPath: m_AnchorMax.y
@@ -2299,3 +2358,4 @@ SceneRoots:
   - {fileID: 5181248478002709591}
   - {fileID: 1511377092}
   - {fileID: 1804846719}
+  - {fileID: 348999933}
