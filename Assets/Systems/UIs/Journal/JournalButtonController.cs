@@ -12,6 +12,7 @@ public class JournalUI : MonoBehaviour
     private EnvironmentSoundHandler _environmentSoundHandler;
     private PlayerInput2D _playerInput;
     private ClockTimer _clockTimer;
+    private SimplePauseMenu _pauseMenu;
     private Animator anim;
 
     [Header("UI Behavior")]
@@ -19,6 +20,7 @@ public class JournalUI : MonoBehaviour
     public KeyCode toggleKey = KeyCode.Q; // Q key to toggle journal
 
     bool isOpen;
+    bool isInputEnabled = true;
 
     void Awake()
     {
@@ -34,6 +36,11 @@ public class JournalUI : MonoBehaviour
         _clockTimer = FindFirstObjectByType<ClockTimer>();
         if (_clockTimer == null)
             Debug.LogWarning("[JournalUI] ClockTimer not found in scene");
+        
+        // Find the SimplePauseMenu in the scene
+        _pauseMenu = FindFirstObjectByType<SimplePauseMenu>();
+        if (_pauseMenu == null)
+            Debug.LogWarning("[JournalUI] SimplePauseMenu not found in scene");
         
         // Get animator from journalRoot if assigned, otherwise try this GameObject
         if (journalRoot)
@@ -70,6 +77,18 @@ public class JournalUI : MonoBehaviour
 
     void Update()
     {
+        // Don't allow opening if input is disabled or if game is paused
+        if (!isInputEnabled)
+        {
+            return;
+        }
+
+        // Check if pause menu is open
+        if (_pauseMenu != null && _pauseMenu.IsPaused)
+        {
+            return;
+        }
+
         // Check if Q is pressed
         if (Input.GetKeyDown(toggleKey))
         {
@@ -81,12 +100,28 @@ public class JournalUI : MonoBehaviour
     public void Toggle()
     {
         Debug.Log($"[JournalUI] Toggle pressed. Current state: {(isOpen ? "Open" : "Closed")}");
+        
+        // Prevent toggling if input is disabled or paused
+        if (!isInputEnabled || (_pauseMenu != null && _pauseMenu.IsPaused))
+        {
+            Debug.Log("[JournalUI] Toggle blocked - input disabled or game paused");
+            return;
+        }
+        
         SetOpen(!isOpen);
     }
 
     public void Open()
     {
         Debug.Log("[JournalUI] Open() called.");
+        
+        // Prevent opening if input is disabled or paused
+        if (!isInputEnabled || (_pauseMenu != null && _pauseMenu.IsPaused))
+        {
+            Debug.Log("[JournalUI] Open blocked - input disabled or game paused");
+            return;
+        }
+        
         SetOpen(true);
     }
 
@@ -168,4 +203,18 @@ public class JournalUI : MonoBehaviour
         journalPanel.alpha = end;
         Debug.Log($"[JournalUI] Fade complete. Final alpha={journalPanel.alpha:F2}");
     }
+
+    /// <summary>
+    /// Public API to enable/disable journal input (called by SimplePauseMenu)
+    /// </summary>
+    public void SetInputEnabled(bool enabled)
+    {
+        isInputEnabled = enabled;
+        Debug.Log($"[JournalUI] Input enabled set to: {enabled}");
+    }
+
+    /// <summary>
+    /// Public property to check if journal is currently open
+    /// </summary>
+    public bool IsOpen => isOpen;
 }
