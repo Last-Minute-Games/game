@@ -46,6 +46,8 @@ namespace Systems.Overworld.Intro
 
         private GameObject _blackScreen;
         private GameObject _corruptScreen;
+        
+        private EnvironmentSoundHandler _environmentSoundHandler;
     
         private IEnumerator WaitDreamIntro()
         {
@@ -87,6 +89,8 @@ namespace Systems.Overworld.Intro
             
             _plrMainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
             _cinemachinePositionComposer = GameObject.Find("CinemachineCamera").GetComponent<CinemachinePositionComposer>();
+            
+            _environmentSoundHandler = _plrObject.transform.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
             
             // change cinecam offset
             SetCinecamYOffset(0);
