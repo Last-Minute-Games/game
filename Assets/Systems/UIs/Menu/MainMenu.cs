@@ -33,6 +33,9 @@ public class Startscreen : MonoBehaviour
     public float creditsHoldTime = 2f;
     public float scrollSpeed = 1f;         // Runtime-adjustable scroll speed (1 = normal)
 
+    [Header("Settings")]
+    public Settings settingsComponent; // Reference to the Settings component
+
     private Vector2 _creditLogoStartPos;
     private Vector2 _creditTextStartPos;
     private bool _creditsPlaying = false; // prevent re-entry and ensure scroll stops
@@ -162,6 +165,22 @@ public class Startscreen : MonoBehaviour
         else
         {
             Debug.LogWarning("Credits UI elements are not assigned in the inspector!");
+        }
+    }
+
+    /// <summary>
+    /// Show the settings panel with fade animation
+    /// </summary>
+    public void ShowSettings()
+    {
+        if (settingsComponent != null)
+        {
+            Debug.Log("[MainMenu] Opening settings");
+            settingsComponent.ShowSettings();
+        }
+        else
+        {
+            Debug.LogWarning("[MainMenu] Settings component not assigned in the inspector!");
         }
     }
 

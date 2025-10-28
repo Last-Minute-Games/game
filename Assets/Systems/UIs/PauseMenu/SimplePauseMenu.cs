@@ -10,7 +10,7 @@ public class SimplePauseMenu : MonoBehaviour
 {
     [Header("Panels")]
     [SerializeField] private GameObject pausePanel;
-    [SerializeField] private GameObject settingsPanel;
+    [SerializeField] private Settings settingsComponent; // Changed from GameObject to Settings component
     
     [Header("Blur Effect")]
     [SerializeField] private Image blurOverlay;
@@ -105,7 +105,7 @@ public class SimplePauseMenu : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (settingsPanel && settingsPanel.activeSelf)
+            if (settingsComponent && settingsComponent.gameObject.activeSelf)
             {
                 // Close settings, back to pause menu
                 CloseSettings();
@@ -187,17 +187,17 @@ public class SimplePauseMenu : MonoBehaviour
         {
             pausePanel.SetActive(false);
         }
-        if (settingsPanel)
+        if (settingsComponent)
         {
-            settingsPanel.SetActive(true);
+            settingsComponent.ShowSettings();
         }
     }
 
-    void CloseSettings()
+    public void CloseSettings()
     {
-        if (settingsPanel)
+        if (settingsComponent)
         {
-            settingsPanel.SetActive(false);
+            settingsComponent.HideSettings();
         }
         if (pausePanel)
         {
@@ -224,9 +224,9 @@ public class SimplePauseMenu : MonoBehaviour
             pausePanel.SetActive(show);
         }
 
-        if (settingsPanel)
+        if (settingsComponent)
         {
-            settingsPanel.SetActive(false);
+            settingsComponent.gameObject.SetActive(false);
         }
     }
 
