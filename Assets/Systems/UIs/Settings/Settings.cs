@@ -27,7 +27,6 @@ public class Settings : MonoBehaviour
     [SerializeField] private GraphicRaycaster mainMenuRaycaster; // To block input during transitions
     [SerializeField] private float fadeDuration = 1f;
 
-    private SimplePauseMenu _pauseMenu;
     private bool _isMainMenu = false;
     private bool _settingsPlaying = false; // Prevent re-entry
 
@@ -39,12 +38,6 @@ public class Settings : MonoBehaviour
 
         // Check if we're in the MainMenu scene
         _isMainMenu = SceneManager.GetActiveScene().name == "MainMenu";
-
-        // Find SimplePauseMenu if not in main menu
-        if (!_isMainMenu)
-        {
-            _pauseMenu = FindFirstObjectByType<SimplePauseMenu>();
-        }
 
         // Auto-setup canvas groups if in main menu
         if (_isMainMenu)
@@ -74,6 +67,14 @@ public class Settings : MonoBehaviour
             if (settingsCanvasGroup)
             {
                 settingsCanvasGroup.alpha = 0f;
+                settingsPanel.SetActive(false);
+            }
+        }
+        else
+        {
+            // Not in main menu, so start settings panel hidden
+            if (settingsPanel)
+            {
                 settingsPanel.SetActive(false);
             }
         }
@@ -173,7 +174,7 @@ public class Settings : MonoBehaviour
     /// </summary>
     public void OnApplyClicked()
     {
-        Debug.Log($"[Settings] Apply clicked - IsMainMenu: {_isMainMenu}");
+        Debug.Log($"[Settings] Apply clicked");
 
         if (_isMainMenu)
         {
@@ -182,12 +183,9 @@ public class Settings : MonoBehaviour
         }
         else
         {
-            // Simply hide settings and show pause menu
-            HideSettings();
-            if (_pauseMenu)
-            {
-                _pauseMenu.CloseSettings();
-            }
+            // In pause menu - just hide the settings panel
+            // The pause menu will still be visible underneath
+            settingsPanel.SetActive(false);
         }
     }
 
@@ -267,13 +265,16 @@ public class Settings : MonoBehaviour
     /// </summary>
     public void ShowSettings()
     {
+        Debug.Log("[Settings] ShowSettings called");
+
         if (_isMainMenu)
         {
-            if (_settingsPlaying) return; // Prevent re-entry like credits
+            if (_settingsPlaying) return; // Prevent re-entry
             StartCoroutine(ShowSettingsInMainMenu());
         }
         else
         {
+            // In pause menu - just show the panel
             Show(true);
         }
     }
@@ -283,6 +284,7 @@ public class Settings : MonoBehaviour
     /// </summary>
     public void HideSettings()
     {
+        Debug.Log("[Settings] HideSettings called");
         Show(false);
     }
 
