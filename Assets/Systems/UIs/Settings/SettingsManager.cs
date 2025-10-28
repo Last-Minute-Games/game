@@ -30,6 +30,21 @@ public class SettingsManager : MonoBehaviour
     const string PP_RES_H = "vid_res_h";
     const string PP_RES_RR = "vid_res_rr";
 
+    /// <summary>
+    /// Get or auto-create the SettingsManager instance
+    /// </summary>
+    public static SettingsManager GetOrCreate()
+    {
+        if (I == null)
+        {
+            var go = new GameObject("SettingsManager");
+            I = go.AddComponent<SettingsManager>();
+            DontDestroyOnLoad(go);
+            Debug.Log("[SettingsManager] Auto-created instance");
+        }
+        return I;
+    }
+
     void Awake()
     {
         if (I != null) { Destroy(gameObject); return; }
