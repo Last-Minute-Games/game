@@ -39,7 +39,7 @@ namespace cherrydev
             name = nodeName;
             StandardHeight = rect.height;
             Rect = rect; 
-            NodeGraph = nodeGraph;
+            NodeGraph = nodeGraph ?? NodeGraph; // <- ensures graph never becomes null
         }
 
         /// <summary>

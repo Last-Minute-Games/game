@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
@@ -52,6 +53,7 @@ namespace cherrydev
 
         private bool _isLeftMouseDragFromEmpty;
         private bool _isMiddleMouseClickedOnNode;
+        private bool _isLeftMouseDraggingGraph;
 
         private bool _showLocalizationKeys;
         private bool _showNodesDropdown;
@@ -823,6 +825,7 @@ namespace cherrydev
             {
                 _currentNode = null;
                 _isLeftMouseDragFromEmpty = false;
+                _isLeftMouseDraggingGraph = false;
                 _selectionRect = new Rect(0, 0, 0, 0);
             }
             else if (currentEvent.button == 1)
@@ -915,25 +918,64 @@ namespace cherrydev
         /// Process left mouse click event
         /// </summary>
         /// <param name="currentEvent"></param>
+        /// <summary>
+        /// Process left mouse click event (single or multi-select)
+        /// </summary>
+        /// <summary>
+        /// Process left mouse click event (single select, multi-select, or start drag/selection)
+        /// </summary>
         private void ProcessLeftMouseDownEvent(Event currentEvent)
         {
-            if (_isLeftMouseDragFromEmpty)
-                return;
-
             Node clickedNode = GetHighlightedNode(currentEvent.mousePosition);
+            bool ctrlHeld = currentEvent.control || currentEvent.command;
+            bool shiftHeld = currentEvent.shift;
 
             if (clickedNode == null)
             {
-                _currentNode = null;
+                // Clicked on empty space
                 _mouseScrollClickPosition = currentEvent.mousePosition;
-                _isLeftMouseDragFromEmpty = true;
+
+                if (shiftHeld)
+                {
+                    // Begin selection box mode
+                    _isLeftMouseDragFromEmpty = true;
+                    _isLeftMouseDraggingGraph = false;
+                }
+                else
+                {
+                    // Begin panning the graph
+                    _isLeftMouseDraggingGraph = true;
+                    _isLeftMouseDragFromEmpty = false;
+
+                    if (!ctrlHeld)
+                    {
+                        foreach (Node node in _currentNodeGraph.NodesList)
+                            node.IsSelected = false;
+                    }
+                }
+
+                return;
+            }
+
+            // --- Clicked on a node ---
+            if (ctrlHeld)
+            {
+                // Toggle the clicked node’s selection
+                clickedNode.IsSelected = !clickedNode.IsSelected;
             }
             else
             {
-                SelectOnlyHighlightedNode(currentEvent.mousePosition);
-                ProcessNodeSelection(currentEvent.mousePosition);
+                // Normal single selection
+                foreach (Node node in _currentNodeGraph.NodesList)
+                    node.IsSelected = false;
+
+                clickedNode.IsSelected = true;
+                _currentNode = clickedNode;
             }
+
+            GUI.changed = true;
         }
+
 
         /// <summary>
         /// Process right mouse up event
@@ -982,21 +1024,34 @@ namespace cherrydev
         }
 
         /// <summary>
-        /// Process left mouse drag event
+        /// Process left mouse drag event (panning, dragging nodes, or shift-selection)
         /// </summary>
-        /// <param name="currentEvent"></param>
         private void ProcessLeftMouseDragEvent(Event currentEvent)
         {
-            if (_isLeftMouseDragFromEmpty)
+            bool shiftHeld = currentEvent.shift;
+
+            if (_isLeftMouseDraggingGraph && !shiftHeld)
             {
+                // Pan the graph (no shift)
+                _graphDrag = currentEvent.delta;
+                foreach (var node in _currentNodeGraph.NodesList)
+                    node.DragNode(_graphDrag);
+
                 GUI.changed = true;
-                return;
             }
-
-            Node node = GetHighlightedNode(currentEvent.mousePosition);
-
-            if (node != null)
-                node.DragNode(currentEvent.delta);
+            else if (_isLeftMouseDragFromEmpty && shiftHeld)
+            {
+                // Shift held → selection box active
+                SelectNodesBySelectionRect(currentEvent.mousePosition);
+                GUI.changed = true;
+            }
+            else if (!shiftHeld)
+            {
+                // Normal node dragging (only if shift NOT held)
+                Node node = GetHighlightedNode(currentEvent.mousePosition);
+                if (node != null && node.IsSelected)
+                    node.DragNode(currentEvent.delta);
+            }
         }
 
         /// <summary>
@@ -1068,8 +1123,8 @@ namespace cherrydev
         /// <param name="mousePosition"></param>
         private void SelectNodesBySelectionRect(Vector2 mousePosition)
         {
-            if (!_isLeftMouseDragFromEmpty)
-                return;
+            if (!_isLeftMouseDragFromEmpty || !Event.current.shift)
+                return; // Only draw selection box if Shift is held
 
             _selectionRect = new Rect(
                 Mathf.Min(_mouseScrollClickPosition.x, mousePosition.x),
@@ -1090,6 +1145,7 @@ namespace cherrydev
             GUI.DrawTexture(_selectionRect, Texture2D.whiteTexture);
             GUI.color = Color.white;
         }
+
 
         /// <summary>
         /// Return the node that is at the mouse position
@@ -1129,6 +1185,7 @@ namespace cherrydev
             contextMenu.AddSeparator("");
             contextMenu.AddItem(new GUIContent("Select All Nodes"), false, SelectAllNodes, mousePosition);
             contextMenu.AddItem(new GUIContent("Remove Selected Nodes"), false, RemoveSelectedNodes, mousePosition);
+            // contextMenu.AddItem(new GUIContent("Duplicate Selected Nodes"), false, DuplicateSelectedNodes, mousePosition);
             contextMenu.AddItem(new GUIContent("Remove Connections"), false, RemoveAllConnections, mousePosition);
             contextMenu.ShowAsContext();
         }

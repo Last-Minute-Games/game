@@ -1,5 +1,7 @@
 using System.Collections;
+using cherrydev;
 using DG.Tweening;
+using Dialogues;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,6 +16,10 @@ namespace Systems.Overworld.Intro
         public Sprite kingFrontSprite;
         
         public AnimationClip kingDeadAnimationClip;
+
+        public AudioClip glitchOutAudio;
+        
+        public DialogBehaviour dialogBehaviour;
         
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
@@ -30,6 +36,8 @@ namespace Systems.Overworld.Intro
         private Button _movementContinueButton;
     
         private EnvironmentSoundHandler _environmentSoundHandler;
+        private AudioSource _glitchAudioSource;
+        
         private MusicManager _introMusicManager;
 
         private GameObject _tutorialTriggers;
@@ -46,6 +54,8 @@ namespace Systems.Overworld.Intro
 
         private GameObject _blackScreen;
         private GameObject _corruptScreen;
+
+        private GameObject _charactersGroup;
     
         private IEnumerator WaitDreamIntro()
         {
@@ -88,6 +98,21 @@ namespace Systems.Overworld.Intro
             _plrMainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
             _cinemachinePositionComposer = GameObject.Find("CinemachineCamera").GetComponent<CinemachinePositionComposer>();
             
+            _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
+            _glitchAudioSource = _environmentSoundHandler.CreateCustomSource("Glitch");
+            _glitchAudioSource.clip = glitchOutAudio;
+            _glitchAudioSource.volume = 0.8f;
+            
+            _charactersGroup = GameObject.Find("Characters");
+            // iterate for each child
+            foreach (Transform child in _charactersGroup.transform)
+            {
+                // add dialog trigger for each
+                var dialogTrigger = child.gameObject.AddComponent<DialogTrigger>();
+                dialogTrigger.dialogBehaviour = dialogBehaviour;
+                
+            }
+            
             // change cinecam offset
             SetCinecamYOffset(0);
             
@@ -103,9 +128,7 @@ namespace Systems.Overworld.Intro
         
             _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
             _fadeCanvasGroup.alpha = 1f; // Start opaque
-        
-            _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
-        
+            
             _introMusicManager = GameObject.Find("IntroMusic").GetComponent<MusicManager>();
             _introMusicManager.SetAudioClip(_introMusicManager.dreamIntro);
             
@@ -248,6 +271,7 @@ namespace Systems.Overworld.Intro
                 
             yield return new WaitForSeconds(0.5f);
             
+            _glitchAudioSource.Play();
             _corruptScreen.SetActive(true);
 
             yield return new WaitForSeconds(1f);
