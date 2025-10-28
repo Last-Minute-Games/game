@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5025893888721598188}
   - component: {fileID: 5581736860149197810}
   - component: {fileID: 7177917656695928157}
+  - component: {fileID: 3855469627403574559}
   m_Layer: 5
   m_Name: Settings
   m_TagString: Untagged
@@ -132,6 +133,25 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &3855469627403574559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539268216119275855}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f75ab5acdadaf0d4ca009fca513ad5ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFX
+  audioSource: {fileID: 0}
+  hoverClip: {fileID: 8300000, guid: 66e3083f9da1e2b4288905d124859867, type: 3}
+  clickClip: {fileID: 0}
+  hoverScale: 1.06
+  pressScale: 0.98
+  tweenTime: 0.08
+  hoverCooldown: 0.2
 --- !u!1 &4088858432192565311
 GameObject:
   m_ObjectHideFlags: 0
@@ -188,6 +208,7 @@ GameObject:
   - component: {fileID: 4496129069439140602}
   - component: {fileID: 1409625562265523567}
   - component: {fileID: 7852516500248599760}
+  - component: {fileID: 333601533749251284}
   m_Layer: 5
   m_Name: PauseBG
   m_TagString: Untagged
@@ -252,6 +273,103 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!82 &333601533749251284
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4374108679327863133}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &6391241544910079684
 GameObject:
   m_ObjectHideFlags: 0
@@ -264,6 +382,7 @@ GameObject:
   - component: {fileID: 2357947777193905271}
   - component: {fileID: 4455754143954564635}
   - component: {fileID: 2655896209944109136}
+  - component: {fileID: 7692300278277074303}
   m_Layer: 5
   m_Name: Resume
   m_TagString: Untagged
@@ -384,6 +503,25 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &7692300278277074303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6391241544910079684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f75ab5acdadaf0d4ca009fca513ad5ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFX
+  audioSource: {fileID: 0}
+  hoverClip: {fileID: 8300000, guid: 66e3083f9da1e2b4288905d124859867, type: 3}
+  clickClip: {fileID: 0}
+  hoverScale: 1.06
+  pressScale: 0.98
+  tweenTime: 0.08
+  hoverCooldown: 0.2
 --- !u!1 &7107326459478881300
 GameObject:
   m_ObjectHideFlags: 0
@@ -434,6 +572,7 @@ GameObject:
   - component: {fileID: 3273088623523942078}
   - component: {fileID: 1349597124598123183}
   - component: {fileID: 9109284600173752025}
+  - component: {fileID: 7574383100155522832}
   m_Layer: 5
   m_Name: Quit
   m_TagString: Untagged
@@ -554,6 +693,25 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &7574383100155522832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7301487932997207540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f75ab5acdadaf0d4ca009fca513ad5ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFX
+  audioSource: {fileID: 0}
+  hoverClip: {fileID: 8300000, guid: 66e3083f9da1e2b4288905d124859867, type: 3}
+  clickClip: {fileID: 0}
+  hoverScale: 1.06
+  pressScale: 0.98
+  tweenTime: 0.08
+  hoverCooldown: 0.2
 --- !u!1 &7519380954752509728
 GameObject:
   m_ObjectHideFlags: 0
@@ -778,6 +936,8 @@ MonoBehaviour:
   blurOverlay: {fileID: 637855609719489444}
   blurColor: {r: 0, g: 0, b: 0, a: 0.7}
   blurFadeDuration: 0.2
+  quitFadeOverlay: {fileID: 0}
+  quitFadeDuration: 1
   resumeButton: {fileID: 2655896209944109136}
   settingsButton: {fileID: 7177917656695928157}
   quitButton: {fileID: 9109284600173752025}
