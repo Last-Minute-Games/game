@@ -11,13 +11,18 @@ public class SimplePauseMenu : MonoBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject settingsPanel;
-    
+
     [Header("Blur Effect")]
     [SerializeField] private Image blurOverlay;
     [Tooltip("Color and alpha of the blur overlay (darker = more visible blur effect)")]
     [SerializeField] private Color blurColor = new Color(0, 0, 0, 0.7f);
     [Tooltip("Fade duration for blur effect in seconds")]
     [SerializeField] private float blurFadeDuration = 0.2f;
+
+    [Header("Quit Fade Effect")]
+    [SerializeField] private Image quitFadeOverlay;
+    [Tooltip("Duration for fade to black when quitting")]
+    [SerializeField] private float quitFadeDuration = 1f;
 
     [Header("Buttons - Wire these up in inspector")]
     [SerializeField] private Button resumeButton;
@@ -43,7 +48,7 @@ public class SimplePauseMenu : MonoBehaviour
             enabled = false;
             return;
         }
-        
+
         // Setup blur overlay if assigned
         if (blurOverlay != null)
         {
@@ -52,6 +57,14 @@ public class SimplePauseMenu : MonoBehaviour
             Color transparent = blurColor;
             transparent.a = 0f;
             blurOverlay.color = transparent;
+        }
+
+        // Setup quit fade overlay if assigned
+        if (quitFadeOverlay != null)
+        {
+            quitFadeOverlay.gameObject.SetActive(false);
+            quitFadeOverlay.raycastTarget = true;
+            quitFadeOverlay.color = new Color(0, 0, 0, 0);
         }
 
         // Find player input
@@ -63,10 +76,6 @@ public class SimplePauseMenu : MonoBehaviour
 
         // Find clock timer
         _clockTimer = FindFirstObjectByType<ClockTimer>();
-        if (_clockTimer)
-            Debug.Log("[SimplePauseMenu] ClockTimer found");
-        else
-            Debug.Log("[SimplePauseMenu] No ClockTimer in scene (this is OK if not in Overworld)");
 
         // Find journal UI
         _journalUI = FindFirstObjectByType<JournalUI>();
@@ -88,11 +97,8 @@ public class SimplePauseMenu : MonoBehaviour
         }
 
         // Start hidden
-        ShowPauseMenu(false);
-    }
-
-    void Start()
-    {
+        if (pausePanel) pausePanel.SetActive(false);
+        if (settingsPanel) settingsPanel.SetActive(false);
     }
 
     void Update()
@@ -110,17 +116,15 @@ public class SimplePauseMenu : MonoBehaviour
                 // Close settings, back to pause menu
                 CloseSettings();
             }
+            else if (isPaused)
+            {
+                // Resume if pause menu is open
+                Resume();
+            }
             else
             {
-                // Toggle pause
-                if (isPaused)
-                {
-                    Resume();
-                }
-                else
-                {
-                    Pause();
-                }
+                // Open pause menu
+                Pause();
             }
         }
     }
@@ -140,7 +144,6 @@ public class SimplePauseMenu : MonoBehaviour
         if (_clockTimer != null)
         {
             _clockTimer.PauseTimer(true);
-            Debug.Log("[SimplePauseMenu] ClockTimer paused");
         }
 
         // Disable journal UI
@@ -149,7 +152,7 @@ public class SimplePauseMenu : MonoBehaviour
             _journalUI.SetInputEnabled(false);
         }
 
-        ShowPauseMenu(true);
+        if (pausePanel) pausePanel.SetActive(true);
         ShowBlurEffect(true);
     }
 
@@ -168,7 +171,6 @@ public class SimplePauseMenu : MonoBehaviour
         if (_clockTimer != null)
         {
             _clockTimer.PauseTimer(false);
-            Debug.Log("[SimplePauseMenu] ClockTimer resumed");
         }
 
         // Re-enable journal UI
@@ -178,35 +180,62 @@ public class SimplePauseMenu : MonoBehaviour
         }
 
         ShowBlurEffect(false);
-        ShowPauseMenu(false);
+        if (pausePanel) pausePanel.SetActive(false);
+        if (settingsPanel) settingsPanel.SetActive(false);
     }
 
     void OpenSettings()
     {
-        if (pausePanel)
-        {
-            pausePanel.SetActive(false);
-        }
+        // Just show settings on top of pause menu
         if (settingsPanel)
         {
             settingsPanel.SetActive(true);
         }
     }
 
-    void CloseSettings()
+    public void CloseSettings()
     {
+        // Just hide settings, pause menu is still visible underneath
         if (settingsPanel)
         {
             settingsPanel.SetActive(false);
-        }
-        if (pausePanel)
-        {
-            pausePanel.SetActive(true);
         }
     }
 
     void QuitToMenu()
     {
+        StartCoroutine(QuitWithFade());
+    }
+
+    private System.Collections.IEnumerator QuitWithFade()
+    {
+        // Enable the quit fade overlay
+        if (quitFadeOverlay != null)
+        {
+            quitFadeOverlay.gameObject.SetActive(true);
+            
+            // Fade to black
+            float elapsed = 0f;
+            Color fadeColor = new Color(0, 0, 0, 0);
+            
+            while (elapsed < quitFadeDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = elapsed / quitFadeDuration;
+                fadeColor.a = Mathf.Lerp(0f, 1f, t);
+                quitFadeOverlay.color = fadeColor;
+                yield return null;
+            }
+            
+            // Ensure fully black
+            fadeColor.a = 1f;
+            quitFadeOverlay.color = fadeColor;
+        }
+        else
+        {
+            yield return new WaitForSecondsRealtime(0.5f);
+        }
+
         // Re-enable everything before leaving
         Time.timeScale = 1f;
         if (_playerInput != null)
@@ -217,19 +246,6 @@ public class SimplePauseMenu : MonoBehaviour
         SceneManager.LoadScene(mainMenuSceneName);
     }
 
-    void ShowPauseMenu(bool show)
-    {
-        if (pausePanel)
-        {
-            pausePanel.SetActive(show);
-        }
-
-        if (settingsPanel)
-        {
-            settingsPanel.SetActive(false);
-        }
-    }
-
     void ShowBlurEffect(bool show)
     {
         if (blurOverlay == null) return;
@@ -238,36 +254,42 @@ public class SimplePauseMenu : MonoBehaviour
         if (_blurFadeCoroutine != null)
         {
             StopCoroutine(_blurFadeCoroutine);
+            _blurFadeCoroutine = null;
         }
 
         if (show)
         {
             blurOverlay.gameObject.SetActive(true);
-            _blurFadeCoroutine = StartCoroutine(FadeBlur(0f, blurColor.a));
+            float currentAlpha = blurOverlay.color.a;
+            _blurFadeCoroutine = StartCoroutine(FadeBlur(currentAlpha, blurColor.a));
         }
         else
         {
-            _blurFadeCoroutine = StartCoroutine(FadeBlur(blurOverlay.color.a, 0f));
+            float currentAlpha = blurOverlay.color.a;
+            _blurFadeCoroutine = StartCoroutine(FadeBlur(currentAlpha, 0f));
         }
     }
 
     private System.Collections.IEnumerator FadeBlur(float startAlpha, float endAlpha)
     {
         float elapsed = 0f;
-        Color color = blurColor;
 
         while (elapsed < blurFadeDuration)
         {
-            elapsed += Time.unscaledDeltaTime; // Use unscaled time since game is paused
+            elapsed += Time.unscaledDeltaTime;
             float t = elapsed / blurFadeDuration;
-            color.a = Mathf.Lerp(startAlpha, endAlpha, t);
+            float alpha = Mathf.Lerp(startAlpha, endAlpha, t);
+            
+            Color color = blurColor;
+            color.a = alpha;
             blurOverlay.color = color;
             yield return null;
         }
 
         // Ensure final alpha is set
-        color.a = endAlpha;
-        blurOverlay.color = color;
+        Color finalColor = blurColor;
+        finalColor.a = endAlpha;
+        blurOverlay.color = finalColor;
 
         // Deactivate if fully transparent
         if (endAlpha == 0f)
@@ -283,7 +305,7 @@ public class SimplePauseMenu : MonoBehaviour
         {
             StopCoroutine(_blurFadeCoroutine);
         }
-        
+
         // Always reset everything when destroyed
         Time.timeScale = 1f;
         if (_playerInput != null)
