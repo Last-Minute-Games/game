@@ -8,6 +8,7 @@ param(
 Write-Host "=== Building Castle of Time Updater ===" -ForegroundColor Cyan
 
 $UpdaterDir = $PSScriptRoot
+$ProjectFile = Join-Path $UpdaterDir "CastleOfTimeUpdater.csproj"
 $OutputDir = Join-Path $UpdaterDir "bin"
 
 # Clean previous builds
@@ -18,7 +19,7 @@ if (Test-Path $OutputDir) {
 
 # Build Windows version
 Write-Host "`nBuilding Windows updater..." -ForegroundColor Green
-dotnet publish $UpdaterDir `
+dotnet publish $ProjectFile `
     -c $Configuration `
     -r win-x64 `
     --self-contained true `
@@ -33,7 +34,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Build Linux version
 Write-Host "`nBuilding Linux updater..." -ForegroundColor Green
-dotnet publish $UpdaterDir `
+dotnet publish $ProjectFile `
     -c $Configuration `
     -r linux-x64 `
     --self-contained true `
