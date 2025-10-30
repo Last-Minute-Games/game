@@ -10,18 +10,6 @@ Write-Host "=== Building Castle of Time Updater ===" -ForegroundColor Cyan
 $UpdaterDir = $PSScriptRoot
 $OutputDir = Join-Path $UpdaterDir "bin"
 
-# Convert PNG to ICO if needed
-$pngPath = Join-Path $UpdaterDir "LMGLogo.png"
-$icoPath = Join-Path $UpdaterDir "LMGLogo.ico"
-
-if ((Test-Path $pngPath) -and (-not (Test-Path $icoPath) -or ((Get-Item $pngPath).LastWriteTime -gt (Get-Item $icoPath).LastWriteTime))) {
-    Write-Host "`nConverting logo to ICO format..." -ForegroundColor Yellow
-    & "$UpdaterDir\convert-icon.ps1"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "⚠️  Icon conversion failed, but continuing build..." -ForegroundColor Yellow
-    }
-}
-
 # Clean previous builds
 if (Test-Path $OutputDir) {
     Write-Host "Cleaning previous builds..." -ForegroundColor Yellow
@@ -58,10 +46,10 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "`n✅ Build complete!" -ForegroundColor Green
+Write-Host "`nBuild complete!" -ForegroundColor Green
 Write-Host "Windows updater: $OutputDir\Windows\CastleOfTimeUpdater.exe" -ForegroundColor Cyan
 Write-Host "Linux updater:   $OutputDir\Linux\CastleOfTimeUpdater" -ForegroundColor Cyan
 
-Write-Host "`n📦 Copy these files to your Unity build output folders:" -ForegroundColor Yellow
-Write-Host "  - CastleOfTimeUpdater.exe → Windows build root" -ForegroundColor White
-Write-Host "  - CastleOfTimeUpdater → Linux build root" -ForegroundColor White
+Write-Host "`nCopy these files to your Unity build output folders:" -ForegroundColor Yellow
+Write-Host "  - CastleOfTimeUpdater.exe to Windows build root" -ForegroundColor White
+Write-Host "  - CastleOfTimeUpdater to Linux build root" -ForegroundColor White
