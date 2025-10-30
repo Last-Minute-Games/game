@@ -1,53 +1,376 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+#if WINDOWS
+using System.Drawing;
 using System.Windows.Forms;
+#endif
 
 namespace CastleOfTimeUpdater
 {
-    /// <summary>
-    /// Auto-updater launcher for Castle of Time
-    /// Checks GitHub Releases for updates, downloads, verifies, and launches the game
-    /// </summary>
     class Program
     {
         [STAThread]
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new UpdaterForm());
+#if WINDOWS
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new UpdaterForm());
+                return 0;
+            }
+#endif
+            // Linux console version
+            return new ConsoleUpdater().Run().GetAwaiter().GetResult();
         }
     }
 
+    // Base class with shared logic
+    public abstract class UpdaterBase
+    {
+        protected const string REPO_OWNER = "Last-Minute-Games";
+        protected const string REPO_NAME = "game";
+        protected const string GAME_EXECUTABLE_WINDOWS = "CastleOfTime.exe";
+        protected const string GAME_EXECUTABLE_LINUX = "CastleOfTime.x86_64";
+        protected const string VERSION_FILE = "version.txt";
+        
+        protected readonly string InstallDir = AppDomain.CurrentDomain.BaseDirectory;
+        protected readonly HttpClient httpClient = new HttpClient();
+
+        protected abstract void Log(string message);
+        protected abstract void SetProgress(int value);
+
+        protected string ReadLocalVersion()
+        {
+            string versionPath = Path.Combine(InstallDir, VERSION_FILE);
+            if (File.Exists(versionPath))
+            {
+                return File.ReadAllText(versionPath).Trim();
+            }
+            return "unknown";
+        }
+
+        protected void WriteLocalVersion(string version)
+        {
+            string versionPath = Path.Combine(InstallDir, VERSION_FILE);
+            File.WriteAllText(versionPath, version);
+        }
+
+        protected async Task<GitHubRelease?> FetchLatestRelease()
+        {
+            try
+            {
+                httpClient.DefaultRequestHeaders.Clear();
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("CastleOfTime-Updater/1.0");
+                httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+                
+                string apiUrl = $"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/releases/latest";
+                var response = await httpClient.GetStringAsync(apiUrl);
+                
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                
+                return JsonSerializer.Deserialize<GitHubRelease>(response, options);
+            }
+            catch (Exception ex)
+            {
+                Log($"Warning: {ex.Message}");
+                return null;
+            }
+        }
+
+        protected bool IsNewer(string remoteVersion, string localVersion)
+        {
+            if (localVersion == "unknown") return true;
+
+            if (Version.TryParse(remoteVersion.TrimStart('v'), out var remote) &&
+                Version.TryParse(localVersion.TrimStart('v'), out var local))
+            {
+                return remote > local;
+            }
+
+            return string.CompareOrdinal(remoteVersion, localVersion) > 0;
+        }
+
+        protected async Task<bool> DownloadAndInstallUpdate(GitHubRelease release)
+        {
+            try
+            {
+                string platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" : "Linux";
+                
+                string versionNumber = release.TagName.TrimStart('v');
+                var parts = versionNumber.Split('.');
+                string buildNumber = parts.Length > 0 ? parts[parts.Length - 1] : versionNumber;
+                
+                string expectedFileName = $"CastleOfTime-{buildNumber}-{platform}.zip";
+                
+                var asset = release.Assets.Find(a => a.Name == expectedFileName);
+                
+                if (asset == null)
+                {
+                    Log($"❌ No update available for platform: {platform}");
+                    Log($"Looking for: {expectedFileName}");
+                    Log($"Available assets:");
+                    foreach (var a in release.Assets)
+                    {
+                        Log($"  - {a.Name}");
+                    }
+                    return false;
+                }
+
+                string tempDir = Path.Combine(Path.GetTempPath(), $"CastleOfTime_Update_{Guid.NewGuid()}");
+                Directory.CreateDirectory(tempDir);
+
+                try
+                {
+                    string zipPath = Path.Combine(tempDir, asset.Name);
+                    Log($"Downloading from GitHub...");
+                    SetProgress(50);
+                    
+                    await DownloadFileWithProgress(asset.BrowserDownloadUrl, zipPath);
+
+                    string extractDir = Path.Combine(tempDir, "extracted");
+                    Log("Extracting update...");
+                    SetProgress(80);
+                    ZipFile.ExtractToDirectory(zipPath, extractDir);
+
+                    Log("Installing update...");
+                    SetProgress(90);
+                    ReplaceGameFiles(extractDir, InstallDir);
+
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        string gameExe = Path.Combine(InstallDir, GAME_EXECUTABLE_LINUX);
+                        if (File.Exists(gameExe))
+                        {
+                            Process.Start("chmod", $"+x \"{gameExe}\"")?.WaitForExit();
+                        }
+                    }
+
+                    return true;
+                }
+                finally
+                {
+                    try
+                    {
+                        Directory.Delete(tempDir, true);
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Update failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        protected async Task DownloadFileWithProgress(string url, string destPath)
+        {
+            using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            long? totalBytes = response.Content.Headers.ContentLength;
+            using var contentStream = await response.Content.ReadAsStreamAsync();
+            using var fileStream = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+
+            var buffer = new byte[8192];
+            long totalRead = 0;
+            int bytesRead;
+            int lastPercent = -1;
+
+            while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await fileStream.WriteAsync(buffer, 0, bytesRead);
+                totalRead += bytesRead;
+
+                if (totalBytes.HasValue)
+                {
+                    int percent = (int)((totalRead * 100) / totalBytes.Value);
+                    if (percent != lastPercent)
+                    {
+                        int progressValue = 50 + (percent / 3);
+                        SetProgress(progressValue);
+                        lastPercent = percent;
+                    }
+                }
+            }
+        }
+
+        protected void ReplaceGameFiles(string sourceDir, string targetDir)
+        {
+            foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                string relativePath = Path.GetRelativePath(sourceDir, sourceFile);
+                string targetFile = Path.Combine(targetDir, relativePath);
+
+                string? targetDirPath = Path.GetDirectoryName(targetFile);
+                if (targetDirPath != null && !Directory.Exists(targetDirPath))
+                {
+                    Directory.CreateDirectory(targetDirPath);
+                }
+
+                string fileName = Path.GetFileName(targetFile).ToLower();
+                if (fileName.Contains("updater"))
+                {
+                    continue;
+                }
+
+                int retries = 3;
+                while (retries > 0)
+                {
+                    try
+                    {
+                        File.Copy(sourceFile, targetFile, true);
+                        break;
+                    }
+                    catch
+                    {
+                        retries--;
+                        if (retries == 0) throw;
+                        System.Threading.Thread.Sleep(500);
+                    }
+                }
+            }
+        }
+
+        public void LaunchGame()
+        {
+            string gameExe = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+                ? Path.Combine(InstallDir, GAME_EXECUTABLE_WINDOWS)
+                : Path.Combine(InstallDir, GAME_EXECUTABLE_LINUX);
+
+            if (!File.Exists(gameExe))
+            {
+                Log($"Game executable not found: {gameExe}");
+                return;
+            }
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = gameExe,
+                WorkingDirectory = InstallDir,
+                UseShellExecute = true
+            };
+
+            Process.Start(startInfo);
+        }
+    }
+
+    // Console version for Linux
+    public class ConsoleUpdater : UpdaterBase
+    {
+        protected override void Log(string message)
+        {
+            Console.WriteLine(message);
+        }
+
+        protected override void SetProgress(int value)
+        {
+            // Simple progress indicator for console
+        }
+
+        public async Task<int> Run()
+        {
+            try
+            {
+                Log("=== Castle of Time Updater ===");
+                Log("");
+
+                string currentVersion = ReadLocalVersion();
+                Log($"Current version: {currentVersion}");
+
+                Log("Checking for updates...");
+                var latestRelease = await FetchLatestRelease();
+                
+                if (latestRelease == null)
+                {
+                    Log("⚠️ Unable to check for updates.");
+                    Log("Starting game with current version...");
+                    LaunchGame();
+                    return 0;
+                }
+
+                string latestVersion = latestRelease.TagName;
+                Log($"Latest version: {latestVersion}");
+
+                if (IsNewer(latestVersion, currentVersion))
+                {
+                    Log("");
+                    Log($"🎮 New version available: {latestVersion}");
+                    Log("Downloading update...");
+                    Log("");
+
+                    bool success = await DownloadAndInstallUpdate(latestRelease);
+                    
+                    if (success)
+                    {
+                        WriteLocalVersion(latestVersion);
+                        Log("");
+                        Log("✅ Update installed successfully!");
+                    }
+                    else
+                    {
+                        Log("");
+                        Log("⚠️ Update failed. Launching current version...");
+                    }
+                }
+                else
+                {
+                    Log("✅ You're up to date!");
+                }
+
+                Log("");
+                Log("Launching Castle of Time...");
+                LaunchGame();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Log("");
+                Log($"❌ Error: {ex.Message}");
+                Log("");
+                Log("Attempting to launch game anyway...");
+                
+                try
+                {
+                    LaunchGame();
+                    return 0;
+                }
+                catch
+                {
+                    Log("Failed to launch game.");
+                    return 1;
+                }
+            }
+        }
+    }
+
+#if WINDOWS
+    // GUI version for Windows
     public class UpdaterForm : Form
     {
-        private const string REPO_OWNER = "Last-Minute-Games";
-        private const string REPO_NAME = "game";
-        private const string GAME_EXECUTABLE_WINDOWS = "CastleOfTime.exe";
-        private const string GAME_EXECUTABLE_LINUX = "CastleOfTime.x86_64";
-        private const string VERSION_FILE = "version.txt";
-        
-        private readonly string InstallDir = AppDomain.CurrentDomain.BaseDirectory;
-        private readonly HttpClient httpClient = new HttpClient();
-
-        private TextBox logTextBox;
-        private ProgressBar progressBar;
-        private Button launchButton;
+        private UpdaterBase? updater;
+        private TextBox? logTextBox;
+        private ProgressBar? progressBar;
+        private Button? launchButton;
 
         public UpdaterForm()
         {
             InitializeUI();
-            _ = CheckAndUpdate();
+            updater = new GUIUpdater(this);
+            _ = ((GUIUpdater)updater).CheckAndUpdate();
         }
 
         private void InitializeUI()
@@ -58,7 +381,6 @@ namespace CastleOfTimeUpdater
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Logo/Title
             var titleLabel = new Label
             {
                 Text = "Castle of Time",
@@ -69,7 +391,6 @@ namespace CastleOfTimeUpdater
             };
             this.Controls.Add(titleLabel);
 
-            // Log text box
             logTextBox = new TextBox
             {
                 Multiline = true,
@@ -81,7 +402,6 @@ namespace CastleOfTimeUpdater
             };
             this.Controls.Add(logTextBox);
 
-            // Progress bar
             progressBar = new ProgressBar
             {
                 Location = new Point(20, 280),
@@ -90,7 +410,6 @@ namespace CastleOfTimeUpdater
             };
             this.Controls.Add(progressBar);
 
-            // Launch button
             launchButton = new Button
             {
                 Text = "Launch Game",
@@ -99,41 +418,74 @@ namespace CastleOfTimeUpdater
                 Enabled = false,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold)
             };
-            launchButton.Click += (s, e) => LaunchGame();
+            launchButton.Click += (s, e) => LaunchGameAndExit();
             this.Controls.Add(launchButton);
         }
 
-        private void Log(string message)
+        public void AppendLog(string message)
         {
-            if (logTextBox.InvokeRequired)
+            if (logTextBox!.InvokeRequired)
             {
-                logTextBox.Invoke(new Action(() => Log(message)));
+                logTextBox.Invoke(new Action(() => AppendLog(message)));
                 return;
             }
             logTextBox.AppendText(message + Environment.NewLine);
         }
 
-        private void SetProgress(int value)
+        public void UpdateProgress(int value)
         {
-            if (progressBar.InvokeRequired)
+            if (progressBar!.InvokeRequired)
             {
-                progressBar.Invoke(new Action(() => SetProgress(value)));
+                progressBar.Invoke(new Action(() => UpdateProgress(value)));
                 return;
             }
             progressBar.Value = Math.Min(Math.Max(value, 0), 100);
         }
 
-        private void EnableLaunchButton()
+        public void EnableLaunch()
         {
-            if (launchButton.InvokeRequired)
+            if (launchButton!.InvokeRequired)
             {
-                launchButton.Invoke(new Action(EnableLaunchButton));
+                launchButton.Invoke(new Action(EnableLaunch));
                 return;
             }
             launchButton.Enabled = true;
         }
 
-        private async Task CheckAndUpdate()
+        private void LaunchGameAndExit()
+        {
+            try
+            {
+                updater?.LaunchGame();
+                Application.Exit();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to launch game: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+
+    public class GUIUpdater : UpdaterBase
+    {
+        private readonly UpdaterForm form;
+
+        public GUIUpdater(UpdaterForm form)
+        {
+            this.form = form;
+        }
+
+        protected override void Log(string message)
+        {
+            form.AppendLog(message);
+        }
+
+        protected override void SetProgress(int value)
+        {
+            form.UpdateProgress(value);
+        }
+
+        public async Task CheckAndUpdate()
         {
             try
             {
@@ -141,12 +493,10 @@ namespace CastleOfTimeUpdater
                 Log("");
                 SetProgress(10);
 
-                // Read current version
                 string currentVersion = ReadLocalVersion();
                 Log($"Current version: {currentVersion}");
                 SetProgress(20);
 
-                // Check for updates
                 Log("Checking for updates...");
                 var latestRelease = await FetchLatestRelease();
                 
@@ -155,7 +505,7 @@ namespace CastleOfTimeUpdater
                     Log("⚠️ Unable to check for updates.");
                     Log("Starting game with current version...");
                     SetProgress(100);
-                    EnableLaunchButton();
+                    form.EnableLaunch();
                     return;
                 }
 
@@ -163,7 +513,6 @@ namespace CastleOfTimeUpdater
                 Log($"Latest version: {latestVersion}");
                 SetProgress(30);
 
-                // Compare versions
                 if (IsNewer(latestVersion, currentVersion))
                 {
                     Log("");
@@ -196,7 +545,7 @@ namespace CastleOfTimeUpdater
 
                 Log("");
                 Log("Ready to launch Castle of Time!");
-                EnableLaunchButton();
+                form.EnableLaunch();
             }
             catch (Exception ex)
             {
@@ -205,259 +554,11 @@ namespace CastleOfTimeUpdater
                 Log("");
                 Log("You can still try to launch the game.");
                 SetProgress(100);
-                EnableLaunchButton();
-            }
-        }
-
-        private string ReadLocalVersion()
-        {
-            string versionPath = Path.Combine(InstallDir, VERSION_FILE);
-            if (File.Exists(versionPath))
-            {
-                return File.ReadAllText(versionPath).Trim();
-            }
-            return "unknown";
-        }
-
-        private void WriteLocalVersion(string version)
-        {
-            string versionPath = Path.Combine(InstallDir, VERSION_FILE);
-            File.WriteAllText(versionPath, version);
-        }
-
-        private async Task<GitHubRelease?> FetchLatestRelease()
-        {
-            try
-            {
-                httpClient.DefaultRequestHeaders.Clear();
-                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("CastleOfTime-Updater/1.0");
-                httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
-                
-                string apiUrl = $"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/releases/latest";
-                var response = await httpClient.GetStringAsync(apiUrl);
-                
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                };
-                
-                return JsonSerializer.Deserialize<GitHubRelease>(response, options);
-            }
-            catch (Exception ex)
-            {
-                Log($"Warning: {ex.Message}");
-                return null;
-            }
-        }
-
-        private bool IsNewer(string remoteVersion, string localVersion)
-        {
-            // Handle "unknown" local version
-            if (localVersion == "unknown") return true;
-
-            // Try semantic versioning comparison
-            if (Version.TryParse(remoteVersion.TrimStart('v'), out var remote) &&
-                Version.TryParse(localVersion.TrimStart('v'), out var local))
-            {
-                return remote > local;
-            }
-
-            // Fallback to string comparison
-            return string.CompareOrdinal(remoteVersion, localVersion) > 0;
-        }
-
-        private async Task<bool> DownloadAndInstallUpdate(GitHubRelease release)
-        {
-            try
-            {
-                // Determine platform
-                string platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" : "Linux";
-                
-                // Extract just the number from the tag (e.g., "v1.0.100" -> "100")
-                string versionNumber = release.TagName.TrimStart('v');
-                var parts = versionNumber.Split('.');
-                string buildNumber = parts.Length > 0 ? parts[parts.Length - 1] : versionNumber;
-                
-                string expectedFileName = $"CastleOfTime-{buildNumber}-{platform}.zip";
-                
-                // Find the asset for our platform
-                var asset = release.Assets.Find(a => a.Name == expectedFileName);
-                
-                if (asset == null)
-                {
-                    Log($"❌ No update available for platform: {platform}");
-                    Log($"Looking for: {expectedFileName}");
-                    Log($"Available assets:");
-                    foreach (var a in release.Assets)
-                    {
-                        Log($"  - {a.Name}");
-                    }
-                    return false;
-                }
-
-                // Create temp directory
-                string tempDir = Path.Combine(Path.GetTempPath(), $"CastleOfTime_Update_{Guid.NewGuid()}");
-                Directory.CreateDirectory(tempDir);
-
-                try
-                {
-                    // Download zip
-                    string zipPath = Path.Combine(tempDir, asset.Name);
-                    Log($"Downloading from GitHub...");
-                    SetProgress(50);
-                    
-                    await DownloadFileWithProgress(asset.BrowserDownloadUrl, zipPath);
-
-                    // Extract to temp location
-                    string extractDir = Path.Combine(tempDir, "extracted");
-                    Log("Extracting update...");
-                    SetProgress(80);
-                    ZipFile.ExtractToDirectory(zipPath, extractDir);
-
-                    // Replace game files
-                    Log("Installing update...");
-                    SetProgress(90);
-                    ReplaceGameFiles(extractDir, InstallDir);
-
-                    // Fix permissions on Linux
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    {
-                        string gameExe = Path.Combine(InstallDir, GAME_EXECUTABLE_LINUX);
-                        if (File.Exists(gameExe))
-                        {
-                            Process.Start("chmod", $"+x \"{gameExe}\"")?.WaitForExit();
-                        }
-                    }
-
-                    return true;
-                }
-                finally
-                {
-                    // Cleanup temp directory
-                    try
-                    {
-                        Directory.Delete(tempDir, true);
-                    }
-                    catch { /* Ignore cleanup errors */ }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log($"Update failed: {ex.Message}");
-                return false;
-            }
-        }
-
-        private async Task DownloadFileWithProgress(string url, string destPath)
-        {
-            using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-
-            long? totalBytes = response.Content.Headers.ContentLength;
-            using var contentStream = await response.Content.ReadAsStreamAsync();
-            using var fileStream = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-
-            var buffer = new byte[8192];
-            long totalRead = 0;
-            int bytesRead;
-            int lastPercent = -1;
-
-            while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-            {
-                await fileStream.WriteAsync(buffer, 0, bytesRead);
-                totalRead += bytesRead;
-
-                if (totalBytes.HasValue)
-                {
-                    int percent = (int)((totalRead * 100) / totalBytes.Value);
-                    if (percent != lastPercent)
-                    {
-                        int progressValue = 50 + (percent / 3); // Map to 50-83% range
-                        SetProgress(progressValue);
-                        lastPercent = percent;
-                    }
-                }
-            }
-        }
-
-        private void ReplaceGameFiles(string sourceDir, string targetDir)
-        {
-            // Get all files from source
-            foreach (string sourceFile in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
-            {
-                string relativePath = Path.GetRelativePath(sourceDir, sourceFile);
-                string targetFile = Path.Combine(targetDir, relativePath);
-
-                // Create directory if needed
-                string? targetDirPath = Path.GetDirectoryName(targetFile);
-                if (targetDirPath != null && !Directory.Exists(targetDirPath))
-                {
-                    Directory.CreateDirectory(targetDirPath);
-                }
-
-                // Don't overwrite the updater itself or version file while running
-                string fileName = Path.GetFileName(targetFile).ToLower();
-                if (fileName.Contains("updater"))
-                {
-                    continue;
-                }
-
-                // Copy file with retry logic (in case file is briefly locked)
-                int retries = 3;
-                while (retries > 0)
-                {
-                    try
-                    {
-                        File.Copy(sourceFile, targetFile, true);
-                        break;
-                    }
-                    catch
-                    {
-                        retries--;
-                        if (retries == 0) throw;
-                        System.Threading.Thread.Sleep(500);
-                    }
-                }
-            }
-        }
-
-        private void LaunchGame()
-        {
-            try
-            {
-                string gameExe;
-                
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    gameExe = Path.Combine(InstallDir, GAME_EXECUTABLE_WINDOWS);
-                }
-                else
-                {
-                    gameExe = Path.Combine(InstallDir, GAME_EXECUTABLE_LINUX);
-                }
-
-                if (!File.Exists(gameExe))
-                {
-                    MessageBox.Show($"Game executable not found: {gameExe}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = gameExe,
-                    WorkingDirectory = InstallDir,
-                    UseShellExecute = true
-                };
-
-                Process.Start(startInfo);
-                Application.Exit();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Failed to launch game: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                form.EnableLaunch();
             }
         }
     }
+#endif
 
     // JSON Models for GitHub API response
     public class GitHubRelease
