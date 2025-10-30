@@ -2,7 +2,8 @@ param(
   [string]$UnityVersion = "6000.2.2f1",
   [string]$ProjectPath = (Resolve-Path "$PSScriptRoot\..").Path,
   [string]$OutDir      = $null,    # <-- NEW: explicit output dir from CI (optional)
-  [string]$BuildTarget = "Windows" # <-- NEW: Windows or Linux
+  [string]$BuildTarget = "Windows", # <-- NEW: Windows or Linux
+  [string]$Version     = $null     # <-- NEW: Version string for version.txt
 )
 
 $unity = "C:\Program Files\Unity\Hub\Editor\$UnityVersion\Editor\Unity.exe"
@@ -72,3 +73,19 @@ if ($exit -ne 0) {
 Write-Host "✅ $BuildTarget build completed. Output: $OutDir"
 # Also emit the path for CI steps that want to read it
 "$OutDir" | Out-File -FilePath "$env:GITHUB_WORKSPACE\_last_build_dir.txt" -Encoding ascii
+
+# Run post-build script to add updater and version file
+if (-not [string]::IsNullOrWhiteSpace($Version)) {
+  Write-Host "`nRunning post-build integration..."
+  $postBuildScript = Join-Path $PSScriptRoot "post-build.ps1"
+  if (Test-Path $postBuildScript) {
+    & $postBuildScript -BuildOutputDir $OutDir -Platform $BuildTarget -Version $Version
+    if ($LASTEXITCODE -ne 0) {
+      Write-Host "⚠️  Post-build script failed, but Unity build succeeded" -ForegroundColor Yellow
+    }
+  } else {
+    Write-Host "⚠️  Post-build script not found at: $postBuildScript" -ForegroundColor Yellow
+  }
+} else {
+  Write-Host "⚠️  No version specified, skipping post-build (updater won't be included)" -ForegroundColor Yellow
+}

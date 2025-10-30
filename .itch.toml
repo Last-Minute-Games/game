@@ -1,0 +1,50 @@
+# .itch.toml - Butler configuration for itch.io uploads
+# This file tells Butler what to ignore and how to handle platform-specific settings
+
+# Global ignore patterns - these won't be uploaded to itch.io
+ignore = [
+  "*.log",
+  "*.md",
+  "*.txt",
+  "LICENSE*",
+  "README*",
+  "Docs/**",
+  "Tests/**",
+  "Library/**",
+  "Temp/**",
+  ".git/**",
+  ".github/**",
+  "obj/**",
+  "Logs/**"
+]
+
+# Windows-specific settings
+[windows]
+# Exclude Linux executables and libraries from Windows builds
+ignore = [
+  "*.so",           # Linux shared libraries
+  "*.so.*",         # Versioned Linux libraries
+  "*.x86_64",       # Linux executables
+  "*_Data/Plugins/x86_64/**",  # Linux plugins
+  "CastleOfTimeUpdater"  # Linux updater (no .exe extension)
+]
+# Optionally ignore debug symbols for smaller downloads
+# Uncomment if you don't want to upload .pdb files:
+# ignore = ["*.pdb"]
+
+# Linux-specific settings
+[linux]
+# Exclude Windows executables and libraries from Linux builds
+ignore = [
+  "*.exe",          # Windows executables
+  "*.dll",          # Windows libraries
+  "*_Data/Plugins/x86_64/*.dll",  # Windows plugins
+  "CastleOfTimeUpdater.exe"  # Windows updater
+]
+# Automatically fix file permissions after extraction
+# This ensures executables are marked as executable
+fix_permissions = true
+
+# macOS-specific settings (for future use)
+[osx]
+fix_permissions = true
