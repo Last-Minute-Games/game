@@ -35,7 +35,7 @@ if ($Platform -eq "Windows" -or $Platform -eq "Both") {
         -r win-x64 `
         --self-contained true `
         -p:PublishSingleFile=true `
-        -p:PublishTrimmed=true `
+        -p:PublishTrimmed=false `
         -p:Version=1.0.0 `
         -o "$OutputDir/Windows"
 
@@ -54,7 +54,7 @@ if ($Platform -eq "Linux" -or $Platform -eq "Both") {
         -r linux-x64 `
         --self-contained true `
         -p:PublishSingleFile=true `
-        -p:PublishTrimmed=true `
+        -p:PublishTrimmed=false `
         -p:Version=1.0.0 `
         -o "$OutputDir/Linux"
 
