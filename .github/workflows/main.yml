@@ -60,12 +60,12 @@ jobs:
       # Build the updater executables before Unity builds
       - name: Build updater
         run: |
-          Write-Host "Building auto-updater..."
+          Write-Host "Building auto-updater for ${{ matrix.platform }}..."
           if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
             Write-Host "❌ .NET SDK not found. Install .NET 6.0+ to build the updater."
             exit 1
           }
-          .\Updater\build-updater.ps1
+          .\Updater\build-updater.ps1 -Platform "${{ matrix.platform }}"
           Write-Host "✅ Updater built successfully"
 
       # (Optional) Preflight: make sure no GUI editor is locking the project
