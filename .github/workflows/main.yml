@@ -12,7 +12,6 @@ on:
 jobs:
   tag:
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' && inputs.release == true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,6 +26,7 @@ jobs:
           Write-Host "Created and pushed tag $tag"
   build:
     needs: [tag]
+    if: always()
     runs-on: self-hosted
     environment: main
     defaults:
