@@ -4,9 +4,29 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
+    inputs:
+      release:
+        description: 'Create a GitHub Release from this run'
+        type: boolean
+        default: false
 jobs:
+  tag:
+    runs-on: self-hosted
+    if: github.event_name == 'workflow_dispatch' && inputs.release == true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create version tag
+        run: |
+          $tag = "v1.0.${{ github.run_number }}"
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git tag -a $tag -m "Automated release $tag"
+          git push origin $tag
+          Write-Host "Created and pushed tag $tag"
   build:
+    needs: [tag]
     runs-on: self-hosted
     environment: main
     defaults:
@@ -195,7 +215,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: CastleOfTime-*-*
+          merge-multiple: true
+          path: builds
       - name: Compute version from tag
         run: |
           $v = "${{ github.ref_name }}"
