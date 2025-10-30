@@ -215,71 +215,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: CastleOfTime-*-*
           merge-multiple: true
-          path: ${{ env.BUILDS_ROOT }}
+          path: release-files
+          
       - name: Compute version from tag
         run: |
           $v = "v1.0.${{ github.run_number }}"
           "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "VERSION = $v"
-
-      - name: Generate manifest.json with SHA256 hashes
-        id: manifest
-        run: |
-          $ver = $env:VERSION
-          $repo = "${{ github.repository }}"
-          
-          # Build URLs for GitHub Releases
-          $winZip = "CastleOfTime-$ver-Windows.zip"
-          $linZip = "CastleOfTime-$ver-Linux.zip"
-          $winUrl = "https://github.com/$repo/releases/download/$ver/$winZip"
-          $linUrl = "https://github.com/$repo/releases/download/$ver/$linZip"
-          
-          # Calculate SHA256 hashes from downloaded artifacts
-          $winPath = Join-Path $env:BUILDS_ROOT $winZip
-          $linPath = Join-Path $env:BUILDS_ROOT $linZip
-          
-          if (-not (Test-Path $winPath)) {
-            Write-Error "Windows build not found: $winPath"
-            exit 1
-          }
-          if (-not (Test-Path $linPath)) {
-            Write-Error "Linux build not found: $linPath"
-            exit 1
-          }
-          
-          $winHash = (Get-FileHash $winPath -Algorithm SHA256).Hash.ToLower()
-          $linHash = (Get-FileHash $linPath -Algorithm SHA256).Hash.ToLower()
-          
-          # Build manifest JSON
-          $manifest = @{
-            version = $ver
-            released = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-            platforms = @{
-              windows = @{
-                url = $winUrl
-                sha256 = $winHash
-                filename = $winZip
-              }
-              linux = @{
-                url = $linUrl
-                sha256 = $linHash
-                filename = $linZip
-              }
-            }
-          } | ConvertTo-Json -Depth 5
-          
-          # Write manifest to file
-          $mfPath = Join-Path $env:BUILDS_ROOT "manifest.json"
-          $manifest | Out-File $mfPath -Encoding utf8 -NoNewline
-          "MANIFEST_PATH=$mfPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          
-          Write-Host "Generated manifest.json:"
-          Write-Host $manifest
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -289,10 +237,7 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
-          files: |
-            ${{ env.BUILDS_ROOT }}/CastleOfTime-${{ env.VERSION }}-Windows.zip
-            ${{ env.BUILDS_ROOT }}/CastleOfTime-${{ env.VERSION }}-Linux.zip
-            ${{ env.MANIFEST_PATH }}
+          files: release-files/*
           body: |
             ## Castle of Time ${{ env.VERSION }}
             
@@ -305,9 +250,6 @@ jobs:
             - Linux: `CastleOfTime-${{ env.VERSION }}-Linux.zip`
             
             The included launcher will automatically check for and download future updates from GitHub Releases.
-            
-            ### Verification
-            SHA256 hashes are included in `manifest.json` for integrity verification.
 
   notify:
     runs-on: self-hosted
