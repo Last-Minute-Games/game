@@ -89,7 +89,5 @@ elseif ($Platform -eq "Linux") {
         Write-Host "  Removed: $($_.Name)" -ForegroundColor Gray
     }
 }
-    exit 1
-}
 
 Write-Host "`n✅ Post-build complete!" -ForegroundColor Green
