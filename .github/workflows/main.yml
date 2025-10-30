@@ -220,7 +220,7 @@ jobs:
         with:
           pattern: CastleOfTime-*-*
           merge-multiple: true
-          path: builds
+          path: ${{ env.BUILDS_ROOT }}
       - name: Compute version from tag
         run: |
           $v = "v1.0.${{ github.run_number }}"
@@ -239,7 +239,7 @@ jobs:
           $winUrl = "https://github.com/$repo/releases/download/$ver/$winZip"
           $linUrl = "https://github.com/$repo/releases/download/$ver/$linZip"
           
-          # Calculate SHA256 hashes
+          # Calculate SHA256 hashes from downloaded artifacts
           $winPath = Join-Path $env:BUILDS_ROOT $winZip
           $linPath = Join-Path $env:BUILDS_ROOT $linZip
           
