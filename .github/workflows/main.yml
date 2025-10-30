@@ -202,8 +202,8 @@ jobs:
   # Create GitHub Release with manifest.json for custom auto-updater
   release:
     runs-on: self-hosted
-    needs: build
-    if: github.ref_type == 'tag' && needs.build.result == 'success'
+    needs: [tag, build]
+    if: needs.tag.result == 'success' && needs.build.result == 'success'
     environment: main
     defaults:
       run:
@@ -223,7 +223,7 @@ jobs:
           path: builds
       - name: Compute version from tag
         run: |
-          $v = "${{ github.ref_name }}"
+          $v = "v1.0.${{ github.run_number }}"
           "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "VERSION = $v"
 
