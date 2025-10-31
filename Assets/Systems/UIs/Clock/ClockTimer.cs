@@ -1,42 +1,47 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using System.Collections;
 using UnityEngine.SceneManagement;
 
 public class ClockTimer : MonoBehaviour
 {
     [Header("Clock Setup")]
     public Image clockImage;
-    public Sprite[] clockFrames; // assign all 13 sprites here
-    public float totalTime = 60f; // default 1 minute timer
-    public string nextSceneName = "NextScene"; // assign in inspector
+    public Sprite[] clockFrames;
+    public float totalTime = 60f;
+    public string nextSceneName = "NextScene";
+
+    [Header("Transition / Fade")]
+    public ScreenFader screenFader;
+    public TMP_Text endMessageText;
+    public float preFadeTime = 15f;
+    public float messageDisplayTime = 2f;
 
     private float timeLeft;
     private int frameCount;
     private int lastFrameIndex = -1;
     private bool hasEnded = false;
     private bool isPaused = false;
+    private int lastWholeSecond = -1;
 
     void Start()
     {
-        Debug.Log("[ClockTimer] Started");
+        if (clockFrames.Length == 0 || clockImage == null || screenFader == null)
+        {
+            Debug.LogError("[ClockTimer] Missing references!");
+            return;
+        }
 
         frameCount = clockFrames.Length;
-        if (frameCount == 0)
-        {
-            Debug.LogError("[ClockTimer] No clock frames assigned!");
-            return;
-        }
-
-        if (clockImage == null)
-        {
-            Debug.LogError("[ClockTimer] Clock Image not assigned!");
-            return;
-        }
-
         clockImage.sprite = clockFrames[0];
-        Debug.Log("[ClockTimer] Initial sprite set: " + clockFrames[0].name);
+
+        screenFader.SetPanelAlpha(0f);
+        if (endMessageText != null)
+            endMessageText.alpha = 0f;
 
         StartTimer(totalTime);
+        StartCoroutine(InitialFadeIn()); // fade in at game start
     }
 
     void Update()
@@ -46,31 +51,43 @@ public class ClockTimer : MonoBehaviour
         if (timeLeft > 0f)
         {
             float previousTime = timeLeft;
-
             timeLeft -= Time.deltaTime;
             timeLeft = Mathf.Max(timeLeft, 0f);
 
+            // Clock animation
             float progress = 1f - (timeLeft / totalTime);
             int frameIndex = Mathf.FloorToInt(progress * frameCount);
             frameIndex = Mathf.Clamp(frameIndex, 0, frameCount - 1);
 
             if (frameIndex != lastFrameIndex)
             {
-                Debug.Log($"[ClockTimer] Frame changed: {frameIndex}/{frameCount - 1} ({clockFrames[frameIndex].name}) | Time left: {timeLeft:F2}s");
                 clockImage.sprite = clockFrames[frameIndex];
                 lastFrameIndex = frameIndex;
+                Debug.Log($"[ClockTimer] Frame changed: {frameIndex}/{frameCount - 1} | Time left: {timeLeft:F2}s");
             }
 
-            if (Mathf.FloorToInt(previousTime) != Mathf.FloorToInt(timeLeft))
+            // Debug per whole second
+            int currentSecond = Mathf.FloorToInt(timeLeft);
+            if (currentSecond != lastWholeSecond)
             {
                 Debug.Log($"[ClockTimer] Time left: {timeLeft:F1}s");
+                lastWholeSecond = currentSecond;
             }
 
+            if (screenFader != null && timeLeft <= preFadeTime)
+            {
+                float fadeTarget = Mathf.Lerp(0f, 0.8f, 1f - (timeLeft / preFadeTime));
+                // Smoothly approach the target each frame
+                float currentAlpha = screenFader.fadePanel.color.a;
+                screenFader.SetPanelAlpha(Mathf.MoveTowards(currentAlpha, fadeTarget, Time.deltaTime / preFadeTime));
+            }
+
+            // Timer ends
             if (timeLeft <= 0f && !hasEnded)
             {
                 hasEnded = true;
-                Debug.Log("[ClockTimer] Timer finished! Loading scene...");
-                StartCoroutine(LoadNextScene());
+                Debug.Log("[ClockTimer] Timer finished! Showing message and transitioning...");
+                StartCoroutine(FadeMessageThenTransition());
             }
         }
     }
@@ -80,52 +97,85 @@ public class ClockTimer : MonoBehaviour
         totalTime = Mathf.Max(0.01f, seconds);
         timeLeft = totalTime;
         lastFrameIndex = -1;
+        lastWholeSecond = -1;
         hasEnded = false;
         isPaused = false;
-        Debug.Log($"[ClockTimer] Timer started for {totalTime} seconds");
+
+        screenFader.SetPanelAlpha(0f);
+        if (endMessageText != null)
+            endMessageText.alpha = 0f;
+
+        Debug.Log($"[ClockTimer] Timer started: {totalTime}s");
     }
 
-    public void PauseTimer(bool pause)
-    {
-        isPaused = pause;
-        Debug.Log(pause ? "[ClockTimer] Timer paused" : "[ClockTimer] Timer resumed");
-    }
+    public void PauseTimer(bool pause) => isPaused = pause;
 
     public void AddTime(float seconds)
     {
         if (seconds <= 0f) return;
         timeLeft += seconds;
-        totalTime += seconds; // Optional: affects frame pacing
-        Debug.Log($"[ClockTimer] Added {seconds} seconds. New time left: {timeLeft:F2}s");
+        totalTime += seconds;
+        Debug.Log($"[ClockTimer] Added {seconds}s. Time left: {timeLeft:F2}s");
     }
 
     public void RemoveTime(float seconds)
     {
         if (seconds <= 0f) return;
         timeLeft = Mathf.Max(0f, timeLeft - seconds);
-        totalTime = Mathf.Max(0.01f, totalTime - seconds); // Optional: shrink total scale
-        Debug.Log($"[ClockTimer] Removed {seconds} seconds. New time left: {timeLeft:F2}s");
+        totalTime = Mathf.Max(0.01f, totalTime - seconds);
+        Debug.Log($"[ClockTimer] Removed {seconds}s. Time left: {timeLeft:F2}s");
 
-        // trigger end early if time hits zero
         if (timeLeft <= 0f && !hasEnded)
         {
             hasEnded = true;
-            Debug.Log("[ClockTimer] Timer manually ended after time removal!");
-            StartCoroutine(LoadNextScene());
+            StartCoroutine(FadeMessageThenTransition());
         }
     }
 
-    private System.Collections.IEnumerator LoadNextScene()
+    private IEnumerator InitialFadeIn()
     {
-        yield return new WaitForSeconds(0.5f); // small delay for smooth transition
-        if (!string.IsNullOrEmpty(nextSceneName))
-        {
-            Debug.Log($"[ClockTimer] Loading scene: {nextSceneName}");
-            SceneManager.LoadScene(nextSceneName);
-        }
-        else
-        {
-            Debug.LogWarning("[ClockTimer] No scene name set in 'nextSceneName'");
-        }
+        if (screenFader != null)
+            yield return StartCoroutine(screenFader.FadeIn());
     }
+
+    private IEnumerator FadeMessageThenTransition()
+    {
+        // 1️⃣ Smoothly fade overlay fully
+        if (screenFader != null)
+            yield return StartCoroutine(screenFader.FadeOut());
+
+        // 2️⃣ Now show message text
+        if (endMessageText != null)
+        {
+            endMessageText.gameObject.SetActive(true);
+            endMessageText.alpha = 0f;
+
+            float elapsed = 0f;
+            while (elapsed < messageDisplayTime)
+            {
+                elapsed += Time.deltaTime;
+                endMessageText.alpha = Mathf.Clamp01(elapsed / messageDisplayTime);
+                yield return null;
+            }
+
+            // Optional hold
+            yield return new WaitForSeconds(0.5f);
+
+            // Fade out text
+            elapsed = 0f;
+            float fadeOutDuration = 1.5f;
+            while (elapsed < fadeOutDuration)
+            {
+                elapsed += Time.deltaTime;
+                endMessageText.alpha = Mathf.Clamp01(1f - (elapsed / fadeOutDuration));
+                yield return null;
+            }
+        }
+
+        // 3️⃣ Transition scene
+        if (!string.IsNullOrEmpty(nextSceneName) && screenFader != null)
+            yield return StartCoroutine(screenFader.TransitionToScene(nextSceneName));
+    }
+
+
 }

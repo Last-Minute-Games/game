@@ -12,6 +12,7 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] private CardFactory cardFactory;
     [SerializeField] private Transform handSpawnPoint;
     [SerializeField] private EndTurnButton endTurnButton;
+    [SerializeField] private ScreenFader screenFader; // assign FadeCanvas ScreenFader
 
     [Header("Battle Settings")]
     [SerializeField] private int startingHandSize = 5;
@@ -19,7 +20,6 @@ public class BattleSystem : MonoBehaviour
 
     private Player player;
     private readonly List<Enemy> enemies = new();
-
     private bool playerTurn = true;
     private bool isProcessingTurn = false;
 
@@ -33,6 +33,7 @@ public class BattleSystem : MonoBehaviour
         player = p;
     }
 
+    // -------------------------- INITIALIZATION --------------------------
     private IEnumerator InitializeBattle()
     {
         yield return null;
@@ -58,12 +59,13 @@ public class BattleSystem : MonoBehaviour
         StartPlayerTurn();
     }
 
+    // -------------------------- HAND MANAGEMENT --------------------------
     private IEnumerator SpawnStartingHand()
     {
-        int guaranteedAttackId = 0; // Attack card ID
-        int guaranteedDefenseId = 1; // Defense card ID
+        int guaranteedAttackId = 0;
+        int guaranteedDefenseId = 1;
 
-        // First: Spawn the guaranteed Attack card
+        // Guaranteed Attack card
         GameObject attackCard = cardFactory.PullCardById(guaranteedAttackId, handSpawnPoint.position);
         if (attackCard != null)
         {
@@ -77,7 +79,7 @@ public class BattleSystem : MonoBehaviour
             }
         }
 
-        // Next: Spawn the guaranteed Defense card
+        // Guaranteed Defense card
         GameObject defenseCard = cardFactory.PullCardById(guaranteedDefenseId, handSpawnPoint.position);
         if (defenseCard != null)
         {
@@ -91,12 +93,12 @@ public class BattleSystem : MonoBehaviour
             }
         }
 
-        // Then: Fill the rest of the hand randomly
+        // Fill remaining hand randomly
         for (int i = 0; i < startingHandSize - 2; i++)
         {
             GameObject cardObj = cardFactory.CreateRandomCard(
-                handSpawnPoint.position, 
-                0.6f, 0.25f, 0.15f, 
+                handSpawnPoint.position,
+                0.6f, 0.25f, 0.15f,
                 forPlayer: true
             );
 
@@ -133,6 +135,7 @@ public class BattleSystem : MonoBehaviour
         yield return SpawnStartingHand();
     }
 
+    // -------------------------- TURN MANAGEMENT --------------------------
     private void StartPlayerTurn()
     {
         playerTurn = true;
@@ -173,20 +176,23 @@ public class BattleSystem : MonoBehaviour
 
         enemies.RemoveAll(e => e == null || e.IsDead);
 
-        // ✅ Check win/lose conditions
+        // ---------------- WIN/LOSE CONDITIONS ----------------
         if (enemies.Count == 0 || player == null || player.currentHealth <= 0)
         {
             Debug.Log("🏁 Battle finished! Returning to Overworld...");
             yield return new WaitForSeconds(1f);
-            SceneManager.LoadScene("Overworld");
+
+            if (screenFader != null)
+                yield return StartCoroutine(screenFader.TransitionToScene("Overworld"));
+            else
+                SceneManager.LoadScene("Overworld");
+
             yield break;
         }
 
         player?.EndTurn();
 
-        Debug.Log("🕒 Resetting for next round...");
         yield return new WaitForSeconds(turnResetDelay);
-
         yield return RefreshPlayerHand();
         StartPlayerTurn();
 
