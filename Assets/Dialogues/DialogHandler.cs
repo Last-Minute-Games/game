@@ -5,11 +5,11 @@ namespace Dialogues
 {
     public class DialogTrigger : MonoBehaviour
     {
-        [Header("Dialog Settings")] [SerializeField]
-        private DialogBehaviour dialogBehaviour; // likely shared UI
+        [Header("Dialog Settings")]
+        public DialogBehaviour dialogBehaviour; // likely shared UI
 
-        [SerializeField] private DialogNodeGraph dialogGraph;
-        [SerializeField] private KeyCode interactKey = KeyCode.E;
+        public DialogNodeGraph dialogGraph;
+        public KeyCode interactKey = KeyCode.E;
 
         [Header("Detection Settings")] private readonly float _interactionRange = 1f;
 

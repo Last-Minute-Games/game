@@ -4,9 +4,29 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
+    inputs:
+      release:
+        description: 'Create a GitHub Release from this run'
+        type: boolean
+        default: false
 jobs:
+  tag:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create version tag
+        run: |
+          $tag = "v1.0.${{ github.run_number }}"
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git tag -a $tag -m "Automated release $tag"
+          git push origin $tag
+          Write-Host "Created and pushed tag $tag"
   build:
+    needs: [tag]
+    if: always()
     runs-on: self-hosted
     environment: main
     defaults:
@@ -26,6 +46,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Compute version from tag or build number
+      - name: Compute version
+        id: ver
+        run: |
+          $v = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "${{ github.run_number }}" }
+          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "VERSION = $v"
+
       # Cache Unity Library using PowerShell compression for Windows runners
       - name: Cache Unity Library
         uses: actions/cache@v4
@@ -41,13 +69,24 @@ jobs:
       - name: Compute output dir
         id: paths
         run: |
-          $outDir = Join-Path $env:BUILDS_ROOT "CastleOfTime-${{ github.run_number }}-${{ matrix.platform }}"
+          $outDir = Join-Path $env:BUILDS_ROOT "CastleOfTime-$env:VERSION-${{ matrix.platform }}"
           "OUT_DIR=$outDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "OUT_DIR = $outDir"
 
       # (Optional) Ensure the output root exists
       - name: Ensure builds root exists
         run: New-Item -ItemType Directory -Force -Path $env:BUILDS_ROOT | Out-Null
+
+      # Build the updater executables before Unity builds
+      - name: Build updater
+        run: |
+          Write-Host "Building auto-updater for ${{ matrix.platform }}..."
+          if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+            Write-Host "❌ .NET SDK not found. Install .NET 6.0+ to build the updater."
+            exit 1
+          }
+          .\Updater\build-updater.ps1 -Platform "${{ matrix.platform }}"
+          Write-Host "✅ Updater built successfully"
 
       # (Optional) Preflight: make sure no GUI editor is locking the project
       - name: Kill stray Unity processes / clear lock
@@ -59,7 +98,7 @@ jobs:
 
       # Run your PowerShell build
       - name: Build (${{ matrix.platform }})
-        run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR -BuildTarget "${{ matrix.platform }}"
+        run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR -BuildTarget "${{ matrix.platform }}" -Version $env:VERSION
 
       # Clean up log files from build output
       - name: Clean up logs
@@ -69,19 +108,23 @@ jobs:
 
       # Zip the build folder
       - name: Zip build
+        id: zip
         run: |
-          $zipPath = Join-Path $env:BUILDS_ROOT "CastleOfTime-${{ github.run_number }}-${{ matrix.platform }}.zip"
+          $zipPath = Join-Path $env:BUILDS_ROOT "CastleOfTime-$env:VERSION-${{ matrix.platform }}.zip"
           if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
           Compress-Archive -Path "$env:OUT_DIR\*" -DestinationPath $zipPath
           "ZIP_PATH=$zipPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "ZIP_PATH = $zipPath"
+          
+          # Also output for later job consumption
+          "zipPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       # Upload the zipped build
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CastleOfTime-${{ github.run_number }}-${{ matrix.platform }}
-          path: ${{ env.ZIP_PATH }}
+          name: CastleOfTime-${{ env.VERSION }}-${{ matrix.platform }}
+          path: ${{ steps.zip.outputs.zipPath }}
           retention-days: 14
           compression-level: 0
 
@@ -108,15 +151,18 @@ jobs:
             Write-Host "Butler installed to $butlerDir"
           }
           
-          # Upload to itch.io
+          # Upload to itch.io - push the build folder directly (not zip)
           $channel = "${{ matrix.platform }}".ToLower()
           $itchTarget = "playlastminutegames/castle-of-time:$channel"
           
           Write-Host "Uploading to itch.io: $itchTarget"
-          Write-Host "  Build directory: $env:OUT_DIR"
-          Write-Host "  Version: ${{ github.run_number }}"
+          Write-Host "  Build folder: $env:OUT_DIR"
+          Write-Host "  Version: $env:VERSION"
           
-          & $butlerPath push "$env:OUT_DIR" $itchTarget --userversion "${{ github.run_number }}"
+          # Use --fix-permissions for Linux to preserve executable bits
+          $fixPerms = if ("${{ matrix.platform }}" -eq "Linux") { "--fix-permissions" } else { "" }
+          
+          & $butlerPath push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION" $fixPerms
           
           if ($LASTEXITCODE -ne 0) {
             Write-Host "Butler upload failed with exit code: $LASTEXITCODE"
@@ -152,6 +198,58 @@ jobs:
           path: ${{ runner.temp }}/unity-logs-${{ matrix.platform }}
           retention-days: 14
           compression-level: 6
+
+  # Create GitHub Release with manifest.json for custom auto-updater
+  release:
+    runs-on: self-hosted
+    needs: [tag, build]
+    if: needs.tag.result == 'success' && needs.build.result == 'success'
+    environment: main
+    defaults:
+      run:
+        shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
+    
+    env:
+      BUILDS_ROOT: "C:\\Builds"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: CastleOfTime-*-*
+          merge-multiple: true
+          path: release-files
+          
+      - name: Compute version from tag
+        run: |
+          $v = "v1.0.${{ github.run_number }}"
+          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "VERSION = $v"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: Castle of Time ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: release-files/*
+          body: |
+            ## Castle of Time ${{ env.VERSION }}
+            
+            ### Download Options
+            
+            **For itch.io users:** The itch.io app will automatically download and install this update.
+            
+            **For standalone installs:** Download the appropriate zip file for your platform:
+            - Windows: `CastleOfTime-${{ env.VERSION }}-Windows.zip`
+            - Linux: `CastleOfTime-${{ env.VERSION }}-Linux.zip`
+            
+            The included launcher will automatically check for and download future updates from GitHub Releases.
 
   notify:
     runs-on: self-hosted

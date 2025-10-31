@@ -12,6 +12,11 @@
 /[Uu]ser[Ss]ettings/
 *.log
 .tmp
+# Updater build outputs
+bin/
+obj/
+*.user
+
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
 *.blend1.meta
@@ -40,6 +45,7 @@
 ExportedObj/
 .consulo/
 *.csproj
+!Updater/*.csproj
 *.unityproj
 *.sln
 *.suo
