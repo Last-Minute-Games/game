@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class JournalUI_Named : MonoBehaviour
 {
+    [Header("Journal Manager")]
+    public JournalManager journalManager;
+
     [Header("Pages (drag from: JournalPanel/Pages/...)")]
     public GameObject CharactersPage;
     public GameObject EvidencePage;
@@ -19,6 +22,13 @@ public class JournalUI_Named : MonoBehaviour
     {
         if (!cg) cg = GetComponent<CanvasGroup>();
         allPages = new[] { CharactersPage, EvidencePage, InformationPage, MonstersPage, TutorialsPage };
+
+        // Initialize journal manager
+        if (journalManager != null)
+        {
+            journalManager.Initialize();
+        }
+
         SetOnly(CharactersPage);
 
         // Find the EnvironmentSoundHandler

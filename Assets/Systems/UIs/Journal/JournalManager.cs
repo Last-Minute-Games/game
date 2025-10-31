@@ -26,6 +26,36 @@ public class JournalManager : ScriptableObject
     public event Action<string> OnEntryUnlocked;
 
     private GameFlags currentFlags;
+    private bool isInitialized = false;
+
+    private void OnEnable()
+    {
+        // Auto-hook when this ScriptableObject is loaded
+        // (usually when the game starts or scene loads)
+        if (GameFlags.Instance != null)
+        {
+            Hook(GameFlags.Instance);
+        }
+    }
+
+    /// <summary>
+    /// Initialize and hook up to GameFlags. Call this at game start.
+    /// </summary>
+    public void Initialize()
+    {
+        if (isInitialized) return;
+        
+        if (GameFlags.Instance != null)
+        {
+            Hook(GameFlags.Instance);
+        }
+        else
+        {
+            Debug.LogWarning("[Journal] GameFlags singleton not found during initialization.");
+        }
+        
+        isInitialized = true;
+    }
 
     public void Hook(GameFlags flags)
     {
@@ -42,6 +72,30 @@ public class JournalManager : ScriptableObject
         currentFlags.OnFlagChanged += HandleFlagChanged;
 
         Debug.Log("[Journal] Hooked into GameFlags.");
+        
+        // Check all existing flags to see if any entries should be unlocked
+        CheckExistingFlags();
+    }
+
+    private void CheckExistingFlags()
+    {
+        if (currentFlags == null) return;
+        
+        foreach (var m in mappings)
+        {
+            if (string.IsNullOrWhiteSpace(m.flag)) continue;
+            
+            bool flagValue = currentFlags.Get(m.flag);
+            
+            if (m.onlyWhenTrue && flagValue)
+            {
+                AddEntry(m.entryId);
+            }
+            else if (!m.onlyWhenTrue && flagValue)
+            {
+                AddEntry(m.entryId);
+            }
+        }
     }
 
     private void HandleFlagChanged(string flag, bool value)
@@ -69,8 +123,31 @@ public class JournalManager : ScriptableObject
         unlockedEntries.Add(entryId);
         Debug.Log($"[Journal] Unlocked entry: {entryId}");
         OnEntryUnlocked?.Invoke(entryId);
+    }
 
-        // TODO: Hook Journal UI or saving system later
+    /// <summary>
+    /// Check if a specific entry is unlocked
+    /// </summary>
+    public bool IsEntryUnlocked(string entryId)
+    {
+        return unlockedEntries.Contains(entryId);
+    }
+
+    /// <summary>
+    /// Get all unlocked entry IDs
+    /// </summary>
+    public HashSet<string> GetUnlockedEntries()
+    {
+        return new HashSet<string>(unlockedEntries);
+    }
+
+    /// <summary>
+    /// Clear all unlocked entries (useful for testing or new game)
+    /// </summary>
+    public void ClearAllEntries()
+    {
+        unlockedEntries.Clear();
+        Debug.Log("[Journal] Cleared all unlocked entries");
     }
 
 #if UNITY_EDITOR
@@ -78,6 +155,12 @@ public class JournalManager : ScriptableObject
     private void TestUnlock()
     {
         AddEntry("found.blade");
+    }
+    
+    [ContextMenu("Test Unlock 'character.knight'")]
+    private void TestUnlockCharacter()
+    {
+        AddEntry("character.knight");
     }
 #endif
 }
