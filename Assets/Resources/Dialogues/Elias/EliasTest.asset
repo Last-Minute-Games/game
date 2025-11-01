@@ -15,16 +15,16 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1297
-    y: 279
+    x: 1455
+    y: 201
     width: 190
     height: 135
   IsDragging: 1
-  IsSelected: 1
+  IsSelected: 0
   _sentence:
     CharacterName: Elias
     Text: Knowing such information from a dream is... odd. Are you a wizard?
-    CharacterSprite: {fileID: 0}
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes: []
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
@@ -46,8 +46,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 718
-    y: 634
+    x: 880
+    y: 556
     width: 190
     height: 135
   IsDragging: 1
@@ -55,40 +55,9 @@ MonoBehaviour:
   _sentence:
     CharacterName: Elias
     Text: No, all is well and carries on.
-    CharacterSprite: {fileID: -8660390400562555055, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes:
   - {fileID: 4190341653366978687}
-  ChildNode: {fileID: 0}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-3462284284265500876
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1398
-    y: 518
-    width: 190
-    height: 135
-  IsDragging: 0
-  IsSelected: 0
-  _sentence:
-    CharacterName: 
-    Text: 
-    CharacterSprite: {fileID: 0}
-  ParentNodes: []
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -109,8 +78,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 989
-    y: 429
+    x: 1151
+    y: 351
     width: 190
     height: 135
   IsDragging: 1
@@ -137,8 +106,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 741
-    y: 423
+    x: 903
+    y: 345
     width: 190
     height: 135
   IsDragging: 1
@@ -146,7 +115,7 @@ MonoBehaviour:
   _sentence:
     CharacterName: Elias
     Text: How do you know? This was kept hidden.
-    CharacterSprite: {fileID: -8660390400562555055, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes:
   - {fileID: 4190341653366978687}
   ChildNode: {fileID: -1979066495736718521}
@@ -174,7 +143,6 @@ MonoBehaviour:
   - {fileID: -1979066495736718521}
   - {fileID: -7015239537917855981}
   - {fileID: -9108604416881409837}
-  - {fileID: -3462284284265500876}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -196,8 +164,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 357
-    y: 421
+    x: 519
+    y: 343
     width: 190
     height: 155
   IsDragging: 1
@@ -228,8 +196,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 684
-    y: 210
+    x: 847
+    y: 132
     width: 190
     height: 135
   IsDragging: 1
@@ -238,7 +206,7 @@ MonoBehaviour:
     CharacterName: Elias
     Text: Why, you may ask? There could be a lot of reasons, and it's up to you to
       pick the one that makes the most sense to you.
-    CharacterSprite: {fileID: -8660390400562555055, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes:
   - {fileID: 4190341653366978687}
   ChildNode: {fileID: 0}
@@ -261,8 +229,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 73.66669
-    y: 381.66672
+    x: 235.66669
+    y: 303.66672
     width: 190
     height: 135
   IsDragging: 1
@@ -270,7 +238,7 @@ MonoBehaviour:
   _sentence:
     CharacterName: Elias
     Text: The castle is on high alert. What would you wish to speak about?
-    CharacterSprite: {fileID: -8660390400562555055, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes: []
   ChildNode: {fileID: 4190341653366978687}
   _isExternalFunc: 0

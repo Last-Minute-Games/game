@@ -106,6 +106,8 @@ namespace cherrydev
         /// </summary>
         /// <returns></returns>
         public Sprite GetCharacterSprite() => _sentence.CharacterSprite;
+        
+        public void SetCharacterSprite(Sprite sprite) => _sentence.CharacterSprite = sprite;
 
         /// <summary>
         /// Returns the value of a isExternalFunc boolean field

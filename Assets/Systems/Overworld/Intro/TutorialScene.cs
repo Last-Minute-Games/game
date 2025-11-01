@@ -20,6 +20,7 @@ namespace Systems.Overworld.Intro
         public AudioClip glitchOutAudio;
         
         public DialogBehaviour dialogBehaviour;
+        public DialogNodeGraph ballroomNodeGraph;
         
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
@@ -79,6 +80,27 @@ namespace Systems.Overworld.Intro
         {
             _cinemachinePositionComposer.TargetOffset.y = yOffset;
         }
+
+        private void AddSpriteToDialogue(Transform npcTransform)
+        {
+            foreach (var node1 in ballroomNodeGraph.NodesList)
+            {
+                var node = (SentenceNode)node1;
+                var tex = Resources.Load<Texture2D>("Dialogues/" + npcTransform.name + "/" + npcTransform.name + "Portrait");
+
+                if (tex != null)
+                {
+                    // Convert Texture2D → Sprite
+                    Sprite newSprite = Sprite.Create(
+                        tex,
+                        new Rect(0, 0, tex.width, tex.height),
+                        new Vector2(0.5f, 0.5f),   // pivot center
+                        100f                       // pixels per unit (adjust as needed)
+                    );
+                    node.SetCharacterSprite(newSprite);   
+                }
+            }
+        }
     
         void Start()
         {
@@ -103,14 +125,16 @@ namespace Systems.Overworld.Intro
             _glitchAudioSource.clip = glitchOutAudio;
             _glitchAudioSource.volume = 0.8f;
             
-            _charactersGroup = GameObject.Find("Characters");
+            _charactersGroup = GameObject.Find("BlockingCharacters");
             // iterate for each child
             foreach (Transform child in _charactersGroup.transform)
             {
                 // add dialog trigger for each
                 var dialogTrigger = child.gameObject.AddComponent<DialogTrigger>();
                 dialogTrigger.dialogBehaviour = dialogBehaviour;
-                
+                dialogTrigger.dialogGraph = ballroomNodeGraph;
+
+                AddSpriteToDialogue(child);
             }
             
             // change cinecam offset

@@ -1,5 +1,6 @@
 using cherrydev;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Dialogues
 {
@@ -7,10 +8,13 @@ namespace Dialogues
     {
         [Header("Dialog Settings")]
         public DialogBehaviour dialogBehaviour; // likely shared UI
-
+        
         public DialogNodeGraph dialogGraph;
         public KeyCode interactKey = KeyCode.E;
 
+        [Header("Events")]
+        public UnityEvent OnDialogCompleted; // 👈 Custom callback
+        
         [Header("Detection Settings")] private readonly float _interactionRange = 1f;
 
         private CharacterMotor2D _npcController;
@@ -97,6 +101,8 @@ namespace Dialogues
             if (_playerController) _playerController.SetDialogueActive(false);
 
             _isMyConversation = false; // reset
+            
+            OnDialogCompleted?.Invoke();
         }
 
         void Update()
