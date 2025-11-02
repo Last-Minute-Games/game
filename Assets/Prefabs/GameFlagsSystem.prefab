@@ -104,24 +104,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9b33bc4ba55cba4f99e087ae66c5a4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractiveItem
-  flags: {fileID: 3708427261664610020}
-  journal: {fileID: 11400000, guid: dad165dde0cc6384d88b0d42b78a0609, type: 2}
   dialogBehaviour: {fileID: 0}
-  firstDialogGraph: {fileID: 11400000, guid: c3740d716f675ee4e87687b6761145f0, type: 2}
-  repeatDialogGraph: {fileID: 11400000, guid: 94356542b8c235743beb926f92a9252f, type: 2}
-  hasInteractedFlagKey: 
+  dialogGraph: {fileID: 0}
   interactKey: 101
   interactionRange: 1
-  conditionalDialogs: []
-  setTrueOnFirst:
-  - found.blade
-  setTrueOnRepeat:
-  - found.blade
-  unlockJournalOnFirst:
-  - found.blade
-  unlockJournalOnRepeat:
-  - found.blade
-  debugHasInteracted: 0
+  flagToSet: 
 --- !u!61 &6812405332572779560
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -177,7 +164,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3860206562494176666}
-  - component: {fileID: 3708427261664610020}
   m_Layer: 0
   m_Name: GameFlagsSystem
   m_TagString: Untagged
@@ -201,18 +187,6 @@ Transform:
   - {fileID: 4074766759016063758}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3708427261664610020
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3215936503818155429}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5a73cc0826ccdf44ba2945f743265b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameFlags
 --- !u!1 &8137104907946282675
 GameObject:
   m_ObjectHideFlags: 0
