@@ -10,4 +10,7 @@ public class CardData : GameItemData
 
     [Tooltip("Sound cue played when this card is used.")]
     public SFXCueData soundCue;
+
+    [Tooltip("Energy cost")]
+    public int energyCost;
 }
