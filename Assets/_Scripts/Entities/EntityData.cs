@@ -19,20 +19,9 @@ public abstract class EntityData : ScriptableObject
     public int baseShield = 0;
     public float basePowerScale = 1f;
 
-    [Header("Scaling Multipliers")]
-    [Range(0f, 10f)]
-    public float minScaleMultiplier = 1f;
-
-    [Range(0f, 10f)]
-    public float maxScaleMultiplier = 2f;
-
     [Header("Usable Cards & Draw Weights")]
     public List<CardDrawEntry> usableCards = new List<CardDrawEntry>();
 
-    // Ensure scaleMultipliers are legal
-    protected virtual void OnValidate()
-    {
-        if (minScaleMultiplier > maxScaleMultiplier)
-            minScaleMultiplier = maxScaleMultiplier;
-    }
+    // Ensure OnValidate() is defined
+    protected virtual void OnValidate();
 }

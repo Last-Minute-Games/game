@@ -20,8 +20,6 @@ public class PlayerData : EntityData
 
     protected override void OnValidate()
     {
-        base.OnValidate();
-
         if (config != null)
         {
             // Replace with GameConfig definitions straight away
@@ -48,5 +46,8 @@ public class PlayerData : EntityData
             baseEnergy   = Mathf.Max(0, baseEnergy);
             maxEnergy    = Mathf.Max(baseEnergy, maxEnergy);
         }
+        // verify if cards were populated for player even
+        if (usableCards == null || usableCards.Count == 0)
+            Debug.LogWarning($"EnemyData '{enemyName}' has no usable cards assigned.", this);
     }
 }
