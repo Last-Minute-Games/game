@@ -102,6 +102,10 @@ namespace Systems
             _fadeCanvasGroup.blocksRaycasts = true;
             yield return StartCoroutine(FadeIn());
             
+            // for debugging
+            // _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
+            // yield break;
+            
             // check if scene is tutorial
             if (tptTo.transform.name != "Throne" || !FindFirstObjectByType<Overworld.Intro.TutorialScene>())
             {
@@ -128,8 +132,11 @@ namespace Systems
 
                 yield break;
             }
-            
-            if (_tutorialScene) _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
+
+            if (_tutorialScene)
+            {
+                _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
+            };
         }
 
         private void OnEnter()

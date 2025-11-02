@@ -55,7 +55,6 @@ namespace Systems.Overworld.Intro
 
         private SpriteRenderer _kingSpriteRenderer;
         private Animator _kingAnimator;
-        private AudioSource _kingAudioSource;
 
         private Camera _throneRoomCamera;
 
@@ -124,12 +123,14 @@ namespace Systems.Overworld.Intro
                 spriteRenderer.DOColor(newColor, 3.5f).SetEase(Ease.Linear);;
                 
                 Vector3 targetPos = spriteRenderer.transform.position - new Vector3(0, sinkDistance, 0);
-                spriteRenderer.transform.DOMove(targetPos, 7f).SetEase(Ease.Linear);
+                spriteRenderer.transform.DOMove(targetPos, 6f).SetEase(Ease.Linear);
             }
+
+            _globalLight.DOIntensity(0, 7f);
             
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(4f);
             
-            _characterLight2D.DOIntensity(0, 5f);
+            _characterLight2D.DOIntensity(0, 3f);
         }
 
         private IEnumerator WaitAndOpenBigDoor()
@@ -240,7 +241,7 @@ namespace Systems.Overworld.Intro
             _corruptScreen = GameObject.Find("CorruptScreen");
 
             _blackScreen.SetActive(false);
-            _corruptScreen.SetActive(false);
+                _corruptScreen.SetActive(false);
 
             _plrInput = _plrObject.GetComponent<PlayerInput2D>();
             _plrInput.isInputEnabled = false;
@@ -326,8 +327,6 @@ namespace Systems.Overworld.Intro
             _kingAnimator = GameObject.Find("KingNPC").GetComponent<Animator>();
             _kingAnimator.speed = 0; // freeze at start
 
-            _kingAudioSource = GameObject.Find("KingNPC").GetComponent<AudioSource>();
-
             _mysteriousManIntro = GameObject.Find("MysteriousManNPC").GetComponent<MysteriousManIntro>();
 
             // iterate buttons
@@ -404,6 +403,11 @@ namespace Systems.Overworld.Intro
 
         public IEnumerator BeginKingSeq()
         {
+            var headSliceClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/HeadHack");
+            var kingSliceSource = _environmentSoundHandler.CreateCustomSource("KingSeqSource");
+            kingSliceSource.volume = 0.9f;
+            kingSliceSource.clip = headSliceClip;
+            
             _plrMainCamera.gameObject.SetActive(false);
             _throneRoomCamera.gameObject.SetActive(true);
 
@@ -442,7 +446,8 @@ namespace Systems.Overworld.Intro
             _mysteriousManIntro.GetComponent<SpriteRenderer>().sortingOrder = 5;
 
             // play sound asynchrously
-            _kingAudioSource.Play();
+            kingSliceSource.enabled = true;
+            kingSliceSource.Play();
             yield return _mysteriousManIntro.PlayAnimationOnce();
 
             yield return new WaitForSeconds(1f);
