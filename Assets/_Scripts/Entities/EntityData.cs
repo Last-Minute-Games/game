@@ -29,6 +29,7 @@ public abstract class EntityData : ScriptableObject
     [Header("Usable Cards & Draw Weights")]
     public List<CardDrawEntry> usableCards = new List<CardDrawEntry>();
 
+    // Ensure scaleMultipliers are legal
     protected virtual void OnValidate()
     {
         if (minScaleMultiplier > maxScaleMultiplier)
