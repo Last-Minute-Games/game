@@ -5,6 +5,7 @@ using Dialogues;
 using Unity.Cinemachine;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -53,6 +54,7 @@ namespace Systems.Overworld.Intro
         private MysteriousManIntro _mysteriousManIntro;
 
         private bool _isPlayingIntroMusic = false;
+        private bool _isBallroomMelting = false;
 
         private GameObject _blackScreen;
         private GameObject _corruptScreen;
@@ -91,6 +93,30 @@ namespace Systems.Overworld.Intro
             return node;
         }
 
+        public float sinkDistance = 1f;
+        private void ActivateMeltingSequence()
+        {
+            if (_isBallroomMelting) return;
+            _isBallroomMelting = true;
+
+            var meltSource = _environmentSoundHandler.CreateCustomSource("MeltingCharacters");
+            var meltClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/melt");
+            
+            meltSource.clip = meltClip;
+            meltSource.Play();
+            
+            foreach (Transform npcTransform in _charactersGroup.transform)
+            {
+                var spriteRenderer = npcTransform.gameObject.GetComponent<SpriteRenderer>();
+
+                var newColor = new Color(0.9f, 0.0f, 0.0f);
+                spriteRenderer.DOColor(newColor, 3.5f).SetEase(Ease.Linear);;
+                
+                Vector3 targetPos = spriteRenderer.transform.position - new Vector3(0, sinkDistance, 0);
+                spriteRenderer.transform.DOMove(targetPos, 4f).SetEase(Ease.Linear);
+            }
+        }
+
         private void CreateScaryDialogue(Transform npcTransform)
         {
             var dialogTrigger = npcTransform.gameObject.AddComponent<DialogTrigger>();
@@ -99,11 +125,14 @@ namespace Systems.Overworld.Intro
             var newGraph = ScriptableObject.CreateInstance<DialogNodeGraph>();
             dialogTrigger.dialogGraph = newGraph;
 
+            dialogTrigger.OnDialogCompleted = new UnityEvent();
+            dialogTrigger.OnDialogCompleted.AddListener(ActivateMeltingSequence);
+
             var newSentenceNode = CreateMysteriousSentenceNode(newGraph);
 
             var tex = Resources.Load<Texture2D>("Dialogues/" + npcTransform.name + "/" + npcTransform.name +
                                                 "Portrait");
-
+            
             newSentenceNode.Sentence = new Sentence(npcTransform.name, "...");
 
             if (tex != null)
