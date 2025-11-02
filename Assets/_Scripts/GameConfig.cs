@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 [CreateAssetMenu(menuName = "Config/Game Config", fileName = "GameConfig")]
 public class GameConfig : ScriptableObject
