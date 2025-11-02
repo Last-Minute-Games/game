@@ -68,7 +68,8 @@ namespace Systems.Overworld.Intro
         private GameObject _corruptScreen;
 
         private GameObject _charactersGroup;
-        
+
+        private Light2D _globalLight;
         private Light2D _characterLight2D;
         private Light2D _ballroomSpotlight;
         
@@ -104,6 +105,33 @@ namespace Systems.Overworld.Intro
             return node;
         }
 
+        private IEnumerator StartPuddleSeq()
+        {
+            foreach (Transform puddleTrans in _ballroomBloodPuddle.transform)
+            {
+                var puddleRenderer = puddleTrans.GetComponent<SpriteRenderer>();
+                var newColor = puddleRenderer.color;
+                newColor.a = 1;
+                puddleRenderer.DOColor(newColor, 4f).SetEase(Ease.InSine);
+            }
+            
+            foreach (Transform npcTransform in _charactersGroup.transform)
+            {
+                var spriteRenderer = npcTransform.gameObject.GetComponent<SpriteRenderer>();
+                var sinkDistance = spriteRenderer.transform.localScale.z * 2;
+                
+                var newColor = new Color(0.9f, 0.0f, 0.0f);
+                spriteRenderer.DOColor(newColor, 3.5f).SetEase(Ease.Linear);;
+                
+                Vector3 targetPos = spriteRenderer.transform.position - new Vector3(0, sinkDistance, 0);
+                spriteRenderer.transform.DOMove(targetPos, 7f).SetEase(Ease.Linear);
+            }
+            
+            yield return new WaitForSeconds(2f);
+            
+            _characterLight2D.DOIntensity(0, 5f);
+        }
+
         private IEnumerator WaitAndOpenBigDoor()
         {
             var ballroomDoor = GameObject.Find("BallroomDoor");
@@ -113,7 +141,7 @@ namespace Systems.Overworld.Intro
             var bigDoorOpenClip = Resources.Load<AudioClip>("SFXs/Doors/BigDoorOpen");
             var tempBallroomBlock = GameObject.Find("TempBallroomBlock");
             
-            yield return new WaitForSeconds(8f);
+            yield return new WaitForSeconds(8.5f);
 
             _characterLight2D.enabled = false;
             _ballroomSpotlight.enabled = true;
@@ -167,28 +195,7 @@ namespace Systems.Overworld.Intro
             _meltingAudioSource.Play();
 
             StartCoroutine(WaitAndOpenBigDoor());
-
-            foreach (Transform puddleTrans in _ballroomBloodPuddle.transform)
-            {
-                var puddleRenderer = puddleTrans.GetComponent<SpriteRenderer>();
-                var newColor = puddleRenderer.color;
-                newColor.a = 1;
-                puddleRenderer.DOColor(newColor, 4f).SetEase(Ease.InSine);
-            }
-            
-            foreach (Transform npcTransform in _charactersGroup.transform)
-            {
-                var spriteRenderer = npcTransform.gameObject.GetComponent<SpriteRenderer>();
-                var sinkDistance = spriteRenderer.transform.localScale.z * 2;
-                
-                var newColor = new Color(0.9f, 0.0f, 0.0f);
-                spriteRenderer.DOColor(newColor, 3.5f).SetEase(Ease.Linear);;
-                
-                Vector3 targetPos = spriteRenderer.transform.position - new Vector3(0, sinkDistance, 0);
-                spriteRenderer.transform.DOMove(targetPos, 7f).SetEase(Ease.Linear);
-            }
-
-            _characterLight2D.DOIntensity(0, 7.5f);
+            StartCoroutine(StartPuddleSeq());
         }
 
         private void CreateScaryDialogue(Transform npcTransform)
@@ -276,7 +283,8 @@ namespace Systems.Overworld.Intro
             }
 
             _ballroomThroneDoorSource = GameObject.Find("Ballroom/Throne").GetComponent<AudioSource>();
-            
+
+            _globalLight = GameObject.Find("2D Global Light").GetComponent<Light2D>();
             _characterLight2D = GameObject.Find("CharacterLight").GetComponent<Light2D>();
             _ballroomSpotlight = GameObject.Find("BallroomSpotlight").GetComponent<Light2D>();
             
