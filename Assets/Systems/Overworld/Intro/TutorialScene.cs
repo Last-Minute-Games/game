@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using cherrydev;
 using DG.Tweening;
 using Dialogues;
@@ -22,6 +23,8 @@ namespace Systems.Overworld.Intro
         public AnimationClip kingDeadAnimationClip;
 
         public DialogBehaviour dialogBehaviour;
+
+        public List<AudioClip> bloodFootstepsClips;
 
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
@@ -118,15 +121,34 @@ namespace Systems.Overworld.Intro
             _ballroomThroneDoorSource.clip = spotlightClip;
             _ballroomThroneDoorSource.Play();
                 
-            yield return new WaitForSeconds(1.5f);
+            yield return new WaitForSeconds(0.7f);
+
+            var footstepSource = _environmentSoundHandler.CreateCustomSource("BloodFootsteps");
+            footstepSource.volume = 0.8f;
+            
+            foreach (Transform footstepObj in _ballroomFootsteps.transform)
+            {
+                var footstepRenderer = footstepObj.GetComponent<SpriteRenderer>();
+                var newColor = footstepRenderer.color;
+                newColor.a = 1;
+                footstepRenderer.color = newColor;
+                
+                var randomFootstepSfx = bloodFootstepsClips[Random.Range(0, bloodFootstepsClips.Count)];
+                footstepSource.clip = randomFootstepSfx;
+                footstepSource.Play();
+                
+                yield return new WaitForSeconds(0.7f);
+            }
 
             _ballroomThroneDoorSource.clip = bigDoorOpenClip;
             _ballroomThroneDoorSource.Play();
             
             _plrInput.isInputEnabled = true;
-            tempBallroomBlock.SetActive(false);
+            Destroy(tempBallroomBlock);
             
             yield return new WaitForSeconds(0.5f);
+            
+            Destroy(footstepSource);
 
             foreach (Transform door in ballroomDoor.transform)
             {
@@ -166,7 +188,7 @@ namespace Systems.Overworld.Intro
                 spriteRenderer.transform.DOMove(targetPos, 7f).SetEase(Ease.Linear);
             }
 
-            _characterLight2D.DOIntensity(0, 6.5f);
+            _characterLight2D.DOIntensity(0, 7.5f);
         }
 
         private void CreateScaryDialogue(Transform npcTransform)
@@ -236,9 +258,12 @@ namespace Systems.Overworld.Intro
             _meltingAudioSource.volume = 1f;
             
             _ballroomFootsteps = GameObject.Find("BallroomFootsteps");
-            foreach (var footstepObj in _ballroomFootsteps.transform)
+            foreach (Transform footstepObj in _ballroomFootsteps.transform)
             {
-                var 
+                var footstepRenderer = footstepObj.GetComponent<SpriteRenderer>();
+                var newColor = footstepRenderer.color;
+                newColor.a = 0;
+                footstepRenderer.color = newColor;
             }
             
             _ballroomBloodPuddle = GameObject.Find("BallroomBloodPuddle");
@@ -309,7 +334,7 @@ namespace Systems.Overworld.Intro
                     if (!_isPlayingIntroMusic)
                     {
                         _introMusicManager.GetAudioSource().volume = 0f;
-                        _introMusicManager.FadeAndPlay(0.15f, 15f);
+                        _introMusicManager.FadeAndPlay(0.11f, 15f);
 
                         StartCoroutine(WaitDreamIntro());
                         _isPlayingIntroMusic = true;

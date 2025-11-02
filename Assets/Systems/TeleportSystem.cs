@@ -1,4 +1,4 @@
-    using System.Collections;
+using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -29,14 +29,14 @@ namespace Systems
         private float _fadeTime = 0.3f;
         private float _fadeDuration = 0.2f;
         
-        private Systems.Overworld.Intro.TutorialScene _tutorialScene;
+        private Overworld.Intro.TutorialScene _tutorialScene;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
             _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
             _fadeCanvasGroup.blocksRaycasts = false;
-            _tutorialScene = FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>();
+            _tutorialScene = FindFirstObjectByType<Overworld.Intro.TutorialScene>();
 
             
             _tptCollider = transform.gameObject.GetComponent<BoxCollider2D>();
@@ -71,7 +71,7 @@ namespace Systems
 
         private IEnumerator FadeIn()
         {
-            float timer = 0f;
+            var timer = 0f;
             while (timer < _fadeDuration)
             {
                 timer += Time.deltaTime;
@@ -102,7 +102,7 @@ namespace Systems
             yield return StartCoroutine(FadeIn());
             
             // check if scene is tutorial
-            if (tptTo.transform.name != "Throne" || !FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>())
+            if (tptTo.transform.name != "Throne" || !FindFirstObjectByType<Overworld.Intro.TutorialScene>())
             {
                 // Teleport the object
             
@@ -153,8 +153,6 @@ namespace Systems
             
             if (_player)
                 _isPlayerNear = Vector3.Distance(_tptCollider.transform.position, _player.transform.position) < InteractionRange;
-            
-            // Debug.Log(Vector3.Distance(_tptCollider.transform.position, _player.transform.position));
             
             if (!_isPlayerNear) return;
             
