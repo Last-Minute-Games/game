@@ -23,5 +23,5 @@ public abstract class EntityData : ScriptableObject
     public List<CardDrawEntry> usableCards = new List<CardDrawEntry>();
 
     // Ensure OnValidate() is defined
-    protected virtual void OnValidate();
+    protected virtual void OnValidate() {}
 }
