@@ -86,8 +86,6 @@ namespace Systems.Overworld.Intro
         {
             SentenceNode node = ScriptableObject.CreateInstance<SentenceNode>();
 
-            nodeGraph.NodesList.Add(node);
-
             node.Initialize(new Rect(), "sentence", nodeGraph);
 
             return node;
@@ -100,25 +98,28 @@ namespace Systems.Overworld.Intro
 
             var newGraph = ScriptableObject.CreateInstance<DialogNodeGraph>();
             dialogTrigger.dialogGraph = newGraph;
-            
+
             var newSentenceNode = CreateMysteriousSentenceNode(newGraph);
 
             var tex = Resources.Load<Texture2D>("Dialogues/" + npcTransform.name + "/" + npcTransform.name +
                                                 "Portrait");
-            if (tex == null) return;
 
-            // Convert Texture2D → Sprite
-            Sprite portraitSprite = Sprite.Create(
-                tex,
-                new Rect(0, 0, tex.width, tex.height),
-                new Vector2(0.5f, 0.5f), // pivot center
-                100f // pixels per unit (adjust as needed)
-            );
+            newSentenceNode.Sentence = new Sentence(npcTransform.name, "...");
 
-            var newSentence = new Sentence(npcTransform.name, "...");
-            newSentence.CharacterSprite = portraitSprite;
+            if (tex != null)
+            {
+                // Convert Texture2D → Sprite
+                var portraitSprite = Sprite.Create(
+                    tex,
+                    new Rect(0, 0, tex.width, tex.height),
+                    new Vector2(0.5f, 0.5f), // pivot center
+                    100f // pixels per unit (adjust as needed)
+                );
 
-            newSentenceNode.Sentence = newSentence;
+                newSentenceNode.Sentence.CharacterSprite = portraitSprite;
+            }
+
+            newGraph.NodesList.Add(newSentenceNode);
         }
 
         void Start()
