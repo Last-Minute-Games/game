@@ -17,11 +17,11 @@ public class PlayerData : EntityData
     [Tooltip("Optional list of starting relics.")]
     public List<RelicData> startingRelics = new List<RelicData>();
 
+    
     protected override void OnValidate()
     {
         base.OnValidate();
 
-        // If you want defaulting behavior:
         if (config != null)
         {
             if (baseEnergy <= 0)
