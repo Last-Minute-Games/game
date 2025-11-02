@@ -15,9 +15,6 @@ public class PlayerData : EntityData
     [Tooltip("Maximum energy cap")]
     public int maxEnergy;
 
-    [Tooltip("Starting cards list")]
-    public List<CardData> startingCards = new List<CardData>();
-
     [Tooltip("Starting relics list")]
     public List<RelicData> startingRelics = new List<RelicData>();
 
