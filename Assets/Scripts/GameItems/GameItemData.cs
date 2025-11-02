@@ -25,6 +25,32 @@ public abstract class GameItemData : ScriptableObject
     [Tooltip("Unique identifier for this item.")]
     public int uniqueID;
 
+    /// <summary>
+    /// Returns the highest TargetRule hierarchy among all effects.
+    /// If no effects exist, logs a warning and returns TargetRule.None.
+    /// </summary>
+    public TargetRule GetDominatingTargetRule()
+    {
+        if (effectData == null || effectData.Count == 0)
+        {
+            Debug.LogWarning($"[GameItemData] '{itemName}' has no effects to determine TargetRule hierarchy. Defaulting to None.", this);
+            return TargetRule.None;
+        }
+
+        TargetRule highestRule = TargetRule.None;
+
+        foreach (var effect in effectData)
+        {
+            if (effect == null)
+                continue;
+
+            if ((int)effect.targetRule > (int)highestRule)
+                highestRule = effect.targetRule;
+        }
+
+        return highestRule;
+    }
+
     protected virtual void OnValidate()
     {
         if (string.IsNullOrEmpty(itemName))
