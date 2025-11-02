@@ -224,16 +224,24 @@ public class JournalManager : ScriptableObject
     }
 
 #if UNITY_EDITOR
-    [ContextMenu("Test Unlock 'evidence.knife'")]
-    private void TestUnlock()
+    [ContextMenu("Test: Set Flag 'character.allistair.lies'")]
+    private void TestSetFlag()
     {
-        AddEntry("evidence.knife");
+        GameFlags.SetFlag("character.allistair.lies");
+        Debug.Log("[JournalManager] Test: Set flag 'character.allistair.lies'");
     }
     
-    [ContextMenu("Test Unlock 'character.knight'")]
-    private void TestUnlockCharacter()
+    [ContextMenu("Test: Remove Flag 'character.allistair.lies'")]
+    private void TestRemoveFlag()
     {
-        AddEntry("character.knight");
+        GameFlags.RemoveFlag("character.allistair.lies");
+        Debug.Log("[JournalManager] Test: Removed flag 'character.allistair.lies'");
+    }
+    
+    [ContextMenu("Print All Active Flags")]
+    private void PrintFlags()
+    {
+        GameFlags.PrintAllFlags();
     }
 #endif
 }
