@@ -20,8 +20,6 @@ namespace Systems.Overworld.Intro
 
         public AnimationClip kingDeadAnimationClip;
 
-        public AudioClip glitchOutAudio;
-
         public DialogBehaviour dialogBehaviour;
 
         private GameObject _plrObject;
@@ -40,6 +38,7 @@ namespace Systems.Overworld.Intro
 
         private EnvironmentSoundHandler _environmentSoundHandler;
         private AudioSource _glitchAudioSource;
+        private AudioSource _meltingAudioSource;
 
         private MusicManager _introMusicManager;
 
@@ -92,28 +91,23 @@ namespace Systems.Overworld.Intro
 
             return node;
         }
-
-        public float sinkDistance = 1f;
         private void ActivateMeltingSequence()
         {
             if (_isBallroomMelting) return;
             _isBallroomMelting = true;
-
-            var meltSource = _environmentSoundHandler.CreateCustomSource("MeltingCharacters");
-            var meltClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/melt");
             
-            meltSource.clip = meltClip;
-            meltSource.Play();
+            _meltingAudioSource.Play();
             
             foreach (Transform npcTransform in _charactersGroup.transform)
             {
                 var spriteRenderer = npcTransform.gameObject.GetComponent<SpriteRenderer>();
-
+                var sinkDistance = spriteRenderer.transform.localScale.z * 2;
+                
                 var newColor = new Color(0.9f, 0.0f, 0.0f);
                 spriteRenderer.DOColor(newColor, 3.5f).SetEase(Ease.Linear);;
                 
                 Vector3 targetPos = spriteRenderer.transform.position - new Vector3(0, sinkDistance, 0);
-                spriteRenderer.transform.DOMove(targetPos, 4f).SetEase(Ease.Linear);
+                spriteRenderer.transform.DOMove(targetPos, 7f).SetEase(Ease.Linear);
             }
         }
 
@@ -172,10 +166,17 @@ namespace Systems.Overworld.Intro
 
             _environmentSoundHandler =
                 GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
+            
+            var glitchClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/KingGlitch");
             _glitchAudioSource = _environmentSoundHandler.CreateCustomSource("Glitch");
-            _glitchAudioSource.clip = glitchOutAudio;
-            _glitchAudioSource.volume = 0.8f;
-
+            _glitchAudioSource.clip = glitchClip;
+            _glitchAudioSource.volume = 1f;
+            
+            var meltClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/Melting");
+            _meltingAudioSource = _environmentSoundHandler.CreateCustomSource("Melting");
+            _meltingAudioSource.clip = meltClip;
+            _meltingAudioSource.volume = 1f;
+            
             _charactersGroup = GameObject.Find("BlockingCharacters");
             // iterate for each child
             foreach (Transform child in _charactersGroup.transform)
