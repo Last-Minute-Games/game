@@ -151,10 +151,10 @@ public class JournalManager : ScriptableObject
     }
 
 #if UNITY_EDITOR
-    [ContextMenu("Test Unlock 'found.blade'")]
+    [ContextMenu("Test Unlock 'evidence.knife'")]
     private void TestUnlock()
     {
-        AddEntry("found.blade");
+        AddEntry("evidence.knife");
     }
     
     [ContextMenu("Test Unlock 'character.knight'")]
