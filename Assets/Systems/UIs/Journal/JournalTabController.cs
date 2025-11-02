@@ -23,10 +23,27 @@ public class JournalUI_Named : MonoBehaviour
         if (!cg) cg = GetComponent<CanvasGroup>();
         allPages = new[] { CharactersPage, EvidencePage, InformationPage, MonstersPage, TutorialsPage };
 
-        // Initialize journal manager
+        // Initialize journal manager AFTER GameFlags has time to initialize
         if (journalManager != null)
         {
+            Debug.Log($"[JournalUI_Named] Initializing JournalManager: {journalManager.name}");
             journalManager.Initialize();
+        }
+        else
+        {
+            Debug.LogError("[JournalUI_Named] JournalManager reference is missing! Please assign it in the Inspector.");
+            
+            // Try to find it as a fallback
+            journalManager = Resources.Load<JournalManager>("JournalManager");
+            if (journalManager != null)
+            {
+                Debug.Log("[JournalUI_Named] Found JournalManager in Resources, initializing...");
+                journalManager.Initialize();
+            }
+            else
+            {
+                Debug.LogError("[JournalUI_Named] Could not find JournalManager in Resources either!");
+            }
         }
 
         SetOnly(CharactersPage);

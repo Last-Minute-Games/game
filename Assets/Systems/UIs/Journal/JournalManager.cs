@@ -16,7 +16,12 @@ public class JournalManager : ScriptableObject
     }
 
     [Header("Journal Settings")]
+    [Tooltip("Leave empty to use 1:1 flag-to-entry mapping (flag name = entry ID)")]
     [SerializeField] private List<Mapping> mappings = new();
+    
+    [Header("Auto-Mapping")]
+    [Tooltip("If true and mappings is empty, flags automatically unlock matching entry IDs")]
+    [SerializeField] private bool useAutoMapping = true;
 
     private readonly HashSet<string> unlockedEntries = new();
 
@@ -24,22 +29,37 @@ public class JournalManager : ScriptableObject
 
     private GameFlags currentFlags;
     private bool isInitialized = false;
+    private bool hasCheckedInitialFlags = false;
 
-    private void OnEnable()
+    // Don't use OnEnable for ScriptableObjects - it's too early!
+    // Initialization should be done by a MonoBehaviour in the scene
+    
+    private void OnDisable()
     {
-        // Auto-hook when this ScriptableObject is loaded
-        if (GameFlags.Instance != null)
+        if (currentFlags != null)
         {
-            Hook(GameFlags.Instance);
+            currentFlags.OnFlagChanged -= HandleFlagChanged;
+            currentFlags.OnInitialized -= OnGameFlagsInitialized;
         }
+    }
+    
+    private void OnGameFlagsInitialized()
+    {
+        if (hasCheckedInitialFlags) return;
+        hasCheckedInitialFlags = true;
+        
+        Debug.Log("[Journal] GameFlags initialization complete - checking existing flags");
+        CheckExistingFlags();
     }
 
     /// <summary>
-    /// Initialize and hook up to GameFlags. Call this at game start.
+    /// Initialize and hook up to GameFlags. Call this at game start from a MonoBehaviour.
     /// </summary>
     public void Initialize()
     {
         if (isInitialized) return;
+        
+        Debug.Log("[Journal] Initialize() called");
         
         if (GameFlags.Instance != null)
         {
@@ -62,42 +82,79 @@ public class JournalManager : ScriptableObject
         }
 
         if (currentFlags != null)
+        {
             currentFlags.OnFlagChanged -= HandleFlagChanged;
+            currentFlags.OnInitialized -= OnGameFlagsInitialized;
+        }
 
         currentFlags = flags;
         currentFlags.OnFlagChanged += HandleFlagChanged;
+        currentFlags.OnInitialized += OnGameFlagsInitialized;
 
         Debug.Log("[Journal] Hooked into GameFlags.");
         
-        // Check all existing flags to see if any entries should be unlocked
-        CheckExistingFlags();
+        // IMMEDIATE CHECK: Always check flags when hooking
+        // GameFlags Awake() runs before this, so flags are already loaded
+        if (!hasCheckedInitialFlags)
+        {
+            hasCheckedInitialFlags = true;
+            Debug.Log("[Journal] Immediately checking existing flags");
+            CheckExistingFlags();
+        }
     }
 
     private void CheckExistingFlags()
     {
         if (currentFlags == null) return;
         
-        foreach (var m in mappings)
+        Debug.Log($"[Journal] CheckExistingFlags called - useAutoMapping: {useAutoMapping}, mappings.Count: {mappings.Count}");
+        
+        // If using custom mappings, process them
+        if (mappings.Count > 0)
         {
-            if (string.IsNullOrWhiteSpace(m.flag)) continue;
-            
-            // Check if flag exists
-            if (GameFlags.HasFlag(m.flag))
+            foreach (var m in mappings)
             {
-                AddEntry(m.entryId);
+                if (string.IsNullOrWhiteSpace(m.flag)) continue;
+                
+                if (GameFlags.HasFlag(m.flag))
+                {
+                    AddEntry(m.entryId);
+                }
             }
+        }
+        // Otherwise, use auto-mapping: flag name = entry ID
+        else if (useAutoMapping)
+        {
+            var allFlags = GameFlags.GetAllFlags();
+            Debug.Log($"[Journal] Auto-mapping {allFlags.Count} flags to entries");
+            
+            foreach (string flag in allFlags)
+            {
+                // Automatically unlock entry with matching ID
+                AddEntry(flag);
+            }
+            Debug.Log($"[Journal] Auto-mapped {allFlags.Count} flags to entries");
         }
     }
 
     private void HandleFlagChanged(string flag)
     {
-        foreach (var m in mappings)
+        // If using custom mappings, check them
+        if (mappings.Count > 0)
         {
-            if (!string.Equals(m.flag, flag, StringComparison.OrdinalIgnoreCase))
-                continue;
+            foreach (var m in mappings)
+            {
+                if (!string.Equals(m.flag, flag, StringComparison.OrdinalIgnoreCase))
+                    continue;
 
-            // Flag was set, unlock the entry
-            AddEntry(m.entryId);
+                AddEntry(m.entryId);
+                return;
+            }
+        }
+        // Otherwise, use auto-mapping: flag name = entry ID
+        else if (useAutoMapping)
+        {
+            AddEntry(flag);
         }
     }
 
