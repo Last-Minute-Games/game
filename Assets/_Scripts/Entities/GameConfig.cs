@@ -8,6 +8,8 @@ public class GameConfig : ScriptableObject
     /// If you want to tweak some global variable bullshit please add it here.
     /// </summary>
     [Header("Player Defaults")]
+    public int defaultHealth = 100;
+    public int defaultShield = 0;
     public int defaultBaseEnergy = 3;
     public int defaultMaxEnergy = 3;
 

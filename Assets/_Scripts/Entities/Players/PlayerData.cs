@@ -8,30 +8,34 @@ public class PlayerData : EntityData
     [Tooltip("Reference to global configuration settings.")]
     public GameConfig config;
 
-    [Tooltip("Starting energy (overrides config if non-zero).")]
-    public int baseEnergy;
+    [Tooltip("Starting energy (will be replaced by config if assigned).")]
+    public int baseEnergy = 3;
 
-    [Tooltip("Maximum energy cap (overrides config if non-zero).")]
-    public int maxEnergy;
+    [Tooltip("Maximum energy cap (will be replaced by config if assigned).")]
+    public int maxEnergy = 3;
 
     [Tooltip("Optional list of starting relics.")]
     public List<RelicData> startingRelics = new List<RelicData>();
 
-    
     protected override void OnValidate()
     {
         base.OnValidate();
 
         if (config != null)
         {
-            if (baseEnergy <= 0)
-                baseEnergy = config.defaultBaseEnergy;
-
-            if (maxEnergy <= 0)
-                maxEnergy = config.defaultMaxEnergy;
+            // Replace with GameConfig definitions straight away
+            baseHealth   = config.defaultHealth;
+            baseShield   = config.defaultShield;
+            baseEnergy   = config.defaultBaseEnergy;
+            maxEnergy    = config.defaultMaxEnergy;
         }
-
-        baseEnergy = Mathf.Max(0, baseEnergy);
-        maxEnergy = Mathf.Max(baseEnergy, maxEnergy);
+        else
+        {
+            // Fallback if GameConfig definitions don't exist
+            baseHealth   = Mathf.Max(1, baseHealth);
+            baseShield   = Mathf.Max(0, baseShield);
+            baseEnergy   = Mathf.Max(0, baseEnergy);
+            maxEnergy    = Mathf.Max(baseEnergy, maxEnergy);
+        }
     }
 }
