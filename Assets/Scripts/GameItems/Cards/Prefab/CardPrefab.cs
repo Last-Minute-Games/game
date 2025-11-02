@@ -37,7 +37,7 @@ public class CardPrefab : MonoBehaviour
     {
         if (data == null)
         {
-          Debug.LogError("[CardPrefab] Tried to initialize with null CardData!")
+          Debug.LogError("[CardPrefab] Tried to initialize with null CardData!");
         }
 
         cardData = data;
