@@ -34,6 +34,20 @@ public class JournalManager : ScriptableObject
     // Don't use OnEnable for ScriptableObjects - it's too early!
     // Initialization should be done by a MonoBehaviour in the scene
     
+    private void OnEnable()
+    {
+        // Reset initialization state when entering play mode in the editor
+        // ScriptableObjects persist their state, so we need to clear it
+#if UNITY_EDITOR
+        // Reset when entering play mode or when asset is loaded in editor
+        isInitialized = false;
+        hasCheckedInitialFlags = false;
+        currentFlags = null;
+        unlockedEntries.Clear();
+        Debug.Log("[Journal] OnEnable - Reset state for new play session");
+#endif
+    }
+    
     private void OnDisable()
     {
         if (currentFlags != null)
@@ -57,20 +71,28 @@ public class JournalManager : ScriptableObject
     /// </summary>
     public void Initialize()
     {
-        if (isInitialized) return;
+        // Allow re-initialization if we never successfully hooked to GameFlags
+        if (isInitialized && currentFlags != null)
+        {
+            Debug.Log("[Journal] Already initialized and hooked, skipping");
+            return;
+        }
         
-        Debug.Log("[Journal] Initialize() called");
+        Debug.Log($"[Journal] Initialize() called on {name}");
         
         if (GameFlags.Instance != null)
         {
+            Debug.Log($"[Journal] GameFlags.Instance found, hooking...");
             Hook(GameFlags.Instance);
+            isInitialized = true;
         }
         else
         {
-            Debug.LogWarning("[Journal] GameFlags singleton not found during initialization.");
+            Debug.LogError("[Journal] GameFlags singleton not found during initialization! This shouldn't happen.");
+            isInitialized = false; // Allow retry
         }
         
-        isInitialized = true;
+        Debug.Log($"[Journal] Initialization complete. isInitialized={isInitialized}, hooked={currentFlags != null}");
     }
 
     public void Hook(GameFlags flags)
@@ -83,6 +105,7 @@ public class JournalManager : ScriptableObject
 
         if (currentFlags != null)
         {
+            Debug.Log("[Journal] Unhooking from previous GameFlags instance");
             currentFlags.OnFlagChanged -= HandleFlagChanged;
             currentFlags.OnInitialized -= OnGameFlagsInitialized;
         }
@@ -91,15 +114,19 @@ public class JournalManager : ScriptableObject
         currentFlags.OnFlagChanged += HandleFlagChanged;
         currentFlags.OnInitialized += OnGameFlagsInitialized;
 
-        Debug.Log("[Journal] Hooked into GameFlags.");
+        Debug.Log($"[Journal] Hooked into GameFlags. Current flags count: {GameFlags.GetFlagCount()}");
         
         // IMMEDIATE CHECK: Always check flags when hooking
         // GameFlags Awake() runs before this, so flags are already loaded
         if (!hasCheckedInitialFlags)
         {
             hasCheckedInitialFlags = true;
-            Debug.Log("[Journal] Immediately checking existing flags");
+            Debug.Log("[Journal] Immediately checking existing flags after hook");
             CheckExistingFlags();
+        }
+        else
+        {
+            Debug.Log("[Journal] Already checked initial flags, skipping");
         }
     }
 
