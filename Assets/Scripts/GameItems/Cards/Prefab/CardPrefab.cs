@@ -20,8 +20,11 @@ public class CardPrefab : MonoBehaviour
 
     private void Awake()
     {
-        if (fxHelper == null)
+        if (fxHelper == null) 
+        { // D.V. for fxHelper
+            Debug.Log($"CardData {cardData?.itemName ?? "Unnamed"} did not have a CardFXHelper component. Pulling manually.");
             fxHelper = GetComponent<CardFXHelper>();
+        }
     }
 
     private void Start()
@@ -32,15 +35,20 @@ public class CardPrefab : MonoBehaviour
 
     public void Initialize(CardData data)
     {
+        if (data == null)
+        {
+          Debug.LogError("[CardPrefab] Tried to initialize with null CardData!")
+        }
+
         cardData = data;
 
         // --- Set visuals ---
-        nameText.text = data.itemName;
-        descriptionText.text = data.description;
-        intentionText.text = data.intentionText;
-        energyCost.text = data.energyCost;
-        artworkImage.sprite = data.artwork;
-        intentionIcon.sprite = data.icon;
+        nameText.SetText(data.itemName);
+        descriptionText.SetText(data.description);
+        intentionText.SetText(data.intentionText);
+        energyCost.SetText(data.energyCost.ToString());
+        if (artworkImage) artworkImage.sprite = data.artwork;
+        if (intentionIcon) intentionIcon.sprite = data.icon;
 
         // --- Initialize FX helpers ---
         fxHelper?.Initialize(data);
