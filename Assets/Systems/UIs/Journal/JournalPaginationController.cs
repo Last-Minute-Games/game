@@ -1,17 +1,22 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
 /// Handles pagination (Previous/Next) for a journal page with multiple entries.
 /// Shows only unlocked entries and allows scrolling through them.
+/// Supports looping, animations, and sound effects.
 /// </summary>
 public class JournalPaginationController : MonoBehaviour
 {
     [Header("Configuration")]
     [Tooltip("How many entries to show per page")]
     public int entriesPerPage = 1;
+    
+    [Tooltip("Enable looping (page 7 -> page 1, page 1 -> page 7)")]
+    public bool enableLooping = true;
     
     [Header("UI References")]
     [Tooltip("Button to go to previous entry")]
@@ -26,6 +31,30 @@ public class JournalPaginationController : MonoBehaviour
     [Header("Entry Container")]
     [Tooltip("The parent GameObject containing all entry GameObjects")]
     public GameObject entriesContainer;
+    
+    [Header("Animation Settings")]
+    [Tooltip("CanvasGroup for fade animations (typically on entriesContainer)")]
+    public CanvasGroup pageCanvasGroup;
+    
+    [Tooltip("Duration of fade in/out animation")]
+    public float fadeDuration = 0.3f;
+    
+    [Header("Custom Page Turn Animation (Optional)")]
+    [Tooltip("Animator for custom page turn effects")]
+    public Animator pageTurnAnimator;
+    
+    [Tooltip("Animation clip to play when turning pages (e.g., page flip)")]
+    public AnimationClip pageTurnClip;
+    
+    [Tooltip("Trigger name for custom animation (if using Animator)")]
+    public string pageTurnTrigger = "TurnPage";
+    
+    [Tooltip("Use custom animation instead of simple fade")]
+    public bool useCustomAnimation = false;
+    
+    [Header("Audio")]
+    [Tooltip("Play sound when turning pages")]
+    public bool playSoundOnPageTurn = true;
     
     [Header("Auto-Detection")]
     [Tooltip("Automatically find all JournalEntry components in children")]
@@ -43,6 +72,8 @@ public class JournalPaginationController : MonoBehaviour
     private int currentPage = 0;
     private int totalPages = 0;
     private bool isInitialized = false;
+    private bool isAnimating = false;
+    private EnvironmentSoundHandler _environmentSoundHandler;
     
     private void Start()
     {
@@ -52,6 +83,16 @@ public class JournalPaginationController : MonoBehaviour
             allEntries.Clear();
             allEntries.AddRange(entriesContainer.GetComponentsInChildren<JournalEntry>(true));
             Debug.Log($"[Pagination] Auto-detected {allEntries.Count} entries in {gameObject.name}");
+        }
+        
+        // Auto-find CanvasGroup if not assigned
+        if (pageCanvasGroup == null && entriesContainer != null)
+        {
+            pageCanvasGroup = entriesContainer.GetComponent<CanvasGroup>();
+            if (pageCanvasGroup == null)
+            {
+                pageCanvasGroup = entriesContainer.AddComponent<CanvasGroup>();
+            }
         }
         
         // Hook up buttons
@@ -66,6 +107,11 @@ public class JournalPaginationController : MonoBehaviour
         {
             journalManager.OnEntryUnlocked += OnEntryUnlocked;
         }
+        
+        // Find the EnvironmentSoundHandler
+        _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler")?.GetComponent<EnvironmentSoundHandler>();
+        if (_environmentSoundHandler == null)
+            Debug.LogWarning("[JournalPaginationController] EnvironmentSoundHandler not found in scene");
         
         isInitialized = true;
         
@@ -114,20 +160,11 @@ public class JournalPaginationController : MonoBehaviour
             return;
         }
         
-        Debug.Log($"[Pagination] RefreshUnlockedEntries - checking {allEntries.Count} total entries");
-        
         foreach (var entry in allEntries)
         {
-            if (entry == null)
-            {
-                Debug.LogWarning("[Pagination] Found null entry in allEntries!");
-                continue;
-            }
+            if (entry == null) continue;
             
-            bool isUnlocked = journalManager.IsEntryUnlocked(entry.entryId);
-            Debug.Log($"[Pagination] Entry '{entry.entryId}' unlocked: {isUnlocked}");
-            
-            if (isUnlocked)
+            if (journalManager.IsEntryUnlocked(entry.entryId))
             {
                 unlockedEntries.Add(entry);
             }
@@ -142,8 +179,6 @@ public class JournalPaginationController : MonoBehaviour
             currentPage = totalPages - 1;
         if (currentPage < 0)
             currentPage = 0;
-        
-        Debug.Log($"[Pagination] Found {unlockedEntries.Count} unlocked entries, {totalPages} pages, entriesPerPage={entriesPerPage}");
     }
     
     /// <summary>
@@ -151,8 +186,6 @@ public class JournalPaginationController : MonoBehaviour
     /// </summary>
     private void ShowCurrentPage()
     {
-        Debug.Log($"[Pagination] ShowCurrentPage called. Page {currentPage}, unlocked count: {unlockedEntries.Count}");
-        
         // First, hide all entries
         foreach (var entry in allEntries)
         {
@@ -172,16 +205,13 @@ public class JournalPaginationController : MonoBehaviour
         int startIndex = currentPage * entriesPerPage;
         int endIndex = Mathf.Min(startIndex + entriesPerPage, unlockedEntries.Count);
         
-        Debug.Log($"[Pagination] Showing entries from index {startIndex} to {endIndex - 1}");
-        
         // Show only the entries for this page
         for (int i = startIndex; i < endIndex; i++)
         {
             if (unlockedEntries[i] != null)
             {
-                Debug.Log($"[Pagination] Activating entry {i}: {unlockedEntries[i].entryId}");
                 unlockedEntries[i].gameObject.SetActive(true);
-                unlockedEntries[i].SetUnlocked(true); // Ensure they're in unlocked state
+                unlockedEntries[i].SetUnlocked(true);
             }
         }
         
@@ -190,31 +220,169 @@ public class JournalPaginationController : MonoBehaviour
     }
     
     /// <summary>
-    /// Go to the previous page
+    /// Go to the previous page with animation and sound
     /// </summary>
     public void PreviousPage()
     {
+        if (isAnimating) return;
+        
+        int targetPage;
+        
         if (currentPage > 0)
         {
-            currentPage--;
-            ShowCurrentPage();
+            targetPage = currentPage - 1;
         }
+        else if (enableLooping && totalPages > 1)
+        {
+            // Loop to last page
+            targetPage = totalPages - 1;
+        }
+        else
+        {
+            return; // Can't go back
+        }
+        
+        StartCoroutine(AnimatePageChange(targetPage));
     }
     
     /// <summary>
-    /// Go to the next page
+    /// Go to the next page with animation and sound
     /// </summary>
     public void NextPage()
     {
+        if (isAnimating) return;
+        
+        int targetPage;
+        
         if (currentPage < totalPages - 1)
         {
-            currentPage++;
+            targetPage = currentPage + 1;
+        }
+        else if (enableLooping && totalPages > 1)
+        {
+            // Loop to first page
+            targetPage = 0;
+        }
+        else
+        {
+            return; // Can't go forward
+        }
+        
+        StartCoroutine(AnimatePageChange(targetPage));
+    }
+    
+    /// <summary>
+    /// Animate the page transition
+    /// </summary>
+    private IEnumerator AnimatePageChange(int targetPage)
+    {
+        isAnimating = true;
+        
+        // Play sound effect
+        PlayPageTurnSound();
+        
+        if (useCustomAnimation && pageTurnAnimator != null && pageTurnClip != null)
+        {
+            // Use custom animation
+            yield return StartCoroutine(PlayCustomPageTurnAnimation(targetPage));
+        }
+        else
+        {
+            // Use simple fade animation
+            yield return StartCoroutine(PlayFadeAnimation(targetPage));
+        }
+        
+        isAnimating = false;
+    }
+    
+    /// <summary>
+    /// Simple fade out -> change page -> fade in animation
+    /// </summary>
+    private IEnumerator PlayFadeAnimation(int targetPage)
+    {
+        if (pageCanvasGroup == null)
+        {
+            // No canvas group, just change page instantly
+            currentPage = targetPage;
             ShowCurrentPage();
+            yield break;
+        }
+        
+        // Fade out
+        float elapsed = 0f;
+        while (elapsed < fadeDuration / 2f)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / (fadeDuration / 2f);
+            pageCanvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
+            yield return null;
+        }
+        pageCanvasGroup.alpha = 0f;
+        
+        // Change page while invisible
+        currentPage = targetPage;
+        ShowCurrentPage();
+        
+        // Fade in
+        elapsed = 0f;
+        while (elapsed < fadeDuration / 2f)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / (fadeDuration / 2f);
+            pageCanvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
+            yield return null;
+        }
+        pageCanvasGroup.alpha = 1f;
+    }
+    
+    /// <summary>
+    /// Play custom page turn animation (e.g., page flip)
+    /// TODO: Implement your custom page flip animation here
+    /// </summary>
+    private IEnumerator PlayCustomPageTurnAnimation(int targetPage)
+    {
+        // Trigger the animation
+        if (!string.IsNullOrEmpty(pageTurnTrigger))
+        {
+            pageTurnAnimator.SetTrigger(pageTurnTrigger);
+        }
+        
+        // Wait for half the animation duration
+        float animDuration = pageTurnClip != null ? pageTurnClip.length : 0.5f;
+        yield return new WaitForSeconds(animDuration / 2f);
+        
+        // Change page at the midpoint of the animation
+        currentPage = targetPage;
+        ShowCurrentPage();
+        
+        // Wait for the rest of the animation
+        yield return new WaitForSeconds(animDuration / 2f);
+    }
+    
+    /// <summary>
+    /// Play the page turn sound effect
+    /// </summary>
+    private void PlayPageTurnSound()
+    {
+        if (playSoundOnPageTurn)
+        {
+            try
+            {
+                if (_environmentSoundHandler != null)
+                {
+                    // Play the journal sound for page turns (using true for the "open" sound)
+                    _environmentSoundHandler.PlayJournalSound(true);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[JournalPaginationController] Failed to play page turn sound: {ex.Message}");
+            }
         }
     }
     
     /// <summary>
-    /// Jump to a specific page (0-indexed)
+    /// Jump to a specific page (0-indexed) - no animation
     /// </summary>
     public void GoToPage(int pageIndex)
     {
@@ -230,14 +398,27 @@ public class JournalPaginationController : MonoBehaviour
     /// </summary>
     private void UpdateButtonStates()
     {
-        if (previousButton != null)
+        if (enableLooping && totalPages > 1)
         {
-            previousButton.interactable = (currentPage > 0);
+            // Always enable both buttons when looping
+            if (previousButton != null)
+                previousButton.interactable = true;
+            
+            if (nextButton != null)
+                nextButton.interactable = true;
         }
-        
-        if (nextButton != null)
+        else
         {
-            nextButton.interactable = (currentPage < totalPages - 1);
+            // Normal behavior - disable at boundaries
+            if (previousButton != null)
+            {
+                previousButton.interactable = (currentPage > 0);
+            }
+            
+            if (nextButton != null)
+            {
+                nextButton.interactable = (currentPage < totalPages - 1);
+            }
         }
     }
     
