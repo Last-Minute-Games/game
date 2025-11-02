@@ -4,12 +4,11 @@ using System.Collections.Generic;
 [CreateAssetMenu(menuName = "Player/Player Data", fileName = "NewPlayerData")]
 public class PlayerData : EntityData
 {
-    [Header("Player-Specific Settings")]
     [Tooltip("Reference to global configuration settings.")]
     public GameConfig config;
 
-    // DO NOT ENTY THE FOLLOWING CONFIGURATION IN FILE
-    // EDIT THEM IN GameConfig
+    [Header("Player-Specific Settings")]
+
     [Tooltip("Starting energy")]
     public int baseEnergy;
 
