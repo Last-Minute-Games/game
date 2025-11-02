@@ -42,6 +42,7 @@ public class JournalPaginationController : MonoBehaviour
     private List<JournalEntry> unlockedEntries = new List<JournalEntry>();
     private int currentPage = 0;
     private int totalPages = 0;
+    private bool isInitialized = false;
     
     private void Start()
     {
@@ -66,6 +67,8 @@ public class JournalPaginationController : MonoBehaviour
             journalManager.OnEntryUnlocked += OnEntryUnlocked;
         }
         
+        isInitialized = true;
+        
         // Initial refresh
         RefreshUnlockedEntries();
         ShowCurrentPage();
@@ -81,6 +84,11 @@ public class JournalPaginationController : MonoBehaviour
     
     private void OnEnable()
     {
+        // Only refresh if we've been initialized (Start has been called)
+        // OnEnable runs before Start, so skip it the first time
+        if (!isInitialized)
+            return;
+            
         // Refresh whenever this page becomes active
         RefreshUnlockedEntries();
         ShowCurrentPage();
@@ -106,11 +114,20 @@ public class JournalPaginationController : MonoBehaviour
             return;
         }
         
+        Debug.Log($"[Pagination] RefreshUnlockedEntries - checking {allEntries.Count} total entries");
+        
         foreach (var entry in allEntries)
         {
-            if (entry == null) continue;
+            if (entry == null)
+            {
+                Debug.LogWarning("[Pagination] Found null entry in allEntries!");
+                continue;
+            }
             
-            if (journalManager.IsEntryUnlocked(entry.entryId))
+            bool isUnlocked = journalManager.IsEntryUnlocked(entry.entryId);
+            Debug.Log($"[Pagination] Entry '{entry.entryId}' unlocked: {isUnlocked}");
+            
+            if (isUnlocked)
             {
                 unlockedEntries.Add(entry);
             }
@@ -126,7 +143,7 @@ public class JournalPaginationController : MonoBehaviour
         if (currentPage < 0)
             currentPage = 0;
         
-        Debug.Log($"[Pagination] Found {unlockedEntries.Count} unlocked entries, {totalPages} pages");
+        Debug.Log($"[Pagination] Found {unlockedEntries.Count} unlocked entries, {totalPages} pages, entriesPerPage={entriesPerPage}");
     }
     
     /// <summary>
@@ -134,6 +151,8 @@ public class JournalPaginationController : MonoBehaviour
     /// </summary>
     private void ShowCurrentPage()
     {
+        Debug.Log($"[Pagination] ShowCurrentPage called. Page {currentPage}, unlocked count: {unlockedEntries.Count}");
+        
         // First, hide all entries
         foreach (var entry in allEntries)
         {
@@ -153,11 +172,14 @@ public class JournalPaginationController : MonoBehaviour
         int startIndex = currentPage * entriesPerPage;
         int endIndex = Mathf.Min(startIndex + entriesPerPage, unlockedEntries.Count);
         
+        Debug.Log($"[Pagination] Showing entries from index {startIndex} to {endIndex - 1}");
+        
         // Show only the entries for this page
         for (int i = startIndex; i < endIndex; i++)
         {
             if (unlockedEntries[i] != null)
             {
+                Debug.Log($"[Pagination] Activating entry {i}: {unlockedEntries[i].entryId}");
                 unlockedEntries[i].gameObject.SetActive(true);
                 unlockedEntries[i].SetUnlocked(true); // Ensure they're in unlocked state
             }

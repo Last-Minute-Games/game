@@ -37,6 +37,7 @@ public class JournalEntry : MonoBehaviour
     
     private bool isUnlocked = false;
     private bool isProgressiveMode = false;
+    private bool isInitialized = false;
     
     void Start()
     {
@@ -49,11 +50,10 @@ public class JournalEntry : MonoBehaviour
             GameFlags.Instance.OnFlagChanged += OnFlagChanged;
         }
         
-        // Initial state is locked (hidden)
-        gameObject.SetActive(false);
+        isInitialized = true;
         
         // If progressive, check initial state
-        if (isProgressiveMode)
+        if (isProgressiveMode && isUnlocked)
         {
             RefreshProgressiveTexts();
         }
@@ -118,8 +118,8 @@ public class JournalEntry : MonoBehaviour
         // Simple: just show or hide the entire entry
         gameObject.SetActive(unlocked);
         
-        // If progressive and now unlocked, refresh texts
-        if (unlocked && isProgressiveMode)
+        // If progressive and now unlocked, refresh texts (only if initialized)
+        if (unlocked && isProgressiveMode && isInitialized)
         {
             RefreshProgressiveTexts();
         }
