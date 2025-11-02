@@ -617,9 +617,11 @@ namespace cherrydev
                     return;
                 }
             }
+            
+            if (dialogNodeGraph.NodesList.Count > 1)
+                Debug.LogWarning("No clear starting node found (node without parents). Using first node in list.");
 
             _currentNode = dialogNodeGraph.NodesList[0];
-            Debug.LogWarning("No clear starting node found (node without parents). Using first node in list.");
         }
 
         public void CallExternalFunction(string getExternalFunctionName) =>

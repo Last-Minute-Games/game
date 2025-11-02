@@ -51,14 +51,14 @@ public class EnvironmentSoundHandler : MonoBehaviour
 
     public void PlayDoorSound()
     {
-        _doorAudioSource.volume = 0.9f; 
+        _doorAudioSource.volume = 0.9f;
         _doorAudioSource.clip = doorOpenClip;
         _doorAudioSource.Play();
     }
     
     public void PlayJournalSound(bool isOpening)
     {
-        _journalAudioSource.volume = 0.71f; 
+        _journalAudioSource.volume = 0.6f; 
         _journalAudioSource.clip = isOpening ? journalOpenClip : journalCloseClip;
         _journalAudioSource.time = isOpening ? 0.05f : 0f;
         _journalAudioSource.Play();

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace cherrydev
 {
     [System.Serializable]
-    public struct Sentence
+    public class Sentence
     {
         public string CharacterName;
         public string Text;
