@@ -63,7 +63,7 @@ public class JournalUnlockTrigger_Example : MonoBehaviour
         // Method 1: Use the flag system (recommended)
         if (!string.IsNullOrEmpty(flagToSet))
         {
-            GameFlags.SetFlag(flagToSet, true);
+            GameFlags.SetFlag(flagToSet);
             Debug.Log($"[JournalUnlock] Set flag: {flagToSet}");
         }
         
@@ -91,7 +91,7 @@ public class DialogueNPC : MonoBehaviour
     public void OnDialogueComplete()
     {
         // Unlocks journal entry mapped to this flag
-        GameFlags.SetFlag("talked_to_knight", true);
+        GameFlags.SetFlag("talked_to_knight");
     }
 }
 
@@ -102,7 +102,7 @@ public class BossEnemy : Enemy
     {
         base.Die();
         // Unlocks journal entry for this boss
-        GameFlags.SetFlag("defeated_dragon", true);
+        GameFlags.SetFlag("defeated_dragon");
     }
 }
 
@@ -115,7 +115,7 @@ public class ItemPickup : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            GameFlags.SetFlag(itemFlagName, true);
+            GameFlags.SetFlag(itemFlagName);
             Destroy(gameObject);
         }
     }
@@ -127,9 +127,9 @@ public class QuestComplete : MonoBehaviour
     public void OnQuestFinished()
     {
         // Unlock multiple related entries
-        GameFlags.SetFlag("quest_forest_complete", true);
-        GameFlags.SetFlag("met_forest_spirit", true);
-        GameFlags.SetFlag("found_ancient_key", true);
+        GameFlags.SetFlag("quest_forest_complete");
+        GameFlags.SetFlag("met_forest_spirit");
+        GameFlags.SetFlag("found_ancient_key");
     }
 }
 
@@ -141,7 +141,7 @@ public class SceneController : MonoBehaviour
         // Unlock tutorial entry when reaching a new area
         if (SceneManager.GetActiveScene().name == "Town")
         {
-            GameFlags.SetFlag("reached_town", true);
+            GameFlags.SetFlag("reached_town");
         }
     }
 }

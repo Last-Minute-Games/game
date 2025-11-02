@@ -8,14 +8,11 @@ public class JournalManager : ScriptableObject
     [Serializable]
     public struct Mapping
     {
-        [Tooltip("When this flag changes...")]
+        [Tooltip("When this flag is set...")]
         public string flag;
 
         [Tooltip("...unlock this journal entry id.")]
         public string entryId;
-
-        [Tooltip("Only when flag becomes TRUE? If false, unlock on any change.")]
-        public bool onlyWhenTrue;
     }
 
     [Header("Journal Settings")]
@@ -31,7 +28,6 @@ public class JournalManager : ScriptableObject
     private void OnEnable()
     {
         // Auto-hook when this ScriptableObject is loaded
-        // (usually when the game starts or scene loads)
         if (GameFlags.Instance != null)
         {
             Hook(GameFlags.Instance);
@@ -85,29 +81,22 @@ public class JournalManager : ScriptableObject
         {
             if (string.IsNullOrWhiteSpace(m.flag)) continue;
             
-            bool flagValue = currentFlags.Get(m.flag);
-            
-            if (m.onlyWhenTrue && flagValue)
-            {
-                AddEntry(m.entryId);
-            }
-            else if (!m.onlyWhenTrue && flagValue)
+            // Check if flag exists
+            if (GameFlags.HasFlag(m.flag))
             {
                 AddEntry(m.entryId);
             }
         }
     }
 
-    private void HandleFlagChanged(string flag, bool value)
+    private void HandleFlagChanged(string flag)
     {
         foreach (var m in mappings)
         {
             if (!string.Equals(m.flag, flag, StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            if (m.onlyWhenTrue && !value)
-                continue;
-
+            // Flag was set, unlock the entry
             AddEntry(m.entryId);
         }
     }

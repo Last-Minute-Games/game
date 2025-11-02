@@ -47,7 +47,7 @@ public class JournalTestUnlocker : MonoBehaviour
         // Method 1: Use flag system
         if (!string.IsNullOrEmpty(testFlag))
         {
-            GameFlags.SetFlag(testFlag, true);
+            GameFlags.SetFlag(testFlag);
             Debug.Log($"[TEST] Set flag: {testFlag}");
         }
         
@@ -65,7 +65,7 @@ public class JournalTestUnlocker : MonoBehaviour
     [ContextMenu("Unlock Allistair")]
     public void UnlockAllistair()
     {
-        GameFlags.SetFlag("met_allistair", true);
+        GameFlags.SetFlag("met_allistair");
         Debug.Log("[TEST] Unlocked Allistair!");
     }
     
@@ -75,7 +75,7 @@ public class JournalTestUnlocker : MonoBehaviour
     [ContextMenu("Unlock Gargoyle")]
     public void UnlockGargoyle()
     {
-        GameFlags.SetFlag("defeated_gargoyle", true);
+        GameFlags.SetFlag("defeated_gargoyle");
         Debug.Log("[TEST] Unlocked Gargoyle!");
     }
     
@@ -85,9 +85,9 @@ public class JournalTestUnlocker : MonoBehaviour
     [ContextMenu("Unlock All Test Entries")]
     public void UnlockAllTestEntries()
     {
-        GameFlags.SetFlag("met_allistair", true);
-        GameFlags.SetFlag("defeated_gargoyle", true);
-        GameFlags.SetFlag("found_blade", true);
+        GameFlags.SetFlag("met_allistair");
+        GameFlags.SetFlag("defeated_gargoyle");
+        GameFlags.SetFlag("found_blade");
         Debug.Log("[TEST] Unlocked all test entries!");
     }
 }

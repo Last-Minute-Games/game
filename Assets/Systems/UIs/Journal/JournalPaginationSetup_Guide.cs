@@ -20,7 +20,7 @@ public class JournalPaginationSetup_Guide : MonoBehaviour
     void Example_UnlockFromEnemyDeath()
     {
         // When an enemy dies:
-        GameFlags.SetFlag("defeated_dragon", true);
+        GameFlags.SetFlag("defeated_dragon");
         
         // JournalManager automatically listens and unlocks the entry
         // if you've mapped "defeated_dragon" -> "monster.dragon" in the Inspector
@@ -29,16 +29,16 @@ public class JournalPaginationSetup_Guide : MonoBehaviour
     void Example_UnlockFromDialogue()
     {
         // When dialogue completes:
-        GameFlags.SetFlag("talked_to_knight", true);
+        GameFlags.SetFlag("talked_to_knight");
         // Automatically unlocks the journal entry
     }
     
     void Example_UnlockMultiple()
     {
         // Unlock multiple entries at once:
-        GameFlags.SetFlag("quest_complete", true);
-        GameFlags.SetFlag("found_evidence", true);
-        GameFlags.SetFlag("met_suspect", true);
+        GameFlags.SetFlag("quest_complete");
+        GameFlags.SetFlag("found_evidence");
+        GameFlags.SetFlag("met_suspect");
     }
     
     /*
@@ -61,8 +61,7 @@ public class JournalPaginationSetup_Guide : MonoBehaviour
      * 
      * Each MonsterEntry GameObject should have:
      * - JournalEntry component with unique entryId
-     * - lockedView GameObject (shows "???" when locked)
-     * - unlockedView GameObject (shows actual content when unlocked)
+     * - All content directly in the entry (no locked/unlocked views needed!)
      */
     
     /*
@@ -86,7 +85,6 @@ public class JournalPaginationSetup_Guide : MonoBehaviour
      *    - flag: "defeated_dragon"  -> entryId: "monster.dragon"
      *    - flag: "defeated_goblin"  -> entryId: "monster.goblin"
      *    - flag: "defeated_slime"   -> entryId: "monster.slime"
-     * 3. Check "Only When True" = true
      */
     
     /*
@@ -94,14 +92,16 @@ public class JournalPaginationSetup_Guide : MonoBehaviour
      * STEP 4: HOW IT WORKS AT RUNTIME
      * ========================================
      * 
-     * 1. All entries start hidden (locked)
-     * 2. When GameFlags.SetFlag("defeated_dragon", true) is called:
+     * 1. All entries start hidden
+     * 2. When GameFlags.SetFlag("defeated_dragon") is called:
      *    - JournalManager automatically unlocks "monster.dragon"
      *    - JournalPaginationController refreshes
      *    - The dragon entry becomes visible
      * 3. Player can use Previous/Next buttons to scroll through unlocked entries
      * 4. Locked entries are never shown in the pagination
      * 5. Page counter updates (e.g., "1 / 3" if 3 monsters are unlocked)
+     * 
+     * NOTE: Flags just EXIST or DON'T EXIST - no true/false!
      */
     
     /*
@@ -119,7 +119,7 @@ public class JournalPaginationSetup_Guide : MonoBehaviour
     //     // Unlock journal entry for this enemy
     //     if (!string.IsNullOrEmpty(data.journalFlagName))
     //     {
-    //         GameFlags.SetFlag(data.journalFlagName, true);
+    //         GameFlags.SetFlag(data.journalFlagName);
     //         Debug.Log($"Unlocked journal entry: {data.journalFlagName}");
     //     }
     // }
@@ -170,5 +170,8 @@ public class JournalPaginationSetup_Guide : MonoBehaviour
      * Q: What if I want no pagination (show all entries at once)?
      * A: Don't use JournalPaginationController. Just use JournalPageController instead.
      *    It will show all unlocked entries without pagination buttons.
+     * 
+     * Q: Do flags have true/false values?
+     * A: No! Flags just EXIST or DON'T EXIST. Much simpler!
      */
 }

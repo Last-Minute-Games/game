@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Simple game flags system for tracking boolean game states.
+/// Simple game flags system for tracking game states.
+/// Flags either EXIST or DON'T EXIST - no true/false confusion.
 /// Flags are persisted using PlayerPrefs and automatically loaded on first access.
 /// </summary>
 public class GameFlags : PersistentSingleton<GameFlags>
@@ -13,9 +14,9 @@ public class GameFlags : PersistentSingleton<GameFlags>
     private const string SAVE_KEY = "GameFlags_Data";
 
     /// <summary>
-    /// Event fired when a flag value changes
+    /// Event fired when a flag is set (added) or removed
     /// </summary>
-    public event Action<string, bool> OnFlagChanged;
+    public event Action<string> OnFlagChanged;
 
     protected override void Awake()
     {
@@ -62,11 +63,10 @@ public class GameFlags : PersistentSingleton<GameFlags>
     // ========== STATIC API (Singleton Pattern) ==========
 
     /// <summary>
-    /// Set a flag to the specified value. Automatically saves to PlayerPrefs.
+    /// Set a flag (adds it to the active flags). Automatically saves to PlayerPrefs.
     /// </summary>
     /// <param name="flagName">The name of the flag to set</param>
-    /// <param name="value">The value to set (true or false)</param>
-    public static void SetFlag(string flagName, bool value = true)
+    public static void SetFlag(string flagName)
     {
         if (string.IsNullOrEmpty(flagName))
         {
@@ -74,36 +74,17 @@ public class GameFlags : PersistentSingleton<GameFlags>
             return;
         }
 
-        bool previousValue = Instance._activeFlags.Contains(flagName);
-        bool changed = false;
-
-        if (value)
+        if (!Instance._activeFlags.Contains(flagName))
         {
-            if (!Instance._activeFlags.Contains(flagName))
-            {
-                Instance._activeFlags.Add(flagName);
-                changed = true;
-                Debug.Log($"[GameFlags] Set flag: {flagName}");
-            }
-        }
-        else
-        {
-            if (Instance._activeFlags.Remove(flagName))
-            {
-                changed = true;
-                Debug.Log($"[GameFlags] Cleared flag: {flagName}");
-            }
-        }
-
-        if (changed)
-        {
+            Instance._activeFlags.Add(flagName);
             Instance.SaveFlags();
-            Instance.OnFlagChanged?.Invoke(flagName, value);
+            Instance.OnFlagChanged?.Invoke(flagName);
+            Debug.Log($"[GameFlags] Set flag: {flagName}");
         }
     }
 
     /// <summary>
-    /// Check if a flag exists (is set to true)
+    /// Check if a flag exists (has been set)
     /// </summary>
     /// <param name="flagName">The name of the flag to check</param>
     /// <returns>True if the flag exists, false otherwise</returns>
@@ -119,9 +100,17 @@ public class GameFlags : PersistentSingleton<GameFlags>
     /// Remove a specific flag. Automatically saves to PlayerPrefs.
     /// </summary>
     /// <param name="flagName">The name of the flag to remove</param>
-    public static void ClearFlag(string flagName)
+    public static void RemoveFlag(string flagName)
     {
-        SetFlag(flagName, false);
+        if (string.IsNullOrEmpty(flagName))
+            return;
+
+        if (Instance._activeFlags.Remove(flagName))
+        {
+            Instance.SaveFlags();
+            Instance.OnFlagChanged?.Invoke(flagName);
+            Debug.Log($"[GameFlags] Removed flag: {flagName}");
+        }
     }
 
     /// <summary>
@@ -140,6 +129,14 @@ public class GameFlags : PersistentSingleton<GameFlags>
     public static int GetFlagCount()
     {
         return Instance._activeFlags.Count;
+    }
+
+    /// <summary>
+    /// Get all active flag names
+    /// </summary>
+    public static HashSet<string> GetAllFlags()
+    {
+        return new HashSet<string>(Instance._activeFlags);
     }
 
     /// <summary>
@@ -163,18 +160,73 @@ public class GameFlags : PersistentSingleton<GameFlags>
     // ========== INSTANCE API (for ScriptableObject references) ==========
 
     /// <summary>
-    /// Instance method: Get the value of a flag
+    /// Instance method: Check if a flag exists
     /// </summary>
+    public bool Has(string flagName)
+    {
+        return HasFlag(flagName);
+    }
+
+    /// <summary>
+    /// Instance method: Set a flag
+    /// </summary>
+    public void Set(string flagName)
+    {
+        SetFlag(flagName);
+    }
+
+    /// <summary>
+    /// Instance method: Remove a flag
+    /// </summary>
+    public void Remove(string flagName)
+    {
+        RemoveFlag(flagName);
+    }
+
+    // ========== DEPRECATED (for backwards compatibility) =========
+    // These are marked obsolete to guide developers to the new API
+
+    /// <summary>
+    /// DEPRECATED: Use HasFlag(flagName) instead.
+    /// This method exists for backwards compatibility only.
+    /// </summary>
+    [System.Obsolete("Use HasFlag(flagName) instead. Flags no longer use true/false values.")]
     public bool Get(string flagName)
     {
         return HasFlag(flagName);
     }
 
     /// <summary>
-    /// Instance method: Set a flag value
+    /// DEPRECATED: Use SetFlag(flagName) or RemoveFlag(flagName) instead.
+    /// This method exists for backwards compatibility only.
     /// </summary>
+    [System.Obsolete("Use SetFlag(flagName) to add a flag, or RemoveFlag(flagName) to remove it. Flags no longer use true/false values.")]
     public void Set(string flagName, bool value)
     {
-        SetFlag(flagName, value);
+        if (value)
+            SetFlag(flagName);
+        else
+            RemoveFlag(flagName);
+    }
+
+    /// <summary>
+    /// DEPRECATED: Use SetFlag(flagName) or RemoveFlag(flagName) instead.
+    /// </summary>
+    [System.Obsolete("Use SetFlag(flagName) to add a flag, or RemoveFlag(flagName) to remove it.")]
+    public static void SetFlag(string flagName, bool value)
+    {
+        if (value)
+            SetFlag(flagName);
+        else
+            RemoveFlag(flagName);
+    }
+
+    /// <summary>
+    /// DEPRECATED: Use RemoveFlag(flagName) instead.
+    /// </summary>
+    [System.Obsolete("Use RemoveFlag(flagName) instead.")]
+    public static void ClearFlag(string flagName)
+    {
+        RemoveFlag(flagName);
     }
 }
