@@ -6,6 +6,7 @@ using Unity.Cinemachine;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -39,6 +40,11 @@ namespace Systems.Overworld.Intro
         private EnvironmentSoundHandler _environmentSoundHandler;
         private AudioSource _glitchAudioSource;
         private AudioSource _meltingAudioSource;
+        
+        private GameObject _ballroomBloodPuddle;
+        private GameObject _ballroomFootsteps;
+        
+        private AudioSource _ballroomThroneDoorSource;
 
         private MusicManager _introMusicManager;
 
@@ -59,7 +65,10 @@ namespace Systems.Overworld.Intro
         private GameObject _corruptScreen;
 
         private GameObject _charactersGroup;
-
+        
+        private Light2D _characterLight2D;
+        private Light2D _ballroomSpotlight;
+        
         private IEnumerator WaitDreamIntro()
         {
             yield return new WaitForSeconds(_introMusicManager.dreamLoop.length);
@@ -91,12 +100,59 @@ namespace Systems.Overworld.Intro
 
             return node;
         }
+
+        private IEnumerator WaitAndOpenBigDoor()
+        {
+            var ballroomDoor = GameObject.Find("BallroomDoor");
+            var openHash = Animator.StringToHash("OpenDoor");
+            
+            var spotlightClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/Spotlight");
+            var bigDoorOpenClip = Resources.Load<AudioClip>("SFXs/Doors/BigDoorOpen");
+            var tempBallroomBlock = GameObject.Find("TempBallroomBlock");
+            
+            yield return new WaitForSeconds(8f);
+
+            _characterLight2D.enabled = false;
+            _ballroomSpotlight.enabled = true;
+            
+            _ballroomThroneDoorSource.clip = spotlightClip;
+            _ballroomThroneDoorSource.Play();
+                
+            yield return new WaitForSeconds(1.5f);
+
+            _ballroomThroneDoorSource.clip = bigDoorOpenClip;
+            _ballroomThroneDoorSource.Play();
+            
+            _plrInput.isInputEnabled = true;
+            tempBallroomBlock.SetActive(false);
+            
+            yield return new WaitForSeconds(0.5f);
+
+            foreach (Transform door in ballroomDoor.transform)
+            {
+                var animator = door.GetComponent<Animator>();
+                if (animator) animator.SetTrigger(openHash);
+            }
+        }
+        
         private void ActivateMeltingSequence()
         {
             if (_isBallroomMelting) return;
             _isBallroomMelting = true;
             
+            _plrInput.isInputEnabled = false;
+            
             _meltingAudioSource.Play();
+
+            StartCoroutine(WaitAndOpenBigDoor());
+
+            foreach (Transform puddleTrans in _ballroomBloodPuddle.transform)
+            {
+                var puddleRenderer = puddleTrans.GetComponent<SpriteRenderer>();
+                var newColor = puddleRenderer.color;
+                newColor.a = 1;
+                puddleRenderer.DOColor(newColor, 4f).SetEase(Ease.InSine);
+            }
             
             foreach (Transform npcTransform in _charactersGroup.transform)
             {
@@ -109,6 +165,8 @@ namespace Systems.Overworld.Intro
                 Vector3 targetPos = spriteRenderer.transform.position - new Vector3(0, sinkDistance, 0);
                 spriteRenderer.transform.DOMove(targetPos, 7f).SetEase(Ease.Linear);
             }
+
+            _characterLight2D.DOIntensity(0, 6.5f);
         }
 
         private void CreateScaryDialogue(Transform npcTransform)
@@ -177,6 +235,29 @@ namespace Systems.Overworld.Intro
             _meltingAudioSource.clip = meltClip;
             _meltingAudioSource.volume = 1f;
             
+            _ballroomFootsteps = GameObject.Find("BallroomFootsteps");
+            foreach (var footstepObj in _ballroomFootsteps.transform)
+            {
+                var 
+            }
+            
+            _ballroomBloodPuddle = GameObject.Find("BallroomBloodPuddle");
+            foreach (Transform puddleTrans in _ballroomBloodPuddle.transform)
+            {
+                var puddleRenderer = puddleTrans.GetComponent<SpriteRenderer>();
+                var color = puddleRenderer.color;
+                color.a = 0;
+                puddleRenderer.color = color;
+            }
+
+            _ballroomThroneDoorSource = GameObject.Find("Ballroom/Throne").GetComponent<AudioSource>();
+            
+            _characterLight2D = GameObject.Find("CharacterLight").GetComponent<Light2D>();
+            _ballroomSpotlight = GameObject.Find("BallroomSpotlight").GetComponent<Light2D>();
+            
+            _characterLight2D.enabled = true;
+            _ballroomSpotlight.enabled = false;
+            
             _charactersGroup = GameObject.Find("BlockingCharacters");
             // iterate for each child
             foreach (Transform child in _charactersGroup.transform)
@@ -228,7 +309,7 @@ namespace Systems.Overworld.Intro
                     if (!_isPlayingIntroMusic)
                     {
                         _introMusicManager.GetAudioSource().volume = 0f;
-                        _introMusicManager.FadeAndPlay(0.35f, 15f);
+                        _introMusicManager.FadeAndPlay(0.15f, 15f);
 
                         StartCoroutine(WaitDreamIntro());
                         _isPlayingIntroMusic = true;
