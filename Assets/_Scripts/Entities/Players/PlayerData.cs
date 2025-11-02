@@ -8,13 +8,18 @@ public class PlayerData : EntityData
     [Tooltip("Reference to global configuration settings.")]
     public GameConfig config;
 
-    [Tooltip("Starting energy (will be replaced by config if assigned).")]
-    public int baseEnergy = 3;
+    // DO NOT ENTY THE FOLLOWING CONFIGURATION IN FILE
+    // EDIT THEM IN GameConfig
+    [Tooltip("Starting energy")]
+    public int baseEnergy;
 
-    [Tooltip("Maximum energy cap (will be replaced by config if assigned).")]
-    public int maxEnergy = 3;
+    [Tooltip("Maximum energy cap")]
+    public int maxEnergy;
 
-    [Tooltip("Optional list of starting relics.")]
+    [Tooltip("Starting cards list")]
+    public List<CardData> startingCards = new List<CardData>();
+
+    [Tooltip("Starting relics list")]
     public List<RelicData> startingRelics = new List<RelicData>();
 
     protected override void OnValidate()
@@ -28,6 +33,16 @@ public class PlayerData : EntityData
             baseShield   = config.defaultShield;
             baseEnergy   = config.defaultBaseEnergy;
             maxEnergy    = config.defaultMaxEnergy;
+
+            // Get starting definitions of cards and relics from GameConfig
+            startingCards.Clear();
+            startingRelics.Clear();
+
+            if (config.defaultCards != null && config.defaultCards.Count > 0)
+                startingCards.AddRange(config.defaultCards);
+
+            if (config.defaultRelics != null && config.defaultRelics.Count > 0)
+                startingRelics.AddRange(config.defaultRelics);
         }
         else
         {
