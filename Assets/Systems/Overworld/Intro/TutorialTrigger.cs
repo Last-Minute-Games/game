@@ -42,7 +42,7 @@ namespace Systems.Overworld.Intro
 
             Debug.Log("Player entered the tutorial trigger area.");
 
-            if (OnTriggerEnter != null)
+            if (OnTriggerEnter != null && OnTriggerEnter.GetPersistentEventCount() > 0)
             {
                 OnTriggerEnter.Invoke();
             }
