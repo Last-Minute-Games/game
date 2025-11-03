@@ -104,7 +104,11 @@ namespace Systems
             
             // check if scene is tutorial
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             if (tptTo.transform.name != "Throne" || !FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>())
+=======
+            if (!FindFirstObjectByType<Overworld.Intro.TutorialScene>())
+>>>>>>> Stashed changes
 =======
             if (!FindFirstObjectByType<Overworld.Intro.TutorialScene>())
 >>>>>>> Stashed changes
