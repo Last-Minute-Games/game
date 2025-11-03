@@ -51,6 +51,9 @@ public class BlackjackPopupController : MonoBehaviour
 
     public void Hide()
     {
+
+        FindObjectOfType<ClockTimer>()?.PauseTimer(false);
+
         // If BlackjackGame needs to do cleanup, you can call a public method on it here.
 
         // Unpause player

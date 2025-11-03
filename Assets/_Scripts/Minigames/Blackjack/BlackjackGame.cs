@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using Blackjack;
 using TMPro;
 using UnityEngine;
@@ -25,6 +26,16 @@ public class BlackjackGame : MonoBehaviour
     private Hand dealer = new Hand();
     private Hand player = new Hand();
     private bool playerTurn;
+
+
+    [Header("Card UI")]
+    public Transform dealerHandArea;
+    public Transform playerHandArea;
+    public CardViews cardPrefab;   // the prefab from step 3
+    public CardSpriteLibrary spriteLibrary;
+
+    readonly List<GameObject> temp = new List<GameObject>(); //optional???
+
 
 
     void Awake()
@@ -155,7 +166,15 @@ public class BlackjackGame : MonoBehaviour
     void UpdateUI(bool hideDealerHoleCard)
     {
         playerHandText.text = FormatHand(player, revealAll: true);
-        dealerHandText.text = hideDealerHoleCard ? FormatDealerWithHoleCardHidden() : FormatHand(dealer, revealAll: true);
+        dealerHandText.text = hideDealerHoleCard
+            ? FormatDealerWithHoleCardHidden()
+            : FormatHand(dealer, revealAll: true);
+
+        // Player: all face-up
+        RenderHandSprites(playerHandArea, player.Cards, revealAll: true, hideHoleCard: false);
+
+        // Dealer: show all, but flip the hole card if requested
+        RenderHandSprites(dealerHandArea, dealer.Cards, revealAll: true, hideHoleCard: hideDealerHoleCard);
     }
 
 
@@ -202,6 +221,26 @@ public class BlackjackGame : MonoBehaviour
     public void QuitToOverworld() { 
         OnRequestClose?.Invoke();
     }
+
+    void ClearArea(Transform t)
+    {
+        for (int i = t.childCount - 1; i >= 0; i--)
+            Destroy(t.GetChild(i).gameObject);
+    }
+
+    void RenderHandSprites(Transform area, List<Blackjack.Card> cards, bool revealAll, bool hideHoleCard)
+    {
+        ClearArea(area);
+        for (int i = 0; i < cards.Count; i++)
+        {
+            var cv = Instantiate(cardPrefab, area);
+            cv.library = spriteLibrary; // ensure set
+            bool faceUp = revealAll && !(hideHoleCard && i == 1);
+            cv.Show(cards[i], faceUp);
+        }
+    }
+
+
 
 
 }
