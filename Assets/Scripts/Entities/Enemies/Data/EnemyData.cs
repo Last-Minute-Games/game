@@ -33,6 +33,13 @@ public class EnemyData : EntityData
     [Tooltip("Name prefix when the enemy rolls near its maximum scale (stronger variant).")]
     public string strongPrefix = "Insane";
 
+    [Header("Variant Visual Overrides (Optional)")]
+    [Tooltip("Visual overrides when this enemy spawns as its weaker variant.")]
+    public VariantVisualOptions weakOptions;
+
+    [Tooltip("Visual overrides when this enemy spawns as its stronger variant.")]
+    public VariantVisualOptions strongOptions;
+
     [Header("FX Data")]
     [Tooltip("Reference to visual/sound FX data for this enemy.")]
     public EnemyFXData enemyFXData;
@@ -41,6 +48,18 @@ public class EnemyData : EntityData
     [Tooltip("Unique ID for this enemy (used for lookups or saves).")]
     public int uniqueID;
 
+    // struct for per-variant visual customization
+    [System.Serializable]
+    public struct VariantVisualOptions
+    {
+        [Range(0f, 2f)]
+        [Tooltip("Optional size multiplier for this variant (if 0, EnemyManager uses global default).")]
+        public float sizeMultiplier;
+
+        [Tooltip("Optional tint color for this variant (alpha = 0 means none).")]
+        public Color tintColor;
+    }
+
     protected override void OnValidate()
     {
         // verify valid scale multiplier
@@ -48,9 +67,9 @@ public class EnemyData : EntityData
             minScaleMultiplier = maxScaleMultiplier;
 
         // Sanity checks
-        baseHealth        = Mathf.Max(1, baseHealth);
-        baseShield        = Mathf.Max(0, baseShield);
-        basePowerScale    = Mathf.Max(0.01f, basePowerScale);
+        baseHealth         = Mathf.Max(1, baseHealth);
+        baseShield         = Mathf.Max(0, baseShield);
+        basePowerScale     = Mathf.Max(0.01f, basePowerScale);
         minScaleMultiplier = Mathf.Clamp(minScaleMultiplier, 0f, maxScaleMultiplier);
         maxScaleMultiplier = Mathf.Max(minScaleMultiplier, maxScaleMultiplier);
     }
