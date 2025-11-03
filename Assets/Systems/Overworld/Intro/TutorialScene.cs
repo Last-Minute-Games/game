@@ -28,10 +28,11 @@ namespace Systems.Overworld.Intro
 
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
+        private CharacterMotor2D _plrMotor2D;
+        
         private Camera _plrMainCamera;
         private CinemachinePositionComposer _cinemachinePositionComposer;
-
-        private CharacterMotor2D _characterMotor2D;
+        
         private CanvasGroup _fadeCanvasGroup;
 
         private CanvasGroup _journalPanel;
@@ -41,7 +42,6 @@ namespace Systems.Overworld.Intro
         private Button _movementContinueButton;
 
         private EnvironmentSoundHandler _environmentSoundHandler;
-        private AudioSource _glitchAudioSource;
         private AudioSource _meltingAudioSource;
         
         private GameObject _ballroomBloodPuddle;
@@ -121,6 +121,9 @@ namespace Systems.Overworld.Intro
             {
                 var spriteRenderer = npcTransform.gameObject.GetComponent<SpriteRenderer>();
                 var sinkDistance = spriteRenderer.transform.localScale.z * 2;
+
+                var npcDialog = npcTransform.GetComponent<DialogTrigger>();
+                npcDialog.enabled = false;
                 
                 var newColor = new Color(0.9f, 0.0f, 0.0f);
                 spriteRenderer.DOColor(newColor, 3.5f).SetEase(Ease.Linear);;
@@ -174,8 +177,8 @@ namespace Systems.Overworld.Intro
 
             _ballroomThroneDoorSource.clip = bigDoorOpenClip;
             _ballroomThroneDoorSource.Play();
-            
-            _plrInput.isInputEnabled = true;
+
+            _plrObject.GetComponent<Rigidbody2D>().bodyType  = RigidbodyType2D.Dynamic;
             Destroy(tempBallroomBlock);
             
             yield return new WaitForSeconds(0.5f);
@@ -194,7 +197,7 @@ namespace Systems.Overworld.Intro
             if (_isBallroomMelting) return;
             _isBallroomMelting = true;
             
-            _plrInput.isInputEnabled = false;
+            _plrObject.GetComponent<Rigidbody2D>().bodyType  = RigidbodyType2D.Static;
             
             _meltingAudioSource.Play();
 
@@ -249,7 +252,7 @@ namespace Systems.Overworld.Intro
             _plrInput = _plrObject.GetComponent<PlayerInput2D>();
             _plrInput.isInputEnabled = false;
 
-            _characterMotor2D = _plrObject.GetComponent<CharacterMotor2D>();
+            _plrMotor2D = _plrObject.GetComponent<CharacterMotor2D>();
 
             _plrMainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
             _cinemachinePositionComposer =
@@ -257,11 +260,6 @@ namespace Systems.Overworld.Intro
 
             _environmentSoundHandler =
                 GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
-            
-            var glitchClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/KingGlitch");
-            _glitchAudioSource = _environmentSoundHandler.CreateCustomSource("Glitch");
-            _glitchAudioSource.clip = glitchClip;
-            _glitchAudioSource.volume = 1f;
             
             var meltClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/Melting");
             _meltingAudioSource = _environmentSoundHandler.CreateCustomSource("Melting");
@@ -404,11 +402,36 @@ namespace Systems.Overworld.Intro
             yield return null;
         }
 
+        private IEnumerator BleedingKingHead()
+        {
+            var bloodDrip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/BloodDrip");
+            var bloodSource = _environmentSoundHandler.CreateCustomSource("BloodSource", _kingSpriteRenderer.transform);
+            bloodSource.volume = 0.7f;
+            bloodSource.clip = bloodDrip;
+            
+            yield return new WaitForSeconds(1f);
+            
+            bloodSource.Play();
+            
+            yield return new WaitForSeconds(kingDeadAnimationClip.length * 0.97f - 1);
+            
+            Destroy(bloodSource);
+        }
+
         public IEnumerator BeginKingSeq()
         {
+            var glitchClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/KingGlitch");
+            
+            var throneFearClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/ThroneFear");
+            var throneMusic = _environmentSoundHandler.CreateCustomSource("ThroneMusic", _throneRoomCamera.transform);
+            throneMusic.volume = 0f;
+            throneMusic.clip = throneFearClip;
+            
             var headSliceClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/HeadHack");
-            var kingSliceSource = _environmentSoundHandler.CreateCustomSource("KingSeqSource");
-            kingSliceSource.volume = 0.9f;
+            var headRollClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/HeadRolling");
+            
+            var kingSliceSource = _environmentSoundHandler.CreateCustomSource("KingSeqSource", _throneRoomCamera.transform);
+            kingSliceSource.volume = 0.35f;
             kingSliceSource.clip = headSliceClip;
             
             _plrMainCamera.gameObject.SetActive(false);
@@ -416,7 +439,7 @@ namespace Systems.Overworld.Intro
 
             _kingSpriteRenderer.sprite = kingBehindSprite;
 
-            _characterMotor2D.forceIdleSprite = _characterMotor2D.idleUp;
+            _plrMotor2D.forceIdleSprite = _plrMotor2D.idleUp;
 
             _plrInput.isInputEnabled = false;
 
@@ -426,10 +449,13 @@ namespace Systems.Overworld.Intro
             {
                 _fadeCanvasGroup.blocksRaycasts = false; // Disable blocking after fade-in
             });
+            
+            throneMusic.Play();
+            
+            _introMusicManager.FadeAndStop(0f, 3f);
+            throneMusic.DOFade(0.2f, 3f).SetEase(Ease.Linear);
 
             yield return new WaitForSeconds(3f);
-
-            _introMusicManager.FadeAndStop(0f, 8f);
 
             // TWEEN king camera slightly up
             _throneRoomCamera.transform.DOMoveY(_throneRoomCamera.transform.position.y + 5.45f, 6f)
@@ -440,6 +466,8 @@ namespace Systems.Overworld.Intro
             _kingSpriteRenderer.sprite = kingFrontSprite;
 
             yield return new WaitForSeconds(2f);
+            
+            throneMusic.DOFade(0.35f, 2.5f).SetEase(Ease.Linear);
 
             yield return _mysteriousManIntro.FadeIn();
 
@@ -458,6 +486,11 @@ namespace Systems.Overworld.Intro
             _blackScreen.SetActive(false);
             _mysteriousManIntro.GetComponent<SpriteRenderer>().sortingOrder = 0;
 
+            kingSliceSource.clip = headRollClip;
+            kingSliceSource.Play();
+
+            StartCoroutine(BleedingKingHead());
+            
             _kingAnimator.speed = 1; // unfreeze
 
             yield return new WaitForSeconds(kingDeadAnimationClip.length * 0.97f);
@@ -466,10 +499,14 @@ namespace Systems.Overworld.Intro
 
             yield return new WaitForSeconds(0.5f);
 
-            _glitchAudioSource.Play();
             _corruptScreen.SetActive(true);
+            throneMusic.Stop();
+            
+            throneMusic.clip = glitchClip;
+            throneMusic.volume = 1f;
+            throneMusic.Play();
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1.4f);
 
             // go to overworld scene
             AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
