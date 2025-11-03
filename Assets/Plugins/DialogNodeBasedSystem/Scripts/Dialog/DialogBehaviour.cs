@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
 #if UNITY_LOCALIZATION
@@ -33,6 +34,8 @@ namespace cherrydev
         public ModifyVariableNode CurrentModifyVariableNode { get; private set; }
         public VariableConditionNode CurrentVariableConditionNode { get; private set; }
         public ExternalFunctionNode CurrentExternalFunctionNode { get; private set; }
+        public Node CurrentGameFlagConditionNode { get; private set; }  // Changed to Node type
+        public Node CurrentSetGameFlagNode { get; private set; }  // New property for SetGameFlagNode
         
         public UnityEvent OnDialogStarted => _onDialogStarted;
         public UnityEvent OnDialogFinished => _onDialogFinished;
@@ -76,6 +79,12 @@ namespace cherrydev
 
         public event Action<VariableConditionNode> VariableConditionNodeActivated;
         public event Action<string, bool> VariableConditionEvaluated;
+        
+        public event Action<Node> GameFlagConditionNodeActivated;  // Changed to Node type
+        public event Action<string, bool> GameFlagConditionEvaluated;
+        
+        public event Action<Node> SetGameFlagNodeActivated;  // New event for SetGameFlagNode
+        public event Action<string, bool> SetGameFlagExecuted;  // New event with flagName and isRemove
         
         private event Action<DialogVariablesHandler> _dialogFinished;
 
@@ -379,8 +388,18 @@ namespace cherrydev
                 HandleModifyVariableNode(currentNode);
             else if (currentNode.GetType() == typeof(VariableConditionNode))
                 HandleVariableConditionNode(currentNode);
+            else if (currentNode.GetType().Name == "GameFlagConditionNode")  // Use reflection
+                HandleGameFlagConditionNodeReflection(currentNode);
+            else if (currentNode.GetType().Name == "SetGameFlagNode")  // Use reflection
+                HandleSetGameFlagNodeReflection(currentNode);
             else if (currentNode.GetType() == typeof(ExternalFunctionNode))
                 HandleExternalFunctionNode(currentNode);
+        }
+
+        private void HandleDynamicNode(Node currentNode)
+        {
+            Debug.LogWarning($"Handling dynamic node type: {currentNode.GetType().Name}");
+            // Implement dynamic node handling logic here if needed
         }
 
         /// <summary>
@@ -525,6 +544,112 @@ namespace cherrydev
         }
 
         /// <summary>
+        /// Processing GameFlag condition node using reflection
+        /// </summary>
+        /// <param name="currentNode"></param>
+        private void HandleGameFlagConditionNodeReflection(Node currentNode)
+        {
+            CurrentGameFlagConditionNode = currentNode;
+
+            // Use reflection to call EvaluateCondition method
+            Type nodeType = currentNode.GetType();
+            MethodInfo evaluateMethod = nodeType.GetMethod("EvaluateCondition");
+            
+            if (evaluateMethod == null)
+            {
+                Debug.LogWarning("GameFlagConditionNode does not have EvaluateCondition method");
+                EndDialog();
+                return;
+            }
+
+            bool conditionResult = (bool)evaluateMethod.Invoke(currentNode, null);
+
+            // Get FlagName property
+            PropertyInfo flagNameProperty = nodeType.GetProperty("FlagName");
+            string flagName = flagNameProperty?.GetValue(currentNode) as string ?? "Unknown";
+
+            GameFlagConditionNodeActivated?.Invoke(currentNode);
+            GameFlagConditionEvaluated?.Invoke(flagName, conditionResult);
+
+            // Get TrueChildNode and FalseChildNode fields
+            FieldInfo trueChildField = nodeType.GetField("TrueChildNode");
+            FieldInfo falseChildField = nodeType.GetField("FalseChildNode");
+
+            Node nextNode = null;
+
+            if (conditionResult)
+            {
+                nextNode = trueChildField?.GetValue(currentNode) as Node;
+                Debug.Log($"GameFlag condition '{flagName}' evaluated to TRUE");
+            }
+            else
+            {
+                nextNode = falseChildField?.GetValue(currentNode) as Node;
+                Debug.Log($"GameFlag condition '{flagName}' evaluated to FALSE");
+            }
+
+            if (nextNode != null)
+            {
+                _currentNode = nextNode;
+                HandleDialogGraphCurrentNode(_currentNode);
+            }
+            else
+            {
+                Debug.LogWarning(
+                    $"No {(conditionResult ? "TRUE" : "FALSE")} path connected for GameFlag condition node");
+                EndDialog();
+            }
+        }
+
+        /// <summary>
+        /// Processing SetGameFlag node using reflection
+        /// </summary>
+        /// <param name="currentNode"></param>
+        private void HandleSetGameFlagNodeReflection(Node currentNode)
+        {
+            CurrentSetGameFlagNode = currentNode;
+
+            // Use reflection to call ExecuteFlag method
+            Type nodeType = currentNode.GetType();
+            MethodInfo executeMethod = nodeType.GetMethod("ExecuteFlag");
+            
+            if (executeMethod == null)
+            {
+                Debug.LogWarning("SetGameFlagNode does not have ExecuteFlag method");
+                EndDialog();
+                return;
+            }
+
+            // Get FlagName and RemoveFlag properties
+            PropertyInfo flagNameProperty = nodeType.GetProperty("FlagName");
+            PropertyInfo removeFlagProperty = nodeType.GetProperty("RemoveFlag");
+            
+            string flagName = flagNameProperty?.GetValue(currentNode) as string ?? "Unknown";
+            bool isRemove = removeFlagProperty != null && (bool)removeFlagProperty.GetValue(currentNode);
+
+            // Execute the flag operation
+            executeMethod.Invoke(currentNode, null);
+
+            SetGameFlagNodeActivated?.Invoke(currentNode);
+            SetGameFlagExecuted?.Invoke(flagName, isRemove);
+
+            // Get ChildNode field
+            FieldInfo childNodeField = nodeType.GetField("ChildNode");
+            Node nextNode = childNodeField?.GetValue(currentNode) as Node;
+
+            if (nextNode != null)
+            {
+                _currentNode = nextNode;
+                HandleDialogGraphCurrentNode(_currentNode);
+            }
+            else
+            {
+                Debug.Log("SetGameFlag node has no child, ending dialog");
+                EndDialog();
+            }
+        }
+
+        /// <summary>
         /// Processing external function node
         /// </summary>
         /// <param name="currentNode"></param>
@@ -609,6 +734,44 @@ namespace cherrydev
                     hasParents = variableConditionNode.ParentNodes.Count > 0;
                     hasChildren = variableConditionNode.TrueChildNode != null ||
                                   variableConditionNode.FalseChildNode != null;
+                }
+                else if (node.GetType().Name == "GameFlagConditionNode")  // Use reflection
+                {
+                    Type nodeType = node.GetType();
+                    FieldInfo parentsField = nodeType.GetField("ParentNodes");
+                    FieldInfo trueChildField = nodeType.GetField("TrueChildNode");
+                    FieldInfo falseChildField = nodeType.GetField("FalseChildNode");
+                    
+                    if (parentsField != null)
+                    {
+                        var parentsList = parentsField.GetValue(node) as System.Collections.IList;
+                        hasParents = parentsList != null && parentsList.Count > 0;
+                    }
+                    
+                    if (trueChildField != null && falseChildField != null)
+                    {
+                        Node trueChild = trueChildField.GetValue(node) as Node;
+                        Node falseChild = falseChildField.GetValue(node) as Node;
+                        hasChildren = trueChild != null || falseChild != null;
+                    }
+                }
+                else if (node.GetType().Name == "SetGameFlagNode")  // Use reflection
+                {
+                    Type nodeType = node.GetType();
+                    FieldInfo parentsField = nodeType.GetField("ParentNodes");
+                    FieldInfo childField = nodeType.GetField("ChildNode");
+                    
+                    if (parentsField != null)
+                    {
+                        var parentsList = parentsField.GetValue(node) as System.Collections.IList;
+                        hasParents = parentsList != null && parentsList.Count > 0;
+                    }
+                    
+                    if (childField != null)
+                    {
+                        Node child = childField.GetValue(node) as Node;
+                        hasChildren = child != null;
+                    }
                 }
 
                 if (!hasParents && hasChildren)
