@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class EnvironmentSoundHandler : MonoBehaviour
 {
@@ -36,14 +38,14 @@ public class EnvironmentSoundHandler : MonoBehaviour
         }
     }
 
-    public AudioSource CreateCustomSource(string sourceName)
+    public AudioSource CreateCustomSource(string sourceName, Transform parent = null)
     {
         var newAudioSource = new GameObject(sourceName).AddComponent<AudioSource>();
         _playerAudioSources.Add(newAudioSource);
         
         newAudioSource.playOnAwake = false;
         
-        newAudioSource.transform.parent = transform;
+        newAudioSource.transform.parent = parent ?? transform;
         newAudioSource.transform.localPosition = Vector3.zero;
         
         return newAudioSource;
