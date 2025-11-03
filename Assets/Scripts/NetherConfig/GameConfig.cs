@@ -29,5 +29,5 @@ public class GameConfig : ScriptableObject
 
     [Header("Battle Settings")]
     [Tooltip("Duration (in seconds) for each turn before auto-advance.")]
-    public float turnDuration = 15f;
+    public int turnDuration = 15;
 }
