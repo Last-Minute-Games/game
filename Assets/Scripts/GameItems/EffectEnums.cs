@@ -8,11 +8,14 @@ public enum TargetRule // do not change target rules specifically
 
 public enum OperationType // ts mainly dealt thru feedbackmanager and datainteractionhelper
 {
-    None,
-    ModifyHealth,
-    ModifyPowerScale,
-    ModifyShield,
-    ModifyEnergy,
+    None, 
+    DamageHealth,
+    HealHealth,
+    MultiplyPowerScale,
+    DamageShield,
+    AddShield,
+    AddEnergy,
+    ShuffleDeck,
     EndTurn
 }
 

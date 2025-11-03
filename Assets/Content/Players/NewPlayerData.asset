@@ -15,8 +15,10 @@ MonoBehaviour:
   baseHealth: 100
   baseShield: 0
   basePowerScale: 1
-  usableCards: []
-  config: {fileID: 0}
-  baseEnergy: 0
-  maxEnergy: 0
+  usableCards:
+  - card: {fileID: 11400000, guid: 732adffbb1670dc9ba81e8df6c6d9e49, type: 2}
+    drawWeight: 1.12
+  config: {fileID: 11400000, guid: ebb416b5f719f46c0ab992ed16a61141, type: 2}
+  baseEnergy: 3
+  maxEnergy: 3
   startingRelics: []
