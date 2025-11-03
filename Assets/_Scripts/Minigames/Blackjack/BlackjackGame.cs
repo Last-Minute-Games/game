@@ -79,7 +79,7 @@ public class BlackjackGame : MonoBehaviour
         }
     }
 
-    void OnHit()
+    public void OnHit()
     {
         if (!playerTurn) return;
         player.Add(deck.Draw());
@@ -91,7 +91,7 @@ public class BlackjackGame : MonoBehaviour
         }
     }
 
-    void OnStand()
+    public void OnStand()
     {
         if (!playerTurn) return;
         EndPlayerTurn();
@@ -197,6 +197,13 @@ public class BlackjackGame : MonoBehaviour
             default: return "♠";
         }
     }
+    public System.Action OnRequestClose;
+
+    public void QuitToOverworld() { 
+        OnRequestClose?.Invoke();
+    }
+
+
 }
 
 
