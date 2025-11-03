@@ -184,7 +184,7 @@ namespace Systems.Overworld.Intro
             _ballroomThroneDoorSource.clip = bigDoorOpenClip;
             _ballroomThroneDoorSource.Play();
 
-            _plrObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+            // _plrObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
             _plrInput.isInputEnabled = true;
             
             Destroy(tempBallroomBlock);
@@ -205,7 +205,10 @@ namespace Systems.Overworld.Intro
             if (_isBallroomMelting) return;
             _isBallroomMelting = true;
 
-            _plrObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+            var tutorialMeltingGraph = Resources.Load<DialogNodeGraph>("Dialogues/Nikolaus/TutorialMonologueMelting");
+            dialogBehaviour.StartDialog(tutorialMeltingGraph);
+
+            // _plrObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
             _plrInput.isInputEnabled = false;
 
             _meltingAudioSource.Play();
@@ -486,12 +489,16 @@ namespace Systems.Overworld.Intro
             dialogBehaviour.IsCanSkippingText = false;
             dialogBehaviour.StartDialog(tutorialMonologueGraph);
 
-            dialogBehaviour.OnDialogFinished.AddListener(() =>
-            {
-                StartCoroutine(OpenJournal());
-            });
+            dialogBehaviour.OnDialogFinished.AddListener(OpenJournalCall);
 
             yield return null;
+            yield break;
+
+            void OpenJournalCall()
+            {
+                StartCoroutine(OpenJournal());
+                dialogBehaviour.OnDialogFinished.RemoveListener(OpenJournalCall);
+            }
         }
 
         public void ActivateDoorInstructions()
@@ -503,11 +510,15 @@ namespace Systems.Overworld.Intro
             dialogBehaviour.IsCanSkippingText = false;
             dialogBehaviour.StartDialog(tutorialDoorGraph);
 
-            dialogBehaviour.OnDialogFinished.AddListener(() =>
+            dialogBehaviour.OnDialogFinished.AddListener(OpenJournalDoorTutorial);
+            return;
+
+            void OpenJournalDoorTutorial()
             {
                 SwitchJournalPage("Door");
                 StartCoroutine(OpenJournal());
-            });
+                dialogBehaviour.OnDialogFinished.RemoveListener(OpenJournalDoorTutorial);
+            }
         }
 
         private IEnumerator BleedingKingHead()
