@@ -9,6 +9,10 @@ using TMPro;
 /// </summary>
 public class CardPrefab : MonoBehaviour
 {
+
+    // hierarchial target rule
+    [HideInInspector] public TargetRule targetRule;
+
     [Header("Card Data Reference")]
     [Tooltip("ScriptableObject holding static data for this card.")]
     public CardData cardData;
@@ -95,6 +99,24 @@ public class CardPrefab : MonoBehaviour
         descriptionText.SetText(cardData.description);
         energyCost.SetText(cardData.energyCost.ToString());
         cardIcon.sprite = cardData.icon;
+    }
+
+
+    /// <summary>
+    /// Determines the highest hierarchical TargetRule from this card's CardData effects.
+    /// Stored at runtime as this card's current target rule.
+    /// </summary>
+    public void UpdateTargetRule()
+    {
+        if (cardData == null)
+        {
+            Debug.LogWarning($"[CardPrefab] '{name}' has no CardData assigned when updating target rule.");
+            targetRule = TargetRule.None;
+            return;
+        }
+
+        targetRule = cardData.GetDominatingTargetRule();
+        Debug.Log($"[CardPrefab] '{cardData.itemName}' target rule set to: {targetRule}");
     }
 
     // ------------------------------------------------------------------
