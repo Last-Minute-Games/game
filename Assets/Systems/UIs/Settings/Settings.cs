@@ -124,11 +124,11 @@ public class Settings : MonoBehaviour
         }
         else
         {
+            // Fallback: Get unique resolutions from Screen
             var res = Screen.resolutions
-                .OrderByDescending(r => r.width * r.height)
-                .ThenByDescending(r => r.refreshRate)
                 .GroupBy(r => (r.width, r.height))
                 .Select(g => g.First())
+                .OrderByDescending(r => r.width * r.height)
                 .ToList();
 
             foreach (var r in res)

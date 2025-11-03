@@ -14,7 +14,7 @@ public class SettingsManager : MonoBehaviour
     public ScreenModeType ScreenMode { get; private set; } // Windowed, Borderless, or Fullscreen
     public int ResolutionIndex { get; private set; } // index into ResList
 
-    public readonly List<(int w, int h, int rr)> ResList = new();
+    public readonly List<(int w, int h)> ResList = new();
 
     public enum ScreenModeType
     {
@@ -28,7 +28,6 @@ public class SettingsManager : MonoBehaviour
     const string PP_SCREEN_MODE = "vid_screen_mode";
     const string PP_RES_W = "vid_res_w";
     const string PP_RES_H = "vid_res_h";
-    const string PP_RES_RR = "vid_res_rr";
 
     /// <summary>
     /// Get or auto-create the SettingsManager instance
@@ -64,7 +63,6 @@ public class SettingsManager : MonoBehaviour
         // Find saved resolution (fallback to current, then highest)
         int w = PlayerPrefs.GetInt(PP_RES_W, 0);
         int h = PlayerPrefs.GetInt(PP_RES_H, 0);
-        int rr = PlayerPrefs.GetInt(PP_RES_RR, 0);
 
         if (w > 0 && h > 0)
             ResolutionIndex = Mathf.Max(0, ResList.FindIndex(r => r.w == w && r.h == h));
@@ -88,7 +86,6 @@ public class SettingsManager : MonoBehaviour
         var r = ResList[Mathf.Clamp(ResolutionIndex, 0, ResList.Count - 1)];
         PlayerPrefs.SetInt(PP_RES_W, r.w);
         PlayerPrefs.SetInt(PP_RES_H, r.h);
-        PlayerPrefs.SetInt(PP_RES_RR, r.rr);
         PlayerPrefs.Save();
     }
 
@@ -126,39 +123,38 @@ public class SettingsManager : MonoBehaviour
 
         // Re-enforce current resolution in the new mode
         var r = ResList[Mathf.Clamp(ResolutionIndex, 0, ResList.Count - 1)];
-        Screen.SetResolution(r.w, r.h, unityMode, r.rr);
+        Screen.SetResolution(r.w, r.h, unityMode);
     }
 
     public void ApplyResolution(int index, bool savePrefs = true)
     {
         if (ResList.Count == 0) return;
         ResolutionIndex = Mathf.Clamp(index, 0, ResList.Count - 1);
-        var (w, h, rr) = ResList[ResolutionIndex];
+        var (w, h) = ResList[ResolutionIndex];
         
         FullScreenMode currentMode = Screen.fullScreenMode;
-        Screen.SetResolution(w, h, currentMode, rr);
+        Screen.SetResolution(w, h, currentMode);
         if (savePrefs) Save();
     }
 
     // --------- Helpers ----------
     void BuildResolutionList()
     {
-        var res = Screen.resolutions
-            .OrderByDescending(r => r.width * r.height)
-            .ThenByDescending(r => r.refreshRate)
-            .ToList();
-
-        // collapse duplicate WxH (keep highest refresh)
-        res = res
+        // Get all unique resolutions (width x height)
+        // Unity will automatically use the best refresh rate for the monitor
+        var uniqueResolutions = Screen.resolutions
             .GroupBy(r => (r.width, r.height))
-            .Select(g => g.OrderByDescending(x => x.refreshRate).First())
+            .Select(g => g.First())
             .OrderByDescending(r => r.width * r.height)
             .ToList();
 
         ResList.Clear();
-        foreach (var r in res) ResList.Add((r.width, r.height, r.refreshRate));
+        foreach (var r in uniqueResolutions)
+        {
+            ResList.Add((r.width, r.height));
+        }
 
         if (ResList.Count == 0) // fallback just in case
-            ResList.Add((Screen.currentResolution.width, Screen.currentResolution.height, Screen.currentResolution.refreshRate));
+            ResList.Add((Screen.currentResolution.width, Screen.currentResolution.height));
     }
 }
