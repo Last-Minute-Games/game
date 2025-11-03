@@ -62,6 +62,7 @@ public class CardPrefab : MonoBehaviour
 
         cardData = data;
         RefreshVisuals();
+        UpdateTargetRule();
 
         Debug.Log($"[CardPrefab] Initialized card: {data.itemName}");
     }
