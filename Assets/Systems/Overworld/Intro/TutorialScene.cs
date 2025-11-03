@@ -35,6 +35,8 @@ namespace Systems.Overworld.Intro
         private Camera _plrMainCamera;
         private CinemachinePositionComposer _cinemachinePositionComposer;
 
+        private GameObject _mysteriousPersonHallway;
+
         private CanvasGroup _fadeCanvasGroup;
 
         private CanvasGroup _journalPanel;
@@ -140,9 +142,7 @@ namespace Systems.Overworld.Intro
 
             _globalLight.DOIntensity(0, 7f);
 
-            yield return new WaitForSeconds(4f);
-
-            _characterLight2D.DOIntensity(0, 3f);
+            yield return null;
         }
 
         private IEnumerator WaitAndOpenBigDoor()
@@ -154,7 +154,9 @@ namespace Systems.Overworld.Intro
             var bigDoorOpenClip = Resources.Load<AudioClip>("SFXs/Doors/BigDoorOpen");
             var tempBallroomBlock = GameObject.Find("TempBallroomBlock");
 
-            yield return new WaitForSeconds(8.5f);
+            _characterLight2D.DOIntensity(0, 3f);
+            
+            yield return new WaitForSeconds(6f);
 
             _characterLight2D.enabled = false;
             _ballroomSpotlight.enabled = true;
@@ -207,14 +209,21 @@ namespace Systems.Overworld.Intro
 
             var tutorialMeltingGraph = Resources.Load<DialogNodeGraph>("Dialogues/Nikolaus/TutorialMonologueMelting");
             dialogBehaviour.StartDialog(tutorialMeltingGraph);
+            dialogBehaviour.OnDialogFinished.AddListener(StartFadeInDoor);
 
             // _plrObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
             _plrInput.isInputEnabled = false;
 
             _meltingAudioSource.Play();
-
-            StartCoroutine(WaitAndOpenBigDoor());
+            
             StartCoroutine(StartPuddleSeq());
+            return;
+
+            void StartFadeInDoor()
+            {
+                StartCoroutine(WaitAndOpenBigDoor());
+                dialogBehaviour.OnDialogFinished.RemoveListener(StartFadeInDoor);
+            }
         }
 
         private void CreateScaryDialogue(Transform npcTransform)
@@ -251,6 +260,34 @@ namespace Systems.Overworld.Intro
             newGraph.NodesList.Add(newSentenceNode);
         }
 
+        private IEnumerator MoveMysteriousHallway()
+        {
+            var candleWall4 = GameObject.Find("CandleWall 4").GetComponent<Light2D>();
+            var breakingVaseSource = GameObject.Find("BreakingVase").GetComponent<AudioSource>();
+            
+            var mysteriousTarget =  GameObject.Find("MysteriousTarget");
+            var npcBrain2D = _mysteriousPersonHallway.GetComponent<NpcBrain2D>();
+            var moveToPosition = npcBrain2D.MoveToPosition(mysteriousTarget.transform.position);
+
+            StartCoroutine(moveToPosition);
+            yield return new WaitForSeconds(1.33f);
+
+            _mysteriousPersonHallway.SetActive(false);
+            
+            candleWall4.enabled = false;
+            var lightAudioSource = candleWall4.GetComponent<AudioSource>();
+            if (lightAudioSource) lightAudioSource.Play();
+            
+            breakingVaseSource.Play();
+        }
+        
+        public void TriggerMysteriousHallway()
+        {
+            _mysteriousPersonHallway.SetActive(true);
+            
+            StartCoroutine(MoveMysteriousHallway());
+        }
+
         void Start()
         {
             _plrObject = GameObject.FindGameObjectWithTag("Player");
@@ -273,6 +310,9 @@ namespace Systems.Overworld.Intro
 
             _environmentSoundHandler =
                 GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
+            
+            _mysteriousPersonHallway = GameObject.Find("MysteriousHallway");
+            _mysteriousPersonHallway.SetActive(false);
 
             var meltClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/Melting");
             _meltingAudioSource = _environmentSoundHandler.CreateCustomSource("Melting");
