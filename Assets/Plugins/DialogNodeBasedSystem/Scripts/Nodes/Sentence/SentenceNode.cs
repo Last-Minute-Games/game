@@ -24,7 +24,11 @@ namespace cherrydev
         [HideInInspector] public string CharacterNameKey;
         [HideInInspector] public string SentenceTextKey;
 
-        public Sentence Sentence => _sentence;
+        public Sentence Sentence
+        {
+            get => _sentence;
+            set => _sentence = value;
+        }
 
         private string _externalButtonLabel;
 
@@ -56,6 +60,11 @@ namespace cherrydev
             
             string localizedText = TryGetLocalizedString(SentenceTextKey, "Localized string");
             return !string.IsNullOrEmpty(localizedText) ? localizedText : _sentence.Text;
+        }
+
+        public void SetText(string text)
+        {
+            _sentence.Text = text;
         }
         
         /// <summary>
@@ -106,6 +115,8 @@ namespace cherrydev
         /// </summary>
         /// <returns></returns>
         public Sprite GetCharacterSprite() => _sentence.CharacterSprite;
+        
+        public void SetCharacterSprite(Sprite sprite) => _sentence.CharacterSprite = sprite;
 
         /// <summary>
         /// Returns the value of a isExternalFunc boolean field
@@ -320,6 +331,8 @@ namespace cherrydev
 
             if (nodeToAdd.GetType() == typeof(ModifyVariableNode) || 
                 nodeToAdd.GetType() == typeof(VariableConditionNode) ||
+                nodeToAdd.GetType().Name == "GameFlagConditionNode" ||
+                nodeToAdd.GetType().Name == "SetGameFlagNode" ||
                 nodeToAdd.GetType() == typeof(ExternalFunctionNode))
             {
                 if (ParentNodes.Contains(nodeToAdd))

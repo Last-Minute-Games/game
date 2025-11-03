@@ -160,7 +160,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -198,7 +198,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -219,6 +219,19 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -226,12 +239,12 @@ TextureImporter:
       name: doors-animated_0
       rect:
         serializedVersion: 2
-        x: 27
-        y: 463
-        width: 10
-        height: 66
+        x: 28
+        y: 464
+        width: 8
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -248,12 +261,12 @@ TextureImporter:
       name: doors-animated_1
       rect:
         serializedVersion: 2
-        x: 91
-        y: 463
-        width: 10
-        height: 66
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 92
+        y: 464
+        width: 8
+        height: 64
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -270,12 +283,12 @@ TextureImporter:
       name: doors-animated_2
       rect:
         serializedVersion: 2
-        x: 157
-        y: 463
-        width: 8
-        height: 66
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 158
+        y: 464
+        width: 6
+        height: 64
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -292,12 +305,12 @@ TextureImporter:
       name: doors-animated_3
       rect:
         serializedVersion: 2
-        x: 219
-        y: 463
-        width: 10
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 220
+        y: 464
+        width: 8
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -314,12 +327,12 @@ TextureImporter:
       name: doors-animated_4
       rect:
         serializedVersion: 2
-        x: 283
-        y: 463
-        width: 10
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 284
+        y: 464
+        width: 8
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -336,12 +349,12 @@ TextureImporter:
       name: doors-animated_5
       rect:
         serializedVersion: 2
-        x: 349
-        y: 463
-        width: 8
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 350
+        y: 464
+        width: 6
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -358,12 +371,12 @@ TextureImporter:
       name: doors-animated_6
       rect:
         serializedVersion: 2
-        x: 29
-        y: 367
-        width: 21
-        height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 30
+        y: 368
+        width: 19
+        height: 61
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -380,12 +393,12 @@ TextureImporter:
       name: doors-animated_7
       rect:
         serializedVersion: 2
-        x: 93
-        y: 367
-        width: 21
-        height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 94
+        y: 368
+        width: 19
+        height: 61
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -402,12 +415,12 @@ TextureImporter:
       name: doors-animated_8
       rect:
         serializedVersion: 2
-        x: 157
-        y: 367
-        width: 21
-        height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 158
+        y: 368
+        width: 19
+        height: 61
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -424,12 +437,12 @@ TextureImporter:
       name: doors-animated_9
       rect:
         serializedVersion: 2
-        x: 221
-        y: 367
-        width: 21
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 222
+        y: 368
+        width: 19
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -446,12 +459,12 @@ TextureImporter:
       name: doors-animated_10
       rect:
         serializedVersion: 2
-        x: 285
-        y: 367
-        width: 21
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 286
+        y: 368
+        width: 19
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -468,12 +481,12 @@ TextureImporter:
       name: doors-animated_11
       rect:
         serializedVersion: 2
-        x: 349
-        y: 367
-        width: 21
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 350
+        y: 368
+        width: 19
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -490,12 +503,12 @@ TextureImporter:
       name: doors-animated_12
       rect:
         serializedVersion: 2
-        x: 30
-        y: 271
-        width: 31
-        height: 58
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 31
+        y: 272
+        width: 29
+        height: 56
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -512,12 +525,12 @@ TextureImporter:
       name: doors-animated_13
       rect:
         serializedVersion: 2
-        x: 94
-        y: 271
-        width: 31
-        height: 58
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 95
+        y: 272
+        width: 29
+        height: 56
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -534,12 +547,12 @@ TextureImporter:
       name: doors-animated_14
       rect:
         serializedVersion: 2
-        x: 158
-        y: 271
-        width: 31
-        height: 58
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 159
+        y: 272
+        width: 29
+        height: 56
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -556,12 +569,12 @@ TextureImporter:
       name: doors-animated_15
       rect:
         serializedVersion: 2
-        x: 222
-        y: 271
-        width: 31
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 223
+        y: 272
+        width: 29
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -578,12 +591,12 @@ TextureImporter:
       name: doors-animated_16
       rect:
         serializedVersion: 2
-        x: 286
-        y: 271
-        width: 31
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 287
+        y: 272
+        width: 29
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -600,12 +613,12 @@ TextureImporter:
       name: doors-animated_17
       rect:
         serializedVersion: 2
-        x: 350
-        y: 271
-        width: 31
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 351
+        y: 272
+        width: 29
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -622,12 +635,12 @@ TextureImporter:
       name: doors-animated_18
       rect:
         serializedVersion: 2
-        x: 31
-        y: 207
-        width: 34
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 208
+        width: 32
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -644,12 +657,12 @@ TextureImporter:
       name: doors-animated_19
       rect:
         serializedVersion: 2
-        x: 95
-        y: 207
-        width: 34
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 208
+        width: 32
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -666,12 +679,12 @@ TextureImporter:
       name: doors-animated_20
       rect:
         serializedVersion: 2
-        x: 159
-        y: 207
-        width: 34
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 208
+        width: 32
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -688,12 +701,12 @@ TextureImporter:
       name: doors-animated_21
       rect:
         serializedVersion: 2
-        x: 223
-        y: 207
-        width: 34
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 208
+        width: 32
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -710,12 +723,12 @@ TextureImporter:
       name: doors-animated_22
       rect:
         serializedVersion: 2
-        x: 287
-        y: 207
-        width: 34
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 208
+        width: 32
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -732,12 +745,12 @@ TextureImporter:
       name: doors-animated_23
       rect:
         serializedVersion: 2
-        x: 351
-        y: 207
-        width: 33
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 208
+        width: 32
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -754,12 +767,12 @@ TextureImporter:
       name: doors-animated_24
       rect:
         serializedVersion: 2
-        x: 30
-        y: 135
-        width: 31
-        height: 58
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 31
+        y: 136
+        width: 29
+        height: 56
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -776,12 +789,12 @@ TextureImporter:
       name: doors-animated_25
       rect:
         serializedVersion: 2
-        x: 94
-        y: 135
-        width: 31
-        height: 58
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 95
+        y: 136
+        width: 29
+        height: 56
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -798,12 +811,12 @@ TextureImporter:
       name: doors-animated_26
       rect:
         serializedVersion: 2
-        x: 158
-        y: 135
-        width: 31
-        height: 58
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 159
+        y: 136
+        width: 29
+        height: 56
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -820,12 +833,12 @@ TextureImporter:
       name: doors-animated_27
       rect:
         serializedVersion: 2
-        x: 222
-        y: 143
-        width: 31
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 223
+        y: 144
+        width: 29
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -842,12 +855,12 @@ TextureImporter:
       name: doors-animated_28
       rect:
         serializedVersion: 2
-        x: 286
-        y: 143
-        width: 31
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 287
+        y: 144
+        width: 29
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -864,12 +877,12 @@ TextureImporter:
       name: doors-animated_29
       rect:
         serializedVersion: 2
-        x: 350
-        y: 143
-        width: 31
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 351
+        y: 144
+        width: 29
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -886,12 +899,12 @@ TextureImporter:
       name: doors-animated_30
       rect:
         serializedVersion: 2
-        x: 29
-        y: 66
-        width: 20
-        height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 30
+        y: 67
+        width: 18
+        height: 61
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -908,12 +921,12 @@ TextureImporter:
       name: doors-animated_31
       rect:
         serializedVersion: 2
-        x: 93
-        y: 66
-        width: 20
-        height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 94
+        y: 67
+        width: 18
+        height: 61
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -930,12 +943,12 @@ TextureImporter:
       name: doors-animated_32
       rect:
         serializedVersion: 2
-        x: 157
-        y: 66
-        width: 20
-        height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 158
+        y: 67
+        width: 18
+        height: 61
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -952,12 +965,12 @@ TextureImporter:
       name: doors-animated_33
       rect:
         serializedVersion: 2
-        x: 221
-        y: 79
-        width: 20
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 222
+        y: 80
+        width: 18
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -974,12 +987,12 @@ TextureImporter:
       name: doors-animated_34
       rect:
         serializedVersion: 2
-        x: 285
-        y: 79
-        width: 20
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 286
+        y: 80
+        width: 18
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -996,12 +1009,12 @@ TextureImporter:
       name: doors-animated_35
       rect:
         serializedVersion: 2
-        x: 349
-        y: 79
-        width: 20
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 350
+        y: 80
+        width: 18
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1018,12 +1031,12 @@ TextureImporter:
       name: doors-animated_36
       rect:
         serializedVersion: 2
-        x: 27
+        x: 28
         y: 0
-        width: 10
-        height: 65
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 8
+        height: 64
+      alignment: 2
+      pivot: {x: 0.5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1040,12 +1053,12 @@ TextureImporter:
       name: doors-animated_37
       rect:
         serializedVersion: 2
-        x: 91
+        x: 92
         y: 0
-        width: 10
-        height: 65
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 8
+        height: 64
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1062,12 +1075,12 @@ TextureImporter:
       name: doors-animated_38
       rect:
         serializedVersion: 2
-        x: 155
+        x: 156
         y: 0
-        width: 8
-        height: 65
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 6
+        height: 64
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1084,12 +1097,12 @@ TextureImporter:
       name: doors-animated_39
       rect:
         serializedVersion: 2
-        x: 219
-        y: 15
-        width: 10
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 220
+        y: 16
+        width: 8
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1106,12 +1119,12 @@ TextureImporter:
       name: doors-animated_40
       rect:
         serializedVersion: 2
-        x: 283
-        y: 15
-        width: 10
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 284
+        y: 16
+        width: 8
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1128,12 +1141,12 @@ TextureImporter:
       name: doors-animated_41
       rect:
         serializedVersion: 2
-        x: 347
-        y: 15
-        width: 8
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 348
+        y: 16
+        width: 6
+        height: 48
+      alignment: 1
+      pivot: {x: 0, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1150,7 +1163,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: d2fa90d929baac64487c44e7232ba1a7
     internalID: 0
     vertices: []
     indices: 
@@ -1158,7 +1171,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":1.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":1,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       doors-animated_0: 8121805901814287754
       doors-animated_1: 4513447183865255538

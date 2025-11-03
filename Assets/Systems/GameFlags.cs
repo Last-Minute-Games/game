@@ -3,70 +3,79 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Simple game flags system for tracking boolean game states.
-/// Flags are persisted using PlayerPrefs and automatically loaded on first access.
+/// Simple game flags system for tracking game states.
+/// Flags either EXIST or DON'T EXIST - no true/false confusion.
+/// Flags persist across scenes during runtime but reset when the game restarts.
 /// </summary>
 public class GameFlags : PersistentSingleton<GameFlags>
 {
     private HashSet<string> _activeFlags = new HashSet<string>();
-    private bool _isLoaded = false;
-    private const string SAVE_KEY = "GameFlags_Data";
 
     /// <summary>
-    /// Event fired when a flag value changes
+    /// Event fired when a flag is set (added) or removed
     /// </summary>
-    public event Action<string, bool> OnFlagChanged;
+    public event Action<string> OnFlagChanged;
+    
+    /// <summary>
+    /// Event fired when initialization is complete (after defaults are loaded)
+    /// </summary>
+    public event Action OnInitialized;
+
+    /// <summary>
+    /// Override Instance to auto-create if missing
+    /// </summary>
+    public static new GameFlags Instance
+    {
+        get
+        {
+            if (PersistentSingleton<GameFlags>.Instance == null)
+            {
+                // Auto-create GameFlags if it doesn't exist
+                GameObject go = new GameObject("GameFlags");
+                go.AddComponent<GameFlags>();
+                Debug.Log("[GameFlags] Auto-created instance");
+            }
+            return PersistentSingleton<GameFlags>.Instance;
+        }
+    }
 
     protected override void Awake()
     {
         base.Awake();
-        LoadFlags();
-    }
-
-    /// <summary>
-    /// Load all flags from PlayerPrefs
-    /// </summary>
-    private void LoadFlags()
-    {
-        if (_isLoaded) return;
-
-        _activeFlags.Clear();
-        string savedData = PlayerPrefs.GetString(SAVE_KEY, "");
+        InitializeDefaultFlags();
         
-        if (!string.IsNullOrEmpty(savedData))
-        {
-            string[] flags = savedData.Split('|');
-            foreach (string flag in flags)
-            {
-                if (!string.IsNullOrEmpty(flag))
-                {
-                    _activeFlags.Add(flag);
-                }
-            }
-        }
-
-        _isLoaded = true;
-        Debug.Log($"[GameFlags] Loaded {_activeFlags.Count} flags");
+        // Notify listeners that initialization is complete
+        OnInitialized?.Invoke();
+        Debug.Log("[GameFlags] Initialization complete - notifying listeners");
     }
 
     /// <summary>
-    /// Save all flags to PlayerPrefs
+    /// Initialize default flags that should always exist from game start.
+    /// These flags are always set at the beginning of each game session.
     /// </summary>
-    private void SaveFlags()
+    private void InitializeDefaultFlags()
     {
-        string data = string.Join("|", _activeFlags);
-        PlayerPrefs.SetString(SAVE_KEY, data);
-        PlayerPrefs.Save();
+        Debug.Log("[GameFlags] Setting default character flags");
+        
+        // Base character flags - these are ALWAYS available from game start
+        _activeFlags.Add("character.marco");
+        _activeFlags.Add("character.allistair");
+        _activeFlags.Add("character.adrianne");
+        _activeFlags.Add("character.avant");
+        _activeFlags.Add("character.charles");
+        _activeFlags.Add("character.sebastian");
+        _activeFlags.Add("character.elias");
+
+        Debug.Log($"[GameFlags] Default flags initialized ({_activeFlags.Count} total flags)");
     }
 
     // ========== STATIC API (Singleton Pattern) ==========
 
     /// <summary>
-    /// Set a flag to the specified value. Automatically saves to PlayerPrefs.
+    /// Set a flag (adds it to the active flags). Persists across scenes but not between game sessions.
     /// </summary>
     /// <param name="flagName">The name of the flag to set</param>
-    /// <param name="value">The value to set (true or false)</param>
-    public static void SetFlag(string flagName, bool value = true)
+    public static void SetFlag(string flagName)
     {
         if (string.IsNullOrEmpty(flagName))
         {
@@ -74,36 +83,22 @@ public class GameFlags : PersistentSingleton<GameFlags>
             return;
         }
 
-        bool previousValue = Instance._activeFlags.Contains(flagName);
-        bool changed = false;
-
-        if (value)
+        if (Instance == null)
         {
-            if (!Instance._activeFlags.Contains(flagName))
-            {
-                Instance._activeFlags.Add(flagName);
-                changed = true;
-                Debug.Log($"[GameFlags] Set flag: {flagName}");
-            }
-        }
-        else
-        {
-            if (Instance._activeFlags.Remove(flagName))
-            {
-                changed = true;
-                Debug.Log($"[GameFlags] Cleared flag: {flagName}");
-            }
+            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            return;
         }
 
-        if (changed)
+        if (!Instance._activeFlags.Contains(flagName))
         {
-            Instance.SaveFlags();
-            Instance.OnFlagChanged?.Invoke(flagName, value);
+            Instance._activeFlags.Add(flagName);
+            Instance.OnFlagChanged?.Invoke(flagName);
+            Debug.Log($"[GameFlags] Set flag: {flagName}");
         }
     }
 
     /// <summary>
-    /// Check if a flag exists (is set to true)
+    /// Check if a flag exists (has been set)
     /// </summary>
     /// <param name="flagName">The name of the flag to check</param>
     /// <returns>True if the flag exists, false otherwise</returns>
@@ -112,26 +107,62 @@ public class GameFlags : PersistentSingleton<GameFlags>
         if (string.IsNullOrEmpty(flagName))
             return false;
 
+        if (Instance == null)
+        {
+            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            return false;
+        }
+
         return Instance._activeFlags.Contains(flagName);
     }
 
     /// <summary>
-    /// Remove a specific flag. Automatically saves to PlayerPrefs.
+    /// Remove a specific flag.
     /// </summary>
     /// <param name="flagName">The name of the flag to remove</param>
-    public static void ClearFlag(string flagName)
+    public static void RemoveFlag(string flagName)
     {
-        SetFlag(flagName, false);
+        if (string.IsNullOrEmpty(flagName))
+            return;
+
+        if (Instance == null)
+        {
+            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            return;
+        }
+
+        if (Instance._activeFlags.Remove(flagName))
+        {
+            Instance.OnFlagChanged?.Invoke(flagName);
+            Debug.Log($"[GameFlags] Removed flag: {flagName}");
+        }
     }
 
     /// <summary>
-    /// Clear all flags. Automatically saves to PlayerPrefs.
+    /// Clear all flags and reinitialize defaults.
     /// </summary>
     public static void ClearAllFlags()
     {
+        if (Instance == null)
+        {
+            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            return;
+        }
+
         Instance._activeFlags.Clear();
-        Instance.SaveFlags();
         Debug.Log("[GameFlags] Cleared all flags");
+        
+        // Reinitialize defaults after clearing
+        Instance.InitializeDefaultFlags();
+    }
+
+    /// <summary>
+    /// Reset to default flags (same as ClearAllFlags).
+    /// Useful for "New Game" or reset functionality.
+    /// </summary>
+    public static void ResetToDefaults()
+    {
+        ClearAllFlags();
     }
 
     /// <summary>
@@ -139,7 +170,27 @@ public class GameFlags : PersistentSingleton<GameFlags>
     /// </summary>
     public static int GetFlagCount()
     {
+        if (Instance == null)
+        {
+            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            return 0;
+        }
+
         return Instance._activeFlags.Count;
+    }
+
+    /// <summary>
+    /// Get all active flag names
+    /// </summary>
+    public static HashSet<string> GetAllFlags()
+    {
+        if (Instance == null)
+        {
+            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            return new HashSet<string>();
+        }
+
+        return new HashSet<string>(Instance._activeFlags);
     }
 
     /// <summary>
@@ -147,6 +198,12 @@ public class GameFlags : PersistentSingleton<GameFlags>
     /// </summary>
     public static void PrintAllFlags()
     {
+        if (Instance == null)
+        {
+            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            return;
+        }
+
         if (Instance._activeFlags.Count == 0)
         {
             Debug.Log("[GameFlags] No flags are currently set");
@@ -163,18 +220,26 @@ public class GameFlags : PersistentSingleton<GameFlags>
     // ========== INSTANCE API (for ScriptableObject references) ==========
 
     /// <summary>
-    /// Instance method: Get the value of a flag
+    /// Instance method: Check if a flag exists
     /// </summary>
-    public bool Get(string flagName)
+    public bool Has(string flagName)
     {
         return HasFlag(flagName);
     }
 
     /// <summary>
-    /// Instance method: Set a flag value
+    /// Instance method: Set a flag
     /// </summary>
-    public void Set(string flagName, bool value)
+    public void Set(string flagName)
     {
-        SetFlag(flagName, value);
+        SetFlag(flagName);
+    }
+
+    /// <summary>
+    /// Instance method: Remove a flag
+    /// </summary>
+    public void Remove(string flagName)
+    {
+        RemoveFlag(flagName);
     }
 }

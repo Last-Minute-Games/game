@@ -401,6 +401,30 @@ namespace cherrydev
                         return;
                     }
                 }
+                else if (node.GetType().Name == "GameFlagConditionNode")
+                {
+                    // Use reflection to get FlagName
+                    System.Reflection.PropertyInfo flagNameProp = node.GetType().GetProperty("FlagName");
+                    string flagName = flagNameProp?.GetValue(node) as string;
+                    
+                    if (!string.IsNullOrEmpty(flagName) && flagName.ToLower().Contains(searchText))
+                    {
+                        CenterAndSelectNode(node);
+                        return;
+                    }
+                }
+                else if (node.GetType().Name == "SetGameFlagNode")
+                {
+                    // Use reflection to get FlagName
+                    System.Reflection.PropertyInfo flagNameProp = node.GetType().GetProperty("FlagName");
+                    string flagName = flagNameProp?.GetValue(node) as string;
+                    
+                    if (!string.IsNullOrEmpty(flagName) && flagName.ToLower().Contains(searchText))
+                    {
+                        CenterAndSelectNode(node);
+                        return;
+                    }
+                }
             }
         }
 
@@ -468,6 +492,37 @@ namespace cherrydev
                     prefix = "VC";
                     nodeText = !string.IsNullOrEmpty(variableConditionNode.VariableName)
                         ? $"If {variableConditionNode.VariableName}"
+                        : "Empty";
+
+                    if (nodeText.Length > 20)
+                        nodeText = nodeText.Substring(0, 20) + "...";
+                }
+                else if (node.GetType().Name == "GameFlagConditionNode")
+                {
+                    // Use reflection to get FlagName
+                    System.Reflection.PropertyInfo flagNameProp = node.GetType().GetProperty("FlagName");
+                    string flagName = flagNameProp?.GetValue(node) as string;
+                    
+                    prefix = "GFC";
+                    nodeText = !string.IsNullOrEmpty(flagName)
+                        ? $"If Flag {flagName}"
+                        : "Empty";
+
+                    if (nodeText.Length > 20)
+                        nodeText = nodeText.Substring(0, 20) + "...";
+                }
+                else if (node.GetType().Name == "SetGameFlagNode")
+                {
+                    // Use reflection to get FlagName and RemoveFlag
+                    System.Reflection.PropertyInfo flagNameProp = node.GetType().GetProperty("FlagName");
+                    System.Reflection.PropertyInfo removeProp = node.GetType().GetProperty("RemoveFlag");
+                    
+                    string flagName = flagNameProp?.GetValue(node) as string;
+                    bool isRemove = removeProp != null && (bool)removeProp.GetValue(node);
+                    
+                    prefix = "SGF";
+                    nodeText = !string.IsNullOrEmpty(flagName)
+                        ? $"{(isRemove ? "Remove" : "Set")} {flagName}"
                         : "Empty";
 
                     if (nodeText.Length > 20)
@@ -621,6 +676,44 @@ namespace cherrydev
                         DrawConnectionLine(parentNode, childNode, new Color(0.8f, 0.2f, 0.2f), "F");
                     }
                 }
+                else if (node.GetType().Name == "GameFlagConditionNode")
+                {
+                    // Use reflection to get fields
+                    System.Reflection.FieldInfo trueChildField = node.GetType().GetField("TrueChildNode");
+                    System.Reflection.FieldInfo falseChildField = node.GetType().GetField("FalseChildNode");
+
+                    if (trueChildField != null)
+                    {
+                        Node trueChild = trueChildField.GetValue(node) as Node;
+                        if (trueChild != null)
+                        {
+                            DrawConnectionLine(node, trueChild, new Color(0.2f, 0.8f, 0.2f), "T");
+                        }
+                    }
+
+                    if (falseChildField != null)
+                    {
+                        Node falseChild = falseChildField.GetValue(node) as Node;
+                        if (falseChild != null)
+                        {
+                            DrawConnectionLine(node, falseChild, new Color(0.8f, 0.2f, 0.2f), "F");
+                        }
+                    }
+                }
+                else if (node.GetType().Name == "SetGameFlagNode")
+                {
+                    // Use reflection to get ChildNode field
+                    System.Reflection.FieldInfo childField = node.GetType().GetField("ChildNode");
+                    
+                    if (childField != null)
+                    {
+                        Node child = childField.GetValue(node) as Node;
+                        if (child != null)
+                        {
+                            DrawConnectionLine(node, child, new Color(0.8f, 0.8f, 0.2f)); // Yellow for flag operations
+                        }
+                    }
+                }
             }
         }
 
@@ -680,6 +773,9 @@ namespace cherrydev
                 Handles.BeginGUI();
                 GUI.Label(new Rect(midPosition.x - 10, midPosition.y - 10, 20, 20), label, style);
                 Handles.EndGUI();
+                
+                // Reset Handles color after drawing label
+                Handles.color = Color.white;
             }
             else if (parentNode is AnswerNode answerNode)
             {
@@ -690,15 +786,6 @@ namespace cherrydev
                     string indexText = (index + 1).ToString();
 
                     Color backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-                    if (childNode is ModifyVariableNode)
-                        backgroundColor = new Color(0.8f, 0.6f, 0.2f, 0.8f);
-                    else if (childNode is VariableConditionNode)
-                        backgroundColor = new Color(0.6f, 0.2f, 0.8f, 0.8f);
-                    else if (childNode is SentenceNode)
-                        backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-                    backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-                    backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-                    backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
                     Handles.color = backgroundColor;
                     Handles.DrawSolidDisc(midPosition, Vector3.forward, 12f);
@@ -714,12 +801,19 @@ namespace cherrydev
                     Handles.BeginGUI();
                     GUI.Label(new Rect(midPosition.x - 10, midPosition.y - 10, 20, 20), indexText, style);
                     Handles.EndGUI();
+                    
+                    // Reset Handles color
+                    Handles.color = Color.white;
                 }
                 else
+                {
                     DrawArrowAtMidpoint(midPosition, direction);
+                }
             }
             else
+            {
                 DrawArrowAtMidpoint(midPosition, direction);
+            }
 
             GUI.changed = true;
         }
@@ -1182,12 +1276,60 @@ namespace cherrydev
                 mousePosition);
             contextMenu.AddItem(new GUIContent("Create Variable Condition Node"), false, CreateVariableConditionNode,
                 mousePosition);
+            contextMenu.AddItem(new GUIContent("Create GameFlag Condition Node"), false, CreateGameFlagConditionNode,
+                mousePosition);
+            contextMenu.AddItem(new GUIContent("Create Set GameFlag Node"), false, CreateSetGameFlagNode,
+                mousePosition);
             contextMenu.AddSeparator("");
             contextMenu.AddItem(new GUIContent("Select All Nodes"), false, SelectAllNodes, mousePosition);
             contextMenu.AddItem(new GUIContent("Remove Selected Nodes"), false, RemoveSelectedNodes, mousePosition);
             // contextMenu.AddItem(new GUIContent("Duplicate Selected Nodes"), false, DuplicateSelectedNodes, mousePosition);
             contextMenu.AddItem(new GUIContent("Remove Connections"), false, RemoveAllConnections, mousePosition);
             contextMenu.ShowAsContext();
+        }
+
+        /// <summary>
+        /// Create GameFlag Condition Node at mouse position and add it to Node Graph asset
+        /// </summary>
+        /// <param name="mousePositionObject"></param>
+        private void CreateGameFlagConditionNode(object mousePositionObject)
+        {
+            // Try to create GameFlagConditionNode using reflection since it's in a different assembly
+            Type gameFlagType = System.AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetTypes())
+                .FirstOrDefault(t => t.Name == "GameFlagConditionNode" && t.IsSubclassOf(typeof(Node)));
+
+            if (gameFlagType != null)
+            {
+                Node gameFlagConditionNode = (Node)CreateInstance(gameFlagType);
+                InitializeNode(mousePositionObject, gameFlagConditionNode, "GameFlag Condition Node");
+            }
+            else
+            {
+                Debug.LogError("[NodeEditor] GameFlagConditionNode type not found in any assembly!");
+            }
+        }
+
+        /// <summary>
+        /// Create Set GameFlag Node at mouse position and add it to Node Graph asset
+        /// </summary>
+        /// <param name="mousePositionObject"></param>
+        private void CreateSetGameFlagNode(object mousePositionObject)
+        {
+            // Try to create SetGameFlagNode using reflection since it's in a different assembly
+            Type setGameFlagType = System.AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetTypes())
+                .FirstOrDefault(t => t.Name == "SetGameFlagNode" && t.IsSubclassOf(typeof(Node)));
+
+            if (setGameFlagType != null)
+            {
+                Node setGameFlagNode = (Node)CreateInstance(setGameFlagType);
+                InitializeNode(mousePositionObject, setGameFlagNode, "Set GameFlag Node");
+            }
+            else
+            {
+                Debug.LogError("[NodeEditor] SetGameFlagNode type not found in any assembly!");
+            }
         }
 
         /// <summary>
@@ -1266,7 +1408,6 @@ namespace cherrydev
                 node.IsSelected = false;
 
             highlightedNode.IsSelected = true;
-            _currentNode = highlightedNode;
         }
 
         /// <summary>

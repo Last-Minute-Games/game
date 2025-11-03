@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class EnvironmentSoundHandler : MonoBehaviour
 {
@@ -36,14 +38,14 @@ public class EnvironmentSoundHandler : MonoBehaviour
         }
     }
 
-    public AudioSource CreateCustomSource(string sourceName)
+    public AudioSource CreateCustomSource(string sourceName, Transform parent = null)
     {
         var newAudioSource = new GameObject(sourceName).AddComponent<AudioSource>();
         _playerAudioSources.Add(newAudioSource);
         
         newAudioSource.playOnAwake = false;
         
-        newAudioSource.transform.parent = transform;
+        newAudioSource.transform.parent = parent ?? transform;
         newAudioSource.transform.localPosition = Vector3.zero;
         
         return newAudioSource;
@@ -51,14 +53,14 @@ public class EnvironmentSoundHandler : MonoBehaviour
 
     public void PlayDoorSound()
     {
-        _doorAudioSource.volume = 0.9f; 
+        _doorAudioSource.volume = 0.9f;
         _doorAudioSource.clip = doorOpenClip;
         _doorAudioSource.Play();
     }
     
     public void PlayJournalSound(bool isOpening)
     {
-        _journalAudioSource.volume = 0.71f; 
+        _journalAudioSource.volume = 0.6f; 
         _journalAudioSource.clip = isOpening ? journalOpenClip : journalCloseClip;
         _journalAudioSource.time = isOpening ? 0.05f : 0f;
         _journalAudioSource.Play();
