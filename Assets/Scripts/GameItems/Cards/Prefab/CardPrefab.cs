@@ -8,12 +8,19 @@ public class CardPrefab : MonoBehaviour
     public CardData cardData;
 
     [Header("UI References")]
-    public Image artworkImage;
-    public Image intentionIcon;
+    public Image cardBackground;
+    public Image cardIcon;
     public TMP_Text nameText;
     public TMP_Text descriptionText;
     public TMP_Text intentionText;
     public TMP_Text energyCost;
+
+
+    private void Awake()
+    {
+        if (cardData == null)
+            Debug.LogWarning($"[CardPrefab] '{name}' has no CardData assigned before Start — will wait for CardManager to initialize.");
+    }
 
     private void Start()
     {
@@ -37,11 +44,11 @@ public class CardPrefab : MonoBehaviour
         intentionText?.SetText(data.intentionText);
         energyCost?.SetText(data.energyCost.ToString());
 
-        if (artworkImage)
-            artworkImage.sprite = data.artwork;
+        if (cardBackground)
+            cardBackground.sprite = data.artwork;
 
-        if (intentionIcon)
-            intentionIcon.sprite = data.icon;
+        if (cardIcon)
+            cardIcon.sprite = data.icon;
 
         Debug.Log($"[CardPrefab] Initialized card: {data.itemName}");
     }
