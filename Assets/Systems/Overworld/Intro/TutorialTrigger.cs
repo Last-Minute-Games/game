@@ -29,8 +29,8 @@ namespace Systems.Overworld.Intro
 
         void Start()
         {
-            _boxCollider = gameObject.AddComponent<BoxCollider2D>();
-            _boxCollider.isTrigger = true;
+            // _boxCollider = gameObject.AddComponent<BoxCollider2D>();
+            // _boxCollider.isTrigger = true;
 
             _tutorialScene = FindFirstObjectByType<TutorialScene>();
         }

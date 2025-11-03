@@ -270,7 +270,7 @@ namespace Systems.Overworld.Intro
             var moveToPosition = npcBrain2D.MoveToPosition(mysteriousTarget.transform.position);
 
             StartCoroutine(moveToPosition);
-            yield return new WaitForSeconds(1.33f);
+            yield return new WaitForSeconds(1.7f);
 
             _mysteriousPersonHallway.SetActive(false);
             
