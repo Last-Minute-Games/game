@@ -8,6 +8,7 @@ public enum TargetRule
 
 public enum OperationType
 {
+    None,
     ModifyHealth,
     ModifyPowerScale,
     ModifyDefense,
