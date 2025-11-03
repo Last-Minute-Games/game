@@ -103,15 +103,7 @@ namespace Systems
             yield return StartCoroutine(FadeIn());
             
             // check if scene is tutorial
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-            if (tptTo.transform.name != "Throne" || !FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>())
-=======
             if (!FindFirstObjectByType<Overworld.Intro.TutorialScene>())
->>>>>>> Stashed changes
-=======
-            if (!FindFirstObjectByType<Overworld.Intro.TutorialScene>())
->>>>>>> Stashed changes
             {
                 // Teleport the object
             
@@ -136,16 +128,11 @@ namespace Systems
 
                 yield break;
             }
-<<<<<<< Updated upstream
             
-            if (_tutorialScene) _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
-=======
-
             if (_tutorialScene && tptTo.transform.name == "Throne")
             {
                 _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
             };
->>>>>>> Stashed changes
         }
 
         private void OnEnter()
