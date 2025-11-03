@@ -18,7 +18,7 @@ public class EnemyData : EntityData
 
     [Header("Scaling Multipliers")]
     [Range(0f, 10f)]
-    public float minScaleMultiplier = 0.5;
+    public float minScaleMultiplier = 0.5f;
 
     [Range(0f, 10f)]
     public float maxScaleMultiplier = 2f;

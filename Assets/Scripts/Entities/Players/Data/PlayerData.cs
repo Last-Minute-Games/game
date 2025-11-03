@@ -29,11 +29,11 @@ public class PlayerData : EntityData
             maxEnergy    = config.defaultMaxEnergy;
 
             // Get starting definitions of cards and relics from GameConfig
-            startingCards.Clear();
+            usableCards.Clear();
             startingRelics.Clear();
 
             if (config.defaultCards != null && config.defaultCards.Count > 0)
-                startingCards.AddRange(config.defaultCards);
+                usableCards.AddRange(config.defaultCards);
 
             if (config.defaultRelics != null && config.defaultRelics.Count > 0)
                 startingRelics.AddRange(config.defaultRelics);
@@ -48,6 +48,6 @@ public class PlayerData : EntityData
         }
         // verify if cards were populated for player even
         if (usableCards == null || usableCards.Count == 0)
-            Debug.LogWarning($"EnemyData '{enemyName}' has no usable cards assigned.", this);
+            Debug.LogWarning("Player has no cards assigned.");
     }
 }
