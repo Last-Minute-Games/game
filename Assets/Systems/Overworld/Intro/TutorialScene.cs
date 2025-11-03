@@ -218,6 +218,25 @@ namespace Systems.Overworld.Intro
 
         public IEnumerator BeginKingSeq()
         {
+<<<<<<< Updated upstream
+=======
+            
+            var throneFearClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/ThroneFear");
+            var throneAmbience = _environmentSoundHandler.CreateCustomSource("Ambience", _throneRoomCamera.transform);
+            throneAmbience.volume = 0f;
+            throneAmbience.clip = throneFearClip;
+            
+            var headSliceClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/HeadHack");
+            var kingSliceSource = _environmentSoundHandler.CreateCustomSource("KingSeqSource", _throneRoomCamera.transform);
+            kingSliceSource.volume = 0.5f;
+            kingSliceSource.clip = headSliceClip;
+            
+            throneAmbience.Play();
+            
+            _introMusicManager.FadeAndStop(0f, 1.5f);
+            throneAmbience.DOFade(0.13f, 1.5f);
+            
+>>>>>>> Stashed changes
             _plrMainCamera.gameObject.SetActive(false);
             _throneRoomCamera.gameObject.SetActive(true);
             
@@ -236,8 +255,11 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(3f);
 
+<<<<<<< Updated upstream
             _introMusicManager.FadeAndStop(0f, 8f);
             
+=======
+>>>>>>> Stashed changes
             // TWEEN king camera slightly up
             _throneRoomCamera.transform.DOMoveY( _throneRoomCamera.transform.position.y + 5.45f, 6f).SetEase(Ease.Linear);
             
