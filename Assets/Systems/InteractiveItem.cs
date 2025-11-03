@@ -25,6 +25,7 @@ public class InteractiveItem : MonoBehaviour
     // Runtime
     private GameObject player;
     private CharacterMotor2D characterController;
+    private ClockTimer clockTimer;
     private bool isPlayerNear = false;
 
     void Start()
@@ -39,6 +40,11 @@ public class InteractiveItem : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
             characterController = player.GetComponent<CharacterMotor2D>();
+
+        // Find ClockTimer in the scene
+        clockTimer = FindObjectOfType<ClockTimer>();
+        if (clockTimer == null)
+            Debug.LogWarning($"[InteractiveItem] {name}: No ClockTimer found in scene. Timer pause will not work.");
 
         if (dialogBehaviour != null)
         {
@@ -79,12 +85,26 @@ public class InteractiveItem : MonoBehaviour
 
     void OnDialogStart()
     {
+        // Pause the clock timer
+        if (clockTimer != null)
+        {
+            clockTimer.PauseTimer(true);
+            Debug.Log($"[InteractiveItem] {name}: Clock timer paused");
+        }
+
         if (characterController != null)
             characterController.SetDialogueActive(true);
     }
 
     void OnDialogFinished()
     {
+        // Resume the clock timer
+        if (clockTimer != null)
+        {
+            clockTimer.PauseTimer(false);
+            Debug.Log($"[InteractiveItem] {name}: Clock timer resumed");
+        }
+
         // Set the flag when dialog finishes
         if (!string.IsNullOrEmpty(flagToSet))
         {
