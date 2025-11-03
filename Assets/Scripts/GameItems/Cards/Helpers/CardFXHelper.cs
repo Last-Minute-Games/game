@@ -105,7 +105,7 @@ public class CardFXHelper : MonoBehaviour
         }
     }
 
-    // When card is discarded or removed from hand
+    // When card is discarded or removed from hand (visually, needs data to be handled via manager)
     public void OnCardDiscard(CardPrefab card)
     {
         if (card == null)
