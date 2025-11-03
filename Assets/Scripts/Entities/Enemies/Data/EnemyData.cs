@@ -12,9 +12,9 @@ public class EnemyData : EntityData
     [TextArea(2, 5)]
     public string description;
 
-    [Header("Enemy Data")]
-    [Tooltip("Enemy artwork displayed in battle.")]
-    public Sprite artwork;
+    [Header("FX Data")]
+    [Tooltip("Reference to visual/sound FX data for this enemy.")]
+    public EnemyFXData enemyFXData;
 
     [Header("Scaling Multipliers")]
     [Range(0f, 10f)]
@@ -39,10 +39,6 @@ public class EnemyData : EntityData
 
     [Tooltip("Visual overrides when this enemy spawns as its stronger variant.")]
     public VariantVisualOptions strongOptions;
-
-    [Header("FX Data")]
-    [Tooltip("Reference to visual/sound FX data for this enemy.")]
-    public EnemyFXData enemyFXData;
 
     [Header("Metadata")]
     [Tooltip("Unique ID for this enemy (used for lookups or saves).")]

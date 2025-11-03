@@ -10,16 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b66bff5a3b5764846ab83be0f9d44325, type: 3}
-  m_Name: NewEnemyData
+  m_Name: EyeballData
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   baseHealth: 100
   baseShield: 0
   basePowerScale: 1
   usableCards: []
   enemyName: Eyeball
-  description: 
-  artwork: {fileID: 0}
+  description: Big boy eyeball. Yum.
+  enemyFXData: {fileID: 11400000, guid: ff002ba8e03470252a51b7a37fcb1ba9, type: 2}
   minScaleMultiplier: 0.5
   maxScaleMultiplier: 2
-  enemyFXData: {fileID: 0}
-  uniqueID: 0
+  isVariableEnemy: 1
+  weakPrefix: Weak
+  strongPrefix: Bulky
+  weakOptions:
+    sizeMultiplier: 0.8
+    tintColor: {r: 0, g: 0, b: 0, a: 0}
+  strongOptions:
+    sizeMultiplier: 1.2
+    tintColor: {r: 0, g: 0, b: 0, a: 0}
+  uniqueID: 1
