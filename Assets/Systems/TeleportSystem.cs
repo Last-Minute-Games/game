@@ -109,11 +109,13 @@ namespace Systems
             
             if (isTutorial && _tutorialScene)
             {
-                if (tptTo.transform.name == "Throne" || Application.isEditor)
+                if (tptTo.transform.name == "Throne")
                 {
                     _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
                     yield break;
                 }
+ 
+                _tutorialScene.SetCinecamYOffset(tptTo.transform.name == "Hallway" ? 2.5f : 0f);
             };
             
             OnTeleport?.Invoke();
@@ -123,11 +125,6 @@ namespace Systems
             other.transform.position = GetTeleportPosition(other);
                 
             _cinemachinePositionComposer.Damping = Vector3.zero;
-                
-            if (tptTo.transform.name == "Hallway")
-            {
-                _tutorialScene.SetCinecamYOffset(2.5f);   
-            }
             
             yield return new WaitForSeconds(_fadeTime); // Adjust the wait time as needed
                 
