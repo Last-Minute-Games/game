@@ -36,6 +36,26 @@ public class EffectData : ScriptableObject
     [Tooltip("Whether delay counts in Turns or Rounds.")]
     public TimeUnit delayUnit = TimeUnit.Turns;
 
+    [Header("UI & Display")]
+    [Tooltip("Color used to highlight this effect's value in card descriptions.")]
+    public Color variableColor = Color.white;
+
+    // --------------------------------------------------
+    // Helper Methods
+    // --------------------------------------------------
+
+    /// <summary>
+    /// Returns the HTML hex string representation of variableColor for rich text tags.
+    /// Example: "<color=#FF0000>+10</color>"
+    /// </summary>
+    public string GetColorTag()
+    {
+        return ColorUtility.ToHtmlStringRGB(variableColor);
+    }
+
+    // --------------------------------------------------
+    // Validation
+    // --------------------------------------------------
     protected void OnValidate()
     {
         // Keep multipliers in valid order
