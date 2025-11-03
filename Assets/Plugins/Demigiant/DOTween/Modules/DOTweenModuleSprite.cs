@@ -46,7 +46,7 @@ namespace DG.Tweening
             GradientColorKey[] colors = gradient.colorKeys;
             int len = colors.Length;
             for (int i = 0; i < len; ++i) {
-                GradientColorKey c = colors[i];
+                GradientColorKey c = colors[i]; 
                 if (i == 0 && c.time <= 0) {
                     target.color = c.color;
                     continue;

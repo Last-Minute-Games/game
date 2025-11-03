@@ -357,8 +357,19 @@ namespace cherrydev
             if (ParentNodes.Contains(nodeToAdd))
                 return false;
             
-            ParentNodes.Add(nodeToAdd);
-            return true;
+            // Accept connections from various node types including SetGameFlagNode
+            if (nodeToAdd.GetType() == typeof(SentenceNode) 
+                || nodeToAdd.GetType() == typeof(ModifyVariableNode)
+                || nodeToAdd.GetType() == typeof(VariableConditionNode)
+                || nodeToAdd.GetType().Name == "GameFlagConditionNode"
+                || nodeToAdd.GetType().Name == "SetGameFlagNode"
+                || nodeToAdd.GetType() == typeof(ExternalFunctionNode))
+            {
+                ParentNodes.Add(nodeToAdd);
+                return true;
+            }
+            
+            return false;
         }
 
         /// <summary>

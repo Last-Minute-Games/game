@@ -138,7 +138,9 @@ namespace cherrydev
             }
 
             if (nodeToAdd.GetType() == typeof(ModifyVariableNode) || 
-                nodeToAdd.GetType() == typeof(VariableConditionNode))
+                nodeToAdd.GetType() == typeof(VariableConditionNode) ||
+                nodeToAdd.GetType().Name == "GameFlagConditionNode" ||
+                nodeToAdd.GetType().Name == "SetGameFlagNode")
             {
                 if (ParentNodes.Contains(nodeToAdd))
                     return false;
