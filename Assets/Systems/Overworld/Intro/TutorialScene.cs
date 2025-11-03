@@ -105,7 +105,7 @@ namespace Systems.Overworld.Intro
         private SentenceNode CreateMysteriousSentenceNode(DialogNodeGraph nodeGraph)
         {
             var node = ScriptableObject.CreateInstance<SentenceNode>();
-            node.Initialize(new Rect(), "sentence", nodeGraph);
+            // SentenceNode doesn't have an Initialize method, just create it directly
             return node;
         }
 

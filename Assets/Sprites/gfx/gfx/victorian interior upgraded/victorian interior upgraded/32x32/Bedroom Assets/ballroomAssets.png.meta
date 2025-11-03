@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: addba0dcae90a284693d34cc40d46225
+guid: bbced6af9a2c35247875e6faf3be559d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 5788023793779929071
-    second: textbox2_0
+      213: 4728437998109587291
+    second: ballroomAssets_0
+  - first:
+      213: 4682559245608259124
+    second: ballroomAssets_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,17 +99,30 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: textbox2_0
+      name: ballroomAssets_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 142
-        width: 890
-        height: 256
+        x: 45
+        y: 1655
+        width: 1267
+        height: 1037
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +131,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: fefe2c369f0335050800000000000000
-      internalID: 5788023793779929071
+      spriteID: b57f7c39e49ce9140800000000000000
+      internalID: 4728437998109587291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ballroomAssets_1
+      rect:
+        serializedVersion: 2
+        x: 2069
+        y: 873
+        width: 1037
+        height: 1405
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43e833a13dacbf040800000000000000
+      internalID: 4682559245608259124
       vertices: []
       indices: 
       edges: []
@@ -135,7 +173,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      textbox2_0: 5788023793779929071
+      ballroomAssets_0: 4728437998109587291
+      ballroomAssets_1: 4682559245608259124
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
