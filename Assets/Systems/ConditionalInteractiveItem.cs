@@ -43,6 +43,7 @@ public class ConditionalInteractiveItem : MonoBehaviour
     
     private GameObject player;
     private CharacterMotor2D characterController;
+    private ClockTimer clockTimer;
     private bool isPlayerNear = false;
     private string currentFlagToSet;
     
@@ -58,6 +59,11 @@ public class ConditionalInteractiveItem : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
             characterController = player.GetComponent<CharacterMotor2D>();
+
+        // Find ClockTimer in the scene
+        clockTimer = FindObjectOfType<ClockTimer>();
+        if (clockTimer == null)
+            Debug.LogWarning($"[ConditionalInteractiveItem] {name}: No ClockTimer found in scene. Timer pause will not work.");
         
         if (dialogBehaviour != null)
         {
@@ -137,12 +143,26 @@ public class ConditionalInteractiveItem : MonoBehaviour
     
     void OnDialogStart()
     {
+        // Pause the clock timer
+        if (clockTimer != null)
+        {
+            clockTimer.PauseTimer(true);
+            Debug.Log($"[ConditionalInteractiveItem] {name}: Clock timer paused");
+        }
+
         if (characterController != null)
             characterController.SetDialogueActive(true);
     }
     
     void OnDialogFinished()
     {
+        // Resume the clock timer
+        if (clockTimer != null)
+        {
+            clockTimer.PauseTimer(false);
+            Debug.Log($"[ConditionalInteractiveItem] {name}: Clock timer resumed");
+        }
+
         if (!string.IsNullOrEmpty(currentFlagToSet))
         {
             GameFlags.SetFlag(currentFlagToSet);
