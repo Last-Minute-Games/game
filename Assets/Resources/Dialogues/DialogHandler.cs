@@ -23,6 +23,7 @@ namespace Dialogues
 
         private GameObject _player;
         private CharacterMotor2D _playerController;
+        private ClockTimer _clockTimer;
 
         private bool _isPlayerNear = false;
         private bool _isMyConversation = false; // <-- key flag
@@ -36,6 +37,11 @@ namespace Dialogues
 
             if (_npcController)
                 _npcBrain = GetComponent<NpcBrain2D>();
+
+            // Find ClockTimer in the scene
+            _clockTimer = FindObjectOfType<ClockTimer>();
+            if (_clockTimer == null)
+                Debug.LogWarning("[DialogTrigger] No ClockTimer found in scene. Timer pause will not work.");
 
             dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
             dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
@@ -76,6 +82,13 @@ namespace Dialogues
             // Ignore global start events unless they were initiated by THIS trigger
             if (!_isMyConversation) return;
 
+            // Pause the clock timer
+            if (_clockTimer != null)
+            {
+                _clockTimer.PauseTimer(true);
+                Debug.Log("[DialogTrigger] Clock timer paused");
+            }
+
             if (_npcBrain)
             {
                 _previousMode = _npcBrain.mode;
@@ -91,6 +104,13 @@ namespace Dialogues
         {
             // Only unfreeze if this NPC was the one talking
             if (!_isMyConversation) return;
+
+            // Resume the clock timer
+            if (_clockTimer != null)
+            {
+                _clockTimer.PauseTimer(false);
+                Debug.Log("[DialogTrigger] Clock timer resumed");
+            }
 
             if (_npcBrain)
             {
