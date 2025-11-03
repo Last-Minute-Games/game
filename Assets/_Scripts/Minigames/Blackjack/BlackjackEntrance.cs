@@ -30,7 +30,7 @@ public class BlackjackEntrance : MonoBehaviour
         // If close enough and player presses E
         if (distance <= interactDistance && Input.GetKeyDown(KeyCode.E))
         {
-            FindObjectOfType<ClockTimer>().PauseTimer(false);   // Pause
+            FindObjectOfType<ClockTimer>().PauseTimer(true);   // Pause
 
             popup.Show();
         }
