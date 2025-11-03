@@ -154,9 +154,9 @@ namespace Systems.Overworld.Intro
             var bigDoorOpenClip = Resources.Load<AudioClip>("SFXs/Doors/BigDoorOpen");
             var tempBallroomBlock = GameObject.Find("TempBallroomBlock");
 
-            _characterLight2D.DOIntensity(0, 3f);
+            _characterLight2D.DOIntensity(0, 2f);
             
-            yield return new WaitForSeconds(6f);
+            yield return new WaitForSeconds(3.5f);
 
             _characterLight2D.enabled = false;
             _ballroomSpotlight.enabled = true;
