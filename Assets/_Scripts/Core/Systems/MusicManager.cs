@@ -1,12 +1,15 @@
+using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 
 public class MusicManager : MonoBehaviour
 {
-    [Header("Music Settings")]
+    [Header("Tutorial Dream Settings")]
     public AudioClip dreamIntro;
     public AudioClip dreamLoop;
-    
+
+    [Header("Default Settings")] 
+    public AudioClip defaultIntro;
     public AudioClip defaultLoop;
     
     private AudioSource source;
@@ -17,14 +20,42 @@ public class MusicManager : MonoBehaviour
         source.clip = dreamIntro;
         source.loop = true;
         source.playOnAwake = false;
-        source.volume = 0.7f;
+        source.volume = 0.5f;
         
         if (defaultLoop != null)
         {
             source.clip = defaultLoop;
             source.loop = true;
-            source.Play();
+
+            if (defaultIntro)
+            {
+                source.clip = defaultIntro;
+                source.loop = false;
+                source.Play();
+                
+                StartCoroutine(WaitForDefaultIntro());
+            }
+            else
+            {
+                source.Play();
+            }
         }
+    }
+    
+    private IEnumerator WaitForDefaultIntro()
+    {
+        // Wait while the audio source is playing
+        while (source.isPlaying)
+        {
+            yield return null; // Yield control back to Unity for one frame
+        }
+
+        // This code will execute once the audio has finished playing
+        Debug.Log("Audio has finished playing! Executing action...");
+        // Place your desired action here, e.g.,
+        source.clip = defaultLoop;
+        source.loop = true;
+        source.Play();
     }
     
     public AudioSource GetAudioSource()
