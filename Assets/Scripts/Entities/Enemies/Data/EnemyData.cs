@@ -33,6 +33,12 @@ public class EnemyData : EntityData
     [Tooltip("Name prefix when the enemy rolls near its maximum scale (stronger variant).")]
     public string strongPrefix = "Insane";
 
+    [Tooltip("Display color for the weak variant prefix (e.g., gray or dull blue).")]
+    public Color weakPrefixColor = Color.gray;
+
+    [Tooltip("Display color for the strong variant prefix (e.g., red or gold).")]
+    public Color strongPrefixColor = new Color(1f, 0.35f, 0.35f);
+
     [Header("Variant Visual Overrides (Optional)")]
     [Tooltip("Visual overrides when this enemy spawns as its weaker variant.")]
     public VariantVisualOptions weakOptions;
@@ -44,7 +50,9 @@ public class EnemyData : EntityData
     [Tooltip("Unique ID for this enemy (used for lookups or saves).")]
     public int uniqueID;
 
-    // struct for per-variant visual customization
+    // -------------------------------------------------------
+    // Struct for per-variant visual customization
+    // -------------------------------------------------------
     [System.Serializable]
     public struct VariantVisualOptions
     {
@@ -56,6 +64,41 @@ public class EnemyData : EntityData
         public Color tintColor;
     }
 
+    // -------------------------------------------------------
+    // Helper Methods
+    // -------------------------------------------------------
+
+    /// <summary>
+    /// Returns an HTML color string (RRGGBB) for the weak prefix color.
+    /// </summary>
+    public string GetWeakPrefixColorTag()
+    {
+        return ColorUtility.ToHtmlStringRGB(weakPrefixColor);
+    }
+
+    /// <summary>
+    /// Returns an HTML color string (RRGGBB) for the strong prefix color.
+    /// </summary>
+    public string GetStrongPrefixColorTag()
+    {
+        return ColorUtility.ToHtmlStringRGB(strongPrefixColor);
+    }
+
+    /// <summary>
+    /// Returns a fully formatted prefix wrapped in its color tag.
+    /// e.g., "<color=#B0B0B0>Weak</color>"
+    /// </summary>
+    public string GetColoredPrefix(bool isStrongVariant)
+    {
+        if (isStrongVariant)
+            return $"<color=#{GetStrongPrefixColorTag()}>{strongPrefix}</color>";
+        else
+            return $"<color=#{GetWeakPrefixColorTag()}>{weakPrefix}</color>";
+    }
+
+    // -------------------------------------------------------
+    // Validation
+    // -------------------------------------------------------
     protected override void OnValidate()
     {
         // verify valid scale multiplier
