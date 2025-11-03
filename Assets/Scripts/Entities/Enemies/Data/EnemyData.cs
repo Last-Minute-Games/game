@@ -23,6 +23,16 @@ public class EnemyData : EntityData
     [Range(0f, 10f)]
     public float maxScaleMultiplier = 2f;
 
+    [Tooltip("If true, this enemy can spawn with random strength (min–max scaling).")]
+    public bool isVariableEnemy = false;
+
+    [Header("Variable Naming")]
+    [Tooltip("Name prefix when the enemy rolls near its minimum scale (weaker variant).")]
+    public string weakPrefix = "Weak";
+
+    [Tooltip("Name prefix when the enemy rolls near its maximum scale (stronger variant).")]
+    public string strongPrefix = "Insane";
+
     [Header("FX Data")]
     [Tooltip("Reference to visual/sound FX data for this enemy.")]
     public EnemyFXData enemyFXData;
