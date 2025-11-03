@@ -1,4 +1,4 @@
-public enum TargetRule
+public enum TargetRule // do not change target rules specifically
 {
     None,
     Self,
@@ -6,12 +6,12 @@ public enum TargetRule
     AllEnemies
 }
 
-public enum OperationType
+public enum OperationType // ts mainly dealt thru feedbackmanager and datainteractionhelper
 {
     None,
     ModifyHealth,
     ModifyPowerScale,
-    ModifyDefense,
+    ModifyShield,
     ModifyEnergy,
     EndTurn
 }

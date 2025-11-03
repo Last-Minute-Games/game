@@ -16,8 +16,8 @@ public class EnemyFXData : ScriptableObject
     [Tooltip("Death animation frames.")]
     public Sprite[] death;
 
-    [Tooltip("Action / special move animation frames.")]
-    public Sprite[] action;
+    [Tooltip("Special move animation frames.")]
+    public Sprite[] special;
 
     [Header("Core Playback FPS (per animation)")]
     [Tooltip("Fallback FPS if no specific FPS is defined.")]
@@ -26,7 +26,7 @@ public class EnemyFXData : ScriptableObject
     public float attackFps = 8f;
     public float hurtFps = 8f;
     public float deathFps = 8f;
-    public float actionFps = 8f;
+    public float specialFps = 8f;
 
     [Header("Core SFX Cues")]
     [Tooltip("Sound effect played during idle animation.")]
@@ -41,8 +41,8 @@ public class EnemyFXData : ScriptableObject
     [Tooltip("Sound effect played during death animation.")]
     public SFXCueData sfx_death;
 
-    [Tooltip("Sound effect played during action animation.")]
-    public SFXCueData sfx_action;
+    [Tooltip("Sound effect played during special animation.")]
+    public SFXCueData sfx_special;
 
     /// <summary>
     /// Returns the FPS associated with a given animation state.
@@ -55,7 +55,7 @@ public class EnemyFXData : ScriptableObject
             case EnemyAnim.Attack: return attackFps;
             case EnemyAnim.Hurt:   return hurtFps;
             case EnemyAnim.Death:  return deathFps;
-            case EnemyAnim.Action: return actionFps;
+            case EnemyAnim.Special: return specialFps;
             default:                return defaultFps;
         }
     }
