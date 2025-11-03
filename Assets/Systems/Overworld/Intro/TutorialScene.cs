@@ -97,13 +97,16 @@ namespace Systems.Overworld.Intro
 
         private SentenceNode CreateMysteriousSentenceNode(DialogNodeGraph nodeGraph)
         {
-            SentenceNode node = ScriptableObject.CreateInstance<SentenceNode>();
-
+            var node = ScriptableObject.CreateInstance<SentenceNode>();
             node.Initialize(new Rect(), "sentence", nodeGraph);
-
             return node;
         }
 
+        public void SetTutorialGlobalLightIntensity(float intensity)
+        {
+            _globalLight.intensity = intensity;
+        }
+        
         private IEnumerator StartPuddleSeq()
         {
             foreach (Transform puddleTrans in _ballroomBloodPuddle.transform)

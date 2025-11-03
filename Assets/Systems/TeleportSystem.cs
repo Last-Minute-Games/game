@@ -1,6 +1,7 @@
     using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 namespace Systems
@@ -9,6 +10,8 @@ namespace Systems
     {
         public GameObject tptTo;
         public Vector3 direction;
+        
+        public UnityEvent OnTeleport;
         
         private GameObject _player;
         private CharacterMotor2D _characterController2D;
@@ -101,38 +104,40 @@ namespace Systems
             // Start fade-in
             _fadeCanvasGroup.blocksRaycasts = true;
             yield return StartCoroutine(FadeIn());
-            
-            // check if scene is tutorial
-            if (!FindFirstObjectByType<Overworld.Intro.TutorialScene>())
-            {
-                // Teleport the object
-            
-                other.transform.position = GetTeleportPosition(other);
-                
-                _cinemachinePositionComposer.Damping = Vector3.zero;
-                
-                if (tptTo.transform.name == "Hallway")
-                {
-                    _tutorialScene.SetCinecamYOffset(2.5f);   
-                }
-            
-                yield return new WaitForSeconds(_fadeTime); // Adjust the wait time as needed
-                
-                // Start fade-out
-                _characterController2D.SetTeleporting(false);
-            
-                _cinemachinePositionComposer.Damping = Vector3.one;
-            
-                yield return StartCoroutine(FadeOut());
-                _fadeCanvasGroup.blocksRaycasts = false;
 
-                yield break;
+            var isTutorial = FindFirstObjectByType<Overworld.Intro.TutorialScene>() is not null;
+            
+            if (isTutorial && _tutorialScene)
+            {
+                if (tptTo.transform.name == "Throne")
+                {
+                    _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
+                    yield break;
+                }
+            };
+            
+            OnTeleport?.Invoke();
+            
+            // Teleport the object
+            
+            other.transform.position = GetTeleportPosition(other);
+                
+            _cinemachinePositionComposer.Damping = Vector3.zero;
+                
+            if (tptTo.transform.name == "Hallway")
+            {
+                _tutorialScene.SetCinecamYOffset(2.5f);   
             }
             
-            if (_tutorialScene && tptTo.transform.name == "Throne")
-            {
-                _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
-            };
+            yield return new WaitForSeconds(_fadeTime); // Adjust the wait time as needed
+                
+            // Start fade-out
+            _characterController2D.SetTeleporting(false);
+            
+            _cinemachinePositionComposer.Damping = Vector3.one;
+            
+            yield return StartCoroutine(FadeOut());
+            _fadeCanvasGroup.blocksRaycasts = false;
         }
 
         private void OnEnter()
