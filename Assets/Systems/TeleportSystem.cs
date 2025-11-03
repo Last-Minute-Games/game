@@ -109,7 +109,7 @@ namespace Systems
             
             if (isTutorial && _tutorialScene)
             {
-                if (tptTo.transform.name == "Throne" || Application.isEditor)
+                if (tptTo.transform.name == "Throne")
                 {
                     _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
                     yield break;
