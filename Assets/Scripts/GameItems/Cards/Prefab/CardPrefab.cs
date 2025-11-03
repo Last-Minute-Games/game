@@ -2,32 +2,52 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Represents a single card instance in battle. Handles
+/// only its visuals and data-binding; logic is delegated
+/// to CardManager and FeedbackManager.
+/// </summary>
 public class CardPrefab : MonoBehaviour
 {
     [Header("Card Data Reference")]
+    [Tooltip("ScriptableObject holding static data for this card.")]
     public CardData cardData;
 
     [Header("UI References")]
+    [Tooltip("Main card background or artwork image.")]
     public Image cardBackground;
+
+    [Tooltip("Icon showing the card's intention or type.")]
     public Image cardIcon;
+
+    [Tooltip("Displayed card name text.")]
     public TMP_Text nameText;
+
+    [Tooltip("Displayed card description text.")]
     public TMP_Text descriptionText;
-    public TMP_Text intentionText;
+
+    [Tooltip("Displayed energy cost number.")]
     public TMP_Text energyCost;
 
-
-    private void Awake()
-    {
-        if (cardData == null)
-            Debug.LogWarning($"[CardPrefab] '{name}' has no CardData assigned before Start — will wait for CardManager to initialize.");
-    }
+    // ------------------------------------------------------------------
+    // LIFECYCLE
+    // ------------------------------------------------------------------
 
     private void Start()
     {
         if (cardData != null)
             Initialize(cardData);
+        else
+            Debug.LogWarning($"[CardPrefab] '{name}' missing CardData assignment.");
     }
 
+    // ------------------------------------------------------------------
+    // INITIALIZATION / VISUALS
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Initializes this card with a CardData reference and applies visuals.
+    /// </summary>
     public void Initialize(CardData data)
     {
         if (data == null)
@@ -37,25 +57,56 @@ public class CardPrefab : MonoBehaviour
         }
 
         cardData = data;
-
-        // --- Set visuals ---
-        nameText?.SetText(data.itemName);
-        descriptionText?.SetText(data.description);
-        intentionText?.SetText(data.intentionText);
-        energyCost?.SetText(data.energyCost.ToString());
-
-        if (cardBackground)
-            cardBackground.sprite = data.artwork;
-
-        if (cardIcon)
-            cardIcon.sprite = data.icon;
+        RefreshVisuals();
 
         Debug.Log($"[CardPrefab] Initialized card: {data.itemName}");
     }
 
+    // refreshes and re-applies visuals for card
+    public void RefreshVisuals()
+    {
+        if (cardData == null) return;
+
+        // --- Determine variation tier (first effect assumed primary) ---
+        CardVariationTier tier = CardVariationTier.NormalModifier;
+        if (cardData.IsCardVariabilityValid())
+            tier = cardData.GetVariationTier(cardData.effectData[0]);
+
+        // --- Apply artwork & colored name ---
+        switch (tier)
+        {
+            case CardVariationTier.WeakModifier:
+                if (cardData.poorArtwork) cardBackground.sprite = cardData.poorArtwork;
+                nameText.SetText($"{cardData.GetColoredPrefix(tier)} {cardData.itemName}");
+                break;
+
+            case CardVariationTier.StrongModifier:
+                if (cardData.potentArtwork) cardBackground.sprite = cardData.potentArtwork;
+                nameText.SetText($"{cardData.GetColoredPrefix(tier)} {cardData.itemName}");
+                break;
+
+            default:
+                cardBackground.sprite = cardData.artwork;
+                nameText.SetText(cardData.itemName);
+                break;
+        }
+
+        // --- Core visuals ---
+        descriptionText.SetText(cardData.description);
+        energyCost.SetText(cardData.energyCost.ToString());
+        cardIcon.sprite = cardData.icon;
+    }
+
+    // ------------------------------------------------------------------
+    // CARD ACTIONS
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Called when the card is played. Logic handled externally by CardManager.
+    /// </summary>
     public void PlayCard()
     {
-        // Placeholder for later: CardManager will handle logic & FX
         Debug.Log($"[CardPrefab] Card '{cardData?.itemName ?? "Unnamed"}' played.");
+        // Placeholder: CardManager & FeedbackManager handle actual logic.
     }
 }

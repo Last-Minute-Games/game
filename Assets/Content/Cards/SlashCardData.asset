@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SlashCardData
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   itemName: Slash
-  description: Deal <X> damage to your enemy.
+  description: Slash your enemy and deal <X> damage.
   artwork: {fileID: -68835398901110454, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
   icon: {fileID: 8928576263349182094, guid: c8bb689e6c6436bc9a3d713cab3fabeb, type: 3}
   effectData:
@@ -27,3 +27,9 @@ MonoBehaviour:
   isVariableCard: 1
   poorArtwork: {fileID: 6393125008886508775, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
   potentArtwork: {fileID: 7418950461046361184, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
+  minMultiplierThreshold: 0.133
+  maxMultiplierThreshold: 0.842
+  weakPrefix: Subpar
+  strongPrefix: Accurate
+  weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  strongPrefixColor: {r: 0.8490566, g: 0.506909, b: 0.12415449, a: 1}

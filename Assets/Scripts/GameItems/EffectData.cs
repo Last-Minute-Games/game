@@ -13,12 +13,9 @@ public class EffectData : ScriptableObject
     [Tooltip("Maximum multiplier applied to this effect.")]
     [Range(0f, 10f)] public float maxMultiplier = 1f;
 
-    [Tooltip("If true, this effect scales by a random or computed multiplier.")]
-    public bool usesMultiplier = false;
-
     [Header("Effect Data")]
     [Tooltip("Defines what operation this effect performs.")]
-    public OperationType operationType = OperationType.ModifyHealth;
+    public OperationType operationType = OperationType.None;
 
     [Tooltip("The base value of this effect before modifiers or scaling.")]
     public int baseValue = 0;
@@ -40,9 +37,22 @@ public class EffectData : ScriptableObject
     [Tooltip("Color used to highlight this effect's value in card descriptions.")]
     public Color variableColor = Color.white;
 
+    // true value that will be used
+    [HideInInspector] public int postCopyValue;
+
     // --------------------------------------------------
     // Helper Methods
     // --------------------------------------------------
+
+    // helper method for cloning EffectData
+    public EffectData Clone(bool applyMultiplier)
+    {
+        var clone = Instantiate(this);
+
+        float rolledMultiplier = applyMultiplier ? Random.Range(minMultiplier, maxMultiplier) : 1f;
+        clone.postCopyValue = Mathf.RoundToInt(baseValue * rolledMultiplier);
+        return clone;
+    }
 
     /// <summary>
     /// Returns the HTML hex string representation of variableColor for rich text tags.

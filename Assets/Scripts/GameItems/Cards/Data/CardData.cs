@@ -43,31 +43,72 @@ public class CardData : GameItemData
     [Tooltip("Artwork shown when the card rolls a Potent outcome (optional).")]
     public Sprite potentArtwork;
 
+    [Header("Variability Threshold")]
+
+    [Tooltip("The lower bound range of the variability threshold.")]
+    [Range(0f, 1f)] public float minMultiplierThreshold = 0.33f;
+
+    [Tooltip("The upper bound range of the variability threshold.")]
+    [Range(0f, 1f)] public float maxMultiplierThreshold = 0.66f;
+
+    // naming prefixes
+    [Header("Name Prefixes")]
+    public string weakPrefix = "Poor";
+    public string strongPrefix = "Potent";
+
+    [Tooltip("Color for weak prefix text.")]
+    public Color weakPrefixColor = Color.gray;
+
+    [Tooltip("Color for strong prefix text.")]
+    public Color strongPrefixColor = new Color(1f, 0.4f, 0.4f);
+
     // --------------------------------------------------
     // VALIDATION HELPERS
     // --------------------------------------------------
 
-    /// <summary>
-    /// Determines if this card meets the logical criteria for variability:
-    /// - It has exactly one effect.
-    /// - That effect uses a multiplier.
-    /// </summary>
-    public bool HasVariableEffect()
+    // checks if card variability is valid
+    public bool IsCardVariabilityValid()
     {
-        return effectData != null
-            && effectData.Count == 1
-            && effectData[0] != null
-            && effectData[0].usesMultiplier;
+        return isVariableCard && effectData != null && effectData.Count == 1;
     }
 
-#if UNITY_EDITOR
-    private void OnValidate()
+    // postcopy rolled effect
+    public CardVariationTier GetVariationTier(EffectData rolledEffect)
     {
-        // Optional sanity check to automatically toggle variability when criteria met
-        if (HasVariableEffect() && !isVariableCard)
-        {
-            Debug.LogWarning($"[CardData] '{itemName}' qualifies as a variable card but 'isVariableCard' is disabled.", this);
-        }
+        float min = rolledEffect.minMultiplier;
+        float max = rolledEffect.maxMultiplier;
+        float baseVal = rolledEffect.baseValue;
+        float post = rolledEffect.postCopyValue;
+        float lowBound = baseVal * min;
+        float highBound = baseVal * max;
+
+        if (post == baseVal) // for cases where there is no gap between minT, maxT and multiplier isn't on
+            return CardVariationTier.NormalModifier;
+
+        // Normalize
+        float t = Mathf.InverseLerp(lowBound, highBound, post);
+
+        if (t <= minMultiplierThreshold)
+            return CardVariationTier.WeakModifier;
+        if (t >= maxMultiplierThreshold)
+            return CardVariationTier.StrongModifier;
+        return CardVariationTier.NormalModifier; // ultimate fallback
     }
-#endif
+    public string GetWeakPrefixColorTag() =>
+        ColorUtility.ToHtmlStringRGB(weakPrefixColor);
+
+    public string GetStrongPrefixColorTag() =>
+        ColorUtility.ToHtmlStringRGB(strongPrefixColor);
+
+    public string GetColoredPrefix(CardVariationTier tier)
+    {
+        return tier switch
+        {
+            CardVariationTier.WeakModifier =>
+                $"<color=#{GetWeakPrefixColorTag()}>{weakPrefix}</color>",
+            CardVariationTier.StrongModifier =>
+                $"<color=#{GetStrongPrefixColorTag()}>{strongPrefix}</color>",
+            _ => string.Empty
+        };
+    }
 }
