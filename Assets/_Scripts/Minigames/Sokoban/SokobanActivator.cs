@@ -56,9 +56,15 @@ public class SokobanActivator : MonoBehaviour
 
     private void OnInteract()
     {
-        // --- FIX: Dynamic Return Position Capture ---
-        // Get the player's current position, round it to the nearest whole number for the grid, 
-        // and send it to the MinigameController before starting.
+        //get loc
+
+
+        //clock
+
+        //GameFlags.SetFlag("InMinigame");//somehting about line 77 in GAmeFlags.cs file
+
+        FindObjectOfType<ClockTimer>().PauseTimer(true);   // Pause
+
         Vector3 playerCurrentPosition = player.transform.position;
         Vector3 returnPosition = new Vector3(
             Mathf.Round(playerCurrentPosition.x),

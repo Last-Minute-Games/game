@@ -114,6 +114,10 @@ public class MinigameController : MonoBehaviour
     {
         if (player == null || sokobanRoot == null) return;
 
+        //GameFlags.ClearFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
+
+        FindObjectOfType<ClockTimer>().PauseTimer(false);   // Pause
+      
         // 1. Deactivate the Puzzle: Hide all walls/boxes/goals
         sokobanRoot.SetActive(false);
 
