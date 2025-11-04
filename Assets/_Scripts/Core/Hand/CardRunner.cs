@@ -53,7 +53,7 @@ public class CardRunner : MonoBehaviour
 
         if (data.effects == null || data.effects.Length == 0) return;
 
-        description.alignment = TextAlignmentOptions.Center;
+        description.horizontalAlignment = HorizontalAlignmentOptions.Center;
         description.fontSize = 5f;
         
         foreach (var eff in data.effects)
