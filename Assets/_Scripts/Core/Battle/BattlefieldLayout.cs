@@ -108,6 +108,7 @@ public class BattlefieldLayout : MonoBehaviour
             currentRound++;
 
             battleSystem.playerTurn = true;
+            battleSystem.isProcessingTurn = false;
 
             if (battleSystem != null)
             {
