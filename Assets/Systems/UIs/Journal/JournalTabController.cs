@@ -12,6 +12,13 @@ public class JournalUI_Named : MonoBehaviour
     public GameObject MonstersPage;
     public GameObject TutorialsPage;
 
+    [Header("Tutorial")]
+    [Tooltip("Optional tutorial overlay to show on first open")]
+    public GameObject tutorialOverlay;
+    
+    [Tooltip("Flag name to track if tutorial has been shown")]
+    public string tutorialShownFlagName = "journal.tutorial.shown";
+
     [Header("Optional")]
     public CanvasGroup cg;                // CanvasGroup on JournalPanel
 
@@ -52,6 +59,42 @@ public class JournalUI_Named : MonoBehaviour
         _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler")?.GetComponent<EnvironmentSoundHandler>();
         if (_environmentSoundHandler == null)
             Debug.LogWarning("[JournalUI_Named] EnvironmentSoundHandler not found in scene");
+        
+        // Hide tutorial overlay initially
+        if (tutorialOverlay != null)
+        {
+            tutorialOverlay.SetActive(false);
+        }
+    }
+
+    void OnEnable()
+    {
+        // Check if we should show the tutorial when journal is opened
+        if (tutorialOverlay != null && !GameFlags.HasFlag(tutorialShownFlagName))
+        {
+            ShowTutorial();
+        }
+    }
+
+    void ShowTutorial()
+    {
+        Debug.Log("[JournalUI_Named] Showing journal tutorial for first time");
+        tutorialOverlay.SetActive(true);
+        
+        // Set the flag so it never shows again
+        GameFlags.SetFlag(tutorialShownFlagName);
+    }
+
+    /// <summary>
+    /// Call this method from a button on the tutorial overlay to close it
+    /// </summary>
+    public void CloseTutorial()
+    {
+        if (tutorialOverlay != null)
+        {
+            tutorialOverlay.SetActive(false);
+            Debug.Log("[JournalUI_Named] Tutorial closed");
+        }
     }
 
     // BUTTON HOOKS (match your names exactly)
