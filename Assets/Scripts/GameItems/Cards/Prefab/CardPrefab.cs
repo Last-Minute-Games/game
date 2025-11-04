@@ -13,6 +13,8 @@ public class CardPrefab : MonoBehaviour
     // hierarchial target rule
     [HideInInspector] public TargetRule targetRule;
 
+    [HideInInspector] public float ownerPowerScale = 1f;
+
     [Header("Card Data Reference")]
     [Tooltip("ScriptableObject holding static data for this card.")]
     public CardData cardData;
@@ -75,7 +77,7 @@ public class CardPrefab : MonoBehaviour
         // --- Determine variation tier (first effect assumed primary) ---
         CardVariationTier tier = CardVariationTier.NormalModifier;
         if (cardData.IsCardVariabilityValid())
-            tier = cardData.GetVariationTier(cardData.effectData[0]);
+            tier = cardData.GetVariationTier(cardData.effectData[0], ownerPowerScale);
 
         // --- Apply artwork & colored name ---
         switch (tier)

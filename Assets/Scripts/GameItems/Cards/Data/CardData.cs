@@ -73,16 +73,16 @@ public class CardData : GameItemData
     }
 
     // postcopy rolled effect
-    public CardVariationTier GetVariationTier(EffectData rolledEffect)
+    public CardVariationTier GetVariationTier(EffectData rolledEffect, float powerScale = 1f)
     {
         float min = rolledEffect.minMultiplier;
         float max = rolledEffect.maxMultiplier;
-        float baseVal = rolledEffect.baseValue;
+        float baseVal = rolledEffect.baseValue * powerScale;   // scaled
         float post = rolledEffect.postCopyValue;
         float lowBound = baseVal * min;
         float highBound = baseVal * max;
 
-        if (post == baseVal) // for cases where there is no gap between minT, maxT and multiplier isn't on
+        if (post == baseVal) // cases where min and max are right beside each other, then it almost guarantees t in modifier
             return CardVariationTier.NormalModifier;
 
         // Normalize
@@ -92,7 +92,7 @@ public class CardData : GameItemData
             return CardVariationTier.WeakModifier;
         if (t >= maxMultiplierThreshold)
             return CardVariationTier.StrongModifier;
-        return CardVariationTier.NormalModifier; // ultimate fallback
+        return CardVariationTier.NormalModifier;
     }
     public string GetWeakPrefixColorTag() =>
         ColorUtility.ToHtmlStringRGB(weakPrefixColor);

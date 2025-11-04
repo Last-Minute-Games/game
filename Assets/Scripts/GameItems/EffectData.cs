@@ -45,12 +45,14 @@ public class EffectData : ScriptableObject
     // --------------------------------------------------
 
     // helper method for cloning EffectData
-    public EffectData Clone(bool applyMultiplier)
+    public EffectData Clone(bool applyMultiplier, float powerScale = 1f)
     {
         var clone = Instantiate(this);
 
         float rolledMultiplier = applyMultiplier ? Random.Range(minMultiplier, maxMultiplier) : 1f;
-        clone.postCopyValue = Mathf.RoundToInt(baseValue * rolledMultiplier);
+        float scaledValue = baseValue * rolledMultiplier * powerScale;
+
+        clone.postCopyValue = Mathf.RoundToInt(scaledValue);
         return clone;
     }
 

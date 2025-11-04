@@ -8,11 +8,15 @@ public class CardManager : MonoBehaviour
     [Tooltip("All cards that exist in the game. Used for global random draws.")]
     public List<CardData> globalPoolPile = new List<CardData>();
 
+    [Header("Prefab Reference")]
+    [Tooltip("Template prefab to instantiate for each drawn card.")]
+    public CardPrefab cardPrefabTemplate;
+
     // ─────────────────────────────────────────────
     // Public API
     // ─────────────────────────────────────────────
 
-    public CardData PullCardByID(int id, bool multiplierApplied = true)
+    public CardPrefab PullCardByID(int id, Transform parent, bool multiplierApplied = true, float powerScale = 1f)
     {
         var match = globalPoolPile.FirstOrDefault(c => c.uniqueID == id);
         if (match == null)
@@ -21,26 +25,33 @@ public class CardManager : MonoBehaviour
             return null;
         }
 
-        return CloneCardData(match, multiplierApplied);
+        CardData clonedData = CloneCardData(match, multiplierApplied, powerScale);
+        return SpawnCardPrefab(clonedData, parent, powerScale);
     }
 
-    public List<CardData> PullMultipleRandomCards(int amount, List<CardDrawEntry> entityDataCards = null, bool multiplierApplied = false)
+    public List<CardPrefab> PullMultipleRandomCards(
+        int amount,
+        Transform parent,
+        List<CardDrawEntry> entityDataCards = null,
+        bool multiplierApplied = false,
+        float powerScale = 1f)
     {
-        var result = new List<CardData>();
+        var result = new List<CardPrefab>();
 
         if (entityDataCards != null && entityDataCards.Count > 0)
         {
-            // Weighted random draw
             for (int i = 0; i < amount; i++)
             {
                 var drawn = DrawWeightedRandomCard(entityDataCards);
                 if (drawn != null)
-                    result.Add(CloneCardData(drawn, multiplierApplied));
+                {
+                    var cloned = CloneCardData(drawn, multiplierApplied, powerScale);
+                    result.Add(SpawnCardPrefab(cloned, parent, powerScale));
+                }
             }
             return result;
         }
 
-        // Global uniform draw
         if (globalPoolPile.Count == 0)
         {
             Debug.LogWarning("[CardManager] Global pool is empty!");
@@ -50,7 +61,8 @@ public class CardManager : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
             var card = globalPoolPile[Random.Range(0, globalPoolPile.Count)];
-            result.Add(CloneCardData(card, multiplierApplied));
+            var cloned = CloneCardData(card, multiplierApplied, powerScale);
+            result.Add(SpawnCardPrefab(cloned, parent, powerScale));
         }
 
         return result;
@@ -60,7 +72,7 @@ public class CardManager : MonoBehaviour
     // Internal Helpers
     // ─────────────────────────────────────────────
 
-    private CardData CloneCardData(CardData original, bool multiplierApplied)
+    private CardData CloneCardData(CardData original, bool multiplierApplied, float powerScale = 1f)
     {
         if (original == null) return null;
 
@@ -71,10 +83,25 @@ public class CardManager : MonoBehaviour
         {
             if (effect == null) continue;
             bool shouldApply = multiplierApplied && original.isVariableCard && original.IsCardVariabilityValid();
-            clone.effectData.Add(effect.Clone(shouldApply));
+            clone.effectData.Add(effect.Clone(shouldApply, powerScale));
         }
 
         return clone;
+    }
+
+    private CardPrefab SpawnCardPrefab(CardData data, Transform parent, float powerScale)
+    {
+        if (cardPrefabTemplate == null)
+        {
+            Debug.LogError("[CardManager] No CardPrefab template assigned!");
+            return null;
+        }
+
+        var prefab = Instantiate(cardPrefabTemplate, parent);
+        prefab.ownerPowerScale = powerScale;
+        prefab.Initialize(data);
+
+        return prefab;
     }
 
     private CardData DrawWeightedRandomCard(List<CardDrawEntry> pool)
