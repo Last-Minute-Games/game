@@ -47,6 +47,9 @@ public class HandView : MonoBehaviour
         for (int i = 0; i < cards.Count; i++)
         {
             var c = cards[i];
+            var wrapper = c.transform.Find("Wrapper");
+
+            wrapper.GetComponent<Canvas>().sortingOrder = i;
 
             float normalized = cards.Count > 1 ? (float)i / (cards.Count - 1) : 0.5f;
             float x = startX + i * spacing;
@@ -86,6 +89,8 @@ public class HandView : MonoBehaviour
 
         foreach (var c in cards)
         {
+            var wrapperCanvas = c.transform.Find("Wrapper").GetComponent<Canvas>();
+            
             // Clear previous hover tweens; for the hovered card also stop layout so it doesn’t fight
             DOTween.Kill(HoverId(c));
             if (c == hoveredCard) DOTween.Kill(LayoutId(c));
@@ -105,6 +110,7 @@ public class HandView : MonoBehaviour
                            .SetId(HoverId(c));
 
                 c.sortingGroup.sortingOrder = 100;
+                wrapperCanvas.sortingOrder = 100;
             }
             else
             {
@@ -118,6 +124,7 @@ public class HandView : MonoBehaviour
                            .SetId(HoverId(c));
 
                 c.sortingGroup.sortingOrder = cards.IndexOf(c);
+                wrapperCanvas.sortingOrder = cards.IndexOf(c);
             }
         }
     }

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 1862430111713198886}
   - component: {fileID: 1060891179084182964}
   - component: {fileID: 4494407146708266946}
-  - component: {fileID: 888485554033689431}
   m_Layer: 0
   m_Name: CardPrefab
   m_TagString: Untagged
@@ -60,24 +59,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 302919935411270648}
   m_CullTransparentMesh: 1
---- !u!114 &888485554033689431
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 302919935411270648}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7ce7f7c2d730a9bbadeb128643ffe06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardPrefab
-  cardData: {fileID: 11400000, guid: 732adffbb1670dc9ba81e8df6c6d9e49, type: 2}
-  cardBackground: {fileID: 1465981128834728927}
-  cardIcon: {fileID: 3672669421532320192}
-  nameText: {fileID: 7529838974298281057}
-  descriptionText: {fileID: 4670545051464373938}
-  energyCost: {fileID: 690097750641305894}
 --- !u!1 &2698870603693720604
 GameObject:
   m_ObjectHideFlags: 0
@@ -391,7 +372,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 2.2, y: -3.5}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 75, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5068917666196757801

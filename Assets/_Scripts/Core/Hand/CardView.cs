@@ -8,7 +8,7 @@ public class CardView : MonoBehaviour
 {
     [Header("Visuals")]
     [SerializeField] private SpriteRenderer imageSR;
-    [SerializeField] private GameObject wrapper;
+    private GameObject wrapper;
     [SerializeField] public UnityEngine.Rendering.SortingGroup sortingGroup;
 
     private BoxCollider2D cardCollider;
@@ -25,6 +25,7 @@ public class CardView : MonoBehaviour
 
     private void Awake()
     {
+        wrapper = transform.Find("Wrapper").gameObject;
         runner = GetComponent<CardRunner>();
         cardBase = GetComponent<CardBase>();
         if (cardBase == null)
