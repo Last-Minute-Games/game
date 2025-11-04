@@ -8,9 +8,9 @@ public class PlayerHealthBar : HealthBarBase
     [Header("HUD References")]
     [SerializeField] private Image healthFill;
     [SerializeField] private TMP_Text healthText;
-    [SerializeField] private GameObject defensePanel;
+    // [SerializeField] private GameObject defensePanel;
     [SerializeField] private TMP_Text defenseText;
-    [SerializeField] private Image defenseIcon;
+    // [SerializeField] private Image defenseIcon;
 
     [Header("Feedback")]
     [SerializeField] private GameObject floatingTextPrefab; // small TMP text prefab
@@ -42,19 +42,19 @@ public class PlayerHealthBar : HealthBarBase
 
     public override void UpdateBlock(int block)
     {
-        if (!defensePanel) return;
+        // if (!defensePanel) return;
 
         bool hasBlock = block > 0;
-        defensePanel.SetActive(hasBlock);
+        // defensePanel.SetActive(hasBlock);
 
         if (hasBlock && defenseText)
-            defenseText.text = $"+{block}";
+            defenseText.text = $"{block}";
 
-        if (hasBlock && defenseIcon)
-        {
-            defenseIcon.color = Color.cyan;
-            defenseIcon.CrossFadeColor(Color.white, 0.5f, false, true);
-        }
+        // if (hasBlock && defenseIcon)
+        // {
+        //     defenseIcon.color = Color.cyan;
+        //     defenseIcon.CrossFadeColor(Color.white, 0.5f, false, true);
+        // }
 
         if (healthFill)
             healthFill.color = hasBlock ? new Color(0.5f, 0.8f, 1f) : originalHealthColor;
