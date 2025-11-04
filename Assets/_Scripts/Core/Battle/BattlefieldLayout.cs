@@ -79,14 +79,14 @@ public class BattlefieldLayout : MonoBehaviour
 
         // 🔹 Clear hand BEFORE transition so cards vanish
         if (battleSystem != null)
-            yield return battleSystem.StartCoroutine("ClearHand");  // NEW
+            yield return battleSystem.StartCoroutine("ClearHand");
 
         // --- WIN CONDITION ---
         if (currentRound >= roundEnemyIDs.Count)
         {
             Debug.Log("✅ All rounds complete! Player wins!");
             if (battleSystem != null)
-                battleSystem.StartCoroutine("HandleBattleFinished", true); // NEW helper for win
+                battleSystem.StartCoroutine("HandleBattleFinished", true);
             yield break;
         }
 
@@ -101,13 +101,23 @@ public class BattlefieldLayout : MonoBehaviour
             SpawnEnemiesByIDs(roundEnemyIDs[currentRound]);
             currentRound++;
 
+            // 🟩 Sync with BattleSystem here
+            if (battleSystem != null)
+            {
+                battleSystem.RefreshEnemyList();     // update new enemy references
+                battleSystem.RefillPlayerEnergy();   // reset energy to 3
+            }
+
             yield return new WaitForSeconds(0.25f);
             yield return ui.FadeOut();
         }
 
         // Redraw cards after fade out
         if (battleSystem != null)
+        {
             yield return battleSystem.StartCoroutine("RefreshPlayerHand");
+            battleSystem.StartPlayerTurn(); // ✅ ensures intentions are shown
+        }
 
         isTransitioning = false;
     }
@@ -211,4 +221,10 @@ public class BattlefieldLayout : MonoBehaviour
     }
 
     public IReadOnlyList<Enemy> GetEnemies() => activeEnemies;
+
+    public bool IsFinalRoundComplete()
+    {
+        // true if we have completed all rounds
+        return currentRound >= roundEnemyIDs.Count && activeEnemies.TrueForAll(e => e == null || e.IsDead);
+    }
 }

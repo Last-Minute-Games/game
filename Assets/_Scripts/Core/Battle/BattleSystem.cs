@@ -129,15 +129,20 @@ public class BattleSystem : MonoBehaviour
             yield return handView.ClearAllCards();
     }
 
-    private IEnumerator RefreshPlayerHand()
+    public IEnumerator RefreshPlayerHand()
     {
         yield return ClearHand();
         yield return SpawnStartingHand();
     }
 
     // -------------------------- TURN MANAGEMENT --------------------------
-    private void StartPlayerTurn()
+    public void StartPlayerTurn()
     {
+
+        enemies.Clear();
+        enemies.AddRange(FindObjectsOfType<Enemy>());
+        enemies.RemoveAll(e => e == null || e.IsDead);
+
         playerTurn = true;
         player.RefillEnergy();
 
@@ -177,21 +182,37 @@ public class BattleSystem : MonoBehaviour
         enemies.RemoveAll(e => e == null || e.IsDead);
 
         // ---------------- WIN/LOSE CONDITIONS ----------------
-        if (enemies.Count == 0 || player == null || player.currentHealth <= 0)
+        BattlefieldLayout layout = FindFirstObjectByType<BattlefieldLayout>();
+        bool allEnemiesDead = enemies.Count == 0;
+        bool playerDead = (player == null || player.currentHealth <= 0);
+        bool allRoundsComplete = (layout != null && layout.IsFinalRoundComplete());
+
+        // Player death → immediate loss
+        if (playerDead)
         {
-            Debug.Log("🏁 Battle finished! Returning to Overworld...");
-            yield return new WaitForSeconds(1f);
-
-            if (screenFader != null)
-                yield return StartCoroutine(screenFader.TransitionToScene("Overworld"));
-            else
-                SceneManager.LoadScene("Overworld");
-
+            Debug.Log("💀 Player defeated!");
+            if (layout != null) layout.StopAllCoroutines();
+            yield return StartCoroutine(HandleBattleFinished(false));
             yield break;
         }
 
-        player?.EndTurn();
+        // True win only when all rounds complete AND no enemies remain
+        if (allEnemiesDead && allRoundsComplete)
+        {
+            Debug.Log("🏁 All rounds cleared! Player wins!");
+            yield return StartCoroutine(HandleBattleFinished(true));
+            yield break;
+        }
 
+        // If enemies are dead but rounds remain, BattlefieldLayout will transition/spawn next round.
+        if (allEnemiesDead)
+        {
+            Debug.Log("🌀 Round cleared — waiting for next round transition...");
+            yield break;
+        }
+
+        // Normal loop
+        player?.EndTurn();
         yield return new WaitForSeconds(turnResetDelay);
         yield return RefreshPlayerHand();
         StartPlayerTurn();
@@ -209,5 +230,24 @@ public class BattleSystem : MonoBehaviour
             yield return StartCoroutine(screenFader.TransitionToScene("Overworld"));
         else
             SceneManager.LoadScene("Overworld");
+    }
+
+
+    public void RefreshEnemyList()
+    {
+        enemies.Clear();
+        enemies.AddRange(FindObjectsOfType<Enemy>());
+        enemies.RemoveAll(e => e == null || e.IsDead);
+
+        Debug.Log($"🔄 Enemy list refreshed: {enemies.Count} enemies registered.");
+    }
+
+    public void RefillPlayerEnergy()
+    {
+        if (player != null)
+        {
+            player.RefillEnergy();
+            Debug.Log("⚡ Player energy reset for new round.");
+        }
     }
 }
