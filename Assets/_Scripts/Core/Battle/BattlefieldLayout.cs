@@ -75,7 +75,7 @@ public class BattlefieldLayout : MonoBehaviour
             return;
         }
 
-        GameObject playerObj = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+        GameObject playerObj = Instantiate(playerPrefab);
         playerObj.name = "Player";
 
         playerInstance = playerObj.GetComponent<Player>();
@@ -102,8 +102,8 @@ public class BattlefieldLayout : MonoBehaviour
         if (total == 2)
         {
             return index == 0
-                ? center + Vector3.left * horizontalSpacing / 1.5f
-                : center + Vector3.right * horizontalSpacing / 1.5f;
+                ? center + Vector3.left * horizontalSpacing / 1f
+                : center + Vector3.right * horizontalSpacing / 1f;
         }
 
         if (total == 3)
