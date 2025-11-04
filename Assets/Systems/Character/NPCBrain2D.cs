@@ -28,6 +28,7 @@ public class NpcBrain2D : MonoBehaviour
     private Vector2 _desiredMove;
     private Coroutine _wanderRoutine;
 
+
     void Awake() => _motor = GetComponent<CharacterMotor2D>();
 
     void OnEnable()
@@ -43,7 +44,7 @@ public class NpcBrain2D : MonoBehaviour
 
     void Update()
     {
-        if (_motor.IsDialogueActive || _motor.IsTeleporting)
+        if (_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded)
         {
             _motor.SetMoveInput(Vector2.zero);
             return;

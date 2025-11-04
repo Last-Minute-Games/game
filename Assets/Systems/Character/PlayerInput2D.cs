@@ -12,7 +12,7 @@ public class PlayerInput2D : MonoBehaviour
 
     void Update()
     {
-        if (_motor.IsDialogueActive || _motor.IsTeleporting || !isInputEnabled)
+        if (_motor.IsDialogueActive || _motor.IsTeleporting || !isInputEnabled || ClockTimer.IsTimeEnded)
         {
             _motor.SetMoveInput(Vector2.zero);
             return;
@@ -21,4 +21,5 @@ public class PlayerInput2D : MonoBehaviour
         var move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         _motor.SetMoveInput(move);
     }
+
 }

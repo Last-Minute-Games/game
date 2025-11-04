@@ -26,13 +26,17 @@ namespace Systems.Overworld.Intro
 
         public List<AudioClip> bloodFootstepsClips;
 
+        public List<Sprite> sleepingPlayerFrames;
+
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
         private CharacterMotor2D _plrMotor2D;
-        
+
         private Camera _plrMainCamera;
         private CinemachinePositionComposer _cinemachinePositionComposer;
-        
+
+        private GameObject _mysteriousPersonHallway;
+
         private CanvasGroup _fadeCanvasGroup;
 
         private CanvasGroup _journalPanel;
@@ -43,10 +47,12 @@ namespace Systems.Overworld.Intro
 
         private EnvironmentSoundHandler _environmentSoundHandler;
         private AudioSource _meltingAudioSource;
-        
+
+        private GameObject _aspectBars;
+
         private GameObject _ballroomBloodPuddle;
         private GameObject _ballroomFootsteps;
-        
+
         private AudioSource _ballroomThroneDoorSource;
 
         private MusicManager _introMusicManager;
@@ -56,6 +62,7 @@ namespace Systems.Overworld.Intro
         private SpriteRenderer _kingSpriteRenderer;
         private Animator _kingAnimator;
 
+        private Camera _spawnRoomCamera;
         private Camera _throneRoomCamera;
 
         private MysteriousManIntro _mysteriousManIntro;
@@ -71,7 +78,7 @@ namespace Systems.Overworld.Intro
         private Light2D _globalLight;
         private Light2D _characterLight2D;
         private Light2D _ballroomSpotlight;
-        
+
         private IEnumerator WaitDreamIntro()
         {
             yield return new WaitForSeconds(_introMusicManager.dreamLoop.length);
@@ -106,7 +113,7 @@ namespace Systems.Overworld.Intro
         {
             _globalLight.intensity = intensity;
         }
-        
+
         private IEnumerator StartPuddleSeq()
         {
             foreach (Transform puddleTrans in _ballroomBloodPuddle.transform)
@@ -116,7 +123,7 @@ namespace Systems.Overworld.Intro
                 newColor.a = 1;
                 puddleRenderer.DOColor(newColor, 4f).SetEase(Ease.InSine);
             }
-            
+
             foreach (Transform npcTransform in _charactersGroup.transform)
             {
                 var spriteRenderer = npcTransform.gameObject.GetComponent<SpriteRenderer>();
@@ -124,65 +131,68 @@ namespace Systems.Overworld.Intro
 
                 var npcDialog = npcTransform.GetComponent<DialogTrigger>();
                 npcDialog.enabled = false;
-                
+
                 var newColor = new Color(0.9f, 0.0f, 0.0f);
-                spriteRenderer.DOColor(newColor, 3.5f).SetEase(Ease.Linear);;
-                
+                spriteRenderer.DOColor(newColor, 3.5f).SetEase(Ease.Linear);
+                ;
+
                 Vector3 targetPos = spriteRenderer.transform.position - new Vector3(0, sinkDistance, 0);
                 spriteRenderer.transform.DOMove(targetPos, 6f).SetEase(Ease.Linear);
             }
 
             _globalLight.DOIntensity(0, 7f);
-            
-            yield return new WaitForSeconds(4f);
-            
-            _characterLight2D.DOIntensity(0, 3f);
+
+            yield return null;
         }
 
         private IEnumerator WaitAndOpenBigDoor()
         {
             var ballroomDoor = GameObject.Find("BallroomDoor");
             var openHash = Animator.StringToHash("OpenDoor");
-            
+
             var spotlightClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/Spotlight");
             var bigDoorOpenClip = Resources.Load<AudioClip>("SFXs/Doors/BigDoorOpen");
             var tempBallroomBlock = GameObject.Find("TempBallroomBlock");
+
+            _characterLight2D.DOIntensity(0, 2f);
             
-            yield return new WaitForSeconds(8.5f);
+            yield return new WaitForSeconds(3.5f);
 
             _characterLight2D.enabled = false;
             _ballroomSpotlight.enabled = true;
-            
+
             _ballroomThroneDoorSource.clip = spotlightClip;
             _ballroomThroneDoorSource.Play();
-                
+
             yield return new WaitForSeconds(0.7f);
 
             var footstepSource = _environmentSoundHandler.CreateCustomSource("BloodFootsteps");
             footstepSource.volume = 0.8f;
-            
+
             foreach (Transform footstepObj in _ballroomFootsteps.transform)
             {
                 var footstepRenderer = footstepObj.GetComponent<SpriteRenderer>();
                 var newColor = footstepRenderer.color;
                 newColor.a = 1;
                 footstepRenderer.color = newColor;
-                
+
                 var randomFootstepSfx = bloodFootstepsClips[Random.Range(0, bloodFootstepsClips.Count)];
                 footstepSource.clip = randomFootstepSfx;
                 footstepSource.Play();
-                
+
                 yield return new WaitForSeconds(0.7f);
             }
 
             _ballroomThroneDoorSource.clip = bigDoorOpenClip;
             _ballroomThroneDoorSource.Play();
 
-            _plrObject.GetComponent<Rigidbody2D>().bodyType  = RigidbodyType2D.Dynamic;
+            // _plrObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+            _plrInput.isInputEnabled = true;
+            
             Destroy(tempBallroomBlock);
-            
+
             yield return new WaitForSeconds(0.5f);
-            
+
             Destroy(footstepSource);
 
             foreach (Transform door in ballroomDoor.transform)
@@ -191,18 +201,29 @@ namespace Systems.Overworld.Intro
                 if (animator) animator.SetTrigger(openHash);
             }
         }
-        
+
         private void ActivateMeltingSequence()
         {
             if (_isBallroomMelting) return;
             _isBallroomMelting = true;
-            
-            _plrObject.GetComponent<Rigidbody2D>().bodyType  = RigidbodyType2D.Static;
-            
-            _meltingAudioSource.Play();
 
-            StartCoroutine(WaitAndOpenBigDoor());
+            var tutorialMeltingGraph = Resources.Load<DialogNodeGraph>("Dialogues/Nikolaus/TutorialMonologueMelting");
+            dialogBehaviour.StartDialog(tutorialMeltingGraph);
+            dialogBehaviour.OnDialogFinished.AddListener(StartFadeInDoor);
+
+            // _plrObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+            _plrInput.isInputEnabled = false;
+
+            _meltingAudioSource.Play();
+            
             StartCoroutine(StartPuddleSeq());
+            return;
+
+            void StartFadeInDoor()
+            {
+                StartCoroutine(WaitAndOpenBigDoor());
+                dialogBehaviour.OnDialogFinished.RemoveListener(StartFadeInDoor);
+            }
         }
 
         private void CreateScaryDialogue(Transform npcTransform)
@@ -220,7 +241,7 @@ namespace Systems.Overworld.Intro
 
             var tex = Resources.Load<Texture2D>("Dialogues/" + npcTransform.name + "/" + npcTransform.name +
                                                 "Portrait");
-            
+
             newSentenceNode.Sentence = new Sentence(npcTransform.name, "...");
 
             if (tex != null)
@@ -239,15 +260,44 @@ namespace Systems.Overworld.Intro
             newGraph.NodesList.Add(newSentenceNode);
         }
 
+        private IEnumerator MoveMysteriousHallway()
+        {
+            var candleWall4 = GameObject.Find("CandleWall 4").GetComponent<Light2D>();
+            var breakingVaseSource = GameObject.Find("BreakingVase").GetComponent<AudioSource>();
+            
+            var mysteriousTarget =  GameObject.Find("MysteriousTarget");
+            var npcBrain2D = _mysteriousPersonHallway.GetComponent<NpcBrain2D>();
+            var moveToPosition = npcBrain2D.MoveToPosition(mysteriousTarget.transform.position);
+
+            StartCoroutine(moveToPosition);
+            yield return new WaitForSeconds(1.7f);
+
+            _mysteriousPersonHallway.SetActive(false);
+            
+            candleWall4.enabled = false;
+            var lightAudioSource = candleWall4.GetComponent<AudioSource>();
+            if (lightAudioSource) lightAudioSource.Play();
+            
+            breakingVaseSource.Play();
+        }
+        
+        public void TriggerMysteriousHallway()
+        {
+            _mysteriousPersonHallway.SetActive(true);
+            
+            StartCoroutine(MoveMysteriousHallway());
+        }
+
         void Start()
         {
             _plrObject = GameObject.FindGameObjectWithTag("Player");
 
             _blackScreen = GameObject.Find("Blackout");
             _corruptScreen = GameObject.Find("CorruptScreen");
+            _aspectBars = GameObject.Find("AspectBars");
 
             _blackScreen.SetActive(false);
-                _corruptScreen.SetActive(false);
+            _corruptScreen.SetActive(false);
 
             _plrInput = _plrObject.GetComponent<PlayerInput2D>();
             _plrInput.isInputEnabled = false;
@@ -261,11 +311,14 @@ namespace Systems.Overworld.Intro
             _environmentSoundHandler =
                 GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
             
+            _mysteriousPersonHallway = GameObject.Find("MysteriousHallway");
+            _mysteriousPersonHallway.SetActive(false);
+
             var meltClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/Melting");
             _meltingAudioSource = _environmentSoundHandler.CreateCustomSource("Melting");
             _meltingAudioSource.clip = meltClip;
             _meltingAudioSource.volume = 1f;
-            
+
             _ballroomFootsteps = GameObject.Find("BallroomFootsteps");
             foreach (Transform footstepObj in _ballroomFootsteps.transform)
             {
@@ -274,7 +327,7 @@ namespace Systems.Overworld.Intro
                 newColor.a = 0;
                 footstepRenderer.color = newColor;
             }
-            
+
             _ballroomBloodPuddle = GameObject.Find("BallroomBloodPuddle");
             foreach (Transform puddleTrans in _ballroomBloodPuddle.transform)
             {
@@ -289,10 +342,10 @@ namespace Systems.Overworld.Intro
             _globalLight = GameObject.Find("2D Global Light").GetComponent<Light2D>();
             _characterLight2D = GameObject.Find("CharacterLight").GetComponent<Light2D>();
             _ballroomSpotlight = GameObject.Find("BallroomSpotlight").GetComponent<Light2D>();
-            
+
             _characterLight2D.enabled = true;
             _ballroomSpotlight.enabled = false;
-            
+
             _charactersGroup = GameObject.Find("BlockingCharacters");
             // iterate for each child
             foreach (Transform child in _charactersGroup.transform)
@@ -322,6 +375,9 @@ namespace Systems.Overworld.Intro
 
             _throneRoomCamera = GameObject.Find("Throne Assets").transform.Find("Main Camera").GetComponent<Camera>();
             _throneRoomCamera.gameObject.SetActive(false);
+
+            _spawnRoomCamera = GameObject.Find("SpawnRoom").transform.Find("Main Camera").GetComponent<Camera>();
+            _spawnRoomCamera.gameObject.SetActive(false);
 
             _kingSpriteRenderer = GameObject.Find("KingNPC").GetComponent<SpriteRenderer>();
 
@@ -388,7 +444,78 @@ namespace Systems.Overworld.Intro
 
         private IEnumerator BeginTutorialSeq()
         {
+            var tutorialMonologueGraph = Resources.Load<DialogNodeGraph>("Dialogues/Nikolaus/TutorialMonologue");
+            
+            var grandfatherStroke = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/GrandfatherBell");
+            var grandfatherSource = _environmentSoundHandler.CreateCustomSource("GrandfatherSource");
+            
+            grandfatherSource.clip = grandfatherStroke;
+            grandfatherSource.volume = 0.5f;
+
+            _aspectBars.SetActive(true);
+            
+            var plrSpriteRenderer = _plrObject.GetComponent<SpriteRenderer>();
+            var sleepingPlrRenderer = GameObject.Find("SleepingMain").GetComponent<SpriteRenderer>();
+
+            var cinemachineBrain = _plrMainCamera.GetComponent<CinemachineBrain>();
+
+            _plrMainCamera.gameObject.SetActive(true);
+            // _spawnRoomCamera.gameObject.SetActive(true);
+            cinemachineBrain.enabled = false;
+
+            _plrMainCamera.transform.position = _spawnRoomCamera.transform.position;
+            _plrMainCamera.orthographicSize = 4f;
+
+            plrSpriteRenderer.enabled = false;
+            sleepingPlrRenderer.enabled = true;
+
+            _fadeCanvasGroup.alpha = 1;
+
             yield return new WaitForSeconds(2f);
+
+            sleepingPlrRenderer.sprite = sleepingPlayerFrames[0];
+
+            _fadeCanvasGroup.DOFade(0f, 3f).SetEase(Ease.InOutQuad).OnComplete(() =>
+            {
+                _fadeCanvasGroup.blocksRaycasts = false; // Disable blocking after fade-in
+            });
+
+            yield return new WaitForSeconds(4.5f);
+
+            IEnumerator GrandfatherTick()
+            {
+                for (var i = 0; i < 2; i++)
+                {
+                    grandfatherSource.Play();
+                    yield return new WaitForSeconds(grandfatherStroke.length);
+                }
+            }
+
+            StartCoroutine(GrandfatherTick());
+
+            yield return new WaitForSeconds(2.5f);
+
+            sleepingPlrRenderer.sprite = sleepingPlayerFrames[1];
+
+            yield return new WaitForSeconds(2f);
+
+            _fadeCanvasGroup.blocksRaycasts = true;
+            _fadeCanvasGroup.DOFade(1f, 3f).SetEase(Ease.InOutQuad);
+
+            yield return new WaitForSeconds(5f);
+            
+            var aspectBarsCanvas = _aspectBars.transform.GetChild(0).GetComponent<Canvas>();
+            var topBar = aspectBarsCanvas.transform.GetChild(0).GetComponent<RectTransform>();
+            var bottomBar = aspectBarsCanvas.transform.GetChild(1).GetComponent<RectTransform>();
+            
+            topBar.DOAnchorPosY(67.5f, 3f).SetEase(Ease.Linear);
+            bottomBar.DOAnchorPosY(-67.5f, 3f).SetEase(Ease.Linear);
+
+            _plrMainCamera.orthographicSize = 7f;
+            cinemachineBrain.enabled = true;
+
+            plrSpriteRenderer.enabled = true;
+            sleepingPlrRenderer.enabled = false;
 
             _fadeCanvasGroup.DOFade(0f, 3f).SetEase(Ease.InOutQuad).OnComplete(() =>
             {
@@ -396,10 +523,42 @@ namespace Systems.Overworld.Intro
             });
 
             yield return new WaitForSeconds(4f);
+            
+            _aspectBars.SetActive(false);
+            
+            dialogBehaviour.IsCanSkippingText = false;
+            dialogBehaviour.StartDialog(tutorialMonologueGraph);
 
-            yield return OpenJournal();
+            dialogBehaviour.OnDialogFinished.AddListener(OpenJournalCall);
 
             yield return null;
+            yield break;
+
+            void OpenJournalCall()
+            {
+                StartCoroutine(OpenJournal());
+                dialogBehaviour.OnDialogFinished.RemoveListener(OpenJournalCall);
+            }
+        }
+
+        public void ActivateDoorInstructions()
+        {
+            var tutorialDoorGraph = Resources.Load<DialogNodeGraph>("Dialogues/Nikolaus/TutorialMonologueDoor");
+            
+            _plrInput.isInputEnabled = false;
+            
+            dialogBehaviour.IsCanSkippingText = false;
+            dialogBehaviour.StartDialog(tutorialDoorGraph);
+
+            dialogBehaviour.OnDialogFinished.AddListener(OpenJournalDoorTutorial);
+            return;
+
+            void OpenJournalDoorTutorial()
+            {
+                SwitchJournalPage("Door");
+                StartCoroutine(OpenJournal());
+                dialogBehaviour.OnDialogFinished.RemoveListener(OpenJournalDoorTutorial);
+            }
         }
 
         private IEnumerator BleedingKingHead()
@@ -408,32 +567,35 @@ namespace Systems.Overworld.Intro
             var bloodSource = _environmentSoundHandler.CreateCustomSource("BloodSource", _kingSpriteRenderer.transform);
             bloodSource.volume = 0.7f;
             bloodSource.clip = bloodDrip;
-            
+
             yield return new WaitForSeconds(1f);
-            
+
             bloodSource.Play();
-            
+
             yield return new WaitForSeconds(kingDeadAnimationClip.length * 0.97f - 1);
-            
+
             Destroy(bloodSource);
         }
 
         public IEnumerator BeginKingSeq()
         {
-            var glitchClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/KingGlitch");
+            var throneReverbZone = GameObject.Find("ThroneReverbZone").GetComponent<AudioReverbZone>();
             
+            var glitchClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/KingGlitch");
+
             var throneFearClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/ThroneFear");
             var throneMusic = _environmentSoundHandler.CreateCustomSource("ThroneMusic", _throneRoomCamera.transform);
             throneMusic.volume = 0f;
             throneMusic.clip = throneFearClip;
-            
+
             var headSliceClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/HeadHack");
             var headRollClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/HeadRolling");
-            
-            var kingSliceSource = _environmentSoundHandler.CreateCustomSource("KingSeqSource", _throneRoomCamera.transform);
+
+            var kingSliceSource =
+                _environmentSoundHandler.CreateCustomSource("KingSeqSource", _throneRoomCamera.transform);
             kingSliceSource.volume = 0.35f;
             kingSliceSource.clip = headSliceClip;
-            
+
             _plrMainCamera.gameObject.SetActive(false);
             _throneRoomCamera.gameObject.SetActive(true);
 
@@ -449,9 +611,9 @@ namespace Systems.Overworld.Intro
             {
                 _fadeCanvasGroup.blocksRaycasts = false; // Disable blocking after fade-in
             });
-            
+
             throneMusic.Play();
-            
+
             _introMusicManager.FadeAndStop(0f, 3f);
             throneMusic.DOFade(0.2f, 3f).SetEase(Ease.Linear);
 
@@ -466,7 +628,7 @@ namespace Systems.Overworld.Intro
             _kingSpriteRenderer.sprite = kingFrontSprite;
 
             yield return new WaitForSeconds(2f);
-            
+
             throneMusic.DOFade(0.35f, 2.5f).SetEase(Ease.Linear);
 
             yield return _mysteriousManIntro.FadeIn();
@@ -490,7 +652,7 @@ namespace Systems.Overworld.Intro
             kingSliceSource.Play();
 
             StartCoroutine(BleedingKingHead());
-            
+
             _kingAnimator.speed = 1; // unfreeze
 
             yield return new WaitForSeconds(kingDeadAnimationClip.length * 0.97f);
@@ -501,18 +663,24 @@ namespace Systems.Overworld.Intro
 
             _corruptScreen.SetActive(true);
             throneMusic.Stop();
-            
+
+            throneReverbZone.enabled = false;
             throneMusic.clip = glitchClip;
             throneMusic.volume = 1f;
             throneMusic.Play();
 
             yield return new WaitForSeconds(1.4f);
 
+            // Trigger the wake-up cutscene in Overworld
+            Debug.Log("=== ABOUT TO TRIGGER WAKE UP CUTSCENE ===");
+            OverworldWakeUpCutscene.TriggerWakeUpCutscene();
+            Debug.Log("=== TRIGGERED - NOW LOADING OVERWORLD ===");
+
             // go to overworld scene
             AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
             op.allowSceneActivation = true; // or set false if you want to gate activation
 
-            // Optionally wait until load is done (it’s already black)
+            // Optionally wait until load is done (it's already black)
             while (!op.isDone)
                 yield return null;
         }
