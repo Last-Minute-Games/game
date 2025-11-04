@@ -58,13 +58,27 @@ public class PlayerHealthBar : HealthBarBase
         bool hasBlock = block > 0;
         // defensePanel.SetActive(hasBlock);
 
-        if (hasBlock && defenseText)
-            defenseText.text = $"{block}";
+        defenseText.text = $"{block}";
 
         if (hasBlock)
         {
-            _healthAnimator.SetTrigger(GainBlock);
+            // Check if already in DefenseIdle
+            AnimatorStateInfo state = _healthAnimator.GetCurrentAnimatorStateInfo(0);
+
+            if (state.IsName("DefenseIdle") || state.IsName("DefenseGain"))
+            {
+                // Already in block animation cycle, just ensure HasBlock stays true
+                _healthAnimator.SetBool(HasBlock, true);
+                return;
+            }
+
+            // Otherwise trigger the defense gain animation
             _healthAnimator.SetBool(HasBlock, true);
+            _healthAnimator.SetTrigger(GainBlock);
+        }
+        else
+        {
+            _healthAnimator.SetBool(HasBlock, false);
         }
 
         if (healthFill)
