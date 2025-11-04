@@ -1,63 +1,75 @@
 using UnityEngine;
+using UnityEngine.UI;
+using System;
 using System.Collections;
 
 public class FlipScript : MonoBehaviour
 {
+    // Supports either UI Image (Canvas) or SpriteRenderer (world)
+    Image uiImage;
     SpriteRenderer spriteRenderer;
 
     [Tooltip("Index 0 = Heads, Index 1 = Tails")]
-    public Sprite[] sides; // keep your existing array
+    public Sprite[] sides;           // 0 = Heads, 1 = Tails
+    public int LastResult { get; private set; } = 0;
 
-    public int LastResult { get; private set; } = 0; // 0=heads, 1=tails
+    [Header("Flip Timing")]
+    public float totalFlipTime = 0.45f;
+    public int flips = 6;
 
-    private void Awake()
+    bool isFlipping;
+
+    void Awake()
     {
+        uiImage = GetComponent<Image>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // Set a safe default sprite at start
         if (sides != null && sides.Length > 0)
-        {
-            spriteRenderer.sprite = sides[0]; // default look
-        }
+            SetSprite(sides[0]);
     }
 
-    // Keep mouse tap support (optional), but the GameManager will call Flip().
-    private void OnMouseDown()
+    void SetSprite(Sprite s)
     {
-        if (!isFlipping) StartCoroutine(Flip(0.01f, 0.07f, null));
+        if (uiImage) uiImage.sprite = s;
+        if (spriteRenderer) spriteRenderer.sprite = s;
     }
 
-    bool isFlipping = false;
-
-    /// <summary>
-    /// Flips the coin with animation and randomly chooses heads/tails.
-    /// onComplete(int) gets 0 for heads, 1 for tails.
-    /// </summary>
-    public IEnumerator Flip(float durationStep = 0.01f, float scaleStep = 0.07f, System.Action<int> onComplete = null)
+    public void SetVisible(bool v)
     {
-        if (isFlipping) yield break;
+        if (uiImage) uiImage.enabled = v;
+        if (spriteRenderer) spriteRenderer.enabled = v;
+    }
+
+    public void SetResult(int result)   // 0 heads, 1 tails
+    {
+        LastResult = Mathf.Clamp(result, 0, 1);
+        SetSprite(sides[LastResult]);
+    }
+
+    public void Flip(bool forceHeads, Action<int> onComplete)
+    {
+        if (isFlipping) return;
+        StartCoroutine(FlipRoutine(forceHeads, onComplete));
+    }
+
+    IEnumerator FlipRoutine(bool forceHeads, Action<int> onComplete)
+    {
         isFlipping = true;
+        SetVisible(true);
 
-        float size = transform.localScale.y;
+        float step = totalFlipTime / Mathf.Max(flips, 1);
 
-        // Shrink
-        while (size > 0.1f)
+        for (int i = 0; i < flips; i++)
         {
-            size -= scaleStep;
-            transform.localScale = new Vector3(1f, size, 1f);
-            yield return new WaitForSeconds(durationStep);
+            // Toggle sprite quickly to pretend spinning
+            int temp = (i % 2 == 0) ? 0 : 1;
+            SetSprite(sides[temp]);
+            yield return new WaitForSeconds(step);
         }
 
-        // Decide random result and swap sprite when "edge-on"
-        LastResult = (Random.value < 0.5f) ? 0 : 1; // 0=heads, 1=tails
-        if (sides != null && sides.Length >= 2)
-            spriteRenderer.sprite = sides[LastResult];
-
-        // Grow (a little z squash to give some pop)
-        while (size < 0.99f)
-        {
-            size += scaleStep;
-            transform.localScale = new Vector3(1f, size, size);
-            yield return new WaitForSeconds(durationStep);
-        }
+        LastResult = forceHeads ? 0 : 1;   // your GameManager chooses outcome
+        SetSprite(sides[LastResult]);
 
         isFlipping = false;
         onComplete?.Invoke(LastResult);
