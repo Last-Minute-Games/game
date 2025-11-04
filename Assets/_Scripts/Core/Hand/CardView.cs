@@ -89,7 +89,7 @@ public class CardView : MonoBehaviour
     }
 
     public void Setup(CardBase card)
-    {
+    {   
         if (card == null) return;
 
         cardBase = card;

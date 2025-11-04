@@ -64,6 +64,11 @@ namespace _Scripts.Gameplay
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            var cardRunner = cardView.transform.GetComponent<CardRunner>();
+            var cardData = cardRunner.data;
+
+            var plrCollider = GameObject.Find("Player").GetComponent<BoxCollider2D>();
+            
             if (!isDragging) return;
 
             isDragging = false;
@@ -77,13 +82,29 @@ namespace _Scripts.Gameplay
             Collider2D target = Physics2D.OverlapPoint(pos);
 
             selfCol.enabled = wasEnabled;
-
-            if (target != null && target.gameObject != gameObject && cardView != null)
+            
+            if (cardData != null && cardView != null)
             {
-                if (cardView.UseCard(target))
+                if (cardData.targetingRule.name == "Self Targeting")
                 {
-                    ResetEnemyTints();
-                    return;
+                    var distanceToOriginal = (pos - startPos).magnitude;
+                    Debug.Log(distanceToOriginal);
+
+                    if (distanceToOriginal >= 2f)
+                    {
+                        cardView.UseCard(plrCollider);
+                        return;   
+                    }
+                } else if (cardData.targetingRule.name == "Enemy Targeting")
+                {
+                    if (target != null && target.gameObject != gameObject)
+                    {
+                        if (cardView.UseCard(target))
+                        {
+                            ResetEnemyTints();
+                            return;
+                        }
+                    }
                 }
             }
 
