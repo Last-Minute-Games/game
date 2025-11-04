@@ -128,7 +128,7 @@ public class MinigameController : MonoBehaviour
     {
         if (player == null || sokobanRoot == null) return;
 
-        GameFlags.RemoveFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
+        ///GameFlags.RemoveFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
 
         FindObjectOfType<ClockTimer>().PauseTimer(false);   // Pause
       
@@ -169,6 +169,7 @@ public class MinigameController : MonoBehaviour
             }
         }  // show global HUD again
 
+        GameFlags.SetFlag("minigame.sokoban.finish");
 
         Debug.Log($"Sokoban Minigame finished. Solved: {solved}");
     }

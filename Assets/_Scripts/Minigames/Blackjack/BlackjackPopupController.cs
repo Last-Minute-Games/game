@@ -65,7 +65,8 @@ public class BlackjackPopupController : MonoBehaviour
             hudGroup.SetActive(true);    // show HUD again
 
         FindObjectOfType<ClockTimer>()?.PauseTimer(false);
-        GameFlags.RemoveFlag("InBlackjackMinigame");
+        GameFlags.SetFlag("minigame.blackjack.finish");
+        Debug.Log("[Blackjack] Flag set: minigame.blackjack.finish");
 
         // If BlackjackGame needs to do cleanup, you can call a public method on it here.
 
