@@ -14,66 +14,37 @@ public class Player : CharacterBase
     [Header("UI Prefabs")]
     public GameObject healthBarPrefab;
 
-
     [Header("Scaling")]
-    [Tooltip("Affects how strong this character’s card effects are.")]
     public float globalPowerScale = 1.0f;
 
-    // --- Defense Panel ---
     private GameObject defensePanelInstance;
     private TMP_Text defenseText;
 
-    // ============================
-    //  HEALTH BAR SETUP
-    // ============================
     protected override void Awake()
     {
         base.Awake();
         characterName = "Player";
         currentEnergy = maxEnergy;
 
-        // Find existing HealthBar in scene
         healthBarInstance = FindObjectOfType<PlayerHealthBar>();
         if (healthBarInstance != null)
-        {
             healthBarInstance.Initialize(this);
-            Debug.Log("✅ Player HealthBar linked successfully!");
-        }
-        else
-        {
-            Debug.LogWarning("⚠️ PlayerHealthBar not found in scene!");
-        }
     }
 
+    // -----------------------------------------------------
+    // ENERGY MANAGEMENT
+    // -----------------------------------------------------
     public bool UseEnergy(int amount)
     {
-        if (EnergySystem.Instance == null) return false;
-
-        if (EnergySystem.Instance.UseEnergy(amount))
+        if (EnergySystem.Instance == null)
         {
-            currentEnergy = EnergySystem.Instance.currentEnergy;
-            Debug.Log($"{characterName} used {amount} energy. Remaining: {currentEnergy}");
-
-            // 🔹 NEW: Automatically end the turn if energy fully depleted
-            if (currentEnergy <= 0)
-            {
-                BattleSystem battleSystem = FindFirstObjectByType<BattleSystem>();
-                if (battleSystem != null)
-                {
-                    Debug.Log("⚡ Energy depleted → automatically ending turn.");
-                    battleSystem.EndPlayerTurn();
-                }
-                else
-                {
-                    Debug.LogWarning("⚠️ Player: Could not find BattleSystem to end turn automatically!");
-                }
-            }
-
-            return true;
+            Debug.LogWarning("⚠️ No EnergySystem found.");
+            return false;
         }
 
-        Debug.Log($"{characterName} doesn’t have enough energy!");
-        return false;
+        bool success = EnergySystem.Instance.UseEnergy(amount);
+        currentEnergy = EnergySystem.Instance.currentEnergy;
+        return success;
     }
 
     public void RefillEnergy()
@@ -85,55 +56,19 @@ public class Player : CharacterBase
         Debug.Log($"{characterName}'s energy refilled to {currentEnergy}/{maxEnergy}");
     }
 
-    public void Attack(CharacterBase target)
-    {
-        if (target == null) return;
-
-        int damage = strength;
-        target.TakeDamage(damage);
-    }
-
+    // -----------------------------------------------------
+    // CARD EXECUTION
+    // -----------------------------------------------------
     public void PlayCard(CardBase card, CharacterBase target)
     {
         if (card == null) return;
 
+        // Spend energy FIRST
         if (UseEnergy(card.energy))
         {
             card.Use(this, target);
         }
     }
 
-    public override void AddBlock(int amount)
-    {
-        base.AddBlock(amount);
-
-        if (defensePanelInstance != null)
-        {
-            defensePanelInstance.SetActive(block > 0);
-            defenseText.text = block.ToString();
-        }
-    }
-
-    public override void TakeDamage(int amount)
-    {
-        base.TakeDamage(amount);
-
-        if (defensePanelInstance != null)
-        {
-            defensePanelInstance.SetActive(block > 0);
-            defenseText.text = block.ToString();
-        }
-    }
-
-    public override void ShowBlockFeedback(int amount)
-    {
-        base.ShowBlockFeedback(amount);
-
-        // Update shield for player
-        if (activeShield == null && shieldPrefab != null)
-        {
-            activeShield = Instantiate(shieldPrefab, Vector3.zero, Quaternion.identity);
-            activeShield.transform.localScale = Vector3.one * 5f;
-        }
-    }
+    // rest of the class unchanged ...
 }

@@ -25,6 +25,9 @@ public class BattleSystem : MonoBehaviour
 
     private TurnTimer turnTimer; // timer
 
+
+    private bool queuedTurnEndRequest = false;
+
     private void Start()
     {
         turnTimer = FindFirstObjectByType<TurnTimer>();
@@ -148,10 +151,19 @@ public class BattleSystem : MonoBehaviour
 
         playerTurn = true;
         player.RefillEnergy();
+        EnergySystem.Instance?.OnNewTurn();
 
         turnTimer?.StartTimer();   // start countdown
 
         Debug.Log("🔹 Player’s turn started!");
+
+        if (queuedTurnEndRequest)
+        {
+            Debug.Log("🔁 Processing queued turn-end request from previous busy state.");
+            queuedTurnEndRequest = false;
+            EndPlayerTurn();
+            return;
+        }
 
         enemies.RemoveAll(e => e == null || e.IsDead);
         foreach (Enemy enemy in enemies)
@@ -257,11 +269,14 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
+
     public void RequestTurnEnd(string reason = "Unknown")
     {
+        // if not ready, queue the request
         if (!playerTurn || isProcessingTurn)
         {
-            Debug.Log($"⚠️ Turn end requested ({reason}) but system is busy or not player turn.");
+            Debug.Log($"⚠ Turn end requested ({reason}) but system busy — queued for next opportunity.");
+            queuedTurnEndRequest = true;
             return;
         }
 
