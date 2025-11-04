@@ -5,6 +5,8 @@ using DG.Tweening;
 public class EnergySystem : MonoBehaviour
 {
     public static EnergySystem Instance { get; private set; }
+    
+    private BattleSystem _battleSystem;
 
     [Header("Energy Settings")]
     public int maxEnergy = 3;
@@ -15,6 +17,8 @@ public class EnergySystem : MonoBehaviour
 
     private void Awake()
     {
+        _battleSystem = GameObject.Find("BattleSystem").GetComponent<BattleSystem>();
+        
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -32,6 +36,12 @@ public class EnergySystem : MonoBehaviour
             currentEnergy -= amount;
             AnimateUI();
             UpdateUI();
+            
+            if (currentEnergy == 0)
+            {
+                _battleSystem.EndPlayerTurn();
+            }
+            
             return true;
         }
 
@@ -59,6 +69,6 @@ public class EnergySystem : MonoBehaviour
     public void UpdateUI()
     {
         if (energyText)
-            energyText.text = $"<color=#FFD700>⚡</color> {currentEnergy}/{maxEnergy}";
+            energyText.text = $"{currentEnergy}/{maxEnergy}";
     }
 }

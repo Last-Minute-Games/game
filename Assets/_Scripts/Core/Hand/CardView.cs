@@ -51,10 +51,9 @@ public class CardView : MonoBehaviour
             {
                 if (handView) handView.RemoveCard(this);
                 transform.DOScale(Vector3.zero, 0.15f).OnComplete(() => gameObject.SetActive(false));
+                
                 return true;
             }
-
-            return false;
         }
         return false;
     }

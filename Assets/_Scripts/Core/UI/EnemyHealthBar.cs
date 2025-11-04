@@ -7,12 +7,10 @@ public class EnemyHealthBar : HealthBarBase
     [Header("References")]
     [SerializeField] private Image healthFill;
     [SerializeField] private TMP_Text healthText;
-    [SerializeField] private GameObject defensePanel;
-    [SerializeField] private Image defenseIcon;
     [SerializeField] private TMP_Text defenseText;
 
     private CharacterBase character;
-    private readonly Vector3 offset = new(0, -1.2f, 0);
+    private readonly Vector3 offset = new(0, -0.9f, 0);
 
     public override void Initialize(CharacterBase target)
     {
@@ -31,15 +29,15 @@ public class EnemyHealthBar : HealthBarBase
 
     public override void UpdateBlock(int block)
     {
-        if (!defensePanel) return;
+        // if (!defensePanel) return;
         bool hasBlock = block > 0;
-        defensePanel.SetActive(hasBlock);
-        if (hasBlock && defenseText) defenseText.text = $"+{block}";
-        if (hasBlock && defenseIcon)
-        {
-            defenseIcon.color = Color.cyan;
-            defenseIcon.CrossFadeColor(Color.white, 0.5f, false, true);
-        }
+        // defensePanel.SetActive(hasBlock);
+        defenseText.text = $"{block}";
+        // if (hasBlock && defenseIcon)
+        // {
+        //     defenseIcon.color = Color.cyan;
+        //     defenseIcon.CrossFadeColor(Color.white, 0.5f, false, true);
+        // }
         if (healthFill)
             healthFill.color = hasBlock ? new Color(0.5f, 0.8f, 1f) : Color.red;
     }
