@@ -722,19 +722,19 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 530213178}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.93816, y: 0.93816, z: 0.93816}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1752570655}
   - {fileID: 450610384}
   - {fileID: 487667051}
-  m_Father: {fileID: 570844079}
+  m_Father: {fileID: 2094887444}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 50, y: -69.999985}
+  m_AnchoredPosition: {x: 71.56552, y: -65.17572}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &532170532
@@ -1676,7 +1676,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -2310,6 +2310,7 @@ RectTransform:
   m_Children:
   - {fileID: 839983930}
   - {fileID: 570844079}
+  - {fileID: 530213179}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2418,9 +2419,25 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2102971280411821541, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+      propertyPath: energyText
+      value: 
+      objectReference: {fileID: 767404019}
+    - target: {fileID: 2102971280411821541, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+      propertyPath: healthText
+      value: 
+      objectReference: {fileID: 1159446872}
+    - target: {fileID: 2102971280411821541, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
       propertyPath: playerData
       value: 
       objectReference: {fileID: 11400000, guid: 0175138bf060a12b6898d5eac10944f2, type: 2}
+    - target: {fileID: 2102971280411821541, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+      propertyPath: shieldText
+      value: 
+      objectReference: {fileID: 1756850640}
+    - target: {fileID: 2102971280411821541, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+      propertyPath: healthbarFill
+      value: 
+      objectReference: {fileID: 1805216059}
     - target: {fileID: 3211038239950150431, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
       propertyPath: m_Name
       value: PlayerPrefab
@@ -2438,9 +2455,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1309454556844864374, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1726881540}
-    - targetCorrespondingSourceObject: {fileID: 1309454556844864374, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 530213179}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
 --- !u!1660057539 &9223372036854775807
