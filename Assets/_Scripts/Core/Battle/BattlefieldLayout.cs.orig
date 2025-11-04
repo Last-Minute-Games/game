@@ -76,11 +76,8 @@ public class BattlefieldLayout : MonoBehaviour
 
         var battleSystem = FindFirstObjectByType<BattleSystem>();
         var ui = FindFirstObjectByType<RoundTransitionUI>();
-        var turnTimer = FindFirstObjectByType<TurnTimer>(); // ✅ new
 
-        // 🔹 Pause timer BEFORE transition
-        turnTimer?.PauseTimer();
-
+        // 🔹 Clear hand BEFORE transition so cards vanish
         if (battleSystem != null)
             yield return battleSystem.StartCoroutine("ClearHand");
 
@@ -100,31 +97,27 @@ public class BattlefieldLayout : MonoBehaviour
             yield return ui.FadeIn();
             yield return ui.ShowRoundText(roundNum);
 
-            // 🔄 Reset timer mid-transition (while dark)
-            turnTimer?.ResetWithoutStart();
-
             ClearEnemies();
             SpawnEnemiesByIDs(roundEnemyIDs[currentRound]);
             currentRound++;
 
+            // 🟩 Sync with BattleSystem here
             if (battleSystem != null)
             {
-                battleSystem.RefreshEnemyList();
-                battleSystem.RefillPlayerEnergy();
+                battleSystem.RefreshEnemyList();     // update new enemy references
+                battleSystem.RefillPlayerEnergy();   // reset energy to 3
             }
 
             yield return new WaitForSeconds(0.25f);
             yield return ui.FadeOut();
         }
 
+        // Redraw cards after fade out
         if (battleSystem != null)
         {
             yield return battleSystem.StartCoroutine("RefreshPlayerHand");
-            battleSystem.StartPlayerTurn();
+            battleSystem.StartPlayerTurn(); // ✅ ensures intentions are shown
         }
-
-        // ▶ Resume timer after transition complete
-        turnTimer?.ResumeTimer();
 
         isTransitioning = false;
     }
@@ -192,7 +185,7 @@ public class BattlefieldLayout : MonoBehaviour
             return;
         }
 
-        GameObject playerObj = Instantiate(playerPrefab);
+        GameObject playerObj = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
         playerObj.name = "Player";
 
         playerInstance = playerObj.GetComponent<Player>();
@@ -214,12 +207,17 @@ public class BattlefieldLayout : MonoBehaviour
     {
         if (total == 1)
             return center;
-
         if (total == 2)
             return index == 0
+<<<<<<< HEAD
                 ? center + Vector3.left * horizontalSpacing / 2f
                 : center + Vector3.right * horizontalSpacing / 2f;
+=======
+                ? center + Vector3.left * horizontalSpacing / 1.5f
+                : center + Vector3.right * horizontalSpacing / 1.5f;
+        }
 
+>>>>>>> origin/henry-nether-rushed-update
         if (total == 3)
         {
             if (index == 0) return center + Vector3.left * horizontalSpacing;

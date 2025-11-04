@@ -4,6 +4,11 @@ using System.Collections.Generic;
 [CreateAssetMenu(menuName = "Enemies/Enemy Data")]
 public class EnemyData : ScriptableObject
 {
+
+    [Header("Identification")]
+    [Tooltip("Unique identifier for referencing or spawning this enemy by ID.")]
+    public string enemyID;
+
     [Header("Identity")]
     public string enemyName = "Unnamed Enemy";
     public Sprite portrait;
