@@ -8,7 +8,7 @@ public class CardDrawEntry
     public CardData card;
 
     [Tooltip("Relative draw weight for this card.")]
-    [Range(0f, 10f)]
+    [Range(0f, 1f)]
     public float drawWeight = 1f;
 }
 
