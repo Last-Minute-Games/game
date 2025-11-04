@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -5,6 +6,9 @@ using DG.Tweening;
 
 public class PlayerHealthBar : HealthBarBase
 {
+    private static readonly int HasBlock = Animator.StringToHash("HasBlock");
+    private static readonly int GainBlock = Animator.StringToHash("GainBlock");
+
     [Header("HUD References")]
     [SerializeField] private Image healthFill;
     [SerializeField] private TMP_Text healthText;
@@ -12,12 +16,19 @@ public class PlayerHealthBar : HealthBarBase
     [SerializeField] private TMP_Text defenseText;
     // [SerializeField] private Image defenseIcon;
 
+    private Animator _healthAnimator;
+
     [Header("Feedback")]
     [SerializeField] private GameObject floatingTextPrefab; // small TMP text prefab
     [SerializeField] private Transform floatingTextAnchor;   // anchor above health bar
 
     private CharacterBase player;
     private Color originalHealthColor;
+
+    private void Start()
+    {
+        _healthAnimator = transform.Find("HealthbarUI").GetComponent<Animator>();
+    }
 
     public override void Initialize(CharacterBase target)
     {
@@ -50,11 +61,11 @@ public class PlayerHealthBar : HealthBarBase
         if (hasBlock && defenseText)
             defenseText.text = $"{block}";
 
-        // if (hasBlock && defenseIcon)
-        // {
-        //     defenseIcon.color = Color.cyan;
-        //     defenseIcon.CrossFadeColor(Color.white, 0.5f, false, true);
-        // }
+        if (hasBlock)
+        {
+            _healthAnimator.SetTrigger(GainBlock);
+            _healthAnimator.SetBool(HasBlock, true);
+        }
 
         if (healthFill)
             healthFill.color = hasBlock ? new Color(0.5f, 0.8f, 1f) : originalHealthColor;

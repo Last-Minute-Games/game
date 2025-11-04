@@ -1454,6 +1454,7 @@ GameObject:
   - component: {fileID: 722758814}
   - component: {fileID: 722758816}
   - component: {fileID: 722758815}
+  - component: {fileID: 722758817}
   m_Layer: 0
   m_Name: HealthbarUI
   m_TagString: Untagged
@@ -1518,6 +1519,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 722758813}
   m_CullTransparentMesh: 1
+--- !u!95 &722758817
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 722758813}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 4d763c11be7f95a41ba93de9d4d3a592, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &770331510
 GameObject:
   m_ObjectHideFlags: 0
