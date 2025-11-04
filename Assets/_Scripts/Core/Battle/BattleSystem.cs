@@ -27,7 +27,6 @@ public class BattleSystem : MonoBehaviour
     {
         return enemies;
     }
-
     private TurnTimer turnTimer; // timer
 
 
