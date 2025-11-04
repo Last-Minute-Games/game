@@ -14,6 +14,8 @@ public class EnemyHealthBar : HealthBarBase
 
     public override void Initialize(CharacterBase target)
     {
+        Debug.Log(target.currentHealth + "/" + target.maxHealth);
+        
         character = target;
         UpdateHealth(target.currentHealth, target.maxHealth);
         UpdateBlock(target.block);
@@ -21,14 +23,18 @@ public class EnemyHealthBar : HealthBarBase
 
     public override void UpdateHealth(int current, int max)
     {
+        
+        
         if (!healthFill) return;
-        float fill = Mathf.Clamp01((float)current / max);
-        healthFill.rectTransform.localScale = new Vector3(fill, 1f, 1f);
+        float fill = (float)current / max;
+        healthFill.rectTransform.localScale = new Vector3(fill * 23, 30f, 1f);
         if (healthText) healthText.text = $"{current}/{max}";
     }
 
     public override void UpdateBlock(int block)
     {
+        var defaultColor = new Color32(108, 15, 15, 255);
+        
         // if (!defensePanel) return;
         bool hasBlock = block > 0;
         // defensePanel.SetActive(hasBlock);
@@ -39,7 +45,7 @@ public class EnemyHealthBar : HealthBarBase
         //     defenseIcon.CrossFadeColor(Color.white, 0.5f, false, true);
         // }
         if (healthFill)
-            healthFill.color = hasBlock ? new Color(0.5f, 0.8f, 1f) : Color.red;
+            healthFill.color = hasBlock ? new Color(0.5f, 0.8f, 1f) : defaultColor;
     }
 
     private void LateUpdate()

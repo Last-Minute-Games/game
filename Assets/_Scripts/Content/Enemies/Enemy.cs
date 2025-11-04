@@ -27,7 +27,6 @@ public class Enemy : CharacterBase
         base.Awake();
         animator = GetComponent<EnemyAnimator2D>();
         library = FindFirstObjectByType<CardLibrary>();
-        SetupUI();
     }
 
     private void SetupUI()
@@ -318,6 +317,8 @@ public class Enemy : CharacterBase
         currentHealth = maxHealth;
 
         globalPowerScale = data.globalCardMultiplier;
+        
+        SetupUI();
 
         if (animator == null)
             animator = GetComponent<EnemyAnimator2D>();
