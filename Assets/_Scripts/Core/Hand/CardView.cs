@@ -14,6 +14,8 @@ public class CardView : MonoBehaviour
     private BoxCollider2D cardCollider;
     private CardDragHandler dragHandler;
     private HandView handView;
+    
+    private BattleSystem battleSystem;
 
     [Header("Gameplay")]
     public CharacterBase player;
@@ -25,6 +27,8 @@ public class CardView : MonoBehaviour
 
     private void Awake()
     {
+        battleSystem = GameObject.Find("BattleSystem").GetComponent<BattleSystem>();
+        
         runner = GetComponent<CardRunner>();
         cardBase = GetComponent<CardBase>();
         if (cardBase == null)
@@ -51,10 +55,14 @@ public class CardView : MonoBehaviour
             {
                 if (handView) handView.RemoveCard(this);
                 transform.DOScale(Vector3.zero, 0.15f).OnComplete(() => gameObject.SetActive(false));
+                
+                if (p.currentEnergy == 0)
+                {
+                    battleSystem.EndPlayerTurn();
+                }
+                
                 return true;
             }
-
-            return false;
         }
         return false;
     }
