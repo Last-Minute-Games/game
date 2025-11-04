@@ -59,6 +59,6 @@ public class EnergySystem : MonoBehaviour
     public void UpdateUI()
     {
         if (energyText)
-            energyText.text = $"<color=#FFD700>⚡</color> {currentEnergy}/{maxEnergy}";
+            energyText.text = $"{currentEnergy}/{maxEnergy}";
     }
 }
