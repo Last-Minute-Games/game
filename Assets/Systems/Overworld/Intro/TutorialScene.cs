@@ -671,11 +671,16 @@ namespace Systems.Overworld.Intro
 
             yield return new WaitForSeconds(1.4f);
 
+            // Trigger the wake-up cutscene in Overworld
+            Debug.Log("=== ABOUT TO TRIGGER WAKE UP CUTSCENE ===");
+            OverworldWakeUpCutscene.TriggerWakeUpCutscene();
+            Debug.Log("=== TRIGGERED - NOW LOADING OVERWORLD ===");
+
             // go to overworld scene
             AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");
             op.allowSceneActivation = true; // or set false if you want to gate activation
 
-            // Optionally wait until load is done (it’s already black)
+            // Optionally wait until load is done (it's already black)
             while (!op.isDone)
                 yield return null;
         }
