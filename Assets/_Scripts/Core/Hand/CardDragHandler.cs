@@ -88,9 +88,9 @@ namespace _Scripts.Gameplay
                 if (cardData.targetingRule.name == "Self Targeting")
                 {
                     var distanceToOriginal = (pos - startPos).magnitude;
-                    Debug.Log(distanceToOriginal);
+                    // Debug.Log(distanceToOriginal);
 
-                    if (distanceToOriginal >= 2f)
+                    if (distanceToOriginal >= 2.5f)
                     {
                         cardView.UseCard(plrCollider);
                         return;   

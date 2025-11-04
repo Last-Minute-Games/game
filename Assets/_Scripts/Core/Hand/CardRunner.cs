@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 // CardRunner.cs (additions/changes)
@@ -43,6 +44,34 @@ public class CardRunner : MonoBehaviour
         float totalScale = GetTotalScale(user);
         var eff = data.effects[0];
         return eff.PreviewAmount(this, user, totalScale);
+    }
+
+    public void RefreshCard()
+    {
+        var wrapper = transform.Find("Wrapper");    
+        var description = wrapper.Find("DescriptionText").GetComponent<TMP_Text>();
+
+        if (data.effects == null || data.effects.Length == 0) return;
+
+        description.alignment = TextAlignmentOptions.Center;
+        description.fontSize = 5f;
+        
+        foreach (var eff in data.effects)
+        {
+            if (eff.GetType() == typeof(DamageEffect))
+            {
+                DamageEffect effect = (DamageEffect)eff;
+                description.text = "Strike " + effect.baseDamage + " damage.";
+            } else if (eff.GetType() == typeof(HealEffect))
+            {
+                HealEffect effect = (HealEffect)eff;
+                description.text = "Heal " + effect.baseHeal + " HP.";
+            } else if (eff.GetType() == typeof(BlockEffect))
+            {
+                BlockEffect effect = (BlockEffect)eff;
+                description.text = "Gain " + effect.baseBlock + " block.";
+            }
+        }
     }
 
     private void Awake()

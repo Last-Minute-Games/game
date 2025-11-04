@@ -76,6 +76,8 @@ public class CardFactory : MonoBehaviour
         var runner = cardObj.GetComponent<CardRunner>();
         if (runner != null)
             runner.data = data;
+        
+        runner.RefreshCard();
 
         return cardObj;
     }
