@@ -165,11 +165,32 @@ public class BlackjackGame : MonoBehaviour
 
     void UpdateUI(bool hideDealerHoleCard)
     {
+        /*
         playerHandText.text = FormatHand(player, revealAll: true);
         dealerHandText.text = hideDealerHoleCard
             ? FormatDealerWithHoleCardHidden()
             : FormatHand(dealer, revealAll: true);
+        */
+        playerHandText.text = $"Total: {player.Total()}";
 
+        if (hideDealerHoleCard)
+        {
+            // Show the dealer's first card face + '?'
+            if (dealer.Cards.Count > 0)
+            {
+                var firstCard = dealer.Cards[0];
+                dealerHandText.text = $"{firstCard.Face} + ?";
+            }
+            else
+            {
+                dealerHandText.text = "Total: ?";
+            }
+        }
+        else
+        {
+            // Show full total once revealed
+            dealerHandText.text = $"Total: {dealer.Total()}";
+        }
         // Player: all face-up
         RenderHandSprites(playerHandArea, player.Cards, revealAll: true, hideHoleCard: false);
 

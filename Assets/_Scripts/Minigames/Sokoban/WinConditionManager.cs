@@ -1,5 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using System.Collections;
+
 
 public class WinConditionManager : MonoBehaviour
 {
@@ -11,6 +14,18 @@ public class WinConditionManager : MonoBehaviour
 
     // Cache the MinigameController for communication
     private MinigameController controller;
+
+    /// <summary>
+    /// new
+    /// </summary>
+
+
+    [Header("Win UI / Delay")]
+    [SerializeField] float winDelaySeconds = 1.5f;
+    [SerializeField] GameObject winPanel;
+
+    private bool winSequenceStarted = false;
+
 
     void Start()
     {
@@ -47,15 +62,20 @@ public class WinConditionManager : MonoBehaviour
     {
         Debug.Log("Goals Reached: " + goalsReached);
 
-        if (goalsReached == totalGoals && totalGoals > 0)
+        if (goalsReached == totalGoals && totalGoals > 0 && !winSequenceStarted)
         {
             // WIN CONDITION MET!
+            winSequenceStarted = true;
             Debug.Log("Puzzle Solved!");
             GrantReward();
 
             // Notify the controller to disable the minigame and restore Overworld controls
             // The 'true' argument means the puzzle was solved successfully
-            controller?.EndSokoban(true);
+
+            //controller?.EndSokoban(true);
+
+            StartCoroutine(WinSequence());
+
         }
     }
 
@@ -98,4 +118,23 @@ public class WinConditionManager : MonoBehaviour
         Debug.Log("Quitting puzzle. Returning to Overworld.");
         controller?.EndSokoban(false);
     }
+
+    private IEnumerator WinSequence()
+    {
+        // 1) Show a small overlay (optional)
+        if (winPanel != null) winPanel.SetActive(true);
+
+        // 2) Freeze Sokoban controls during the delay
+        if (controller != null && controller.sokobanPlayerScript != null)
+            controller.sokobanPlayerScript.enabled = false; // public in MinigameController
+
+        // 3) Wait a bit so the player sees they’ve won
+        yield return new WaitForSeconds(winDelaySeconds);
+
+        // 4) Now exit the minigame normally
+        controller?.EndSokoban(true);
+    }
+
+
+
 }
