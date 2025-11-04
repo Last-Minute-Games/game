@@ -1,30 +1,76 @@
-// BattlefieldLayout.cs
 using UnityEngine;
 using System.Collections.Generic;
 
 public class BattlefieldLayout : MonoBehaviour
 {
     [Header("Prefabs & Libraries")]
-    [SerializeField] private GameObject enemyPrefab; 
+    [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private EnemyLibrary enemyLibrary;
     [SerializeField] private GameObject playerPrefab;
+
     private Player playerInstance;
+    private readonly List<Enemy> activeEnemies = new();
 
     [Header("Enemy Positioning")]
     [SerializeField] private float horizontalSpacing = 2.5f;
     [SerializeField] private float rearOffsetY = 0.5f;
     [SerializeField] private float rearScale = 0.8f;
 
+    [Header("Debug / Rounds")]
+    [SerializeField] private bool autoStartNextRound = true;
 
-    private readonly List<Enemy> activeEnemies = new();
+    private int currentRound = 0;
+
+    // Define your rounds here by enemyID
+    private readonly List<List<string>> roundEnemyIDs = new()
+    {
+        new() { "sexy_eyeball" },
+        new() { "sexy_eyeball", "sexy_eyeball" },
+        new() { "sexy_eyeball", "sexy_eyeball", "sexy_eyeball" },
+    };
 
     private void Start()
     {
         SpawnPlayer();
-        SpawnEnemies();
+        StartNextRound();
     }
 
-    private void SpawnEnemies()
+    private void Update()
+    {
+        // Simple round progression (auto)
+        if (autoStartNextRound && activeEnemies.Count > 0)
+        {
+            bool allDead = true;
+            foreach (Enemy e in activeEnemies)
+            {
+                if (e != null && !e.IsDead)
+                {
+                    allDead = false;
+                    break;
+                }
+            }
+
+            if (allDead)
+            {
+                StartNextRound();
+            }
+        }
+    }
+
+    public void StartNextRound()
+    {
+        if (currentRound >= roundEnemyIDs.Count)
+        {
+            Debug.Log("✅ All rounds complete!");
+            return;
+        }
+
+        ClearEnemies();
+        SpawnEnemiesByIDs(roundEnemyIDs[currentRound]);
+        currentRound++;
+    }
+
+    private void SpawnEnemiesByIDs(List<string> enemyIDs)
     {
         if (enemyPrefab == null)
         {
@@ -32,31 +78,38 @@ public class BattlefieldLayout : MonoBehaviour
             return;
         }
 
-        if (enemyLibrary == null || enemyLibrary.AvailableEnemies.Count == 0)
+        if (enemyLibrary == null)
         {
-            Debug.LogError("❌ BattlefieldLayout: No EnemyLibrary or it’s empty!");
+            Debug.LogError("❌ BattlefieldLayout: Missing EnemyLibrary reference!");
             return;
         }
 
-        int enemyCount = Random.Range(enemyLibrary.minEnemies, enemyLibrary.maxEnemies + 1);
+        activeEnemies.Clear();
         Vector3 center = Vector3.zero;
+        int enemyCount = enemyIDs.Count;
 
         for (int i = 0; i < enemyCount; i++)
         {
-            Vector3 spawnPos = GetSpawnPosition(i, enemyCount, center);
-            EnemyData selectedData = enemyLibrary.GetRandomEnemy();
-            GameObject enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-
-            Enemy newEnemy = enemyObj.GetComponent<Enemy>();
-            if (newEnemy == null)
+            EnemyData data = enemyLibrary.GetEnemyByID(enemyIDs[i]);
+            if (data == null)
             {
-                Debug.LogError($"❌ Prefab {enemyPrefab.name} is missing Enemy component!");
+                Debug.LogWarning($"⚠️ Enemy ID '{enemyIDs[i]}' not found in library!");
                 continue;
             }
 
-            newEnemy.InitializeFromData(selectedData);
+            Vector3 spawnPos = GetSpawnPosition(i, enemyCount, center);
+            GameObject enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+            Enemy newEnemy = enemyObj.GetComponent<Enemy>();
 
-            // Apply perspective scaling if behind others
+            if (newEnemy == null)
+            {
+                Debug.LogError("❌ Prefab is missing Enemy component!");
+                continue;
+            }
+
+            newEnemy.InitializeFromData(data);
+
+            // Perspective scaling (rear)
             if (enemyCount == 3 && i == 2)
             {
                 enemyObj.transform.localScale *= rearScale;
@@ -65,6 +118,18 @@ public class BattlefieldLayout : MonoBehaviour
 
             activeEnemies.Add(newEnemy);
         }
+
+        Debug.Log($"🌀 Spawned Round {currentRound + 1} with {activeEnemies.Count} enemies");
+    }
+
+    private void ClearEnemies()
+    {
+        foreach (Enemy e in activeEnemies)
+        {
+            if (e != null)
+                Destroy(e.gameObject);
+        }
+        activeEnemies.Clear();
     }
 
     private void SpawnPlayer()
@@ -88,7 +153,6 @@ public class BattlefieldLayout : MonoBehaviour
         playerInstance.characterName = "Player";
         playerInstance.currentHealth = playerInstance.maxHealth;
 
-        // Register player with BattleSystem
         var battleSystem = FindFirstObjectByType<BattleSystem>();
         if (battleSystem != null)
             battleSystem.RegisterPlayer(playerInstance);
@@ -110,10 +174,9 @@ public class BattlefieldLayout : MonoBehaviour
         {
             if (index == 0) return center + Vector3.left * horizontalSpacing;
             if (index == 1) return center + Vector3.right * horizontalSpacing;
-            return center + Vector3.back * 0.1f; // “behind” (slightly deeper in Z)
+            return center + Vector3.back * 0.1f;
         }
 
-        // Default fallback
         return center + Vector3.right * (index - total / 2f) * horizontalSpacing;
     }
 
