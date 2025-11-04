@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering.Universal;
 
 namespace Systems.Overworld.Intro
@@ -9,23 +10,28 @@ namespace Systems.Overworld.Intro
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         private BoxCollider2D _boxCollider;
         private TutorialScene _tutorialScene;
-        
+
         // create enum
-        public enum TriggerType { Unknown, Journal, Lighting }
-        
-        [Header("Trigger Settings")]
-        public TriggerType currentType = TriggerType.Unknown;
+        public enum TriggerType
+        {
+            Unknown,
+            Journal,
+            Lighting
+        }
+
+        public UnityEvent OnTriggerEnter;
+
+        [Header("Trigger Settings")] public TriggerType currentType = TriggerType.Unknown;
         public bool onlyTriggerOnce = true;
-        
-        [Header("Lighting Settings")]
-        public Light2D selectedLight2D;
+
+        [Header("Lighting Settings")] public Light2D selectedLight2D;
         public bool setLightActive = false;
-    
+
         void Start()
         {
-            _boxCollider = gameObject.AddComponent<BoxCollider2D>();
-            _boxCollider.isTrigger = true;
-        
+            // _boxCollider = gameObject.AddComponent<BoxCollider2D>();
+            // _boxCollider.isTrigger = true;
+
             _tutorialScene = FindFirstObjectByType<TutorialScene>();
         }
 
@@ -36,25 +42,32 @@ namespace Systems.Overworld.Intro
 
             Debug.Log("Player entered the tutorial trigger area.");
 
-            switch (currentType)
+            if (OnTriggerEnter != null && OnTriggerEnter.GetPersistentEventCount() > 0)
             {
-                case TriggerType.Journal:
-                    _tutorialScene.SwitchJournalPage(transform.name);
-                    StartCoroutine(_tutorialScene.OpenJournal());
-                    break;
-                case TriggerType.Lighting:
+                OnTriggerEnter.Invoke();
+            }
+            else
+            {
+                switch (currentType)
                 {
-                    if (selectedLight2D)
+                    case TriggerType.Journal:
+                        _tutorialScene.SwitchJournalPage(transform.name);
+                        StartCoroutine(_tutorialScene.OpenJournal());
+                        break;
+                    case TriggerType.Lighting:
                     {
-                        selectedLight2D.enabled = setLightActive;
-                        var lightAudioSource = selectedLight2D.GetComponent<AudioSource>();
-                        if (lightAudioSource) lightAudioSource.Play();
-                    }
+                        if (selectedLight2D)
+                        {
+                            selectedLight2D.enabled = setLightActive;
+                            var lightAudioSource = selectedLight2D.GetComponent<AudioSource>();
+                            if (lightAudioSource) lightAudioSource.Play();
+                        }
 
-                    break;
+                        break;
+                    }
                 }
             }
-            
+
             if (onlyTriggerOnce) transform.gameObject.SetActive(false);
         }
     }
