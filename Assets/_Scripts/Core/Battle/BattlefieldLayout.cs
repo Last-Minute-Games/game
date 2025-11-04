@@ -1,62 +1,173 @@
-// BattlefieldLayout.cs
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class BattlefieldLayout : MonoBehaviour
 {
     [Header("Prefabs & Libraries")]
-    [SerializeField] private GameObject enemyPrefab; 
+    [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private EnemyLibrary enemyLibrary;
     [SerializeField] private GameObject playerPrefab;
+
     private Player playerInstance;
+    private readonly List<Enemy> activeEnemies = new();
 
     [Header("Enemy Positioning")]
     [SerializeField] private float horizontalSpacing = 2.5f;
     [SerializeField] private float rearOffsetY = 0.5f;
     [SerializeField] private float rearScale = 0.8f;
 
+    [Header("Round Control")]
+    [SerializeField] private bool autoStartNextRound = true;
+    private int currentRound = 0;
+    private bool isTransitioning = false;
 
-    private readonly List<Enemy> activeEnemies = new();
+    // Define your rounds here by enemyID
+    private readonly List<List<string>> roundEnemyIDs = new()
+    {
+        new() { "sexy_eyeball" },
+        new() { "bat", "sexy_eyeball", "jerry" },
+        new() { "bat", "gargoyle", "jerry" },
+    };
 
     private void Start()
     {
         SpawnPlayer();
-        SpawnEnemies();
+        StartFirstRound();
     }
 
-    private void SpawnEnemies()
+    private void Update()
     {
-        if (enemyPrefab == null)
+        if (!autoStartNextRound || isTransitioning || activeEnemies.Count == 0)
+            return;
+
+        bool allDead = true;
+        foreach (Enemy e in activeEnemies)
         {
-            Debug.LogError("❌ BattlefieldLayout: Missing Enemy Prefab!");
+            if (e != null && !e.IsDead)
+            {
+                allDead = false;
+                break;
+            }
+        }
+
+        if (allDead)
+        {
+            StartCoroutine(HandleNextRoundTransition());
+        }
+    }
+
+    // --------------------------
+    // ROUND MANAGEMENT
+    // --------------------------
+
+    private void StartFirstRound()
+    {
+        ClearEnemies();
+        SpawnEnemiesByIDs(roundEnemyIDs[0]);
+        currentRound = 1;
+        // ❌ Removed redundant hand spawn — BattleSystem.Init handles first hand
+    }
+
+    private IEnumerator HandleNextRoundTransition()
+    {
+        if (isTransitioning) yield break;
+        isTransitioning = true;
+
+        var battleSystem = FindFirstObjectByType<BattleSystem>();
+        var ui = FindFirstObjectByType<RoundTransitionUI>();
+        var turnTimer = FindFirstObjectByType<TurnTimer>(); // ✅ new
+
+        // 🔹 Pause timer BEFORE transition
+        turnTimer?.PauseTimer();
+
+        if (battleSystem != null)
+            yield return battleSystem.StartCoroutine("ClearHand");
+
+        // --- WIN CONDITION ---
+        if (currentRound >= roundEnemyIDs.Count)
+        {
+            Debug.Log("✅ All rounds complete! Player wins!");
+            if (battleSystem != null)
+                battleSystem.StartCoroutine("HandleBattleFinished", true);
+            yield break;
+        }
+
+        int roundNum = currentRound + 1;
+
+        if (ui != null)
+        {
+            yield return ui.FadeIn();
+            yield return ui.ShowRoundText(roundNum);
+
+            // 🔄 Reset timer mid-transition (while dark)
+            turnTimer?.ResetWithoutStart();
+
+            ClearEnemies();
+            SpawnEnemiesByIDs(roundEnemyIDs[currentRound]);
+            currentRound++;
+
+            battleSystem.playerTurn = true;
+            battleSystem.isProcessingTurn = false;
+
+            if (battleSystem != null)
+            {
+                battleSystem.RefreshEnemyList();
+                battleSystem.RefillPlayerEnergy();
+            }
+
+            yield return new WaitForSeconds(0.25f);
+            yield return ui.FadeOut();
+        }
+
+        if (battleSystem != null)
+        {
+            yield return battleSystem.StartCoroutine("RefreshPlayerHand");
+            battleSystem.StartPlayerTurn();
+        }
+
+        // ▶ Resume timer after transition complete
+        turnTimer?.ResumeTimer();
+
+        isTransitioning = false;
+    }
+
+    // --------------------------
+    // SPAWNING LOGIC
+    // --------------------------
+
+    private void SpawnEnemiesByIDs(List<string> enemyIDs)
+    {
+        if (enemyPrefab == null || enemyLibrary == null)
+        {
+            Debug.LogError("❌ BattlefieldLayout: Missing Enemy Prefab or Library!");
             return;
         }
 
-        if (enemyLibrary == null || enemyLibrary.AvailableEnemies.Count == 0)
-        {
-            Debug.LogError("❌ BattlefieldLayout: No EnemyLibrary or it’s empty!");
-            return;
-        }
-
-        int enemyCount = Random.Range(enemyLibrary.minEnemies, enemyLibrary.maxEnemies + 1);
+        activeEnemies.Clear();
         Vector3 center = Vector3.zero;
+        int enemyCount = enemyIDs.Count;
 
         for (int i = 0; i < enemyCount; i++)
         {
-            Vector3 spawnPos = GetSpawnPosition(i, enemyCount, center);
-            EnemyData selectedData = enemyLibrary.GetRandomEnemy();
-            GameObject enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-
-            Enemy newEnemy = enemyObj.GetComponent<Enemy>();
-            if (newEnemy == null)
+            EnemyData data = enemyLibrary.GetEnemyByID(enemyIDs[i]);
+            if (data == null)
             {
-                Debug.LogError($"❌ Prefab {enemyPrefab.name} is missing Enemy component!");
+                Debug.LogWarning($"⚠️ Enemy ID '{enemyIDs[i]}' not found in library!");
                 continue;
             }
 
-            newEnemy.InitializeFromData(selectedData);
+            Vector3 spawnPos = GetSpawnPosition(i, enemyCount, center);
+            GameObject enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+            Enemy newEnemy = enemyObj.GetComponent<Enemy>();
+            if (newEnemy == null)
+            {
+                Debug.LogError("❌ Prefab is missing Enemy component!");
+                continue;
+            }
 
-            // Apply perspective scaling if behind others
+            newEnemy.InitializeFromData(data);
+
             if (enemyCount == 3 && i == 2)
             {
                 enemyObj.transform.localScale *= rearScale;
@@ -65,6 +176,15 @@ public class BattlefieldLayout : MonoBehaviour
 
             activeEnemies.Add(newEnemy);
         }
+
+        Debug.Log($"🌀 Spawned Round {currentRound + 1} with {activeEnemies.Count} enemies");
+    }
+
+    private void ClearEnemies()
+    {
+        foreach (Enemy e in activeEnemies)
+            if (e != null) Destroy(e.gameObject);
+        activeEnemies.Clear();
     }
 
     private void SpawnPlayer()
@@ -75,7 +195,7 @@ public class BattlefieldLayout : MonoBehaviour
             return;
         }
 
-        GameObject playerObj = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+        GameObject playerObj = Instantiate(playerPrefab);
         playerObj.name = "Player";
 
         playerInstance = playerObj.GetComponent<Player>();
@@ -88,7 +208,6 @@ public class BattlefieldLayout : MonoBehaviour
         playerInstance.characterName = "Player";
         playerInstance.currentHealth = playerInstance.maxHealth;
 
-        // Register player with BattleSystem
         var battleSystem = FindFirstObjectByType<BattleSystem>();
         if (battleSystem != null)
             battleSystem.RegisterPlayer(playerInstance);
@@ -100,22 +219,24 @@ public class BattlefieldLayout : MonoBehaviour
             return center;
 
         if (total == 2)
-        {
             return index == 0
                 ? center + Vector3.left * horizontalSpacing / 2f
                 : center + Vector3.right * horizontalSpacing / 2f;
-        }
 
         if (total == 3)
         {
             if (index == 0) return center + Vector3.left * horizontalSpacing;
             if (index == 1) return center + Vector3.right * horizontalSpacing;
-            return center + Vector3.back * 0.1f; // “behind” (slightly deeper in Z)
+            return center + Vector3.back * 0.1f;
         }
-
-        // Default fallback
         return center + Vector3.right * (index - total / 2f) * horizontalSpacing;
     }
 
     public IReadOnlyList<Enemy> GetEnemies() => activeEnemies;
+
+    public bool IsFinalRoundComplete()
+    {
+        // true if we have completed all rounds
+        return currentRound >= roundEnemyIDs.Count && activeEnemies.TrueForAll(e => e == null || e.IsDead);
+    }
 }

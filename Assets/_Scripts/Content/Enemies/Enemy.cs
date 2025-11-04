@@ -4,6 +4,8 @@ using System.Collections;
 
 public class Enemy : CharacterBase
 {
+    private BattleSystem _battleSystem;
+    
     [Header("UI References")]
     public GameObject healthBarPrefab;
     public TMP_Text intentionText;
@@ -24,10 +26,11 @@ public class Enemy : CharacterBase
 
     protected override void Awake()
     {
+        _battleSystem = GameObject.Find("BattleSystem").GetComponent<BattleSystem>();
+        
         base.Awake();
         animator = GetComponent<EnemyAnimator2D>();
         library = FindFirstObjectByType<CardLibrary>();
-        SetupUI();
     }
 
     private void SetupUI()
@@ -287,6 +290,13 @@ public class Enemy : CharacterBase
             StartCoroutine(DeathRoutine());
         else
             FinalizeDeath();
+
+        _battleSystem.UpdateEnemies();
+        
+        if (_battleSystem.GetEnemies().Count == 0)
+        {
+            _battleSystem.EndPlayerTurn();
+        }
     }
 
     private IEnumerator DeathRoutine()
@@ -318,6 +328,8 @@ public class Enemy : CharacterBase
         currentHealth = maxHealth;
 
         globalPowerScale = data.globalCardMultiplier;
+        
+        SetupUI();
 
         if (animator == null)
             animator = GetComponent<EnemyAnimator2D>();

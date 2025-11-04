@@ -47,6 +47,9 @@ public class HandView : MonoBehaviour
         for (int i = 0; i < cards.Count; i++)
         {
             var c = cards[i];
+            var wrapper = c.transform.Find("Wrapper");
+
+            wrapper.GetComponent<Canvas>().sortingOrder = i;
 
             float normalized = cards.Count > 1 ? (float)i / (cards.Count - 1) : 0.5f;
             float x = startX + i * spacing;
@@ -81,21 +84,25 @@ public class HandView : MonoBehaviour
 
     public void OnHover(CardView card)
     {
-        if (hoveredCard == card) return;
+        // If already hovering another card, lower it first
+        if (hoveredCard != null && hoveredCard != card)
+        {
+            ResetCardToBase(hoveredCard);
+        }
+
         hoveredCard = card;
 
         foreach (var c in cards)
         {
-            // Clear previous hover tweens; for the hovered card also stop layout so it doesn’t fight
             DOTween.Kill(HoverId(c));
-            if (c == hoveredCard) DOTween.Kill(LayoutId(c));
+            DOTween.Kill(LayoutId(c));
 
-            // Get this card’s base position
+            var wrapperCanvas = c.transform.Find("Wrapper").GetComponent<Canvas>();
             var b = basePos.TryGetValue(c, out var p) ? p : c.transform.localPosition;
 
-            if (c == hoveredCard)
+            if (c == card)
             {
-                // Move to base + lift (absolute), scale up, raise sorting
+                // lift and scale up
                 c.transform.DOLocalMove(new Vector3(b.x, b.y + liftAmount, b.z), 0.15f)
                            .SetEase(Ease.OutCubic)
                            .SetId(HoverId(c));
@@ -105,19 +112,21 @@ public class HandView : MonoBehaviour
                            .SetId(HoverId(c));
 
                 c.sortingGroup.sortingOrder = 100;
+                wrapperCanvas.sortingOrder = 100;
             }
             else
             {
-                // Non-hovered cards return to base and base scale
-                c.transform.DOLocalMove(b, 0.15f)
+                // ensure all other cards instantly return to base
+                c.transform.DOLocalMove(b, 0.1f)
                            .SetEase(Ease.OutCubic)
                            .SetId(HoverId(c));
 
-                c.transform.DOScale(Vector3.one * cardScale, 0.15f)
+                c.transform.DOScale(Vector3.one * cardScale, 0.1f)
                            .SetEase(Ease.OutCubic)
                            .SetId(HoverId(c));
 
                 c.sortingGroup.sortingOrder = cards.IndexOf(c);
+                wrapperCanvas.sortingOrder = cards.IndexOf(c);
             }
         }
     }
@@ -125,20 +134,28 @@ public class HandView : MonoBehaviour
     public void OnHoverExit(CardView card)
     {
         if (hoveredCard != card) return;
+        ResetCardToBase(card);
         hoveredCard = null;
+    }
 
-        // Only this card returns to base; do not reorganize entire hand here
-        if (basePos.TryGetValue(card, out var b))
-        {
-            DOTween.Kill(HoverId(card));
-            card.transform.DOLocalMove(b, 0.15f)
-                .SetEase(Ease.OutCubic)
-                .SetId(HoverId(card));
-            card.transform.DOScale(Vector3.one * cardScale, 0.15f)
-                .SetEase(Ease.OutCubic)
-                .SetId(HoverId(card));
-            card.sortingGroup.sortingOrder = cards.IndexOf(card);
-        }
+    private void ResetCardToBase(CardView c)
+    {
+        if (c == null) return;
+
+        DOTween.Kill(HoverId(c));
+        if (!basePos.TryGetValue(c, out var b)) b = c.transform.localPosition;
+
+        c.transform.DOLocalMove(b, 0.15f)
+            .SetEase(Ease.OutCubic)
+            .SetId(HoverId(c));
+
+        c.transform.DOScale(Vector3.one * cardScale, 0.15f)
+            .SetEase(Ease.OutCubic)
+            .SetId(HoverId(c));
+
+        c.sortingGroup.sortingOrder = cards.IndexOf(c);
+        var wrapperCanvas = c.transform.Find("Wrapper").GetComponent<Canvas>();
+        wrapperCanvas.sortingOrder = cards.IndexOf(c);
     }
 
     public IEnumerator ClearAllCards()
@@ -173,5 +190,17 @@ public class HandView : MonoBehaviour
 
         // wait a short bit for animations
         yield return new WaitForSeconds(0.2f);
+    }
+    
+    public bool TryGetBaseRotation(CardView card, out Quaternion rot)
+    {
+        if (cards.Contains(card))
+        {
+            float normalized = cards.Count > 1 ? (float)cards.IndexOf(card) / (cards.Count - 1) : 0.5f;
+            rot = Quaternion.Euler(0, 0, (normalized - 0.5f) * -30f);
+            return true;
+        }
+        rot = Quaternion.identity;
+        return false;
     }
 }

@@ -6,12 +6,16 @@ public class EnergySystem : MonoBehaviour
 {
     public static EnergySystem Instance { get; private set; }
 
+    private BattleSystem _battleSystem;
+
     [Header("Energy Settings")]
     public int maxEnergy = 3;
     public int currentEnergy;
 
     [Header("UI Reference")]
     public TMP_Text energyText;
+
+    private bool _turnEndRequested = false; // 🔒 prevents duplicate turn-end calls
 
     private void Awake()
     {
@@ -21,27 +25,69 @@ public class EnergySystem : MonoBehaviour
             return;
         }
         Instance = this;
+
+        _battleSystem = FindFirstObjectByType<BattleSystem>();
         currentEnergy = maxEnergy;
         UpdateUI();
     }
 
+    // -----------------------------------------------------
+    // CORE ENERGY CONSUMPTION
+    // -----------------------------------------------------
     public bool UseEnergy(int amount)
     {
-        if (currentEnergy >= amount)
+        if (amount <= 0) return true; // 0-cost cards still allowed
+
+        if (currentEnergy < amount)
         {
-            currentEnergy -= amount;
-            AnimateUI();
-            UpdateUI();
-            return true;
+            Debug.Log("❌ Not enough energy!");
+            return false;
         }
 
-        Debug.Log("Not enough energy!");
-        return false;
+        currentEnergy -= amount;
+        AnimateUI();
+        UpdateUI();
+
+        if (currentEnergy <= 0)
+        {
+            TryRequestTurnEnd();
+        }
+
+        return true;
     }
 
+    // -----------------------------------------------------
+    // SAFE TURN END REQUEST
+    // -----------------------------------------------------
+    private void TryRequestTurnEnd()
+    {
+        if (_turnEndRequested) return;           // already requested
+        _turnEndRequested = true;
+
+        if (_battleSystem != null)
+        {
+            Debug.Log("🔋 Energy depleted — requesting safe turn end.");
+            _battleSystem.RequestTurnEnd("Energy");
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ No BattleSystem found for energy depletion end-turn.");
+        }
+    }
+
+    // Reset flag each time new turn begins
+    public void OnNewTurn()
+    {
+        _turnEndRequested = false;
+    }
+
+    // -----------------------------------------------------
+    // REFILL / UI
+    // -----------------------------------------------------
     public void RefillEnergy()
     {
         currentEnergy = maxEnergy;
+        _turnEndRequested = false; // reset protection
         AnimateUI();
         UpdateUI();
     }
@@ -50,7 +96,6 @@ public class EnergySystem : MonoBehaviour
     {
         if (energyText == null) return;
 
-        // Pulse animation (like Slay the Spire)
         energyText.transform.DOKill();
         energyText.transform.DOScale(1.25f, 0.1f)
             .OnComplete(() => energyText.transform.DOScale(1f, 0.15f));
@@ -59,6 +104,6 @@ public class EnergySystem : MonoBehaviour
     public void UpdateUI()
     {
         if (energyText)
-            energyText.text = $"<color=#FFD700>⚡</color> {currentEnergy}/{maxEnergy}";
+            energyText.text = $"{currentEnergy}/{maxEnergy}";
     }
 }

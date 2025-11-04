@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -5,12 +6,17 @@ using DG.Tweening;
 
 public class PlayerHealthBar : HealthBarBase
 {
+    private static readonly int HasBlock = Animator.StringToHash("HasBlock");
+    private static readonly int GainBlock = Animator.StringToHash("GainBlock");
+
     [Header("HUD References")]
     [SerializeField] private Image healthFill;
     [SerializeField] private TMP_Text healthText;
-    [SerializeField] private GameObject defensePanel;
+    // [SerializeField] private GameObject defensePanel;
     [SerializeField] private TMP_Text defenseText;
-    [SerializeField] private Image defenseIcon;
+    // [SerializeField] private Image defenseIcon;
+
+    private Animator _healthAnimator;
 
     [Header("Feedback")]
     [SerializeField] private GameObject floatingTextPrefab; // small TMP text prefab
@@ -18,6 +24,11 @@ public class PlayerHealthBar : HealthBarBase
 
     private CharacterBase player;
     private Color originalHealthColor;
+
+    private void Start()
+    {
+        _healthAnimator = transform.Find("HealthbarUI").GetComponent<Animator>();
+    }
 
     public override void Initialize(CharacterBase target)
     {
@@ -42,18 +53,34 @@ public class PlayerHealthBar : HealthBarBase
 
     public override void UpdateBlock(int block)
     {
-        if (!defensePanel) return;
+        // if (!defensePanel) return;
 
         bool hasBlock = block > 0;
-        defensePanel.SetActive(hasBlock);
+        // defensePanel.SetActive(hasBlock);
 
-        if (hasBlock && defenseText)
-            defenseText.text = $"+{block}";
+        defenseText.text = $"{block}";
 
-        if (hasBlock && defenseIcon)
+        if (hasBlock)
         {
-            defenseIcon.color = Color.cyan;
-            defenseIcon.CrossFadeColor(Color.white, 0.5f, false, true);
+            AnimatorStateInfo state = _healthAnimator.GetCurrentAnimatorStateInfo(0);
+
+            // Only trigger if NOT already defending
+            if (!state.IsName("DefenseIdle") && !state.IsName("DefenseGain"))
+            {
+                _healthAnimator.ResetTrigger(GainBlock); // ensure clean trigger state
+                _healthAnimator.SetBool(HasBlock, true);
+                _healthAnimator.SetTrigger(GainBlock);
+            }
+            else
+            {
+                // Already defending — just refresh HasBlock
+                _healthAnimator.SetBool(HasBlock, true);
+            }
+        }
+        else
+        {
+            _healthAnimator.ResetTrigger(GainBlock); // prevent re-entry to DefenseGain
+            _healthAnimator.SetBool(HasBlock, false);
         }
 
         if (healthFill)

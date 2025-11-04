@@ -21,4 +21,11 @@ public class EnemyLibrary : ScriptableObject
         }
         return AvailableEnemies[Random.Range(0, AvailableEnemies.Count)];
     }
+
+
+    public EnemyData GetEnemyByID(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return null;
+        return AvailableEnemies.Find(e => e != null && e.enemyID == id);
+    }
 }

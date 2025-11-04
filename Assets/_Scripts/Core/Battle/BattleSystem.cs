@@ -20,11 +20,21 @@ public class BattleSystem : MonoBehaviour
 
     private Player player;
     private readonly List<Enemy> enemies = new();
-    private bool playerTurn = true;
-    private bool isProcessingTurn = false;
+    public bool playerTurn = true;
+    public bool isProcessingTurn = false;
+
+    public List<Enemy> GetEnemies()
+    {
+        return enemies;
+    }
+    private TurnTimer turnTimer; // timer
+
+
+    private bool queuedTurnEndRequest = false;
 
     private void Start()
     {
+        turnTimer = FindFirstObjectByType<TurnTimer>();
         StartCoroutine(InitializeBattle());
     }
 
@@ -34,12 +44,17 @@ public class BattleSystem : MonoBehaviour
     }
 
     // -------------------------- INITIALIZATION --------------------------
+    public void UpdateEnemies()
+    {
+        enemies.AddRange(FindObjectsOfType<Enemy>());
+        enemies.RemoveAll(e => e == null || e.IsDead);
+    }
+    
     private IEnumerator InitializeBattle()
     {
         yield return null;
 
-        enemies.AddRange(FindObjectsOfType<Enemy>());
-        enemies.RemoveAll(e => e == null || e.IsDead);
+        UpdateEnemies();
 
         if (player == null)
         {
@@ -129,19 +144,35 @@ public class BattleSystem : MonoBehaviour
             yield return handView.ClearAllCards();
     }
 
-    private IEnumerator RefreshPlayerHand()
+    public IEnumerator RefreshPlayerHand()
     {
         yield return ClearHand();
         yield return SpawnStartingHand();
     }
 
     // -------------------------- TURN MANAGEMENT --------------------------
-    private void StartPlayerTurn()
+    public void StartPlayerTurn()
     {
+
+        enemies.Clear();
+        enemies.AddRange(FindObjectsOfType<Enemy>());
+        enemies.RemoveAll(e => e == null || e.IsDead);
+
         playerTurn = true;
         player.RefillEnergy();
+        EnergySystem.Instance?.OnNewTurn();
+
+        turnTimer?.StartTimer();   // start countdown
 
         Debug.Log("🔹 Player’s turn started!");
+
+        if (queuedTurnEndRequest)
+        {
+            Debug.Log("🔁 Processing queued turn-end request from previous busy state.");
+            queuedTurnEndRequest = false;
+            EndPlayerTurn();
+            return;
+        }
 
         enemies.RemoveAll(e => e == null || e.IsDead);
         foreach (Enemy enemy in enemies)
@@ -152,6 +183,7 @@ public class BattleSystem : MonoBehaviour
     {
         if (!playerTurn || isProcessingTurn) return;
 
+        turnTimer?.StopTimer();
         Debug.Log("🔸 Player turn ended → Enemy turn begins...");
         playerTurn = false;
 
@@ -177,25 +209,87 @@ public class BattleSystem : MonoBehaviour
         enemies.RemoveAll(e => e == null || e.IsDead);
 
         // ---------------- WIN/LOSE CONDITIONS ----------------
-        if (enemies.Count == 0 || player == null || player.currentHealth <= 0)
+        BattlefieldLayout layout = FindFirstObjectByType<BattlefieldLayout>();
+        bool allEnemiesDead = enemies.Count == 0;
+        bool playerDead = (player == null || player.currentHealth <= 0);
+        bool allRoundsComplete = (layout != null && layout.IsFinalRoundComplete());
+
+        // Player death → immediate loss
+        if (playerDead)
         {
-            Debug.Log("🏁 Battle finished! Returning to Overworld...");
-            yield return new WaitForSeconds(1f);
-
-            if (screenFader != null)
-                yield return StartCoroutine(screenFader.TransitionToScene("Overworld"));
-            else
-                SceneManager.LoadScene("Overworld");
-
+            Debug.Log("💀 Player defeated!");
+            if (layout != null) layout.StopAllCoroutines();
+            yield return StartCoroutine(HandleBattleFinished(false));
             yield break;
         }
 
-        player?.EndTurn();
+        // True win only when all rounds complete AND no enemies remain
+        if (allEnemiesDead && allRoundsComplete)
+        {
+            Debug.Log("🏁 All rounds cleared! Player wins!");
+            yield return StartCoroutine(HandleBattleFinished(true));
+            yield break;
+        }
 
+        // If enemies are dead but rounds remain, BattlefieldLayout will transition/spawn next round.
+        if (allEnemiesDead)
+        {
+            Debug.Log("🌀 Round cleared — waiting for next round transition...");
+            yield break;
+        }
+
+        // Normal loop
+        player?.EndTurn();
         yield return new WaitForSeconds(turnResetDelay);
         yield return RefreshPlayerHand();
         StartPlayerTurn();
 
         isProcessingTurn = false;
+    }
+
+    // Add inside BattleSystem class, near bottom:
+    public IEnumerator HandleBattleFinished(bool playerWon)
+    {
+        Debug.Log(playerWon ? "🏆 Player Wins!" : "💀 Player Loses!");
+        yield return new WaitForSeconds(1f);
+
+        if (screenFader != null)
+            yield return StartCoroutine(screenFader.TransitionToScene("Overworld"));
+        else
+            SceneManager.LoadScene("Overworld");
+    }
+
+
+    public void RefreshEnemyList()
+    {
+        enemies.Clear();
+        enemies.AddRange(FindObjectsOfType<Enemy>());
+        enemies.RemoveAll(e => e == null || e.IsDead);
+
+        Debug.Log($"🔄 Enemy list refreshed: {enemies.Count} enemies registered.");
+    }
+
+    public void RefillPlayerEnergy()
+    {
+        if (player != null)
+        {
+            player.RefillEnergy();
+            Debug.Log("⚡ Player energy reset for new round.");
+        }
+    }
+
+
+    public void RequestTurnEnd(string reason = "Unknown")
+    {
+        // if not ready, queue the request
+        if (!playerTurn || isProcessingTurn)
+        {
+            Debug.Log($"⚠ Turn end requested ({reason}) but system busy — queued for next opportunity.");
+            queuedTurnEndRequest = true;
+            return;
+        }
+
+        Debug.Log($"🔸 Turn end requested safely by {reason}.");
+        EndPlayerTurn();
     }
 }

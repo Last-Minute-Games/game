@@ -8,7 +8,7 @@ public class CardView : MonoBehaviour
 {
     [Header("Visuals")]
     [SerializeField] private SpriteRenderer imageSR;
-    [SerializeField] private GameObject wrapper;
+    private GameObject wrapper;
     [SerializeField] public UnityEngine.Rendering.SortingGroup sortingGroup;
 
     private BoxCollider2D cardCollider;
@@ -25,6 +25,7 @@ public class CardView : MonoBehaviour
 
     private void Awake()
     {
+        wrapper = transform.Find("Wrapper").gameObject;
         runner = GetComponent<CardRunner>();
         cardBase = GetComponent<CardBase>();
         if (cardBase == null)
@@ -51,10 +52,9 @@ public class CardView : MonoBehaviour
             {
                 if (handView) handView.RemoveCard(this);
                 transform.DOScale(Vector3.zero, 0.15f).OnComplete(() => gameObject.SetActive(false));
+                
                 return true;
             }
-
-            return false;
         }
         return false;
     }
@@ -89,7 +89,7 @@ public class CardView : MonoBehaviour
     }
 
     public void Setup(CardBase card)
-    {
+    {   
         if (card == null) return;
 
         cardBase = card;
