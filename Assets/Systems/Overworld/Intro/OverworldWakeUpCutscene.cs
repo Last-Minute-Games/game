@@ -36,6 +36,13 @@ namespace Systems.Overworld.Intro
             if (hasPlayed) yield break;
             hasPlayed = true;
             
+            // Enable SleepingMain sprite renderer
+            if (sleepingMainSpriteRenderer != null)
+            {
+                sleepingMainSpriteRenderer.enabled = true;
+                Debug.Log("[OverworldWakeUpCutscene] SleepingMain sprite renderer enabled");
+            }
+            
             // Disable MainCharacter sprite renderer
             if (mainCharSpriteRenderer != null)
             {
@@ -145,37 +152,8 @@ namespace Systems.Overworld.Intro
         void Start()
         {
             Debug.Log("[OverworldWakeUpCutscene] Start() called");
-            
-            // Check if we should play the cutscene
-            int playFlag = UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
-            Debug.Log($"[OverworldWakeUpCutscene] Flag value: {playFlag}");
 
-            if (playFlag != 1)
-            {
-                Debug.Log("[OverworldWakeUpCutscene] Flag not set, disabling");
-                enabled = false;
-                return;
-            }
-
-            // Clear the flag
-            UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 0);
-            UnityEngine.PlayerPrefs.Save();
-            
-            Debug.Log("[OverworldWakeUpCutscene] Setting up cutscene...");
-            
-            // Find fade canvas
-            fadeCanvasGroup = GameObject.Find("FadeCanvasGroup")?.GetComponent<CanvasGroup>();
-            if (fadeCanvasGroup != null)
-            {
-                fadeCanvasGroup.alpha = 1f; // Start opaque (black screen)
-                Debug.Log("[OverworldWakeUpCutscene] Fade canvas set to black");
-            }
-            else
-            {
-                Debug.LogError("[OverworldWakeUpCutscene] FadeCanvasGroup not found!");
-            }
-            
-            // Find main character (for PlayerInput2D only)
+            // Find main character components first
             var mainChar = GameObject.Find("MainCharacter");
             if (mainChar != null)
             {
@@ -205,8 +183,9 @@ namespace Systems.Overworld.Intro
             if (sleepingMain != null)
             {
                 sleepingMainSpriteRenderer = sleepingMain.GetComponent<SpriteRenderer>();
+                sleepingMainSpriteRenderer.enabled = false;
                 
-                // Set to sleeping sprite
+                // Set to sleeping sprite (will be enabled when cutscene starts)
                 if (sleepingMainSpriteRenderer != null && nikolausSleepSprite != null)
                 {
                     sleepingMainSpriteRenderer.sprite = nikolausSleepSprite;
@@ -218,10 +197,45 @@ namespace Systems.Overworld.Intro
                 Debug.LogError("[OverworldWakeUpCutscene] SleepingMain GameObject not assigned!");
             }
             
+            // Find fade canvas
+            fadeCanvasGroup = GameObject.Find("FadeCanvasGroup")?.GetComponent<CanvasGroup>();
+            if (fadeCanvasGroup != null)
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Found FadeCanvasGroup");
+            }
+            else
+            {
+                Debug.LogError("[OverworldWakeUpCutscene] FadeCanvasGroup not found!");
+            }
+            
             // Find dialogue system if not assigned
             if (dialogBehaviour == null)
             {
                 dialogBehaviour = FindFirstObjectByType<DialogBehaviour>();
+            }
+
+            // Check if we should play the cutscene
+            int playFlag = UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
+            Debug.Log($"[OverworldWakeUpCutscene] Flag value: {playFlag}");
+
+            if (playFlag != 1)
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Flag not set, disabling");
+                enabled = false;
+                return;
+            }
+
+            // Clear the flag
+            UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 0);
+            UnityEngine.PlayerPrefs.Save();
+            
+            Debug.Log("[OverworldWakeUpCutscene] Setting up cutscene...");
+            
+            // Set fade canvas to black for cutscene start
+            if (fadeCanvasGroup != null)
+            {
+                fadeCanvasGroup.alpha = 1f; // Start opaque (black screen)
+                Debug.Log("[OverworldWakeUpCutscene] Fade canvas set to black");
             }
             
             Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
