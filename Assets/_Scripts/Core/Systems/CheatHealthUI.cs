@@ -9,13 +9,16 @@ public class CheatHealthUI : MonoBehaviour
     [SerializeField] private Button applyButton;
     [SerializeField] private BattleSystem battleSystem; // optional, auto-finds if not assigned
 
-    private void Start()
+    private void OnEnable()
     {
         if (battleSystem == null)
             battleSystem = FindFirstObjectByType<BattleSystem>();
 
         if (applyButton != null)
+        {
+            applyButton.onClick.RemoveAllListeners();   // ✅ clears duplicates
             applyButton.onClick.AddListener(OnApplyClicked);
+        }
     }
 
     private void OnApplyClicked()
