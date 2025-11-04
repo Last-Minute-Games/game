@@ -1,21 +1,20 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
-using System.Collections;
 
 public class TurnTimer : MonoBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private TMP_Text timerText; // ⬅️ only using the text now
+    [SerializeField] private TMP_Text timerText;
 
     [Header("Settings")]
     [SerializeField] private float turnDuration = 20f; // seconds
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color warningColor = Color.red;
-    [SerializeField] private float warningThreshold = 0.25f;
+    [SerializeField, Range(0f, 1f)] private float warningThreshold = 0.25f;
 
     private float timer;
     private bool isRunning = false;
+    private bool hasEndedTurn = false; // ✅ prevents double-end calls
     private BattleSystem battleSystem;
 
     private void Awake()
@@ -31,45 +30,75 @@ public class TurnTimer : MonoBehaviour
         timer -= Time.deltaTime;
         float progress = Mathf.Clamp01(timer / turnDuration);
 
-        // 🕒 Update text
+        // 🔹 Update text
         if (timerText)
         {
             timerText.text = $"{Mathf.CeilToInt(timer)}";
 
-            // Change color if near end
-            timerText.color = (progress < warningThreshold)
-                ? warningColor
-                : normalColor;
+            if (progress < warningThreshold)
+            {
+                float pulse = Mathf.Abs(Mathf.Sin(Time.time * 5f)) * 0.5f + 0.5f;
+                timerText.color = Color.Lerp(normalColor, warningColor, pulse);
+            }
+            else
+            {
+                timerText.color = normalColor;
+            }
         }
 
-        if (timer <= 0f)
+        // ⏰ Expired
+        if (timer <= 0f && !hasEndedTurn)
+        {
+            hasEndedTurn = true;
             ForceEndTurn();
-
-        if (progress < warningThreshold)
-        {
-            float pulse = Mathf.Abs(Mathf.Sin(Time.time * 5f)) * 0.5f + 0.5f;
-            timerText.color = Color.Lerp(normalColor, warningColor, pulse);
-        }
-        else
-        {
-            timerText.color = normalColor;
         }
     }
 
+    // ────────────────────────────────
+    // Public Control
+    // ────────────────────────────────
     public void StartTimer()
     {
         ResetTimer();
         isRunning = true;
+        hasEndedTurn = false;
+        Debug.Log("▶ Timer started.");
     }
 
     public void StopTimer()
     {
         isRunning = false;
+        Debug.Log("⏹ Timer stopped.");
+    }
+
+    public void PauseTimer()
+    {
+        isRunning = false;
+        Debug.Log("⏸ Timer paused.");
+    }
+
+    public void ResumeTimer()
+    {
+        isRunning = true;
+        Debug.Log("▶ Timer resumed.");
+    }
+
+    public void ResetWithoutStart()
+    {
+        timer = turnDuration;
+        hasEndedTurn = false;
+        if (timerText)
+        {
+            timerText.text = $"{Mathf.CeilToInt(timer)}";
+            timerText.color = normalColor;
+        }
+        Debug.Log("🔄 Timer reset (no auto-start).");
     }
 
     public void ResetTimer()
     {
         timer = turnDuration;
+        hasEndedTurn = false;
         if (timerText)
         {
             timerText.text = $"{Mathf.CeilToInt(timer)}";
@@ -77,13 +106,24 @@ public class TurnTimer : MonoBehaviour
         }
     }
 
+    // ────────────────────────────────
+    // Internal
+    // ────────────────────────────────
     private void ForceEndTurn()
     {
+        if (!isRunning) return;
+
         isRunning = false;
+        Debug.Log("⏰ Timer expired — requesting turn end.");
+
         if (battleSystem != null)
         {
-            Debug.Log("⏰ Timer expired — ending player turn automatically.");
-            battleSystem.EndPlayerTurn();
+            // Call via coroutine-safe wrapper to ensure it triggers
+            battleSystem.RequestTurnEndFromTimer();
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ No BattleSystem found for timer end.");
         }
     }
 }

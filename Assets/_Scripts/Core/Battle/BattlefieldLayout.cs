@@ -76,8 +76,11 @@ public class BattlefieldLayout : MonoBehaviour
 
         var battleSystem = FindFirstObjectByType<BattleSystem>();
         var ui = FindFirstObjectByType<RoundTransitionUI>();
+        var turnTimer = FindFirstObjectByType<TurnTimer>(); // ✅ new
 
-        // 🔹 Clear hand BEFORE transition so cards vanish
+        // 🔹 Pause timer BEFORE transition
+        turnTimer?.PauseTimer();
+
         if (battleSystem != null)
             yield return battleSystem.StartCoroutine("ClearHand");
 
@@ -97,27 +100,31 @@ public class BattlefieldLayout : MonoBehaviour
             yield return ui.FadeIn();
             yield return ui.ShowRoundText(roundNum);
 
+            // 🔄 Reset timer mid-transition (while dark)
+            turnTimer?.ResetWithoutStart();
+
             ClearEnemies();
             SpawnEnemiesByIDs(roundEnemyIDs[currentRound]);
             currentRound++;
 
-            // 🟩 Sync with BattleSystem here
             if (battleSystem != null)
             {
-                battleSystem.RefreshEnemyList();     // update new enemy references
-                battleSystem.RefillPlayerEnergy();   // reset energy to 3
+                battleSystem.RefreshEnemyList();
+                battleSystem.RefillPlayerEnergy();
             }
 
             yield return new WaitForSeconds(0.25f);
             yield return ui.FadeOut();
         }
 
-        // Redraw cards after fade out
         if (battleSystem != null)
         {
             yield return battleSystem.StartCoroutine("RefreshPlayerHand");
-            battleSystem.StartPlayerTurn(); // ✅ ensures intentions are shown
+            battleSystem.StartPlayerTurn();
         }
+
+        // ▶ Resume timer after transition complete
+        turnTimer?.ResumeTimer();
 
         isTransitioning = false;
     }

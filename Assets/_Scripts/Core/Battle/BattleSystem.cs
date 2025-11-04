@@ -256,4 +256,17 @@ public class BattleSystem : MonoBehaviour
             Debug.Log("⚡ Player energy reset for new round.");
         }
     }
+
+    public void RequestTurnEndFromTimer()
+    {
+        // Prevent timer from ending mid-transition or double calls
+        if (!playerTurn || isProcessingTurn)
+        {
+            Debug.Log("⚠️ Timer requested end but turn is already processing.");
+            return;
+        }
+
+        Debug.Log("⏰ Timer triggered EndPlayerTurn safely.");
+        EndPlayerTurn();
+    }
 }
