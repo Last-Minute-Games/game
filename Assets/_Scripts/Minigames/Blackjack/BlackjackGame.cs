@@ -34,6 +34,17 @@ public class BlackjackGame : MonoBehaviour
     public CardViews cardPrefab;   // the prefab from step 3
     public CardSpriteLibrary spriteLibrary;
 
+    [Header("Match / Score")]
+    public int targetWins = 5;
+    public TMP_Text scoreText;   // drag a UI text here: “Player 0 – 0 Dealer”
+
+    [Header("Match End")]
+    public float endMatchCloseDelay = 1.25f;
+
+    private int playerWins = 0;
+    private int dealerWins = 0;
+    private bool matchOver = false;
+
     readonly List<GameObject> temp = new List<GameObject>(); //optional???
 
 
@@ -88,6 +99,8 @@ public class BlackjackGame : MonoBehaviour
         {
             SetButtonsState(hit: true, stand: true);
         }
+
+        UpdateScoreUI();
     }
 
     public void OnHit()
@@ -137,31 +150,55 @@ public class BlackjackGame : MonoBehaviour
     {
         if (finalReveal) UpdateUI(hideDealerHoleCard: false);
 
+        int p = player.Total();
+        int d = dealer.Total();
 
-        var p = player.Total();
-        var d = dealer.Total();
+        string outcome;
+        if (player.IsBust()) outcome = "Player busts. Dealer wins.";
+        else if (d > 21) outcome = "Dealer busts. Player wins.";
+        else if (player.IsBlackjack() && !dealer.IsBlackjack()) outcome = "Blackjack! Player wins.";
+        else if (dealer.IsBlackjack() && !player.IsBlackjack()) outcome = "Dealer blackjack. Dealer wins.";
+        else if (p > d) outcome = "Player wins.";
+        else if (p < d) outcome = "Dealer wins.";
+        else outcome = "Push.";
 
+        statusText.text = outcome;
 
-        if (player.IsBlackjack() && dealer.IsBlackjack())
-            statusText.text = "Push: both blackjack.";
-        else if (player.IsBlackjack())
-            statusText.text = "Blackjack! Player wins.";
-        else if (dealer.IsBlackjack())
-            statusText.text = "Dealer blackjack. Dealer wins.";
-        else if (player.IsBust())
-            statusText.text = "Player busts! Dealer wins.";
-        else if (dealer.IsBust())
-            statusText.text = "Dealer busts! Player wins.";
-        else if (p > d)
-            statusText.text = "Player wins.";
-        else if (p < d)
-            statusText.text = "Dealer wins.";
-        else
-            statusText.text = "Push.";
+        // --- match scoring ---
+        if (!matchOver)
+        {
+            if (outcome.Contains("Player wins")) playerWins++;
+            else if (outcome.Contains("Dealer wins")) dealerWins++;
+            // Push: no points
 
+            UpdateScoreUI();
 
-        SetButtonsState(hit: false, stand: false);
+            if (playerWins >= targetWins || dealerWins >= targetWins)
+            {
+                matchOver = true;
+                statusText.text += $"\n\nMatch over — {(playerWins > dealerWins ? "Player" : "Dealer")} reaches {targetWins}.";
+                // lock actions until New/Reset
+                hitButton.interactable = false;
+                standButton.interactable = false;
+            }
+        }
+
+        if (playerWins >= targetWins || dealerWins >= targetWins)
+        {
+            matchOver = true;
+            statusText.text += $"\n\nMatch over — {(playerWins > dealerWins ? "Player" : "Dealer")} reaches {targetWins}.";
+            hitButton.interactable = false;
+            standButton.interactable = false;
+
+            // NEW: close after a short delay
+            StartCoroutine(CloseAfterDelay(endMatchCloseDelay));
+        }
+
+        // disable round buttons; player must click New to deal next round
+        hitButton.interactable = false;
+        standButton.interactable = false;
     }
+
 
     void UpdateUI(bool hideDealerHoleCard)
     {
@@ -261,10 +298,24 @@ public class BlackjackGame : MonoBehaviour
         }
     }
 
+    void UpdateScoreUI()
+    {
+        if (scoreText != null)
+            scoreText.text = $"Player {playerWins}  —  {dealerWins} Dealer";
+    }
+
+    IEnumerator CloseAfterDelay(float s)
+    {
+        yield return new WaitForSeconds(s);
+        OnRequestClose?.Invoke();   // popup will Hide()
+    }
+
+
+
+
 
 
 
 }
 
 
-    

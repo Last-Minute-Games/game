@@ -32,6 +32,9 @@ public class MinigameController : MonoBehaviour
     // This is now set by the Activator, but we keep it public for access.
     public Vector3 overworldExitPosition;
 
+    [Header("UI")]
+    [SerializeField] GameObject hudRoot;
+
     // References for internal logic
     private GameObject player;
     private WinConditionManager winManager;
@@ -80,6 +83,17 @@ public class MinigameController : MonoBehaviour
     /// </summary>
     public void StartSokoban()
     {
+        if (hudRoot != null)
+        {
+            CanvasGroup cg = hudRoot.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.alpha = 0f;
+                cg.interactable = false;
+                cg.blocksRaycasts = false;
+            }
+        } // hide global HUD
+
         if (player == null || sokobanRoot == null) return;
 
         // 1. Swap Player Controls: Disable Overworld, Enable Sokoban
@@ -109,12 +123,12 @@ public class MinigameController : MonoBehaviour
     /// <summary>
     /// Called by the WinConditionManager or the Quit Button.
     /// </summary>
-    /// <param name="solved">True if the player solved the puzzle, false if they quit.</param>
+    ///
     public void EndSokoban(bool solved)
     {
         if (player == null || sokobanRoot == null) return;
 
-        GameFlags.RemoveFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
+        ///GameFlags.RemoveFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
 
         FindObjectOfType<ClockTimer>().PauseTimer(false);   // Pause
       
@@ -144,6 +158,18 @@ public class MinigameController : MonoBehaviour
                 Camera.main.transform.position.z // Keep the original Z depth
             );
         }
+        if (hudRoot != null)
+        {
+            CanvasGroup cg = hudRoot.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.alpha = 1f;
+                cg.interactable = true;
+                cg.blocksRaycasts = true;
+            }
+        }  // show global HUD again
+
+        GameFlags.SetFlag("minigame.sokoban.finish");
 
         Debug.Log($"Sokoban Minigame finished. Solved: {solved}");
     }

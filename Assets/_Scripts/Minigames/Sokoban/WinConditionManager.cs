@@ -24,6 +24,8 @@ public class WinConditionManager : MonoBehaviour
     [SerializeField] float winDelaySeconds = 1.5f;
     [SerializeField] GameObject winPanel;
 
+
+
     private bool winSequenceStarted = false;
 
 

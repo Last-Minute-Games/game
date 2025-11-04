@@ -17,19 +17,25 @@ public class BlackjackPopupController : MonoBehaviour
 
     bool wasCursorVisible;
     CursorLockMode priorLockState;
+    [SerializeField] private GameObject hudGroup;
 
     void Awake()
     {
         if (quitButton != null) quitButton.onClick.AddListener(Hide);
 
         var game = window.GetComponentInChildren<BlackjackGame>();
-        if(game == null)
-            game.OnRequestClose += Hide;
+        if (game) game.OnRequestClose += Hide;
         HideImmediate(); // ensure not visible at scene start
     }
 
     public void Show()
     {
+        if (hudGroup != null)
+            hudGroup.SetActive(false);   // hide HUD
+
+        backdrop.SetActive(true);
+        window.SetActive(true);
+
         // Show UI
         if (backdrop) backdrop.SetActive(true);
         if (window) window.SetActive(true);
@@ -52,8 +58,15 @@ public class BlackjackPopupController : MonoBehaviour
     public void Hide()
     {
 
+        backdrop.SetActive(false);
+        window.SetActive(false);
+
+        if (hudGroup != null)
+            hudGroup.SetActive(true);    // show HUD again
+
         FindObjectOfType<ClockTimer>()?.PauseTimer(false);
-        GameFlags.RemoveFlag("InBlackjackMinigame");
+        GameFlags.SetFlag("minigame.blackjack.finish");
+        Debug.Log("[Blackjack] Flag set: minigame.blackjack.finish");
 
         // If BlackjackGame needs to do cleanup, you can call a public method on it here.
 
