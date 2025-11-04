@@ -62,22 +62,24 @@ public class PlayerHealthBar : HealthBarBase
 
         if (hasBlock)
         {
-            // Check if already in DefenseIdle
             AnimatorStateInfo state = _healthAnimator.GetCurrentAnimatorStateInfo(0);
 
-            if (state.IsName("DefenseIdle") || state.IsName("DefenseGain"))
+            // Only trigger if NOT already defending
+            if (!state.IsName("DefenseIdle") && !state.IsName("DefenseGain"))
             {
-                // Already in block animation cycle, just ensure HasBlock stays true
+                _healthAnimator.ResetTrigger(GainBlock); // ensure clean trigger state
                 _healthAnimator.SetBool(HasBlock, true);
-                return;
+                _healthAnimator.SetTrigger(GainBlock);
             }
-
-            // Otherwise trigger the defense gain animation
-            _healthAnimator.SetBool(HasBlock, true);
-            _healthAnimator.SetTrigger(GainBlock);
+            else
+            {
+                // Already defending — just refresh HasBlock
+                _healthAnimator.SetBool(HasBlock, true);
+            }
         }
         else
         {
+            _healthAnimator.ResetTrigger(GainBlock); // prevent re-entry to DefenseGain
             _healthAnimator.SetBool(HasBlock, false);
         }
 
