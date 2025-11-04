@@ -23,11 +23,26 @@ public class InteractionDetector : MonoBehaviour
             currentTarget = other.gameObject;
             popupImage.SetActive(true);
         }
+        if (other.CompareTag("NPC"))
+        {
+            nearInteractive = true;
+            currentTarget = other.gameObject;
+            popupImage.SetActive(true);
+        }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
         if (other.CompareTag("Interactive"))
+        {
+            if (other.gameObject == currentTarget)
+            {
+                nearInteractive = false;
+                currentTarget = null;
+                popupImage.SetActive(false);
+            }
+        }
+        if (other.CompareTag("NPC"))
         {
             if (other.gameObject == currentTarget)
             {

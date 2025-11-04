@@ -9,12 +9,12 @@ public class ScreenFader : MonoBehaviour
     public Image fadePanel;
     public float fadeDuration = 2f;
 
-    [Header("Audio")]
-    public AudioClip transitionClip;
-    [Range(0f, 1f)] public float volume = 0.5f;
+    //[Header("Audio")]
+    //public AudioClip transitionClip;
+    //[Range(0f, 1f)] public float volume = 0.5f;
 
-    private AudioSource audioSource;
-    private bool audioPlayed = false;
+    //private AudioSource audioSource;
+    private bool isTransitioning = false;
 
     private void Awake()
     {
@@ -24,15 +24,16 @@ public class ScreenFader : MonoBehaviour
             return;
         }
 
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.playOnAwake = false;
-        audioSource.clip = transitionClip;
-        audioSource.volume = volume;
+        //audioSource = gameObject.AddComponent<AudioSource>();
+        //audioSource.playOnAwake = false;
+        //audioSource.clip = transitionClip;
+        //audioSource.volume = volume;
 
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
 
-        fadePanel.color = new Color(0, 0, 0, 1f); // fully black at game start
+        // Start fully transparent
+        fadePanel.color = new Color(0, 0, 0, 0f);
     }
 
     private void OnDestroy()
@@ -42,17 +43,19 @@ public class ScreenFader : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Fade in automatically when a new scene loads
-        StartCoroutine(FadeIn());
+        // Only fade in if we just came from a transition
+        if (isTransitioning)
+        {
+            StartCoroutine(FadeIn());
+        }
     }
 
     public IEnumerator FadeOut()
     {
-        if (!audioPlayed && transitionClip != null)
-        {
-            audioSource.Play();
-            audioPlayed = true;
-        }
+        isTransitioning = true;
+
+        //if (transitionClip != null)
+        //    audioSource.Play();
 
         float t = 0f;
         Color c = fadePanel.color;
@@ -83,7 +86,7 @@ public class ScreenFader : MonoBehaviour
         }
 
         fadePanel.color = new Color(0, 0, 0, 0f);
-        audioPlayed = false;
+        isTransitioning = false;
     }
 
     public void SetPanelAlpha(float alpha)
@@ -96,12 +99,16 @@ public class ScreenFader : MonoBehaviour
         }
     }
 
+
     public IEnumerator TransitionToScene(string nextScene)
     {
         yield return StartCoroutine(FadeOut());
+
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(nextScene);
         asyncLoad.allowSceneActivation = true;
+
         while (!asyncLoad.isDone)
             yield return null;
+
     }
 }
