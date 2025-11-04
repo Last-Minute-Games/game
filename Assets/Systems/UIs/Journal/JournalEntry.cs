@@ -50,6 +50,7 @@ public class JournalEntry : MonoBehaviour
     private bool isUnlocked = false;
     private bool isProgressiveMode = false;
     private bool isInitialized = false;
+    private static bool isApplicationQuitting = false;
     
     void Awake()
     {
@@ -61,6 +62,8 @@ public class JournalEntry : MonoBehaviour
                 progressiveUpdates[i].orderIndex = i;
             }
         }
+        
+        isApplicationQuitting = false;
     }
     
     void Start()
@@ -83,11 +86,25 @@ public class JournalEntry : MonoBehaviour
         }
     }
     
+    void OnApplicationQuit()
+    {
+        isApplicationQuitting = true;
+    }
+    
     void OnDestroy()
     {
-        if (isProgressiveMode && GameFlags.Instance != null)
+        // Don't access GameFlags.Instance during scene cleanup or application quit
+        // This prevents creating a new instance during teardown
+        if (isApplicationQuitting) return;
+        
+        // Use FindObjectOfType to check if instance exists without creating it
+        if (isProgressiveMode)
         {
-            GameFlags.Instance.OnFlagChanged -= OnFlagChanged;
+            var gameFlags = FindObjectOfType<GameFlags>();
+            if (gameFlags != null)
+            {
+                gameFlags.OnFlagChanged -= OnFlagChanged;
+            }
         }
     }
     

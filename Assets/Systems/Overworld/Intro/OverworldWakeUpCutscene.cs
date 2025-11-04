@@ -282,6 +282,16 @@ namespace Systems.Overworld.Intro
         public static void TriggerWakeUpCutscene()
         {
             Debug.Log("[OverworldWakeUpCutscene] TriggerWakeUpCutscene() called");
+            
+            // Clear the journal tutorial flag so it shows again in Overworld
+            // The TutorialScene showed the journal as part of the tutorial, but in Overworld
+            // the player needs to learn to open it themselves
+            if (GameFlags.HasFlag("journal.tutorial.shown"))
+            {
+                GameFlags.RemoveFlag("journal.tutorial.shown");
+                Debug.Log("[OverworldWakeUpCutscene] Cleared 'journal.tutorial.shown' flag for Overworld");
+            }
+            
             UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
             UnityEngine.PlayerPrefs.Save();
             Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene")}");
