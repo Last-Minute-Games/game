@@ -8,7 +8,7 @@ using UnityEditor;
 
 // Removed RequireComponent to allow flexible setup
 // Runtime check will warn if collider is missing
-public class InteractiveItem : MonoBehaviour
+public class InteractiveItem : MonoBehaviour, IInteractable
 {
     [Header("Dialog Settings")]
     [SerializeField] private DialogBehaviour dialogBehaviour;
@@ -66,7 +66,7 @@ public class InteractiveItem : MonoBehaviour
         }
     }
 
-    void Interact()
+    public void Interact()
     {
         if (!dialogBehaviour)
         {
