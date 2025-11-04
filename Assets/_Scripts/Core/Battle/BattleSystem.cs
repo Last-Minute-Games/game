@@ -198,4 +198,16 @@ public class BattleSystem : MonoBehaviour
 
         isProcessingTurn = false;
     }
+
+    // Add inside BattleSystem class, near bottom:
+    public IEnumerator HandleBattleFinished(bool playerWon)
+    {
+        Debug.Log(playerWon ? "🏆 Player Wins!" : "💀 Player Loses!");
+        yield return new WaitForSeconds(1f);
+
+        if (screenFader != null)
+            yield return StartCoroutine(screenFader.TransitionToScene("Overworld"));
+        else
+            SceneManager.LoadScene("Overworld");
+    }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class BattlefieldLayout : MonoBehaviour
@@ -16,10 +17,10 @@ public class BattlefieldLayout : MonoBehaviour
     [SerializeField] private float rearOffsetY = 0.5f;
     [SerializeField] private float rearScale = 0.8f;
 
-    [Header("Debug / Rounds")]
+    [Header("Round Control")]
     [SerializeField] private bool autoStartNextRound = true;
-
     private int currentRound = 0;
+    private bool isTransitioning = false;
 
     // Define your rounds here by enemyID
     private readonly List<List<string>> roundEnemyIDs = new()
@@ -32,55 +33,94 @@ public class BattlefieldLayout : MonoBehaviour
     private void Start()
     {
         SpawnPlayer();
-        StartNextRound();
+        StartFirstRound();
     }
 
     private void Update()
     {
-        // Simple round progression (auto)
-        if (autoStartNextRound && activeEnemies.Count > 0)
-        {
-            bool allDead = true;
-            foreach (Enemy e in activeEnemies)
-            {
-                if (e != null && !e.IsDead)
-                {
-                    allDead = false;
-                    break;
-                }
-            }
+        if (!autoStartNextRound || isTransitioning || activeEnemies.Count == 0)
+            return;
 
-            if (allDead)
+        bool allDead = true;
+        foreach (Enemy e in activeEnemies)
+        {
+            if (e != null && !e.IsDead)
             {
-                StartNextRound();
+                allDead = false;
+                break;
             }
+        }
+
+        if (allDead)
+        {
+            StartCoroutine(HandleNextRoundTransition());
         }
     }
 
-    public void StartNextRound()
+    // --------------------------
+    // ROUND MANAGEMENT
+    // --------------------------
+
+    private void StartFirstRound()
     {
+        ClearEnemies();
+        SpawnEnemiesByIDs(roundEnemyIDs[0]);
+        currentRound = 1;
+        // ❌ Removed redundant hand spawn — BattleSystem.Init handles first hand
+    }
+
+    private IEnumerator HandleNextRoundTransition()
+    {
+        if (isTransitioning) yield break;
+        isTransitioning = true;
+
+        var battleSystem = FindFirstObjectByType<BattleSystem>();
+        var ui = FindFirstObjectByType<RoundTransitionUI>();
+
+        // 🔹 Clear hand BEFORE transition so cards vanish
+        if (battleSystem != null)
+            yield return battleSystem.StartCoroutine("ClearHand");  // NEW
+
+        // --- WIN CONDITION ---
         if (currentRound >= roundEnemyIDs.Count)
         {
-            Debug.Log("✅ All rounds complete!");
-            return;
+            Debug.Log("✅ All rounds complete! Player wins!");
+            if (battleSystem != null)
+                battleSystem.StartCoroutine("HandleBattleFinished", true); // NEW helper for win
+            yield break;
         }
 
-        ClearEnemies();
-        SpawnEnemiesByIDs(roundEnemyIDs[currentRound]);
-        currentRound++;
+        int roundNum = currentRound + 1;
+
+        if (ui != null)
+        {
+            yield return ui.FadeIn();
+            yield return ui.ShowRoundText(roundNum);
+
+            ClearEnemies();
+            SpawnEnemiesByIDs(roundEnemyIDs[currentRound]);
+            currentRound++;
+
+            yield return new WaitForSeconds(0.25f);
+            yield return ui.FadeOut();
+        }
+
+        // Redraw cards after fade out
+        if (battleSystem != null)
+            yield return battleSystem.StartCoroutine("RefreshPlayerHand");
+
+        isTransitioning = false;
     }
+
+    // --------------------------
+    // SPAWNING LOGIC
+    // --------------------------
 
     private void SpawnEnemiesByIDs(List<string> enemyIDs)
     {
-        if (enemyPrefab == null)
+        if (enemyPrefab == null || enemyLibrary == null)
         {
-            Debug.LogError("❌ BattlefieldLayout: Missing Enemy Prefab!");
-            return;
-        }
-
-        if (enemyLibrary == null)
-        {
-            Debug.LogError("❌ BattlefieldLayout: Missing EnemyLibrary reference!");
+            Debug.LogError("❌ BattlefieldLayout: Missing Enemy Prefab or Library!");
             return;
         }
 
@@ -100,7 +140,6 @@ public class BattlefieldLayout : MonoBehaviour
             Vector3 spawnPos = GetSpawnPosition(i, enemyCount, center);
             GameObject enemyObj = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
             Enemy newEnemy = enemyObj.GetComponent<Enemy>();
-
             if (newEnemy == null)
             {
                 Debug.LogError("❌ Prefab is missing Enemy component!");
@@ -109,7 +148,6 @@ public class BattlefieldLayout : MonoBehaviour
 
             newEnemy.InitializeFromData(data);
 
-            // Perspective scaling (rear)
             if (enemyCount == 3 && i == 2)
             {
                 enemyObj.transform.localScale *= rearScale;
@@ -125,10 +163,7 @@ public class BattlefieldLayout : MonoBehaviour
     private void ClearEnemies()
     {
         foreach (Enemy e in activeEnemies)
-        {
-            if (e != null)
-                Destroy(e.gameObject);
-        }
+            if (e != null) Destroy(e.gameObject);
         activeEnemies.Clear();
     }
 
@@ -162,21 +197,16 @@ public class BattlefieldLayout : MonoBehaviour
     {
         if (total == 1)
             return center;
-
         if (total == 2)
-        {
             return index == 0
                 ? center + Vector3.left * horizontalSpacing / 2f
                 : center + Vector3.right * horizontalSpacing / 2f;
-        }
-
         if (total == 3)
         {
             if (index == 0) return center + Vector3.left * horizontalSpacing;
             if (index == 1) return center + Vector3.right * horizontalSpacing;
             return center + Vector3.back * 0.1f;
         }
-
         return center + Vector3.right * (index - total / 2f) * horizontalSpacing;
     }
 
