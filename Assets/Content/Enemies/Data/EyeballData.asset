@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b66bff5a3b5764846ab83be0f9d44325, type: 3}
+  m_Name: EyeballData
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  baseHealth: 100
+  baseShield: 0
+  basePowerScale: 1
+  usableCards: []
+  enemyName: Eyeball
+  description: Big boy eyeball. Yum.
+  enemyFXData: {fileID: 11400000, guid: ff002ba8e03470252a51b7a37fcb1ba9, type: 2}
+  minScaleMultiplier: 0.5
+  maxScaleMultiplier: 2
+  isVariableEnemy: 1
+  weakPrefix: Weak
+  strongPrefix: Bulky
+  weakOptions:
+    sizeMultiplier: 0.8
+    tintColor: {r: 0, g: 0, b: 0, a: 0}
+  strongOptions:
+    sizeMultiplier: 1.2
+    tintColor: {r: 0, g: 0, b: 0, a: 0}
+  uniqueID: 1

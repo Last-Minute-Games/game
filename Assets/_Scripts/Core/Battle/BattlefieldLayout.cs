@@ -102,8 +102,8 @@ public class BattlefieldLayout : MonoBehaviour
         if (total == 2)
         {
             return index == 0
-                ? center + Vector3.left * horizontalSpacing / 2f
-                : center + Vector3.right * horizontalSpacing / 2f;
+                ? center + Vector3.left * horizontalSpacing / 1.5f
+                : center + Vector3.right * horizontalSpacing / 1.5f;
         }
 
         if (total == 3)
