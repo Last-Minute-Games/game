@@ -23,6 +23,11 @@ public class BattleSystem : MonoBehaviour
     private bool playerTurn = true;
     private bool isProcessingTurn = false;
 
+    public List<Enemy> GetEnemies()
+    {
+        return enemies;
+    }
+
     private void Start()
     {
         StartCoroutine(InitializeBattle());
@@ -34,12 +39,17 @@ public class BattleSystem : MonoBehaviour
     }
 
     // -------------------------- INITIALIZATION --------------------------
+    public void UpdateEnemies()
+    {
+        enemies.AddRange(FindObjectsOfType<Enemy>());
+        enemies.RemoveAll(e => e == null || e.IsDead);
+    }
+    
     private IEnumerator InitializeBattle()
     {
         yield return null;
 
-        enemies.AddRange(FindObjectsOfType<Enemy>());
-        enemies.RemoveAll(e => e == null || e.IsDead);
+        UpdateEnemies();
 
         if (player == null)
         {
