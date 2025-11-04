@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class JournalUI_Named : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class JournalUI_Named : MonoBehaviour
 
     GameObject[] allPages;
     private EnvironmentSoundHandler _environmentSoundHandler;
+    private bool isTutorialActive = false;
 
     void Awake()
     {
@@ -53,8 +55,6 @@ public class JournalUI_Named : MonoBehaviour
             }
         }
 
-        SetOnly(CharactersPage);
-
         // Find the EnvironmentSoundHandler
         _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler")?.GetComponent<EnvironmentSoundHandler>();
         if (_environmentSoundHandler == null)
@@ -74,26 +74,60 @@ public class JournalUI_Named : MonoBehaviour
         {
             ShowTutorial();
         }
+        else
+        {
+            // If tutorial already shown, display normal journal
+            SetOnly(CharactersPage);
+        }
+    }
+
+    void Update()
+    {
+        // If tutorial is active, check for any click to dismiss it
+        if (isTutorialActive && Input.GetMouseButtonDown(0))
+        {
+            // Check if we clicked on UI (not clicking through to the game world)
+            if (EventSystem.current != null)
+            {
+                CloseTutorial();
+            }
+        }
     }
 
     void ShowTutorial()
     {
         Debug.Log("[JournalUI_Named] Showing journal tutorial for first time");
-        tutorialOverlay.SetActive(true);
         
-        // Set the flag so it never shows again
-        GameFlags.SetFlag(tutorialShownFlagName);
+        // Hide all pages
+        foreach (var p in allPages)
+        {
+            if (p) p.SetActive(false);
+        }
+        
+        // Show tutorial
+        tutorialOverlay.SetActive(true);
+        isTutorialActive = true;
+        
+        // DON'T set the flag here - wait until the player dismisses it
     }
 
     /// <summary>
     /// Call this method from a button on the tutorial overlay to close it
+    /// Or it will be called automatically when clicking anywhere on the journal
     /// </summary>
     public void CloseTutorial()
     {
-        if (tutorialOverlay != null)
+        if (tutorialOverlay != null && isTutorialActive)
         {
             tutorialOverlay.SetActive(false);
+            isTutorialActive = false;
             Debug.Log("[JournalUI_Named] Tutorial closed");
+            
+            // Set the flag NOW when the player dismisses it
+            GameFlags.SetFlag(tutorialShownFlagName);
+            
+            // Show the default page after tutorial closes
+            SetOnly(CharactersPage);
         }
     }
 
@@ -106,6 +140,13 @@ public class JournalUI_Named : MonoBehaviour
 
     void SetOnlyWithSound(GameObject target)
     {
+        // Don't allow page switching while tutorial is active
+        if (isTutorialActive)
+        {
+            CloseTutorial();
+            return;
+        }
+        
         // Play journal sound when switching tabs
         PlayTabSound();
         SetOnly(target);
