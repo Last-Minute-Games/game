@@ -790,11 +790,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6848201fe0aa286759acdc994d9d806d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnTimer
-  timerText: {fileID: 1368679625}
-  turnDuration: 8
+  timerText: {fileID: 0}
+  turnDuration: 20
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   warningColor: {r: 1, g: 0, b: 0, a: 1}
-  warningThreshold: 0.358
+  warningThreshold: 0.25
 --- !u!1 &345599675
 GameObject:
   m_ObjectHideFlags: 0
@@ -2159,7 +2159,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CheatHealthUI
   healthInput: {fileID: 1252396781}
   applyButton: {fileID: 470079450}
-  battleSystem: {fileID: 0}
+  battleSystem: {fileID: 30278261}
 --- !u!1 &874898181
 GameObject:
   m_ObjectHideFlags: 0
@@ -3666,9 +3666,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c5a1925c77c110b6a4e695471ea8ac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CheatHealthUI
-  healthInput: {fileID: 1252396781}
-  applyButton: {fileID: 470079450}
-  battleSystem: {fileID: 30278261}
+  healthInput: {fileID: 0}
+  applyButton: {fileID: 0}
+  battleSystem: {fileID: 0}
 --- !u!1 &1634529924
 GameObject:
   m_ObjectHideFlags: 0
@@ -3851,8 +3851,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoundTransitionUI
   background: {fileID: 31539467}
   roundText: {fileID: 520933692}
-  fadeDuration: 1
-  holdDuration: 2
+  fadeDuration: 0.75
+  holdDuration: 1
 --- !u!1 &1741364520
 GameObject:
   m_ObjectHideFlags: 0
