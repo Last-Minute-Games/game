@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f403d73173534e4980b527d11e2ed7d, type: 3}
+  m_Name: Jerry Enemy
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyID: jerry
+  enemyName: Jerry The Rat
+  portrait: {fileID: -4672949000371123663, guid: 65898c22f7aa26b4bac21d6f2f282922, type: 3}
+  minHealth: 100
+  maxHealthRange: 150
+  globalCardMultiplier: 1.32
+  animationSet: {fileID: 11400000, guid: 32016cfa637ec864a8e05eab666be4ff, type: 2}
+  availableCards:
+  - card: {fileID: 11400000, guid: 5a4aa64c185bb2565a401248dc27110b, type: 2}
+    baseWeight: 0.784
+    prioritizeWhenLowHP: 0
+  - card: {fileID: 11400000, guid: d4ce8458f91f1d870aacab7642b5b019, type: 2}
+    baseWeight: 0.323
+    prioritizeWhenLowHP: 1
+  - card: {fileID: 11400000, guid: bd4f1a01d18e57259a2b84444be212c7, type: 2}
+    baseWeight: 0.347
+    prioritizeWhenLowHP: 1
+  - card: {fileID: 11400000, guid: f13555728fac1e2d991332ea81eaf4f4, type: 2}
+    baseWeight: 0.198
+    prioritizeWhenLowHP: 0
+  lowHPWeightMultiplier: 1.5

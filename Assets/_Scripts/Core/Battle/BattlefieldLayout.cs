@@ -26,8 +26,8 @@ public class BattlefieldLayout : MonoBehaviour
     private readonly List<List<string>> roundEnemyIDs = new()
     {
         new() { "sexy_eyeball" },
-        new() { "sexy_eyeball", "sexy_eyeball" },
-        new() { "sexy_eyeball", "sexy_eyeball", "sexy_eyeball" },
+        new() { "bat", "sexy_eyeball", "jerry" },
+        new() { "bat", "gargoyle", "jerry" },
     };
 
     private void Start()
@@ -106,6 +106,8 @@ public class BattlefieldLayout : MonoBehaviour
             ClearEnemies();
             SpawnEnemiesByIDs(roundEnemyIDs[currentRound]);
             currentRound++;
+
+            battleSystem.playerTurn = true;
 
             if (battleSystem != null)
             {

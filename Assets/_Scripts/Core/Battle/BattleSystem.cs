@@ -20,7 +20,7 @@ public class BattleSystem : MonoBehaviour
 
     private Player player;
     private readonly List<Enemy> enemies = new();
-    private bool playerTurn = true;
+    public bool playerTurn = true;
     private bool isProcessingTurn = false;
 
     public List<Enemy> GetEnemies()
