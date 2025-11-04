@@ -209,7 +209,7 @@ public class Startscreen : MonoBehaviour
 
         // 4. Scroll the credits completely off-screen
         // Combine inspector scrollSpeed and subtract a small offset so it finishes a bit earlier
-        float actualScrollDuration = Mathf.Max(0.05f, (creditsScrollDuration / scrollSpeed) - 8f);
+        float actualScrollDuration = creditsScrollDuration / scrollSpeed;
         float timer = 0f;
         
         // Calculate end position to be off the top of the screen
@@ -261,7 +261,7 @@ public class Startscreen : MonoBehaviour
         if (creditText) creditText.anchoredPosition = textEndPos;
 
         // 5. Hold at the end
-        yield return new WaitForSeconds(creditsHoldTime);
+        //yield return new WaitForSeconds(creditsHoldTime);
 
         // 6. Fade out the credits
         yield return StartCoroutine(FadeCoroutine(creditsCanvasGroup, 1f, 0f, fadeDuration));
