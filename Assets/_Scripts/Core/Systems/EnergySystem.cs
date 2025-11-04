@@ -36,16 +36,17 @@ public class EnergySystem : MonoBehaviour
             currentEnergy -= amount;
             AnimateUI();
             UpdateUI();
-            
-            if (currentEnergy == 0)
+
+            if (currentEnergy == 0 && _battleSystem != null)
             {
-                _battleSystem.EndPlayerTurn();
+                Debug.Log("🔋 Energy reached 0 — requesting turn end.");
+                _battleSystem.RequestTurnEnd("Energy");
             }
-            
+
             return true;
         }
 
-        Debug.Log("Not enough energy!");
+        Debug.Log("❌ Not enough energy!");
         return false;
     }
 

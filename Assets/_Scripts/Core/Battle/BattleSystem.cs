@@ -257,16 +257,15 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
-    public void RequestTurnEndFromTimer()
+    public void RequestTurnEnd(string reason = "Unknown")
     {
-        // Prevent timer from ending mid-transition or double calls
         if (!playerTurn || isProcessingTurn)
         {
-            Debug.Log("⚠️ Timer requested end but turn is already processing.");
+            Debug.Log($"⚠️ Turn end requested ({reason}) but system is busy or not player turn.");
             return;
         }
 
-        Debug.Log("⏰ Timer triggered EndPlayerTurn safely.");
+        Debug.Log($"🔸 Turn end requested safely by {reason}.");
         EndPlayerTurn();
     }
 }

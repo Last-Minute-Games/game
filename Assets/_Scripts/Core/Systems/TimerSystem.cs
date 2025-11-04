@@ -112,18 +112,13 @@ public class TurnTimer : MonoBehaviour
     private void ForceEndTurn()
     {
         if (!isRunning) return;
-
         isRunning = false;
+
         Debug.Log("⏰ Timer expired — requesting turn end.");
 
         if (battleSystem != null)
-        {
-            // Call via coroutine-safe wrapper to ensure it triggers
-            battleSystem.RequestTurnEndFromTimer();
-        }
+            battleSystem.RequestTurnEnd("Timer");
         else
-        {
             Debug.LogWarning("⚠️ No BattleSystem found for timer end.");
-        }
     }
 }
