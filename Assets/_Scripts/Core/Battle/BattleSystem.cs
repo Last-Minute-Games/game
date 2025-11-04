@@ -23,8 +23,11 @@ public class BattleSystem : MonoBehaviour
     private bool playerTurn = true;
     private bool isProcessingTurn = false;
 
+    private TurnTimer turnTimer; // timer
+
     private void Start()
     {
+        turnTimer = FindFirstObjectByType<TurnTimer>();
         StartCoroutine(InitializeBattle());
     }
 
@@ -146,6 +149,8 @@ public class BattleSystem : MonoBehaviour
         playerTurn = true;
         player.RefillEnergy();
 
+        turnTimer?.StartTimer();   // start countdown
+
         Debug.Log("🔹 Player’s turn started!");
 
         enemies.RemoveAll(e => e == null || e.IsDead);
@@ -157,6 +162,7 @@ public class BattleSystem : MonoBehaviour
     {
         if (!playerTurn || isProcessingTurn) return;
 
+        turnTimer?.StopTimer();
         Debug.Log("🔸 Player turn ended → Enemy turn begins...");
         playerTurn = false;
 
