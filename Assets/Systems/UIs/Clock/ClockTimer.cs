@@ -46,8 +46,28 @@ public class ClockTimer : MonoBehaviour
         clockImage.sprite = clockFrames[0];
 
         screenFader.SetPanelAlpha(0f);
+        
+        // Setup end message text
         if (endMessageText != null)
+        {
             endMessageText.alpha = 0f;
+            endMessageText.text = "YOU DIED!";
+            endMessageText.alignment = TMPro.TextAlignmentOptions.Center;
+            endMessageText.fontSize = 72; // Large dramatic text
+            endMessageText.color = Color.red; // Red for dramatic effect
+            
+            // Ensure the text is positioned correctly in the center
+            RectTransform textRect = endMessageText.GetComponent<RectTransform>();
+            if (textRect != null)
+            {
+                textRect.anchorMin = new Vector2(0, 0);
+                textRect.anchorMax = new Vector2(1, 1);
+                textRect.offsetMin = Vector2.zero;
+                textRect.offsetMax = Vector2.zero;
+            }
+            
+            endMessageText.gameObject.SetActive(false);
+        }
 
         if (warningAudioSource == null)
         {
@@ -183,47 +203,92 @@ public class ClockTimer : MonoBehaviour
 
     private IEnumerator FadeMessageThenTransition()
     {
-        // Smoothly fade overlay fully
-        if (string.IsNullOrEmpty(nextSceneName) && screenFader != null)
-            yield return StartCoroutine(screenFader.FadeOut());
+        // Keep the warning sound playing (don't stop it yet)
+        // It will continue until the new scene loads
 
+        // First, do the eyes closing effect if split panels are available
+        if (screenFader != null && screenFader.topPanel != null && screenFader.bottomPanel != null)
+        {
+            yield return StartCoroutine(screenFader.EyesClosingEffect());
+        }
+        else
+        {
+            // Fallback to regular fade if no split panels
+            if (screenFader != null)
+                yield return StartCoroutine(screenFader.FadeOut());
+        }
+
+        // Now show "YOU DIED!" message
+        if (endMessageText != null)
+        {
+            endMessageText.gameObject.SetActive(true);
+            
+            // Force the text properties again to ensure they're applied
+            endMessageText.text = "YOU DIED!";
+            endMessageText.color = Color.red;
+            endMessageText.fontSize = 72;
+            endMessageText.alignment = TMPro.TextAlignmentOptions.Center;
+            
+            // Bring to front (set high sorting order)
+            Canvas textCanvas = endMessageText.GetComponent<Canvas>();
+            if (textCanvas == null)
+            {
+                textCanvas = endMessageText.gameObject.AddComponent<Canvas>();
+                textCanvas.overrideSorting = true;
+                textCanvas.sortingOrder = 1000; // Very high to be on top
+                
+                // Add GraphicRaycaster if needed
+                if (endMessageText.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+                {
+                    endMessageText.gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+                }
+            }
+            else
+            {
+                textCanvas.overrideSorting = true;
+                textCanvas.sortingOrder = 1000;
+            }
+            
+            endMessageText.alpha = 0f;
+
+            // Fade in message
+            float elapsed = 0f;
+            while (elapsed < messageDisplayTime)
+            {
+                elapsed += Time.deltaTime;
+                endMessageText.alpha = Mathf.Clamp01(elapsed / messageDisplayTime);
+                yield return null;
+            }
+
+            endMessageText.alpha = 1f;
+
+            // Hold the message
+            yield return new WaitForSeconds(1.5f);
+
+            // Fade out text
+            elapsed = 0f;
+            float fadeOutDuration = 1.5f;
+            while (elapsed < fadeOutDuration)
+            {
+                elapsed += Time.deltaTime;
+                endMessageText.alpha = Mathf.Clamp01(1f - (elapsed / fadeOutDuration));
+                yield return null;
+            }
+            
+            endMessageText.alpha = 0f;
+            endMessageText.gameObject.SetActive(false);
+        }
+
+        // Now stop the warning sound before transitioning
         if (warningAudioSource != null && warningAudioSource.isPlaying)
             warningAudioSource.Stop();
 
-
-        // Now show message text
-        if (endMessageText != null)
-            {
-                endMessageText.gameObject.SetActive(true);
-                endMessageText.alpha = 0f;
-
-                float elapsed = 0f;
-                while (elapsed < messageDisplayTime)
-                {
-                    elapsed += Time.deltaTime;
-                    endMessageText.alpha = Mathf.Clamp01(elapsed / messageDisplayTime);
-                    yield return null;
-                }
-
-                // Optional hold
-                yield return new WaitForSeconds(0.5f);
-
-                // Fade out text
-                elapsed = 0f;
-                float fadeOutDuration = 1.5f;
-                while (elapsed < fadeOutDuration)
-                {
-                    elapsed += Time.deltaTime;
-                    endMessageText.alpha = Mathf.Clamp01(1f - (elapsed / fadeOutDuration));
-
-                    yield return null;
-                }
-        }
-
-        // Transition scene
-        if (!string.IsNullOrEmpty(nextSceneName) && screenFader != null)
+        // Transition to the next scene - KEEP PANELS CLOSED
+        if (!string.IsNullOrEmpty(nextSceneName))
         {
-            yield return StartCoroutine(screenFader.TransitionToScene(nextSceneName));
+            // Tell ScreenFader to keep panels closed during transition
+            screenFader.shouldOpenEyesOnSceneLoad = true;
+            yield return StartCoroutine(screenFader.TransitionToSceneKeepPanelsClosed(nextSceneName));
         }
     }
 

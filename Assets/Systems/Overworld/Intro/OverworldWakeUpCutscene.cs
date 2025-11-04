@@ -80,15 +80,24 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(1.5f);
             
-            // Fade from black (just like BedIntroCutscene)
-            Debug.Log("[OverworldWakeUpCutscene] Starting fade out");
-            fadeCanvasGroup.DOFade(0f, 3f).SetEase(Ease.InOutQuad).OnComplete(() =>
+            // Use ScreenFader's eyes opening effect instead of regular fade
+            Debug.Log("[OverworldWakeUpCutscene] Opening eyes (using ScreenFader)");
+            ScreenFader screenFader = FindFirstObjectByType<ScreenFader>();
+            if (screenFader != null)
             {
-                fadeCanvasGroup.blocksRaycasts = false;
-                Debug.Log("[OverworldWakeUpCutscene] Fade complete");
-            });
-            
-            yield return new WaitForSeconds(3.5f);
+                yield return StartCoroutine(screenFader.EyesOpeningEffect());
+            }
+            else
+            {
+                // Fallback to DOTween fade if ScreenFader is not found
+                Debug.LogWarning("[OverworldWakeUpCutscene] ScreenFader not found, using fallback fade");
+                fadeCanvasGroup.DOFade(0f, 3f).SetEase(Ease.InOutQuad).OnComplete(() =>
+                {
+                    fadeCanvasGroup.blocksRaycasts = false;
+                    Debug.Log("[OverworldWakeUpCutscene] Fade complete");
+                });
+                yield return new WaitForSeconds(3.5f);
+            }
             
             // Change sprite to awake
             Debug.Log("[OverworldWakeUpCutscene] Changing sprite to awake");
@@ -267,11 +276,28 @@ namespace Systems.Overworld.Intro
             
             Debug.Log("[OverworldWakeUpCutscene] Setting up cutscene...");
             
-            // Set fade canvas to black for cutscene start
-            if (fadeCanvasGroup != null)
+            // Set up ScreenFader with eyes closed at start
+            ScreenFader screenFader = FindFirstObjectByType<ScreenFader>();
+            if (screenFader != null && screenFader.topPanel != null && screenFader.bottomPanel != null)
             {
-                fadeCanvasGroup.alpha = 1f; // Start opaque (black screen)
-                Debug.Log("[OverworldWakeUpCutscene] Fade canvas set to black");
+                Debug.Log("[OverworldWakeUpCutscene] Setting up eyes closed position");
+                // Position the panels to cover the screen (eyes closed)
+                screenFader.topPanel.anchoredPosition = Vector2.zero;
+                screenFader.bottomPanel.anchoredPosition = Vector2.zero;
+                // Make sure fade canvas is hidden
+                if (fadeCanvasGroup != null)
+                {
+                    fadeCanvasGroup.alpha = 0f;
+                }
+            }
+            else
+            {
+                // Fallback: use fade canvas if ScreenFader panels not available
+                if (fadeCanvasGroup != null)
+                {
+                    fadeCanvasGroup.alpha = 1f; // Start opaque (black screen)
+                    Debug.Log("[OverworldWakeUpCutscene] Fade canvas set to black (fallback)");
+                }
             }
             
             Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
@@ -282,6 +308,16 @@ namespace Systems.Overworld.Intro
         public static void TriggerWakeUpCutscene()
         {
             Debug.Log("[OverworldWakeUpCutscene] TriggerWakeUpCutscene() called");
+            
+            // Clear the journal tutorial flag so it shows again in Overworld
+            // The TutorialScene showed the journal as part of the tutorial, but in Overworld
+            // the player needs to learn to open it themselves
+            if (GameFlags.HasFlag("journal.tutorial.shown"))
+            {
+                GameFlags.RemoveFlag("journal.tutorial.shown");
+                Debug.Log("[OverworldWakeUpCutscene] Cleared 'journal.tutorial.shown' flag for Overworld");
+            }
+            
             UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
             UnityEngine.PlayerPrefs.Save();
             Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene")}");
