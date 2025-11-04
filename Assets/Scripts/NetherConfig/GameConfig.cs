@@ -25,7 +25,7 @@ public class GameConfig : ScriptableObject
     public List<CardDrawEntry> defaultCards = new List<CardDrawEntry>();
 
     [Tooltip("List of guaranteed pulled cards every turn (always drawn before random cards).")]
-    public List<CardDrawEntry> guaranteedCards = new List<CardDrawEntry>();
+    public List<CardData> guaranteedCards = new List<CardData>();
 
     [Header("Battle Settings")]
     [Tooltip("Duration (in seconds) for each turn before auto-advance.")]
