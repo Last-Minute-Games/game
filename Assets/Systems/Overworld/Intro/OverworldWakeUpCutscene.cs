@@ -83,7 +83,7 @@ namespace Systems.Overworld.Intro
             // Use ScreenFader's eyes opening effect instead of regular fade
             Debug.Log("[OverworldWakeUpCutscene] Opening eyes (using ScreenFader)");
             ScreenFader screenFader = FindFirstObjectByType<ScreenFader>();
-            if (screenFader != null)
+            if (screenFader != null)    
             {
                 yield return StartCoroutine(screenFader.EyesOpeningEffect());
             }
