@@ -53,6 +53,7 @@ public class BlackjackPopupController : MonoBehaviour
     {
 
         FindObjectOfType<ClockTimer>()?.PauseTimer(false);
+        GameFlags.RemoveFlag("InBlackjackMinigame");
 
         // If BlackjackGame needs to do cleanup, you can call a public method on it here.
 

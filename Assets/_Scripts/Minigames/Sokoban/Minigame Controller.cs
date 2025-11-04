@@ -114,7 +114,7 @@ public class MinigameController : MonoBehaviour
     {
         if (player == null || sokobanRoot == null) return;
 
-        //GameFlags.ClearFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
+        GameFlags.RemoveFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
 
         FindObjectOfType<ClockTimer>().PauseTimer(false);   // Pause
       
@@ -163,6 +163,9 @@ public class MinigameController : MonoBehaviour
 
         // 2. Reset the goal counter on the WinConditionManager
         winManager?.ForceResetGoals();
+
+        foreach (Goal g in FindObjectsOfType<Goal>())
+            g.ResetVisual();   // calls UpdateVisual(false)
 
         Debug.Log("Puzzle reset complete.");
     }

@@ -61,7 +61,7 @@ public class SokobanActivator : MonoBehaviour
 
         //clock
 
-        //GameFlags.SetFlag("InMinigame");//somehting about line 77 in GAmeFlags.cs file
+        GameFlags.SetFlag("InMinigame");//somehting about line 77 in GAmeFlags.cs file
 
         FindObjectOfType<ClockTimer>().PauseTimer(true);   // Pause
 

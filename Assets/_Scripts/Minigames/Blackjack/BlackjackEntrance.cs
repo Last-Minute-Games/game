@@ -31,6 +31,7 @@ public class BlackjackEntrance : MonoBehaviour
         if (distance <= interactDistance && Input.GetKeyDown(KeyCode.E))
         {
             FindObjectOfType<ClockTimer>().PauseTimer(true);   // Pause
+            GameFlags.SetFlag("InBlackjackMinigame");
 
             popup.Show();
         }
