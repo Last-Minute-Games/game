@@ -6,17 +6,16 @@ public enum TargetRule // do not change target rules specifically
     AllEnemies
 }
 
-public enum OperationType // ts mainly dealt thru feedbackmanager and datainteractionhelper
+public enum OperationType // player and enemy manager must define handling all op types
 {
-    None, 
-    DamageHealth,
-    HealHealth,
-    MultiplyPowerScale,
-    DamageShield,
+    None,
+    Damage, 
     AddShield,
-    AddEnergy,
+    Heal,
+    EndTurn,
     ShuffleDeck,
-    EndTurn
+    MultiplyPowerScale,
+    AddEnergy
 }
 
 public enum TimeUnit
