@@ -53,6 +53,22 @@ public class Player : CharacterBase
         {
             currentEnergy = EnergySystem.Instance.currentEnergy;
             Debug.Log($"{characterName} used {amount} energy. Remaining: {currentEnergy}");
+
+            // 🔹 NEW: Automatically end the turn if energy fully depleted
+            if (currentEnergy <= 0)
+            {
+                BattleSystem battleSystem = FindFirstObjectByType<BattleSystem>();
+                if (battleSystem != null)
+                {
+                    Debug.Log("⚡ Energy depleted → automatically ending turn.");
+                    battleSystem.EndPlayerTurn();
+                }
+                else
+                {
+                    Debug.LogWarning("⚠️ Player: Could not find BattleSystem to end turn automatically!");
+                }
+            }
+
             return true;
         }
 
