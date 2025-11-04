@@ -191,4 +191,16 @@ public class HandView : MonoBehaviour
         // wait a short bit for animations
         yield return new WaitForSeconds(0.2f);
     }
+    
+    public bool TryGetBaseRotation(CardView card, out Quaternion rot)
+    {
+        if (cards.Contains(card))
+        {
+            float normalized = cards.Count > 1 ? (float)cards.IndexOf(card) / (cards.Count - 1) : 0.5f;
+            rot = Quaternion.Euler(0, 0, (normalized - 0.5f) * -30f);
+            return true;
+        }
+        rot = Quaternion.identity;
+        return false;
+    }
 }
