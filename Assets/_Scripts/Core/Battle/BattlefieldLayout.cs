@@ -207,17 +207,12 @@ public class BattlefieldLayout : MonoBehaviour
     {
         if (total == 1)
             return center;
+
         if (total == 2)
             return index == 0
-<<<<<<< HEAD
                 ? center + Vector3.left * horizontalSpacing / 2f
                 : center + Vector3.right * horizontalSpacing / 2f;
-=======
-                ? center + Vector3.left * horizontalSpacing / 1f
-                : center + Vector3.right * horizontalSpacing / 1f;
-        }
 
->>>>>>> c7a0176e45645a8324316d01ea3c03d069e75f94
         if (total == 3)
         {
             if (index == 0) return center + Vector3.left * horizontalSpacing;
