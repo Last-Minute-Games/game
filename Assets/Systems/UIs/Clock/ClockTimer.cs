@@ -24,6 +24,15 @@ public class ClockTimer : MonoBehaviour
     private bool hasEnded = false;
     private bool isPaused = false;
     private int lastWholeSecond = -1;
+    public static bool IsTimeEnded { get; private set; } = false;
+
+    [Header("Audio Warning")]
+    public AudioSource warningAudioSource;
+    public AudioClip warningClip;
+    [Range(0f, 1f)] public float warningVolume = 0.7f;
+    public float warningThreshold = 10f; // time before end to start sound
+    private bool warningPlayed = false;
+
 
     void Start()
     {
@@ -32,13 +41,20 @@ public class ClockTimer : MonoBehaviour
             Debug.LogError("[ClockTimer] Missing references!");
             return;
         }
-
+        warningPlayed = false;
         frameCount = clockFrames.Length;
         clockImage.sprite = clockFrames[0];
 
         screenFader.SetPanelAlpha(0f);
         if (endMessageText != null)
             endMessageText.alpha = 0f;
+
+        if (warningAudioSource == null)
+        {
+            warningAudioSource = gameObject.AddComponent<AudioSource>();
+            warningAudioSource.playOnAwake = false;
+            warningAudioSource.spatialBlend = 0f; // make it 2D
+        }
 
         StartTimer(totalTime);
         StartCoroutine(InitialFadeIn()); // fade in at game start
@@ -74,10 +90,34 @@ public class ClockTimer : MonoBehaviour
                 lastWholeSecond = currentSecond;
             }
 
+            // Handle warning heartbeat when time is low
+            if (timeLeft <= warningThreshold && warningClip != null)
+            {
+                if (!warningAudioSource.isPlaying)
+                {
+                    warningAudioSource.clip = warningClip;
+                    warningAudioSource.loop = true;
+                    warningAudioSource.volume = 0f; // start quietly
+                    warningAudioSource.Play();
+                }
+
+                // Volume increases as time approaches 0
+                float volumeFactor = 1f - (timeLeft / warningThreshold); // 0 → 1
+                warningAudioSource.volume = Mathf.Lerp(0.2f, warningVolume, volumeFactor);
+
+                // Pitch increases slightly to create tension
+                warningAudioSource.pitch = Mathf.Lerp(1f, 1.5f, volumeFactor);
+            }
+            else if (timeLeft > warningThreshold && warningAudioSource.isPlaying)
+            {
+                // stop early if we regained time (optional)
+                warningAudioSource.Stop();
+            }
+
+            // Fade overlay near end
             if (screenFader != null && timeLeft <= preFadeTime)
             {
                 float fadeTarget = Mathf.Lerp(0f, 0.8f, 1f - (timeLeft / preFadeTime));
-                // Smoothly approach the target each frame
                 float currentAlpha = screenFader.fadePanel.color.a;
                 screenFader.SetPanelAlpha(Mathf.MoveTowards(currentAlpha, fadeTarget, Time.deltaTime / preFadeTime));
             }
@@ -86,11 +126,13 @@ public class ClockTimer : MonoBehaviour
             if (timeLeft <= 0f && !hasEnded)
             {
                 hasEnded = true;
+                IsTimeEnded = true; 
                 Debug.Log("[ClockTimer] Timer finished! Showing message and transitioning...");
                 StartCoroutine(FadeMessageThenTransition());
             }
         }
     }
+
 
     public void StartTimer(float seconds)
     {
@@ -99,6 +141,7 @@ public class ClockTimer : MonoBehaviour
         lastFrameIndex = -1;
         lastWholeSecond = -1;
         hasEnded = false;
+        IsTimeEnded = false;
         isPaused = false;
 
         screenFader.SetPanelAlpha(0f);
@@ -140,41 +183,48 @@ public class ClockTimer : MonoBehaviour
 
     private IEnumerator FadeMessageThenTransition()
     {
-        // 1️⃣ Smoothly fade overlay fully
-        if (screenFader != null)
+        // Smoothly fade overlay fully
+        if (string.IsNullOrEmpty(nextSceneName) && screenFader != null)
             yield return StartCoroutine(screenFader.FadeOut());
 
-        // 2️⃣ Now show message text
+        if (warningAudioSource != null && warningAudioSource.isPlaying)
+            warningAudioSource.Stop();
+
+
+        // Now show message text
         if (endMessageText != null)
-        {
-            endMessageText.gameObject.SetActive(true);
-            endMessageText.alpha = 0f;
-
-            float elapsed = 0f;
-            while (elapsed < messageDisplayTime)
             {
-                elapsed += Time.deltaTime;
-                endMessageText.alpha = Mathf.Clamp01(elapsed / messageDisplayTime);
-                yield return null;
-            }
+                endMessageText.gameObject.SetActive(true);
+                endMessageText.alpha = 0f;
 
-            // Optional hold
-            yield return new WaitForSeconds(0.5f);
+                float elapsed = 0f;
+                while (elapsed < messageDisplayTime)
+                {
+                    elapsed += Time.deltaTime;
+                    endMessageText.alpha = Mathf.Clamp01(elapsed / messageDisplayTime);
+                    yield return null;
+                }
 
-            // Fade out text
-            elapsed = 0f;
-            float fadeOutDuration = 1.5f;
-            while (elapsed < fadeOutDuration)
-            {
-                elapsed += Time.deltaTime;
-                endMessageText.alpha = Mathf.Clamp01(1f - (elapsed / fadeOutDuration));
-                yield return null;
-            }
+                // Optional hold
+                yield return new WaitForSeconds(0.5f);
+
+                // Fade out text
+                elapsed = 0f;
+                float fadeOutDuration = 1.5f;
+                while (elapsed < fadeOutDuration)
+                {
+                    elapsed += Time.deltaTime;
+                    endMessageText.alpha = Mathf.Clamp01(1f - (elapsed / fadeOutDuration));
+
+                    yield return null;
+                }
         }
 
-        // 3️⃣ Transition scene
+        // Transition scene
         if (!string.IsNullOrEmpty(nextSceneName) && screenFader != null)
+        {
             yield return StartCoroutine(screenFader.TransitionToScene(nextSceneName));
+        }
     }
 
 

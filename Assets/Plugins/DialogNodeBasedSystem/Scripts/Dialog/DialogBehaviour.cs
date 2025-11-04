@@ -701,6 +701,13 @@ namespace cherrydev
 
             foreach (Node node in dialogNodeGraph.NodesList)
             {
+                // CRITICAL FIX: Check if node is null before processing
+                if (node == null)
+                {
+                    Debug.LogWarning("[DialogBehaviour] Found null node in NodesList - skipping");
+                    continue;
+                }
+
                 bool hasParents = false;
                 bool hasChildren = false;
 
@@ -737,54 +744,80 @@ namespace cherrydev
                 }
                 else if (node.GetType().Name == "GameFlagConditionNode")  // Use reflection
                 {
-                    Type nodeType = node.GetType();
-                    FieldInfo parentsField = nodeType.GetField("ParentNodes");
-                    FieldInfo trueChildField = nodeType.GetField("TrueChildNode");
-                    FieldInfo falseChildField = nodeType.GetField("FalseChildNode");
-                    
-                    if (parentsField != null)
+                    try
                     {
-                        var parentsList = parentsField.GetValue(node) as System.Collections.IList;
-                        hasParents = parentsList != null && parentsList.Count > 0;
+                        Type nodeType = node.GetType();
+                        FieldInfo parentsField = nodeType.GetField("ParentNodes");
+                        FieldInfo trueChildField = nodeType.GetField("TrueChildNode");
+                        FieldInfo falseChildField = nodeType.GetField("FalseChildNode");
+                        
+                        if (parentsField != null)
+                        {
+                            var parentsList = parentsField.GetValue(node) as System.Collections.IList;
+                            hasParents = parentsList != null && parentsList.Count > 0;
+                        }
+                        
+                        if (trueChildField != null && falseChildField != null)
+                        {
+                            Node trueChild = trueChildField.GetValue(node) as Node;
+                            Node falseChild = falseChildField.GetValue(node) as Node;
+                            hasChildren = trueChild != null || falseChild != null;
+                        }
                     }
-                    
-                    if (trueChildField != null && falseChildField != null)
+                    catch (System.Exception ex)
                     {
-                        Node trueChild = trueChildField.GetValue(node) as Node;
-                        Node falseChild = falseChildField.GetValue(node) as Node;
-                        hasChildren = trueChild != null || falseChild != null;
+                        Debug.LogWarning($"[DialogBehaviour] Error processing GameFlagConditionNode: {ex.Message}");
+                        continue;
                     }
                 }
                 else if (node.GetType().Name == "SetGameFlagNode")  // Use reflection
                 {
-                    Type nodeType = node.GetType();
-                    FieldInfo parentsField = nodeType.GetField("ParentNodes");
-                    FieldInfo childField = nodeType.GetField("ChildNode");
-                    
-                    if (parentsField != null)
+                    try
                     {
-                        var parentsList = parentsField.GetValue(node) as System.Collections.IList;
-                        hasParents = parentsList != null && parentsList.Count > 0;
+                        Type nodeType = node.GetType();
+                        FieldInfo parentsField = nodeType.GetField("ParentNodes");
+                        FieldInfo childField = nodeType.GetField("ChildNode");
+                        
+                        if (parentsField != null)
+                        {
+                            var parentsList = parentsField.GetValue(node) as System.Collections.IList;
+                            hasParents = parentsList != null && parentsList.Count > 0;
+                        }
+                        
+                        if (childField != null)
+                        {
+                            Node child = childField.GetValue(node) as Node;
+                            hasChildren = child != null;
+                        }
                     }
-                    
-                    if (childField != null)
+                    catch (System.Exception ex)
                     {
-                        Node child = childField.GetValue(node) as Node;
-                        hasChildren = child != null;
+                        Debug.LogWarning($"[DialogBehaviour] Error processing SetGameFlagNode: {ex.Message}");
+                        continue;
                     }
                 }
 
                 if (!hasParents && hasChildren)
                 {
                     _currentNode = node;
+                    Debug.Log($"[DialogBehaviour] Found starting node: {node.GetType().Name}");
                     return;
                 }
             }
             
-            if (dialogNodeGraph.NodesList.Count > 1)
-                Debug.LogWarning("No clear starting node found (node without parents). Using first node in list.");
-
-            _currentNode = dialogNodeGraph.NodesList[0];
+            // If no starting node found, try to use the first valid (non-null) node
+            foreach (Node node in dialogNodeGraph.NodesList)
+            {
+                if (node != null)
+                {
+                    Debug.LogWarning("No clear starting node found (node without parents). Using first valid node in list.");
+                    _currentNode = node;
+                    return;
+                }
+            }
+            
+            // If we get here, all nodes are null
+            Debug.LogError("[DialogBehaviour] All nodes in NodesList are null! Cannot start dialog.");
         }
 
         public void CallExternalFunction(string getExternalFunctionName) =>
