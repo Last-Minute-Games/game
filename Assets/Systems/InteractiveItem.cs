@@ -27,6 +27,9 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     private CharacterMotor2D characterController;
     private ClockTimer clockTimer;
     private bool isPlayerNear = false;
+    
+    // Track if THIS item started the current conversation
+    private bool isMyConversation = false;
 
     void Start()
     {
@@ -80,11 +83,16 @@ public class InteractiveItem : MonoBehaviour, IInteractable
             return;
         }
 
+        // Mark that THIS item is starting the conversation
+        isMyConversation = true;
         dialogBehaviour.StartDialog(dialogGraph);
     }
 
     void OnDialogStart()
     {
+        // Only respond if THIS item started the conversation
+        if (!isMyConversation) return;
+
         // Pause the clock timer
         if (clockTimer != null)
         {
@@ -98,6 +106,9 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
     void OnDialogFinished()
     {
+        // Only respond if THIS item started the conversation
+        if (!isMyConversation) return;
+
         // Resume the clock timer
         if (clockTimer != null)
         {
@@ -109,11 +120,18 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         if (!string.IsNullOrEmpty(flagToSet))
         {
             GameFlags.SetFlag(flagToSet);
-            Debug.Log($"[InteractiveItem] Set flag: {flagToSet}");
+            Debug.Log($"[InteractiveItem] {name}: Set flag '{flagToSet}'");
+        }
+        else
+        {
+            Debug.Log($"[InteractiveItem] {name}: No flag to set (flagToSet is empty)");
         }
 
         if (characterController != null)
             characterController.SetDialogueActive(false);
+
+        // Reset the flag so we don't respond to other conversations
+        isMyConversation = false;
     }
 
 #if UNITY_EDITOR
