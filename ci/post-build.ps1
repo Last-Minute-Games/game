@@ -89,5 +89,26 @@ elseif ($Platform -eq "Linux") {
         Write-Host "  Removed: $($_.Name)" -ForegroundColor Gray
     }
 }
+Write-Host "\nRemoving Unity 'Do Not Ship' folders..." -ForegroundColor Cyan
+
+# Common Unity debug/backup folders that should not be shipped
+$doNotShipPatterns = @(
+    "*_BurstDebugInformation_DoNotShip",
+    "BackUpThisFolder_ButDontShipItWithYourGame",
+    "*DoNotShip*",
+    "*donotship*",
+    "Castle of Time_BurstDebugInformation_DoNotShip"
+)
+
+foreach ($pattern in $doNotShipPatterns) {
+    Get-ChildItem -Path $BuildOutputDir -Recurse -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -like $pattern } | ForEach-Object {
+        try {
+            Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction Stop
+            Write-Host "  Removed DoNotShip folder: $($_.FullName)" -ForegroundColor Gray
+        } catch {
+            Write-Host "  ⚠️  Failed to remove: $($_.FullName) - $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+    }
+}
 
 Write-Host "`n✅ Post-build complete!" -ForegroundColor Green
