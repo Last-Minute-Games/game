@@ -14,12 +14,27 @@ public class EnemyRender : MonoBehaviour
     [Header("Runtime")]
     public EnemyData data;
 
+    [Header("Animator States (when using Animator Controller)")]
+    [Tooltip("Idle state name in the Animator Controller")] public string idleState = "Idle";
+    [Tooltip("Attack state name in the Animator Controller")] public string attackState = "Attack";
+    [Tooltip("Hurt state name in the Animator Controller")] public string hurtState = "Hurt";
+    [Tooltip("Death state name in the Animator Controller")] public string deathState = "Death";
+    [Tooltip("Animator layer index to play states on")] public int animatorLayer = 0;
+    [Tooltip("Crossfade duration when switching states")] public float crossFadeDuration = 0.08f;
+
     private Animator _animator;
     private PlayableGraph _graph;
     private AnimationPlayableOutput _output;
     private AnimationClipPlayable _currentPlayable;
     private bool _graphCreated;
     private Coroutine _returnToIdleRoutine;
+
+    // Adapter to let Animator controllers authored for SpriteRenderer drive a UI Image
+    private SpriteRenderer _spriteAdapter;
+    private Vector3 _imageBaseScale = Vector3.one;
+    private bool _capturedBaseScale;
+
+    private bool UsingAnimatorController => data != null && data.animatorController != null;
 
     private void Awake()
     {
@@ -29,6 +44,15 @@ public class EnemyRender : MonoBehaviour
             // Try to find an Image on this GameObject or its children (common for UI setups)
             artworkImage = GetComponentInChildren<Image>();
         }
+
+        // Capture the base scale so we can apply flip without stomping magnitude
+        if (TryGetComponent<RectTransform>(out var rt))
+        {
+            _imageBaseScale = rt.localScale;
+            _capturedBaseScale = true;
+        }
+
+        EnsureSpriteAdapter();
     }
 
     private void OnDisable()
@@ -41,12 +65,78 @@ public class EnemyRender : MonoBehaviour
         StopGraph();
     }
 
+    private void LateUpdate()
+    {
+        // If using an AnimatorController that targets a SpriteRenderer, mirror the animated values to the UI Image
+        if (!UsingAnimatorController) return;
+        if (_animator == null) return;
+
+        if (_spriteAdapter == null)
+            EnsureSpriteAdapter();
+
+        if (artworkImage == null)
+        {
+            artworkImage = GetComponentInChildren<UnityEngine.UI.Image>();
+            if (artworkImage == null) return;
+        }
+
+        // Mirror sprite
+        var spr = _spriteAdapter != null ? _spriteAdapter.sprite : null;
+        if (spr != null && artworkImage.sprite != spr)
+            artworkImage.sprite = spr;
+
+        // Ensure enabled if we have a sprite
+        if (spr != null && !artworkImage.enabled)
+            artworkImage.enabled = true;
+
+        // Mirror color
+        if (_spriteAdapter != null)
+        {
+            var c = _spriteAdapter.color;
+            if (artworkImage.color != c)
+                artworkImage.color = c;
+        }
+
+        // Mirror flip via RectTransform scale
+        if (TryGetComponent<RectTransform>(out var rt))
+        {
+            if (!_capturedBaseScale)
+            {
+                _imageBaseScale = rt.localScale;
+                _capturedBaseScale = true;
+            }
+            float fx = (_spriteAdapter != null && _spriteAdapter.flipX) ? -1f : 1f;
+            float fy = (_spriteAdapter != null && _spriteAdapter.flipY) ? -1f : 1f;
+            var targetScale = new Vector3(_imageBaseScale.x * fx, _imageBaseScale.y * fy, _imageBaseScale.z);
+            if (rt.localScale != targetScale)
+                rt.localScale = targetScale;
+        }
+    }
+
+    private void EnsureSpriteAdapter()
+    {
+        if (_spriteAdapter != null) return;
+        _spriteAdapter = GetComponent<SpriteRenderer>();
+        if (_spriteAdapter == null)
+            _spriteAdapter = gameObject.AddComponent<SpriteRenderer>();
+
+        // Keep it from rendering in world space; it's only used as an animation data source
+        _spriteAdapter.enabled = false;
+        _spriteAdapter.hideFlags = HideFlags.HideInInspector;
+    }
+
     public void Bind(EnemyData enemyData)
     {
         data = enemyData;
 
+        // Assign the provided Animator Controller if any (drag & drop from EnemyDataSO)
+        if (_animator != null)
+        {
+            _animator.runtimeAnimatorController = data != null ? data.animatorController : null;
+        }
+
         // Update artwork sprite if available
-        if (artworkImage != null)
+        if (artworkImage)
         {
             artworkImage.sprite = data != null ? data.artwork : null;
             artworkImage.enabled = artworkImage.sprite != null;
@@ -58,6 +148,14 @@ public class EnemyRender : MonoBehaviour
 
     public void PlayIdle()
     {
+        if (UsingAnimatorController && HasState(idleState))
+        {
+            StopGraph();
+            CrossFadeState(idleState, 0f);
+            return;
+        }
+
+        // Fallback to clip-based idle
         if (data == null || data.idleClip == null)
         {
             // No idle clip: just show artwork as static
@@ -69,6 +167,14 @@ public class EnemyRender : MonoBehaviour
 
     public void PlayAttack()
     {
+        if (UsingAnimatorController && HasState(attackState))
+        {
+            StopGraph();
+            CrossFadeState(attackState, 0f);
+            // Return to idle after state ends is handled by Animator (via transitions). No coroutine here.
+            return;
+        }
+
         if (data == null || data.attackClip == null)
         {
             // Fallback: no attack clip, just briefly flash and return to idle
@@ -79,8 +185,34 @@ public class EnemyRender : MonoBehaviour
         PlayClip(data.attackClip, loop: false, returnToIdleOnEnd: true);
     }
 
+    public void PlayHurt()
+    {
+        if (UsingAnimatorController && HasState(hurtState))
+        {
+            StopGraph();
+            CrossFadeState(hurtState, 0f);
+            return;
+        }
+
+        if (data == null || data.hurtClip == null)
+        {
+            // Simple blink as a minimal feedback
+            if (isActiveAndEnabled)
+                StartCoroutine(FallbackPulseThenIdle(0.15f));
+            return;
+        }
+        PlayClip(data.hurtClip, loop: false, returnToIdleOnEnd: true);
+    }
+
     public void PlayDeath()
     {
+        if (UsingAnimatorController && HasState(deathState))
+        {
+            StopGraph();
+            CrossFadeState(deathState, 0f);
+            return;
+        }
+
         if (data == null || data.deathClip == null)
         {
             // No death clip; just hide artwork
@@ -89,6 +221,19 @@ public class EnemyRender : MonoBehaviour
             return;
         }
         PlayClip(data.deathClip, loop: false, returnToIdleOnEnd: false);
+    }
+
+    private void CrossFadeState(string stateName, float normalizedTime)
+    {
+        if (_animator == null) return;
+        _animator.CrossFade(stateName, crossFadeDuration, animatorLayer, normalizedTime);
+    }
+
+    private bool HasState(string stateName)
+    {
+        if (_animator == null || _animator.runtimeAnimatorController == null) return false;
+        int hash = Animator.StringToHash(stateName);
+        return _animator.HasState(animatorLayer, hash);
     }
 
     private void PlayClip(AnimationClip clip, bool loop, bool returnToIdleOnEnd)

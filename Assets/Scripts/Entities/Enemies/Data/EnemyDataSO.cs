@@ -12,11 +12,17 @@ public class EnemyDataSO : ScriptableObject
     public Sprite artwork;
     public List<EnemyAction> actionPattern;
 
-    [Header("Animation Clips")]
+    [Header("Animator (Optional)")]
+    [Tooltip("If assigned, this RuntimeAnimatorController will drive the enemy's animation states (Idle/Attack/Hurt/Death). Drag & drop here.")]
+    public RuntimeAnimatorController animatorController;
+
+    [Header("Animation Clips (Optional, used if no Animator Controller)")]
     [Tooltip("Looping idle animation clip for this enemy (optional).")]
     public AnimationClip idleClip;
     [Tooltip("Attack animation clip for this enemy (optional).")]
     public AnimationClip attackClip;
+    [Tooltip("Hurt animation clip for this enemy (optional).")]
+    public AnimationClip hurtClip;
     [Tooltip("Death animation clip for this enemy (optional).")]
     public AnimationClip deathClip;
 
@@ -26,9 +32,11 @@ public class EnemyDataSO : ScriptableObject
         data.Initialize(enemyName, maxHealth, attackPower, defensePower);
         data.actionPattern = new List<EnemyAction>(actionPattern);
         data.artwork = artwork;
-        // Propagate animation clips
+        // Propagate animator controller and animation clips
+        data.animatorController = animatorController;
         data.idleClip = idleClip;
         data.attackClip = attackClip;
+        data.hurtClip = hurtClip;
         data.deathClip = deathClip;
         return data;
     }

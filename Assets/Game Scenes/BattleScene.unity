@@ -154,6 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
   enemies: []
+  uiContainer: {fileID: 865282854}
 --- !u!4 &121033907
 Transform:
   m_ObjectHideFlags: 0
@@ -1231,6 +1232,68 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 839983929}
   m_CullTransparentMesh: 1
+--- !u!1 &865282853
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 865282854}
+  - component: {fileID: 865282855}
+  m_Layer: 0
+  m_Name: EnemyContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &865282854
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 865282853}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2094887444}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 600, y: 200}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &865282855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 865282853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.HorizontalLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 4
+  m_Spacing: 0
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 1
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!1 &870483451
 GameObject:
   m_ObjectHideFlags: 0
@@ -2033,7 +2096,9 @@ MonoBehaviour:
   playerManager: {fileID: 963561599}
   enemyManager: {fileID: 121033906}
   roundManager: {fileID: 246031882}
-  enemyDatabase: []
+  enemyDatabase:
+  - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+  - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
 --- !u!4 &1690466722 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8261802932031213085, guid: 038576810afe2b34b9599f0540bdeaef, type: 3}
@@ -2462,6 +2527,7 @@ RectTransform:
   - {fileID: 839983930}
   - {fileID: 570844079}
   - {fileID: 530213179}
+  - {fileID: 865282854}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2615,6 +2681,6 @@ SceneRoots:
   - {fileID: 1154011892}
   - {fileID: 275000348}
   - {fileID: 744174828}
-  - {fileID: 2094887444}
   - {fileID: 1065631847}
   - {fileID: 870483454}
+  - {fileID: 2094887444}

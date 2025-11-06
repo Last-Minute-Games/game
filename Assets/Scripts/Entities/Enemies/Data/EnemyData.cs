@@ -41,9 +41,13 @@ public class EnemyData
     public Sprite artwork;                  // Optional portrait or sprite
     public AudioClip attackSFX;             // Optional sound for attack
 
-    [Header("Animation Clips")]
+    [Header("Animator (Optional)")]
+    public RuntimeAnimatorController animatorController; // If set, animator-driven states are used
+
+    [Header("Animation Clips (Optional, fallback when no Animator Controller)")]
     public AnimationClip idleClip;          // Optional idle animation
     public AnimationClip attackClip;        // Optional attack animation
+    public AnimationClip hurtClip;          // Optional hurt animation
     public AnimationClip deathClip;         // Optional death animation
 
     // -------------------------------------------------------
