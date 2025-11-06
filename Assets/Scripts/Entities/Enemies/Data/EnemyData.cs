@@ -41,6 +41,11 @@ public class EnemyData
     public Sprite artwork;                  // Optional portrait or sprite
     public AudioClip attackSFX;             // Optional sound for attack
 
+    [Header("Animation Clips")]
+    public AnimationClip idleClip;          // Optional idle animation
+    public AnimationClip attackClip;        // Optional attack animation
+    public AnimationClip deathClip;         // Optional death animation
+
     // -------------------------------------------------------
     // Initialization
     // -------------------------------------------------------
