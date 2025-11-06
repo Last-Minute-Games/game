@@ -9,9 +9,14 @@ on:
         description: 'Create a GitHub Release from this run'
         type: boolean
         default: false
+      artifact_only:
+        description: 'Only publish existing artifacts (skip build, tag, release)'
+        type: boolean
+        default: false
 jobs:
   tag:
     runs-on: self-hosted
+    if: ${{ github.event.inputs.artifact_only != 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -128,8 +133,9 @@ jobs:
           retention-days: 14
           compression-level: 0
 
-      # Upload to itch.io using Butler action
+      # Upload to itch.io using Butler action (skip in artifact-only mode)
       - name: Upload to itch.io (${{ matrix.platform }})
+        if: ${{ github.event.inputs.artifact_only != 'true' }}
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
@@ -203,7 +209,7 @@ jobs:
   release:
     runs-on: self-hosted
     needs: [tag, build]
-    if: needs.tag.result == 'success' && needs.build.result == 'success'
+    if: ${{ needs.tag.result == 'success' && needs.build.result == 'success' && github.event.inputs.artifact_only != 'true' }}
     environment: main
     defaults:
       run:
@@ -253,7 +259,7 @@ jobs:
 
   notify:
     runs-on: self-hosted
-    needs: build
+    needs: [build]
     if: always()
     environment: main
     defaults:
@@ -283,12 +289,18 @@ jobs:
           
           $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
           
+          $description = if ("${{ github.event.inputs.artifact_only }}" -eq "true") {
+            "Multi-platform build $status (artifact only - skipped itch.io)"
+          } else {
+            "Multi-platform build $status and uploaded to itch.io"
+          }
+          
           # Build JSON using PSCustomObject and ConvertTo-Json
           $payload = [PSCustomObject]@{
             embeds = @(
               [PSCustomObject]@{
                 title = "$emoji CastleOfTime Build #${{ github.run_number }}"
-                description = "Multi-platform build $status and uploaded to itch.io"
+                description = $description
                 url = $itchUrl
                 color = $color
                 fields = @(
