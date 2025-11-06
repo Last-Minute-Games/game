@@ -4,19 +4,10 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-    inputs:
-      release:
-        description: 'Create a GitHub Release from this run'
-        type: boolean
-        default: false
-      artifact_only:
-        description: 'Only publish existing artifacts (skip build, tag, release)'
-        type: boolean
-        default: false
 jobs:
   tag:
     runs-on: self-hosted
-    if: ${{ github.event.inputs.artifact_only != 'true' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -135,7 +126,7 @@ jobs:
 
       # Upload to itch.io using Butler action (skip in artifact-only mode)
       - name: Upload to itch.io (${{ matrix.platform }})
-        if: ${{ github.event.inputs.artifact_only != 'true' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
@@ -209,7 +200,7 @@ jobs:
   release:
     runs-on: self-hosted
     needs: [tag, build]
-    if: ${{ needs.tag.result == 'success' && needs.build.result == 'success' && github.event.inputs.artifact_only != 'true' }}
+    if: ${{ needs.tag.result == 'success' && needs.build.result == 'success' && github.ref == 'refs/heads/main' }}
     environment: main
     defaults:
       run:
@@ -289,7 +280,7 @@ jobs:
           
           $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
           
-          $description = if ("${{ github.event.inputs.artifact_only }}" -eq "true") {
+          $description = if ("${{ github.ref }}" -ne "refs/heads/main") {
             "Multi-platform build $status (artifact only - skipped itch.io)"
           } else {
             "Multi-platform build $status and uploaded to itch.io"
