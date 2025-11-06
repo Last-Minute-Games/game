@@ -34,7 +34,7 @@ public class PlayerPrefab : MonoBehaviour
 
         // Set Healthbar
         healthbarFill.fillAmount = 1f; // full
-        healthbarFill.color = Color.red;
+        healthbarFill.color = new Color32(108, 15, 15, 255);
 
         healthText.text = $"{playerData.baseHealth}/{playerData.baseHealth}";
         shieldText.text = ""; // empty / invisible
