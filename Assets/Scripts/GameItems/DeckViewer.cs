@@ -1,5 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Splines;
 
 public class DeckViewer : MonoBehaviour
@@ -27,7 +30,16 @@ public class DeckViewer : MonoBehaviour
     [SerializeField] private SplineContainer splineContainer;
     [SerializeField] private bool buildOnStart = true;
 
+    [Header("Spline Layout")] 
+    [Tooltip("Spacing between cards along the spline in normalized t (0..1). Example: 0.1 = 10 cards span the entire spline.")]
+    [SerializeField] private float splineCardSpacing = 0.1f; // 1f / 10f as in screenshot
+    [Tooltip("Seconds to tween cards into their new positions/rotations along the spline.")]
+    [SerializeField] private float tweenDuration = 0.5f;
+    [Tooltip("If true, will layout cards along the spline after building or when calling Rebuild().")]
+    [SerializeField] private bool autoLayoutOnSpline = true;
+
     private readonly List<CardRender> _renders = new();
+    private Coroutine _layoutRoutine;
 
     private void Start()
     {
@@ -61,6 +73,39 @@ public class DeckViewer : MonoBehaviour
                 Destroy(content.GetChild(i).gameObject);
         }
     }
+    
+    private IEnumerator UpdateCardPositions(float duration)
+    {
+        if (_renders.Count == 0) yield break;
+
+        float cardSpacing = 1f / 10f;
+        float firstCardPosition = 0.5f - (_renders.Count - 1) * cardSpacing / 2f;
+        var spline = splineContainer.Spline;
+
+        for (int i = 0; i < _renders.Count; i++)
+        {
+            if (_renders[i] == null) continue;
+
+            float t = firstCardPosition + i * cardSpacing;
+            Vector3 splinePosition = spline.EvaluatePosition(t);
+            Vector3 forward = spline.EvaluateTangent(t);
+            Vector3 up = spline.EvaluateUpVector(t);
+            Quaternion rotation = Quaternion.LookRotation(-up, Vector3.Cross(-up, forward).normalized);
+
+            // Using DOTween to animate position and rotation
+            _renders[i].transform
+                .DOMove(splinePosition + transform.position + 0.01f * i * Vector3.back, duration)
+                .SetEase(Ease.OutQuad);
+
+            _renders[i].transform
+                .DORotate(rotation.eulerAngles, duration)
+                .SetEase(Ease.OutQuad);
+        }
+        
+        
+
+        yield return new WaitForSeconds(duration);
+    }
 
     public void Rebuild()
     {
@@ -77,18 +122,23 @@ public class DeckViewer : MonoBehaviour
             Debug.LogWarning("DeckViewer: No card list available.");
             return;
         }
+        
+        Debug.Log("Resolved " + list.Count + " cards.");
 
-        for (int i = 0; i < list.Count; i++)
+        for (var index = 0; index < list.Count; index++)
         {
-            var cardData = list[i];
+            var cardData = list[index];
             var go = Instantiate(cardPrefab);
+            
+            var sortingGroup = go.GetComponent<SortingGroup>();
+            sortingGroup.sortingOrder = index;
 
-            // Parent and reset transform
+            Debug.Log("Created card: " + cardData.name + "  ");
+
+            // Parent and reset transform (optional)
             if (content != null)
             {
-                var rt = go.GetComponent<RectTransform>();
-                if (rt == null) rt = go.AddComponent<RectTransform>();
-                rt.SetParent(content, false);
+                go.transform.SetParent(content, false);
             }
 
             // Ensure CardRender exists
@@ -99,16 +149,11 @@ public class DeckViewer : MonoBehaviour
             _renders.Add(render);
         }
 
-        // Optional spline placement support (if used in world space)
-        if (splineContainer != null && content == null && _renders.Count > 0)
+        // Tween cards along spline if configured
+        if (splineContainer != null && autoLayoutOnSpline)
         {
-            float tStep = _renders.Count > 1 ? 1f / (_renders.Count - 1) : 0f;
-            for (int i = 0; i < _renders.Count; i++)
-            {
-                var t = (i == _renders.Count - 1) ? 1f : i * tStep;
-                var pos = splineContainer.Spline.EvaluatePosition(t);
-                _renders[i].transform.position = pos;
-            }
+            if (_layoutRoutine != null) StopCoroutine(_layoutRoutine);
+            _layoutRoutine = StartCoroutine(UpdateCardPositions(tweenDuration));
         }
     }
 
@@ -118,6 +163,9 @@ public class DeckViewer : MonoBehaviour
         if (playerManager != null)
         {
             var cm = playerManager.cardManager;
+            
+            // Debug.Log(source);
+            
             switch (source)
             {
                 case Source.Hand: return new List<CardData>(cm.hand);

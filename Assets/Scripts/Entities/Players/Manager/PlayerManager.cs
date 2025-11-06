@@ -53,6 +53,11 @@ public class PlayerManager : MonoBehaviour
             ? new List<CardData>(playerData.usableCards)
             : new List<CardData>(Resources.LoadAll<CardData>("Cards"));
 
+        foreach (var card in cardManager.allCardPool)
+        {
+            Debug.Log($"CardManager: Loaded card {card}");
+        }
+        
         // Create a starting draw pile (fallback to 10 random cards)
         int startingDeckSize = 10;
         cardManager.drawPile = cardManager.GenerateRandomCards(startingDeckSize);

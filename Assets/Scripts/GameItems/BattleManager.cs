@@ -6,7 +6,8 @@ public class BattleManager : MonoBehaviour
     public PlayerManager playerManager;
     public EnemyManager enemyManager;
     public RoundManager roundManager;
-
+    [SerializeField] private DeckViewer deckViewer; // Reference to the DeckViewer
+    
     private void Start()
     {
         // 1️⃣ Initialize Player (runtime-only example)
@@ -26,6 +27,13 @@ public class BattleManager : MonoBehaviour
 
         // 4️⃣ Start the first round
         roundManager.StartRound();
+        
+        // Build the deck visualization
+        if (deckViewer != null)
+        {
+            deckViewer.SetSource(DeckViewer.Source.Hand);
+            deckViewer.Rebuild();
+        }
     }
     
     [SerializeField] private List<EnemyDataSO> enemyDatabase;

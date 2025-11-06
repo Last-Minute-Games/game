@@ -29,6 +29,8 @@ public class CardManager
             var card = allCardPool[rng.Next(allCardPool.Count)];
             result.Add(card);
         }
+        
+        Debug.Log($"CardManager: Generated {number} random cards.");
 
         return result;
     }
