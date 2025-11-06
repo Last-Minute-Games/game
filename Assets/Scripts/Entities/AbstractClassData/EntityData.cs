@@ -1,27 +1,89 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
 
-[System.Serializable]
-public class CardDrawEntry
+[Serializable]
+public struct StatusEffect
 {
-    [Tooltip("Reference to a usable card for this entity.")]
-    public CardData card;
-
-    [Tooltip("Relative draw weight for this card.")]
-    [Range(0f, 1f)]
-    public float drawWeight = 1f;
+    public string name;
+    public int stacks;
 }
 
-public abstract class EntityData : ScriptableObject
+[Serializable]
+public struct EntityData
 {
-    [Header("Base Stats")]
-    public int baseHealth = 100;
-    public int baseShield = 0;
-    public float basePowerScale = 1f;
+    public string name;
+    public int health;
+    public int maxHealth;
+    public int block;
+    public bool isAlive;
 
-    [Header("Usable Cards & Draw Weights")]
-    public List<CardDrawEntry> usableCards = new List<CardDrawEntry>();
+    // Optional: status effects (Weak, Vulnerable, Poison, etc.)
+    public List<StatusEffect> statuses;
 
-    // Ensure OnValidate() is defined
-    protected virtual void OnValidate() {}
+    public void Initialize(string entityName, int maxHp)
+    {
+        name = entityName;
+        maxHealth = maxHp;
+        health = maxHp;
+        block = 0;
+        isAlive = true;
+        statuses = new List<StatusEffect>();
+    }
+
+    public void TakeDamage(int amount)
+    {
+        int remaining = amount;
+
+        if (block > 0)
+        {
+            int absorbed = Math.Min(block, amount);
+            block -= absorbed;
+            remaining -= absorbed;
+        }
+
+        if (remaining > 0)
+        {
+            health -= remaining;
+            if (health <= 0)
+            {
+                health = 0;
+                isAlive = false;
+            }
+        }
+    }
+
+    public void GainBlock(int amount)
+    {
+        block += amount;
+    }
+
+    public void Heal(int amount)
+    {
+        health = Math.Min(health + amount, maxHealth);
+    }
+
+    public void ResetBlock()
+    {
+        block = 0;
+    }
+    
+    public void ApplyStatus(string statusName, int stacks)
+    {
+        int index = statuses.FindIndex(s => s.name == statusName);
+        if (index >= 0)
+            statuses[index] = new StatusEffect { name = statusName, stacks = statuses[index].stacks + stacks };
+        else
+            statuses.Add(new StatusEffect { name = statusName, stacks = stacks });
+    }
+
+    public void RemoveStatus(string statusName)
+    {
+        statuses.RemoveAll(s => s.name == statusName);
+    }
+
+
+    public override string ToString()
+    {
+        return $"{name}: {health}/{maxHealth} HP, {block} Block";
+    }
 }

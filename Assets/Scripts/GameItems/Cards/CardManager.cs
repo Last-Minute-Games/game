@@ -1,105 +1,147 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 
-public class CardManager : MonoBehaviour
+[System.Serializable]
+public class CardManager
 {
-    [Header("Global Pool")]
-    [Tooltip("All cards that exist in the game. Used for global random draws.")]
-    public List<CardData> globalPoolPile = new List<CardData>();
+    [Header("Card Pools")]
+    public List<CardData> allCardPool = new();     // All available cards in the game
+    public List<CardData> drawPile = new();        // Current draw pile
+    public List<CardData> hand = new();            // Cards currently in hand
+    public List<CardData> discardPile = new();     // Discarded cards
 
-    // ─────────────────────────────────────────────
-    // Public API
-    // ─────────────────────────────────────────────
+    private System.Random rng = new();
 
-    public CardData PullCardByID(int id, bool multiplierApplied = true, float powerScale = 1f)
+    // -----------------------------------------------------------
+    // Generate a set of random cards (e.g., for initial deck, rewards, etc.)
+    // -----------------------------------------------------------
+    public List<CardData> GenerateRandomCards(int number)
     {
-        var match = globalPoolPile.FirstOrDefault(c => c.uniqueID == id);
-        if (match == null)
+        List<CardData> result = new();
+        if (allCardPool.Count == 0)
         {
-            Debug.LogWarning($"[CardManager] No CardData with ID {id}");
-            return null;
-        }
-
-        return CloneCardData(match, multiplierApplied, powerScale);
-    }
-
-    public List<CardData> PullMultipleRandomCards(
-        int amount,
-        List<CardDrawEntry> entityDataCards = null,
-        bool multiplierApplied = false,
-        float powerScale = 1f)
-    {
-        var result = new List<CardData>();
-
-        if (entityDataCards != null && entityDataCards.Count > 0)
-        {
-            // Weighted random draw
-            for (int i = 0; i < amount; i++)
-            {
-                var drawn = DrawWeightedRandomCard(entityDataCards);
-                if (drawn != null)
-                    result.Add(CloneCardData(drawn, multiplierApplied, powerScale));
-            }
+            Debug.LogWarning("CardManager: No cards available in allCardPool.");
             return result;
         }
 
-        // Global uniform draw
-        if (globalPoolPile.Count == 0)
+        for (int i = 0; i < number; i++)
         {
-            Debug.LogWarning("[CardManager] Global pool is empty!");
-            return result;
-        }
-
-        for (int i = 0; i < amount; i++)
-        {
-            var card = globalPoolPile[Random.Range(0, globalPoolPile.Count)];
-            result.Add(CloneCardData(card, multiplierApplied, powerScale));
+            var card = allCardPool[rng.Next(allCardPool.Count)];
+            result.Add(card);
         }
 
         return result;
     }
 
-    // ─────────────────────────────────────────────
-    // Internal Helpers
-    // ─────────────────────────────────────────────
-
-    private CardData CloneCardData(CardData original, bool multiplierApplied, float powerScale = 1f)
+    // -----------------------------------------------------------
+    // Retrieve a card by its UniqueID from the global pool
+    // -----------------------------------------------------------
+    public CardData PullCard(int uniqueID)
     {
-        if (original == null) return null;
-
-        var clone = Instantiate(original);
-        clone.effectData = new List<EffectData>();
-
-        foreach (var effect in original.effectData)
+        foreach (var card in allCardPool)
         {
-            if (effect == null) continue;
-            bool shouldApply = multiplierApplied && original.isVariableCard && original.IsCardVariabilityValid();
-            clone.effectData.Add(effect.Clone(shouldApply, powerScale));
+            if (card.UniqueID == uniqueID)
+                return card;
         }
 
-        return clone;
+        Debug.LogWarning($"CardManager: Card with UniqueID {uniqueID} not found.");
+        return null;
     }
 
-    private CardData DrawWeightedRandomCard(List<CardDrawEntry> pool)
+    // -----------------------------------------------------------
+    // Move all cards from hand to discard pile (e.g., at end of turn)
+    // -----------------------------------------------------------
+    public void DiscardCardPile()
     {
-        if (pool == null || pool.Count == 0)
-            return null;
+        discardPile.AddRange(hand);
+        hand.Clear();
+    }
 
-        float totalWeight = pool.Sum(e => Mathf.Max(0f, e.drawWeight));
-        if (totalWeight <= 0f)
-            return pool[Random.Range(0, pool.Count)].card;
+    // -----------------------------------------------------------
+    // Apply the effects of a given card to a target entity
+    // -----------------------------------------------------------
+    public void ApplyCard(CardData card, EntityData source, ref EntityData target)
+    {
+        if (card == null) return;
 
-        float roll = Random.value * totalWeight;
-        float cumulative = 0f;
-
-        foreach (var entry in pool)
+        foreach (var effect in card.effectDataList)
         {
-            cumulative += Mathf.Max(0f, entry.drawWeight);
-            if (roll <= cumulative)
-                return entry.card;
+            switch (effect.effectType)
+            {
+                case EffectType.Damage:
+                    target.TakeDamage(effect.magnitude);
+                    break;
+
+                case EffectType.Block:
+                    source.GainBlock(effect.magnitude);
+                    break;
+
+                case EffectType.Heal:
+                    source.Heal(effect.magnitude);
+                    break;
+
+                case EffectType.Draw:
+                    // Card draw logic handled by PlayerManager
+                    Debug.Log($"{source.name} would draw {effect.magnitude} cards.");
+                    break;
+
+                case EffectType.ApplyStatus:
+                    target.statuses.Add(new StatusEffect
+                    {
+                        name = "Status",
+                        stacks = effect.magnitude
+                    });
+                    break;
+            }
         }
 
-        return pool[0].card;
+        // Play sound cue if assigned
+        // if (card.SoundCue != null && card.SoundCue.Clip != null)
+        // {
+        //     AudioSource.PlayClipAtPoint(card.SoundCue.Clip, Vector3.zero, card.SoundCue.Volume);
+        // }
+
+        // Move card to discard pile
+        hand.Remove(card);
+        discardPile.Add(card);
+    }
+
+    // -----------------------------------------------------------
+    // Shuffle the draw pile (utility)
+    // -----------------------------------------------------------
+    public void ShuffleDrawPile()
+    {
+        for (int i = 0; i < drawPile.Count; i++)
+        {
+            int swap = rng.Next(drawPile.Count);
+            (drawPile[i], drawPile[swap]) = (drawPile[swap], drawPile[i]);
+        }
+    }
+
+    // -----------------------------------------------------------
+    // Draw a card from the draw pile to the hand
+    // -----------------------------------------------------------
+    public void DrawCard()
+    {
+        if (drawPile.Count == 0)
+        {
+            ReshuffleDiscardIntoDraw();
+            if (drawPile.Count == 0)
+            {
+                Debug.Log("No cards left to draw.");
+                return;
+            }
+        }
+
+        var card = drawPile[0];
+        drawPile.RemoveAt(0);
+        hand.Add(card);
+    }
+
+    private void ReshuffleDiscardIntoDraw()
+    {
+        drawPile.AddRange(discardPile);
+        discardPile.Clear();
+        ShuffleDrawPile();
     }
 }

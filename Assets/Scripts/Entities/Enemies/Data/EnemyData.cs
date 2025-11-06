@@ -1,115 +1,106 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
-[CreateAssetMenu(menuName = "Enemy/Enemy Data", fileName = "NewEnemyData")]
-public class EnemyData : EntityData
+[Serializable]
+public struct EnemyAction
 {
-    [Header("Enemy Info")]
-    [Tooltip("Display name for this enemy.")]
-    public string enemyName = "New Enemy";
+    public EnemyIntent intent;
+    public int value;
+}
 
-    [Tooltip("Short description of the enemy's behavior or lore.")]
-    [TextArea(2, 5)]
-    public string description;
+public enum EnemyIntent
+{
+    Attack,
+    Block,
+    Heal,
+    Buff
+}
 
-    [Header("FX Data")]
-    [Tooltip("Reference to visual/sound FX data for this enemy.")]
-    public EnemyFXData enemyFXData;
+[Serializable]
+public class EnemyData
+{
+    [Header("Core Stats")]
+    public EntityData entity;         // Shared health, block, status data
+    public int attackPower;           // Base attack power for intents
+    public int defensePower;          // Optional, if you have defensive actions
 
-    [Header("Scaling Multipliers")]
-    [Range(0f, 10f)]
-    public float minScaleMultiplier = 0.5f;
+    [Header("Intent System")]
+    public EnemyIntent currentIntent; // What the enemy plans to do this turn
+    public Sprite intentIcon;         // Icon shown above the enemy (attack, block, buff)
+    public string intentText;         // Text like “Attack” or “Buff Self”
+    public int intentValue;           // How much damage or block that intent will do
 
-    [Range(0f, 10f)]
-    public float maxScaleMultiplier = 2f;
-
-    [Tooltip("If true, this enemy can spawn with random strength (min–max scaling).")]
-    public bool isVariableEnemy = false;
-
-    [Header("Variable Naming")]
-    [Tooltip("Name prefix when the enemy rolls near its minimum scale (weaker variant).")]
-    public string weakPrefix = "Weak";
-
-    [Tooltip("Name prefix when the enemy rolls near its maximum scale (stronger variant).")]
-    public string strongPrefix = "Insane";
-
-    [Tooltip("Display color for the weak variant prefix (e.g., gray or dull blue).")]
-    public Color weakPrefixColor = Color.gray;
-
-    [Tooltip("Display color for the strong variant prefix (e.g., red or gold).")]
-    public Color strongPrefixColor = new Color(1f, 0.35f, 0.35f);
-
-    [Header("Variant Visual Overrides (Optional)")]
-    [Tooltip("Visual overrides when this enemy spawns as its weaker variant.")]
-    public VariantVisualOptions weakOptions;
-
-    [Tooltip("Visual overrides when this enemy spawns as its stronger variant.")]
-    public VariantVisualOptions strongOptions;
+    [Header("Behavior")]
+    public List<EnemyAction> actionPattern; // Optional list of possible actions
+    private int actionIndex;                 // Current action in the pattern
 
     [Header("Metadata")]
-    [Tooltip("Unique ID for this enemy (used for lookups or saves).")]
-    public int uniqueID;
+    public int enemyID;
+    public string enemyName;
+    public Sprite artwork;                  // Optional portrait or sprite
+    public AudioClip attackSFX;             // Optional sound for attack
 
     // -------------------------------------------------------
-    // Struct for per-variant visual customization
+    // Initialization
     // -------------------------------------------------------
-    [System.Serializable]
-    public struct VariantVisualOptions
+    public void Initialize(string name, int maxHealth, int atk, int def)
     {
-        [Range(0f, 2f)]
-        [Tooltip("Optional size multiplier for this variant (if 0, EnemyManager uses global default).")]
-        public float sizeMultiplier;
-
-        [Tooltip("Optional tint color for this variant (alpha = 0 means none).")]
-        public Color tintColor;
+        enemyName = name;
+        attackPower = atk;
+        defensePower = def;
+        entity = new EntityData();
+        entity.Initialize(name, maxHealth);
+        actionPattern = new List<EnemyAction>();
+        actionIndex = 0;
     }
 
     // -------------------------------------------------------
-    // Helper Methods
+    // Enemy chooses what to do next
     // -------------------------------------------------------
-
-    /// <summary>
-    /// Returns an HTML color string (RRGGBB) for the weak prefix color.
-    /// </summary>
-    public string GetWeakPrefixColorTag()
+    public void DecideNextIntent()
     {
-        return ColorUtility.ToHtmlStringRGB(weakPrefixColor);
-    }
+        if (actionPattern == null || actionPattern.Count == 0)
+        {
+            // Default: simple attack
+            currentIntent = EnemyIntent.Attack;
+            intentValue = attackPower;
+            intentText = "Attack";
+            return;
+        }
 
-    /// <summary>
-    /// Returns an HTML color string (RRGGBB) for the strong prefix color.
-    /// </summary>
-    public string GetStrongPrefixColorTag()
-    {
-        return ColorUtility.ToHtmlStringRGB(strongPrefixColor);
-    }
-
-    /// <summary>
-    /// Returns a fully formatted prefix wrapped in its color tag.
-    /// e.g., "<color=#B0B0B0>Weak</color>"
-    /// </summary>
-    public string GetColoredPrefix(bool isStrongVariant)
-    {
-        if (isStrongVariant)
-            return $"<color=#{GetStrongPrefixColorTag()}>{strongPrefix}</color>";
-        else
-            return $"<color=#{GetWeakPrefixColorTag()}>{weakPrefix}</color>";
+        // Randomly select an action from the pattern (Slay the Spire-like)
+        int idx = UnityEngine.Random.Range(0, actionPattern.Count);
+        var nextAction = actionPattern[idx];
+        currentIntent = nextAction.intent;
+        intentValue = nextAction.value;
+        intentText = nextAction.intent.ToString();
     }
 
     // -------------------------------------------------------
-    // Validation
+    // Execute current intent
     // -------------------------------------------------------
-    protected override void OnValidate()
+    public void ExecuteIntent(ref EntityData player)
     {
-        // verify valid scale multiplier
-        if (minScaleMultiplier > maxScaleMultiplier)
-            minScaleMultiplier = maxScaleMultiplier;
+        switch (currentIntent)
+        {
+            case EnemyIntent.Attack:
+                player.TakeDamage(intentValue);
+                break;
 
-        // Sanity checks
-        baseHealth         = Mathf.Max(1, baseHealth);
-        baseShield         = Mathf.Max(0, baseShield);
-        basePowerScale     = Mathf.Max(0.01f, basePowerScale);
-        minScaleMultiplier = Mathf.Clamp(minScaleMultiplier, 0f, maxScaleMultiplier);
-        maxScaleMultiplier = Mathf.Max(minScaleMultiplier, maxScaleMultiplier);
+            case EnemyIntent.Block:
+                entity.GainBlock(intentValue);
+                break;
+
+            case EnemyIntent.Heal:
+                entity.Heal(intentValue);
+                break;
+
+            case EnemyIntent.Buff:
+                entity.ApplyStatus("Strength", intentValue);
+                break;
+        }
     }
+
+    public bool IsAlive() => entity.isAlive;
 }

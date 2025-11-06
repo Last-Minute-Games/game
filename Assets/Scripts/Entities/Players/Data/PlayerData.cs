@@ -2,52 +2,61 @@ using UnityEngine;
 using System.Collections.Generic;
 
 [CreateAssetMenu(menuName = "Player/Player Data", fileName = "NewPlayerData")]
-public class PlayerData : EntityData
+public class PlayerData : ScriptableObject
 {
+    [Header("References")]
     [Tooltip("Reference to global configuration settings.")]
     public GameConfig config;
 
-    [Header("Player-Specific Settings")]
+    [Header("Core Stats (overrides config if set)")]
+    public string playerName = "Player";
+    public int baseHealth;
+    public int baseShield;
 
+    [Header("Energy Settings")]
     [Tooltip("Starting energy")]
     public int baseEnergy;
 
     [Tooltip("Maximum energy cap")]
     public int maxEnergy;
 
-    [Tooltip("Starting relics list")]
-    public List<RelicData> startingRelics = new List<RelicData>();
+    [Header("Collections")]
+    [Tooltip("Cards the player can use (initial deck and pool)")]
+    public List<CardData> usableCards = new List<CardData>();
 
-    protected override void OnValidate()
+    // Runtime entity state (not saved as defaults)
+    [System.NonSerialized]
+    public EntityData entity;
+
+    private void OnValidate()
     {
         if (config != null)
         {
-            // Replace with GameConfig definitions straight away
-            baseHealth   = config.defaultHealth;
-            baseShield   = config.defaultShield;
-            baseEnergy   = config.defaultBaseEnergy;
-            maxEnergy    = config.defaultMaxEnergy;
+            // Pull defaults from GameConfig
+            if (baseHealth <= 0) baseHealth = config.defaultHealth;
+            if (baseShield < 0) baseShield = config.defaultShield;
+            if (baseEnergy <= 0) baseEnergy = config.defaultBaseEnergy;
+            if (maxEnergy <= 0) maxEnergy = config.defaultMaxEnergy;
 
-            // Get starting definitions of cards and relics from GameConfig
-            usableCards.Clear();
-            startingRelics.Clear();
-
-            if (config.defaultCards != null && config.defaultCards.Count > 0)
-                usableCards.AddRange(config.defaultCards);
-
-            if (config.defaultRelics != null && config.defaultRelics.Count > 0)
-                startingRelics.AddRange(config.defaultRelics);
+            // Populate cards from config if none assigned
+            if ((usableCards == null || usableCards.Count == 0) && config.defaultCards != null)
+            {
+                usableCards = new List<CardData>(config.defaultCards);
+            }
+            // Note: default relics are not defined in GameConfig currently.
         }
-        else
-        {
-            // Fallback if GameConfig definitions don't exist
-            baseHealth   = Mathf.Max(1, baseHealth);
-            baseShield   = Mathf.Max(0, baseShield);
-            baseEnergy   = Mathf.Max(0, baseEnergy);
-            maxEnergy    = Mathf.Max(baseEnergy, maxEnergy);
-        }
-        // verify if cards were populated for player even
-        if (usableCards == null || usableCards.Count == 0)
-            Debug.LogWarning("Player has no cards assigned.");
+
+        // Basic sanity
+        if (maxEnergy < baseEnergy) maxEnergy = baseEnergy;
+        if (usableCards == null) usableCards = new List<CardData>();
+        if (usableCards.Count == 0)
+            Debug.LogWarning("PlayerData: No usable cards assigned.");
+    }
+
+    public void InitializeRuntime()
+    {
+        entity = new EntityData();
+        entity.Initialize(string.IsNullOrEmpty(playerName) ? "Player" : playerName, Mathf.Max(1, baseHealth));
+        if (baseShield > 0) entity.GainBlock(baseShield);
     }
 }

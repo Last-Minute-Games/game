@@ -65,14 +65,15 @@ public class CardFXHelper : MonoBehaviour
         }
 
         // Decide between dragging card vs showing arrow
-        if (card.targetRule == TargetRule.Enemy)
-        {
-            animHelper?.DragFollowMouseWithArrow(card, cursorPos);
-        }
-        else
-        {
-            animHelper?.DragFollowMouseWithCard(card, cursorPos);
-        }
+        // if (card.targetRule == TargetRule.Enemy)
+        // {
+        //     animHelper?.DragFollowMouseWithArrow(card, cursorPos);
+        // }
+        // else
+        // {
+        //     animHelper?.DragFollowMouseWithCard(card, cursorPos);
+        // }
+        animHelper?.DragFollowMouseWithArrow(card, cursorPos);
 
         // Play drag sound only once per drag session
         if (!dragSoundPlayed)
