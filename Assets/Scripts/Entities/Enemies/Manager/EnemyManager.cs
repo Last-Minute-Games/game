@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class EnemyManager : MonoBehaviour
@@ -7,8 +6,8 @@ public class EnemyManager : MonoBehaviour
     [Header("Data")]
     public List<EnemyData> enemies = new();
 
-    [Header("UI Rendering")]
-    [Tooltip("Parent UI container where enemy UI items will be spawned (e.g., a HorizontalLayoutGroup under a Canvas).")]
+    [Header("Rendering")]
+    [Tooltip("Parent container where enemy GameObjects (SpriteRenderer + Animator) will be spawned.")]
     public RectTransform uiContainer;
 
     private readonly List<EnemyRender> _activeRenders = new();
@@ -36,16 +35,25 @@ public class EnemyManager : MonoBehaviour
 
         foreach (var enemy in enemies)
         {
-            var go = new GameObject(string.IsNullOrEmpty(enemy.enemyName) ? "EnemyUI" : enemy.enemyName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Animator), typeof(EnemyRender));
+            var go = new GameObject(string.IsNullOrEmpty(enemy.enemyName) ? "Enemy" : enemy.enemyName, typeof(RectTransform), typeof(Animator), typeof(SpriteRenderer), typeof(EnemyRender));
             var rt = go.GetComponent<RectTransform>();
             rt.SetParent(uiContainer, false);
-            rt.sizeDelta = new Vector2(100, 100);
 
-            var img = go.GetComponent<Image>();
-            img.preserveAspect = true;
+            // Match the RectTransform look from the screenshot
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition3D = Vector3.zero; // Pos X/Y/Z = 0
+            rt.sizeDelta = new Vector2(100f, 100f); // Width/Height = 100
+            rt.localScale = Vector3.one * 10f;
+            rt.localRotation = Quaternion.identity;
+
+            var sr = go.GetComponent<SpriteRenderer>();
+            sr.sprite = enemy.artwork;
+            // Optional: reflect screenshot Order in Layer = 99
+            sr.sortingOrder = 99;
 
             var render = go.GetComponent<EnemyRender>();
-            render.artworkImage = img;
             render.Bind(enemy);
 
             _activeRenders.Add(render);
