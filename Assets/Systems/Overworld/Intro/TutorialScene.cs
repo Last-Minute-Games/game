@@ -28,6 +28,10 @@ namespace Systems.Overworld.Intro
 
         public List<Sprite> sleepingPlayerFrames;
 
+        // New: list of lights that should be dimmed when the melting sequence starts
+        public List<Light2D> meltingLights = new List<Light2D>();
+        public float meltingDimDuration = 7f;
+
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
         private CharacterMotor2D _plrMotor2D;
@@ -140,7 +144,7 @@ namespace Systems.Overworld.Intro
                 spriteRenderer.transform.DOMove(targetPos, 6f).SetEase(Ease.Linear);
             }
 
-            _globalLight.DOIntensity(0, 7f);
+            // global light dimming is now handled when the melting sequence is activated via the meltingLights list
 
             yield return null;
         }
@@ -215,7 +219,16 @@ namespace Systems.Overworld.Intro
             _plrInput.isInputEnabled = false;
 
             _meltingAudioSource.Play();
-            
+
+            // Dim any lights registered for the melting sequence
+            foreach (var l in meltingLights)
+            {
+                if (l != null)
+                {
+                    l.DOIntensity(0, meltingDimDuration).SetEase(Ease.Linear);
+                }
+            }
+
             StartCoroutine(StartPuddleSeq());
             return;
 
@@ -342,6 +355,10 @@ namespace Systems.Overworld.Intro
             _globalLight = GameObject.Find("2D Global Light").GetComponent<Light2D>();
             _characterLight2D = GameObject.Find("CharacterLight").GetComponent<Light2D>();
             _ballroomSpotlight = GameObject.Find("BallroomSpotlight").GetComponent<Light2D>();
+
+            // Ensure the global light is included in the meltingLights list so it will be dimmed
+            if (_globalLight != null && !meltingLights.Contains(_globalLight))
+                meltingLights.Add(_globalLight);
 
             _characterLight2D.enabled = true;
             _ballroomSpotlight.enabled = false;

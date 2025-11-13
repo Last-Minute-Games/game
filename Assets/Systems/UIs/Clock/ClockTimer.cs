@@ -33,6 +33,11 @@ public class ClockTimer : MonoBehaviour
     public float warningThreshold = 10f; // time before end to start sound
     private bool warningPlayed = false;
 
+    [Header("Clock Tick Audio")]
+    public AudioSource tickAudioSource;
+    public AudioClip tickClip;
+    [Range(0f, 1f)] public float tickVolume = 0.5f;
+
 
     void Start()
     {
@@ -76,6 +81,14 @@ public class ClockTimer : MonoBehaviour
             warningAudioSource.spatialBlend = 0f; // make it 2D
         }
 
+        // Setup tick audio source
+        if (tickAudioSource == null)
+        {
+            tickAudioSource = gameObject.AddComponent<AudioSource>();
+            tickAudioSource.playOnAwake = false;
+            tickAudioSource.spatialBlend = 0f; // make it 2D
+        }
+
         StartTimer(totalTime);
         StartCoroutine(InitialFadeIn()); // fade in at game start
     }
@@ -100,6 +113,9 @@ public class ClockTimer : MonoBehaviour
                 clockImage.sprite = clockFrames[frameIndex];
                 lastFrameIndex = frameIndex;
                 Debug.Log($"[ClockTimer] Frame changed: {frameIndex}/{frameCount - 1} | Time left: {timeLeft:F2}s");
+                
+                // Play tick sound
+                PlayTickSound();
             }
 
             // Debug per whole second
@@ -292,5 +308,13 @@ public class ClockTimer : MonoBehaviour
         }
     }
 
+    private void PlayTickSound()
+    {
+        if (tickAudioSource != null && tickClip != null)
+        {
+            tickAudioSource.volume = tickVolume;
+            tickAudioSource.PlayOneShot(tickClip);
+        }
+    }
 
 }
