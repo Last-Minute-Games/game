@@ -24,6 +24,9 @@ public class GenerateMaze : MonoBehaviour
 
     bool generating = false;
 
+    private bool roomsBuilt = false;
+
+
     private void GetRoomSize() {
         SpriteRenderer[] spriteRenderers = roomPrefab.GetComponentsInChildren<SpriteRenderer>();
 
@@ -55,6 +58,10 @@ public class GenerateMaze : MonoBehaviour
         
          
         private void Start() {
+
+        BuildRoomsIfNeeded();
+
+        /*
         GetRoomSize();
 
         rooms = new Room[numX, numY];
@@ -63,15 +70,15 @@ public class GenerateMaze : MonoBehaviour
             for (int j = 0; j < numY; ++j) {
                 GameObject room = Instantiate(roomPrefab, new Vector3(i * roomWidth, j * roomHeight, 0.0f), Quaternion.identity);
 
-                room.name = "Room_" + i.ToString() + "_" + j.ToString();
+                //room.name = "Room_" + i.ToString() + "_" + j.ToString();
                 rooms[i, j] = room.GetComponent<Room>();
                 rooms[i, j].Index = new Vector2Int(i, j);
             }
         
         }
 
-        SetCamera();
-
+        //SetCamera();
+        */
     }
 
     private void RemoveRoomWall(int x, int y, Room.Directions dir)
@@ -209,6 +216,8 @@ public class GenerateMaze : MonoBehaviour
             return;
         }
 
+        BuildRoomsIfNeeded();
+
         Reset();
 
         RemoveRoomWall(0, 0, Room.Directions.BOTTOM);
@@ -235,6 +244,11 @@ public class GenerateMaze : MonoBehaviour
 
     private void Reset()
     {
+        if (rooms == null)
+        {
+            Debug.LogError("GenerateMaze.Reset() called but rooms is null.");
+            return;
+        }
         for (int i = 0; i < numX; ++i) { 
             for(int j = 0; j < numY; ++j)
             {
@@ -257,5 +271,52 @@ public class GenerateMaze : MonoBehaviour
             }
         }
     }
+
+    public Room GetRoom(Vector2Int index)
+    {
+        return rooms[index.x, index.y];
+    }
+
+    public Vector3 GetWorldPosition(Vector2Int index)
+    {
+        return new Vector3(index.x * roomWidth, index.y * roomHeight, 0f);
+    }
+
+    public Vector2Int GetMazeSize()
+    {
+        return new Vector2Int(numX, numY);
+    }
+
+    private void BuildRoomsIfNeeded()
+    {
+        if (roomsBuilt && rooms != null)
+            return;
+
+        GetRoomSize();
+
+        rooms = new Room[numX, numY];
+
+        for (int i = 0; i < numX; ++i)
+        {
+            for (int j = 0; j < numY; ++j)
+            {
+                GameObject room = Instantiate(
+                    roomPrefab,
+                    new Vector3(i * roomWidth, j * roomHeight, 0.0f),
+                    Quaternion.identity,
+                    transform   // keep rooms grouped under this object
+                );
+
+                room.name = "Room_" + i.ToString() + "_" + j.ToString();
+                rooms[i, j] = room.GetComponent<Room>();
+                rooms[i, j].Index = new Vector2Int(i, j);
+            }
+        }
+
+        roomsBuilt = true;
+    }
+
+
+
 }
 

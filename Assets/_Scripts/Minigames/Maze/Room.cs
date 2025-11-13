@@ -47,4 +47,16 @@ public class Room : MonoBehaviour
         dirflags[dir] = flag;
         SetActive(dir, flag);
     }
+
+    public bool HasWall(Directions dir)
+    {
+        // If we never stored this direction, be safe and say "yes there's a wall"
+        if (!walls.ContainsKey(dir))
+        {
+            return true;
+        }
+
+        // If the wall GameObject is active, the wall exists
+        return walls[dir].activeSelf;
+    }
 }
