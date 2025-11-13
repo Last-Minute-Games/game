@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class JournalUI_Named : MonoBehaviour
 {
@@ -16,6 +17,9 @@ public class JournalUI_Named : MonoBehaviour
     [Header("Tutorial")]
     [Tooltip("Optional tutorial overlay to show on first open")]
     public GameObject tutorialOverlay;
+    
+    [Tooltip("Button to close the tutorial (will auto-wire to CloseTutorial)")]
+    public Button tutorialCloseButton;
     
     [Tooltip("Flag name to track if tutorial has been shown")]
     public string tutorialShownFlagName = "journal.tutorial.shown";
@@ -65,6 +69,14 @@ public class JournalUI_Named : MonoBehaviour
         {
             tutorialOverlay.SetActive(false);
         }
+        
+        // Auto-wire the tutorial close button
+        if (tutorialCloseButton != null)
+        {
+            tutorialCloseButton.onClick.RemoveAllListeners();
+            tutorialCloseButton.onClick.AddListener(CloseTutorial);
+            Debug.Log("[JournalUI_Named] Tutorial close button wired up");
+        }
     }
 
     void OnEnable()
@@ -83,14 +95,11 @@ public class JournalUI_Named : MonoBehaviour
 
     void Update()
     {
-        // If tutorial is active, check for any click to dismiss it
-        if (isTutorialActive && Input.GetMouseButtonDown(0))
+        // REMOVED: The problematic mouse click check that was closing the tutorial immediately
+        // Tutorial should only close via explicit button click or this escape key
+        if (isTutorialActive && Input.GetKeyDown(KeyCode.Escape))
         {
-            // Check if we clicked on UI (not clicking through to the game world)
-            if (EventSystem.current != null)
-            {
-                CloseTutorial();
-            }
+            CloseTutorial();
         }
     }
 
@@ -113,7 +122,6 @@ public class JournalUI_Named : MonoBehaviour
 
     /// <summary>
     /// Call this method from a button on the tutorial overlay to close it
-    /// Or it will be called automatically when clicking anywhere on the journal
     /// </summary>
     public void CloseTutorial()
     {

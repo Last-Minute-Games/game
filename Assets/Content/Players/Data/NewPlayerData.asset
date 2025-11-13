@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89befbc41009b43bf8dd9041a0a103ba, type: 3}
   m_Name: NewPlayerData
   m_EditorClassIdentifier: Assembly-CSharp::PlayerData
+<<<<<<< HEAD
   config: {fileID: 11400000, guid: ebb416b5f719f46c0ab992ed16a61141, type: 2}
   playerName: Player
   baseHealth: 100
@@ -20,3 +21,15 @@ MonoBehaviour:
   maxEnergy: 3
   usableCards:
   - {fileID: 11400000, guid: 732adffbb1670dc9ba81e8df6c6d9e49, type: 2}
+=======
+  baseHealth: 100
+  baseShield: 0
+  basePowerScale: 1
+  usableCards:
+  - card: {fileID: 11400000, guid: 732adffbb1670dc9ba81e8df6c6d9e49, type: 2}
+    drawWeight: 1.12
+  config: {fileID: 11400000, guid: ebb416b5f719f46c0ab992ed16a61141, type: 2}
+  baseEnergy: 3
+  maxEnergy: 3
+  startingRelics: []
+>>>>>>> e7350430394d38bfb7b98d75510afac22b8aee4b

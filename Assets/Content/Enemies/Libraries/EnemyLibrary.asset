@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e706fee7e2ac78d697ccf799bca33d9, type: 3}
+  m_Name: EnemyLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyLibrary
+  AvailableEnemies:
+  - {fileID: 11400000, guid: ac57765c143223dd9af5745621a65564, type: 2}
+  - {fileID: 11400000, guid: 04ece062593608c4cbf1db4d3c5138bc, type: 2}
+  - {fileID: 11400000, guid: f20d3dc1bb15f2343891bee075bbbf4c, type: 2}
+  - {fileID: 11400000, guid: ed4adc073c9a0cf47b62ec7b7420f48b, type: 2}
+  - {fileID: 11400000, guid: 767fdfa50f904e34b97c972d7f13bd3c, type: 2}
+  minEnemies: 1
+  maxEnemies: 3

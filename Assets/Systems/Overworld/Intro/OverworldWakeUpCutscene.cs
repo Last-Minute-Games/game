@@ -80,15 +80,24 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(1.5f);
             
-            // Fade from black (just like BedIntroCutscene)
-            Debug.Log("[OverworldWakeUpCutscene] Starting fade out");
-            fadeCanvasGroup.DOFade(0f, 3f).SetEase(Ease.InOutQuad).OnComplete(() =>
+            // Use ScreenFader's eyes opening effect instead of regular fade
+            Debug.Log("[OverworldWakeUpCutscene] Opening eyes (using ScreenFader)");
+            ScreenFader screenFader = FindFirstObjectByType<ScreenFader>();
+            if (screenFader != null)    
             {
-                fadeCanvasGroup.blocksRaycasts = false;
-                Debug.Log("[OverworldWakeUpCutscene] Fade complete");
-            });
-            
-            yield return new WaitForSeconds(3.5f);
+                yield return StartCoroutine(screenFader.EyesOpeningEffect());
+            }
+            else
+            {
+                // Fallback to DOTween fade if ScreenFader is not found
+                Debug.LogWarning("[OverworldWakeUpCutscene] ScreenFader not found, using fallback fade");
+                fadeCanvasGroup.DOFade(0f, 3f).SetEase(Ease.InOutQuad).OnComplete(() =>
+                {
+                    fadeCanvasGroup.blocksRaycasts = false;
+                    Debug.Log("[OverworldWakeUpCutscene] Fade complete");
+                });
+                yield return new WaitForSeconds(3.5f);
+            }
             
             // Change sprite to awake
             Debug.Log("[OverworldWakeUpCutscene] Changing sprite to awake");
@@ -99,18 +108,47 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(1.5f);
             
-            // Re-enable player input
-            if (playerInput != null)
+            // Start dialogue when eyes open
+            Debug.Log("[OverworldWakeUpCutscene] Starting dialogue after waking");
+            
+            bool dialogueFinished = false;
+            
+            if (dialogBehaviour != null && wakeUpDialogGraph != null)
             {
-                playerInput.isInputEnabled = true;
-                Debug.Log("[OverworldWakeUpCutscene] Player input enabled");
+                // Add listener for when dialogue finishes
+                UnityEngine.Events.UnityAction onFinished = () => { dialogueFinished = true; };
+                dialogBehaviour.OnDialogFinished.AddListener(onFinished);
+                
+                dialogBehaviour.StartDialog(wakeUpDialogGraph);
+                
+                // Wait for dialogue to finish
+                while (!dialogueFinished)
+                {
+                    yield return null;
+                }
+                
+                // Remove the listener
+                dialogBehaviour.OnDialogFinished.RemoveListener(onFinished);
+            }
+            else
+            {
+                Debug.Log("Nikolaus: Was that... just a dream?");
+                yield return new WaitForSeconds(2f); // Fallback wait time
             }
             
-            // Re-enable CinemachineBrain
-            if (cinemachineBrain != null)
+            Debug.Log("[OverworldWakeUpCutscene] Dialogue finished, starting transition");
+            
+            // Fade to black
+            fadeCanvasGroup.blocksRaycasts = true;
+            fadeCanvasGroup.DOFade(1f, 2f).SetEase(Ease.InOutQuad);
+            
+            yield return new WaitForSeconds(2.5f);
+            
+            // Hide SleepingMain sprite renderer while screen is black
+            if (sleepingMainSpriteRenderer != null)
             {
-                cinemachineBrain.enabled = true;
-                Debug.Log("[OverworldWakeUpCutscene] CinemachineBrain enabled");
+                sleepingMainSpriteRenderer.enabled = false;
+                Debug.Log("[OverworldWakeUpCutscene] SleepingMain sprite renderer disabled");
             }
             
             // Re-enable MainCharacter sprite renderer
@@ -127,23 +165,30 @@ namespace Systems.Overworld.Intro
                 Debug.Log("[OverworldWakeUpCutscene] MainCharacter ShadowCaster2D enabled");
             }
             
-            // Hide SleepingMain sprite renderer
-            if (sleepingMainSpriteRenderer != null)
+            // Re-enable CinemachineBrain
+            if (cinemachineBrain != null)
             {
-                sleepingMainSpriteRenderer.enabled = false;
-                Debug.Log("[OverworldWakeUpCutscene] SleepingMain sprite renderer disabled");
+                cinemachineBrain.enabled = true;
+                Debug.Log("[OverworldWakeUpCutscene] CinemachineBrain enabled");
             }
             
-            // Start dialogue
-            Debug.Log("[OverworldWakeUpCutscene] Starting dialogue");
-            if (dialogBehaviour != null && wakeUpDialogGraph != null)
+            yield return new WaitForSeconds(0.5f);
+            
+            // Fade from black - character is now out of bed
+            fadeCanvasGroup.DOFade(0f, 0.5f).SetEase(Ease.InOutQuad).OnComplete(() =>
             {
-                dialogBehaviour.StartDialog(wakeUpDialogGraph);
-            }
-            else
-            {
-                Debug.Log("Nikolaus: Was that... just a dream?");
-            }
+                fadeCanvasGroup.blocksRaycasts = false;
+                Debug.Log("[OverworldWakeUpCutscene] Fade complete - character out of bed");
+                
+                // Re-enable player input immediately after fade completes
+                if (playerInput != null)
+                {
+                    playerInput.isInputEnabled = true;
+                    Debug.Log("[OverworldWakeUpCutscene] Player input enabled");
+                }
+            });
+            
+            yield return new WaitForSeconds(2f); // Just wait for fade to complete
             
             Debug.Log("[OverworldWakeUpCutscene] Complete");
             yield return null;
@@ -231,11 +276,28 @@ namespace Systems.Overworld.Intro
             
             Debug.Log("[OverworldWakeUpCutscene] Setting up cutscene...");
             
-            // Set fade canvas to black for cutscene start
-            if (fadeCanvasGroup != null)
+            // Set up ScreenFader with eyes closed at start
+            ScreenFader screenFader = FindFirstObjectByType<ScreenFader>();
+            if (screenFader != null && screenFader.topPanel != null && screenFader.bottomPanel != null)
             {
-                fadeCanvasGroup.alpha = 1f; // Start opaque (black screen)
-                Debug.Log("[OverworldWakeUpCutscene] Fade canvas set to black");
+                Debug.Log("[OverworldWakeUpCutscene] Setting up eyes closed position");
+                // Position the panels to cover the screen (eyes closed)
+                screenFader.topPanel.anchoredPosition = Vector2.zero;
+                screenFader.bottomPanel.anchoredPosition = Vector2.zero;
+                // Make sure fade canvas is hidden
+                if (fadeCanvasGroup != null)
+                {
+                    fadeCanvasGroup.alpha = 0f;
+                }
+            }
+            else
+            {
+                // Fallback: use fade canvas if ScreenFader panels not available
+                if (fadeCanvasGroup != null)
+                {
+                    fadeCanvasGroup.alpha = 1f; // Start opaque (black screen)
+                    Debug.Log("[OverworldWakeUpCutscene] Fade canvas set to black (fallback)");
+                }
             }
             
             Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
@@ -246,6 +308,16 @@ namespace Systems.Overworld.Intro
         public static void TriggerWakeUpCutscene()
         {
             Debug.Log("[OverworldWakeUpCutscene] TriggerWakeUpCutscene() called");
+            
+            // Clear the journal tutorial flag so it shows again in Overworld
+            // The TutorialScene showed the journal as part of the tutorial, but in Overworld
+            // the player needs to learn to open it themselves
+            if (GameFlags.HasFlag("journal.tutorial.shown"))
+            {
+                GameFlags.RemoveFlag("journal.tutorial.shown");
+                Debug.Log("[OverworldWakeUpCutscene] Cleared 'journal.tutorial.shown' flag for Overworld");
+            }
+            
             UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
             UnityEngine.PlayerPrefs.Save();
             Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene")}");

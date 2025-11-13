@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <!-- Windows-specific settings -->
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(TargetFramework)' == 'net9.0-windows'">
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifier)' == ''">
     <TargetFramework>net9.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <OutputType>WinExe</OutputType>

@@ -147,6 +147,17 @@ namespace CastleOfTimeUpdater
 
                     Log("Installing update...");
                     SetProgress(90);
+
+                    // Clean install directory to avoid corruption: delete everything except the updater itself
+                    try
+                    {
+                        CleanInstallDirectoryExceptUpdater(InstallDir);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"Warning: failed to fully clean install dir: {ex.Message}");
+                    }
+
                     ReplaceGameFiles(extractDir, InstallDir);
 
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -241,6 +252,100 @@ namespace CastleOfTimeUpdater
                         if (retries == 0) throw;
                         System.Threading.Thread.Sleep(500);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes all files and directories inside the install directory except the updater executable.
+        /// This helps ensure a clean install in case of corruption. Non-fatal: logs failures.
+        /// </summary>
+        /// <param name="installDir">The installation directory (InstallDir)</param>
+        protected void CleanInstallDirectoryExceptUpdater(string installDir)
+        {
+            // Find the running updater executable path
+            string? updaterFullPath = null;
+            try
+            {
+                updaterFullPath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+            }
+            catch { }
+
+            if (string.IsNullOrEmpty(updaterFullPath))
+            {
+                updaterFullPath = Path.Combine(installDir, "CastleOfTimeUpdater.exe");
+            }
+
+            updaterFullPath = Path.GetFullPath(updaterFullPath);
+
+            // Delete all files and directories under installDir except the updaterFullPath file itself.
+            // If updater is in a subfolder, we will still delete other files in that folder, but not the updater file.
+
+            // Delete files recursively
+            foreach (var file in Directory.GetFiles(installDir, "*", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    string fileFull = Path.GetFullPath(file);
+                    if (string.Equals(fileFull, updaterFullPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    File.SetAttributes(fileFull, FileAttributes.Normal);
+                    int tries = 3;
+                    while (tries > 0)
+                    {
+                        try
+                        {
+                            File.Delete(fileFull);
+                            break;
+                        }
+                        catch
+                        {
+                            tries--;
+                            System.Threading.Thread.Sleep(200);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"  ⚠️ Could not delete file {file}: {ex.Message}");
+                }
+            }
+
+            // Delete empty directories (bottom-up)
+            var allDirs = Directory.GetDirectories(installDir, "*", SearchOption.AllDirectories);
+            // Sort by path length descending so children are deleted before parents
+            Array.Sort(allDirs, (a, b) => b.Length.CompareTo(a.Length));
+
+            foreach (var dir in allDirs)
+            {
+                try
+                {
+                    // If the updater file resides somewhere under this directory, we must not delete the file itself; but we can delete other files already removed above.
+                    // Attempt to delete the directory; it will fail if updater file still exists inside.
+                    if (Directory.Exists(dir) && Directory.GetFileSystemEntries(dir).Length == 0)
+                    {
+                        int tries = 3;
+                        while (tries > 0)
+                        {
+                            try
+                            {
+                                Directory.Delete(dir, false);
+                                break;
+                            }
+                            catch
+                            {
+                                tries--;
+                                System.Threading.Thread.Sleep(200);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"  ⚠️ Could not delete directory {dir}: {ex.Message}");
                 }
             }
         }
