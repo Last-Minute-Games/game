@@ -38,7 +38,6 @@ public class ClockTimer : MonoBehaviour
     public AudioClip tickClip;
     [Range(0f, 1f)] public float tickVolume = 0.5f;
 
-
     void Start()
     {
         if (clockFrames.Length == 0 || clockImage == null || screenFader == null)
@@ -51,7 +50,7 @@ public class ClockTimer : MonoBehaviour
         clockImage.sprite = clockFrames[0];
 
         screenFader.SetPanelAlpha(0f);
-        
+
         // Setup end message text
         if (endMessageText != null)
         {
@@ -60,7 +59,7 @@ public class ClockTimer : MonoBehaviour
             endMessageText.alignment = TMPro.TextAlignmentOptions.Center;
             endMessageText.fontSize = 72; // Large dramatic text
             endMessageText.color = Color.red; // Red for dramatic effect
-            
+
             // Ensure the text is positioned correctly in the center
             RectTransform textRect = endMessageText.GetComponent<RectTransform>();
             if (textRect != null)
@@ -70,7 +69,7 @@ public class ClockTimer : MonoBehaviour
                 textRect.offsetMin = Vector2.zero;
                 textRect.offsetMax = Vector2.zero;
             }
-            
+
             endMessageText.gameObject.SetActive(false);
         }
 
@@ -162,7 +161,7 @@ public class ClockTimer : MonoBehaviour
             if (timeLeft <= 0f && !hasEnded)
             {
                 hasEnded = true;
-                IsTimeEnded = true; 
+                IsTimeEnded = true;
                 Debug.Log("[ClockTimer] Timer finished! Showing message and transitioning...");
                 StartCoroutine(FadeMessageThenTransition());
             }
@@ -211,6 +210,15 @@ public class ClockTimer : MonoBehaviour
         }
     }
 
+    private void PlayTickSound()
+    {
+        if (tickAudioSource != null && tickClip != null)
+        {
+            tickAudioSource.volume = tickVolume;
+            tickAudioSource.PlayOneShot(tickClip);
+        }
+    }
+
     private IEnumerator InitialFadeIn()
     {
         if (screenFader != null)
@@ -238,13 +246,13 @@ public class ClockTimer : MonoBehaviour
         if (endMessageText != null)
         {
             endMessageText.gameObject.SetActive(true);
-            
+
             // Force the text properties again to ensure they're applied
             endMessageText.text = "YOU DIED!";
             endMessageText.color = Color.red;
             endMessageText.fontSize = 72;
             endMessageText.alignment = TMPro.TextAlignmentOptions.Center;
-            
+
             // Bring to front (set high sorting order)
             Canvas textCanvas = endMessageText.GetComponent<Canvas>();
             if (textCanvas == null)
@@ -252,7 +260,7 @@ public class ClockTimer : MonoBehaviour
                 textCanvas = endMessageText.gameObject.AddComponent<Canvas>();
                 textCanvas.overrideSorting = true;
                 textCanvas.sortingOrder = 1000; // Very high to be on top
-                
+
                 // Add GraphicRaycaster if needed
                 if (endMessageText.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
                 {
@@ -264,34 +272,84 @@ public class ClockTimer : MonoBehaviour
                 textCanvas.overrideSorting = true;
                 textCanvas.sortingOrder = 1000;
             }
-            
+
             endMessageText.alpha = 0f;
 
-            // Fade in message
+            // Get or set the RectTransform for scaling
+            RectTransform textRect = endMessageText.GetComponent<RectTransform>();
+            if (textRect != null)
+            {
+                textRect.localScale = Vector3.zero; // Start from zero scale
+            }
+
+            // Fade in and scale up message simultaneously
             float elapsed = 0f;
+            float scaleInDuration = messageDisplayTime * 0.8f; // Scale faster than fade
             while (elapsed < messageDisplayTime)
             {
                 elapsed += Time.deltaTime;
-                endMessageText.alpha = Mathf.Clamp01(elapsed / messageDisplayTime);
+                float fadeProgress = Mathf.Clamp01(elapsed / messageDisplayTime);
+                float scaleProgress = Mathf.Clamp01(elapsed / scaleInDuration);
+
+                // Fade in
+                endMessageText.alpha = fadeProgress;
+
+                // Scale up with overshoot effect (elastic)
+                if (textRect != null)
+                {
+                    float scale;
+                    if (scaleProgress < 1f)
+                    {
+                        // Overshoot effect: go slightly over 1.0 then settle back
+                        scale = Mathf.Lerp(0f, 1.2f, Mathf.SmoothStep(0f, 1f, scaleProgress));
+                    }
+                    else
+                    {
+                        // Settle back to 1.0
+                        float settleProgress = (elapsed - scaleInDuration) / (messageDisplayTime - scaleInDuration);
+                        scale = Mathf.Lerp(1.2f, 1f, settleProgress);
+                    }
+                    textRect.localScale = Vector3.one * scale;
+                }
+
                 yield return null;
             }
 
             endMessageText.alpha = 1f;
+            if (textRect != null)
+            {
+                textRect.localScale = Vector3.one; // Ensure final scale is exactly 1
+            }
 
             // Hold the message
             yield return new WaitForSeconds(1.5f);
 
-            // Fade out text
+            // Fade out text and scale down
             elapsed = 0f;
             float fadeOutDuration = 1.5f;
             while (elapsed < fadeOutDuration)
             {
                 elapsed += Time.deltaTime;
-                endMessageText.alpha = Mathf.Clamp01(1f - (elapsed / fadeOutDuration));
+                float progress = elapsed / fadeOutDuration;
+
+                // Fade out
+                endMessageText.alpha = Mathf.Clamp01(1f - progress);
+
+                // Scale down slightly
+                if (textRect != null)
+                {
+                    float scale = Mathf.Lerp(1f, 0.8f, progress);
+                    textRect.localScale = Vector3.one * scale;
+                }
+
                 yield return null;
             }
-            
+
             endMessageText.alpha = 0f;
+            if (textRect != null)
+            {
+                textRect.localScale = Vector3.one; // Reset scale
+            }
             endMessageText.gameObject.SetActive(false);
         }
 
@@ -307,14 +365,4 @@ public class ClockTimer : MonoBehaviour
             yield return StartCoroutine(screenFader.TransitionToSceneKeepPanelsClosed(nextSceneName));
         }
     }
-
-    private void PlayTickSound()
-    {
-        if (tickAudioSource != null && tickClip != null)
-        {
-            tickAudioSource.volume = tickVolume;
-            tickAudioSource.PlayOneShot(tickClip);
-        }
-    }
-
 }
