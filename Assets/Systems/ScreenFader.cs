@@ -33,15 +33,7 @@ public class ScreenFader : MonoBehaviour
         // Start fully transparent
         fadePanel.color = new Color(0, 0, 0, 0f);
         
-        // Auto-create split panels if they don't exist
-        if (topPanel == null || bottomPanel == null)
-        {
-            CreateSplitPanels();
-        }
-        else
-        {
-            InitializeSplitPanels();
-        }
+        // Don't auto-create split panels on Awake - create them when needed
     }
 
     private void OnDestroy()
@@ -60,7 +52,7 @@ public class ScreenFader : MonoBehaviour
         }
         else
         {
-            // Reset split panels position when a new scene loads
+            // Reset split panels position when a new scene loads (if they exist)
             if (topPanel != null && bottomPanel != null)
             {
                 InitializeSplitPanels();
@@ -76,6 +68,9 @@ public class ScreenFader : MonoBehaviour
 
     private void CreateSplitPanels()
     {
+        // Delete existing panels if they exist
+        DeleteSplitPanels();
+        
         // Get the Canvas (parent of fadePanel)
         Canvas canvas = fadePanel.GetComponentInParent<Canvas>();
         if (canvas == null)
@@ -116,9 +111,26 @@ public class ScreenFader : MonoBehaviour
         bottomPanel.offsetMin = Vector2.zero;
         bottomPanel.offsetMax = Vector2.zero;
         
-        Debug.Log("[ScreenFader] Split panels created automatically");
+        Debug.Log("[ScreenFader] Split panels created");
         
         InitializeSplitPanels();
+    }
+
+    private void DeleteSplitPanels()
+    {
+        if (topPanel != null)
+        {
+            Destroy(topPanel.gameObject);
+            topPanel = null;
+            Debug.Log("[ScreenFader] Top panel deleted");
+        }
+        
+        if (bottomPanel != null)
+        {
+            Destroy(bottomPanel.gameObject);
+            bottomPanel = null;
+            Debug.Log("[ScreenFader] Bottom panel deleted");
+        }
     }
 
     private void InitializeSplitPanels()
@@ -193,9 +205,12 @@ public class ScreenFader : MonoBehaviour
     /// </summary>
     public IEnumerator EyesClosingEffect()
     {
+        // Create split panels when eyes are closing
+        CreateSplitPanels();
+        
         if (topPanel == null || bottomPanel == null)
         {
-            Debug.LogWarning("[ScreenFader] Split panels not assigned, using regular fade");
+            Debug.LogWarning("[ScreenFader] Failed to create split panels, using regular fade");
             yield return StartCoroutine(FadeOut());
             yield break;
         }
@@ -242,11 +257,29 @@ public class ScreenFader : MonoBehaviour
     /// </summary>
     public IEnumerator EyesOpeningEffect()
     {
+        // Re-enable fadePanel if it was disabled
+        if (fadePanel != null && !fadePanel.gameObject.activeSelf)
+        {
+            fadePanel.gameObject.SetActive(true);
+        }
+        
+        // If panels don't exist, we need to create them first in the closed position
         if (topPanel == null || bottomPanel == null)
         {
-            Debug.LogWarning("[ScreenFader] Split panels not assigned, using regular fade");
-            yield return StartCoroutine(FadeIn());
-            yield break;
+            Debug.LogWarning("[ScreenFader] Split panels not found, creating them in closed position");
+            CreateSplitPanels();
+            
+            // If still null after creation, fall back to regular fade
+            if (topPanel == null || bottomPanel == null)
+            {
+                Debug.LogWarning("[ScreenFader] Failed to create panels, using regular fade");
+                yield return StartCoroutine(FadeIn());
+                yield break;
+            }
+            
+            // Position them in closed position (covering screen)
+            topPanel.anchoredPosition = Vector2.zero;
+            bottomPanel.anchoredPosition = Vector2.zero;
         }
 
         // Get the screen height
@@ -287,10 +320,11 @@ public class ScreenFader : MonoBehaviour
             Color c = fadePanel.color;
             c.a = 0f;
             fadePanel.color = c;
-            // Also disable the FadeOverlay GameObject to be safe
-            fadePanel.gameObject.SetActive(false);
-            Debug.Log("[ScreenFader] Cleared and disabled fade panel");
+            Debug.Log("[ScreenFader] Cleared fade panel");
         }
+        
+        // Delete the split panels after eyes open
+        DeleteSplitPanels();
         
         isTransitioning = false;
         Debug.Log("[ScreenFader] Eyes opened!");
