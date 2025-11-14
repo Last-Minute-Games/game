@@ -14,8 +14,8 @@ public class MazePopupController : MonoBehaviour
     [Header("Maze Content")]
     [Tooltip("Parent that contains the generated maze and the maze player head.")]
     public GameObject mazeRoot;
-    [Tooltip("Grid movement script used inside the maze (your PlayerMovementScript).")]
-    public PlayerMovementScript mazePlayerMovement;
+    [Tooltip("Movement script used inside the maze (MazePlayerController).")]
+    public MazePlayerController mazePlayer;
     [Tooltip("Where the maze player head should start each time.")]
     public Transform mazeStartPoint;
     [Tooltip("Optional: maze generator to call when opening.")]
@@ -30,10 +30,12 @@ public class MazePopupController : MonoBehaviour
     [Tooltip("Sprite to use for the player while in the maze (little head).")]
     public Sprite mazePlayerSprite;
 
+
     SpriteRenderer overworldSpriteRenderer;
     Sprite overworldSprite;
 
     bool isOpen = false;
+    private bool mazeGenerated = false;
 
     void Awake()
     {
@@ -42,6 +44,7 @@ public class MazePopupController : MonoBehaviour
             quitButton.onClick.AddListener(Hide);
 
         // Grab overworld player sprite once (same idea as MinigameController)
+        /*
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
@@ -49,34 +52,29 @@ public class MazePopupController : MonoBehaviour
             if (overworldSpriteRenderer != null)
                 overworldSprite = overworldSpriteRenderer.sprite;
         }
-
+        */
         HideImmediate();                // make sure popup is off
         if (mazeRoot != null)
             mazeRoot.SetActive(false);  // maze itself hidden
-        if (mazePlayerMovement != null)
-            mazePlayerMovement.enabled = false; // no maze control at start
+
+        if (mazePlayer != null)
+        {
+            mazePlayer.enabled = false;
+            mazePlayer.gameObject.SetActive(false); // player head hidden at start
+        } // no maze control at start
+
+        mazeGenerated = false;
     }
 
     public void Show()
     {
         if (isOpen) return;
         isOpen = true;
+        mazeGenerated = false;
 
-        // Optional: regenerate the maze each time the popup opens
-        if (mazeGenerator != null)
-        {
-            mazeGenerator.CreateMaze();   // uses your existing CreateMaze logic :contentReference[oaicite:2]{index=2}
-        }
-
-        // Place maze player at start
-        if (mazePlayerMovement != null && mazeStartPoint != null)
-        {
-            mazePlayerMovement.transform.position = mazeStartPoint.position;
-        }
-
-        // HUD off (like Blackjack)
-        if (hudGroup != null)
+        if (hudGroup != null) //HUD off
             hudGroup.SetActive(false);
+       
 
         // Show popup & maze
         if (backdrop) backdrop.SetActive(true);
@@ -89,8 +87,10 @@ public class MazePopupController : MonoBehaviour
             if (b) b.enabled = false;
 
         // Enable maze grid movement
-        if (mazePlayerMovement != null)
-            mazePlayerMovement.enabled = true;
+        if (mazePlayer != null) { 
+            mazePlayer.enabled = false;
+            mazePlayer.gameObject.SetActive(false);
+        }
 
         // Swap overworld sprite to maze sprite (optional; you mostly see the head in the maze)
         if (overworldSpriteRenderer != null && mazePlayerSprite != null)
@@ -115,17 +115,22 @@ public class MazePopupController : MonoBehaviour
         foreach (var b in overworldControlScripts)
             if (b) b.enabled = true;
 
-        // Turn off maze controls
-        if (mazePlayerMovement != null)
-            mazePlayerMovement.enabled = false;
+        // Turn off maze controls & hide player head
+        if (mazePlayer != null)
+        {
+            mazePlayer.enabled = false;
+            mazePlayer.gameObject.SetActive(false);
+        }
 
-        // Restore overworld sprite
+        // Restore overworld sprite if you ever wire it
         if (overworldSpriteRenderer != null && overworldSprite != null)
             overworldSpriteRenderer.sprite = overworldSprite;
 
         // Timer + flag, same style as Blackjack/Sokoban
         FindObjectOfType<ClockTimer>()?.PauseTimer(false);
         GameFlags.SetFlag("minigame.maze.finish");
+
+        mazeGenerated = false;   // next time we open, Space is allowed again
 
         HideImmediate();
     }
@@ -137,4 +142,48 @@ public class MazePopupController : MonoBehaviour
         if (mazeRoot) mazeRoot.SetActive(false);
         gameObject.SetActive(false);
     }
+
+    void Update()
+    {
+        if (!isOpen) return;
+
+        // One maze per popup open
+        if (!mazeGenerated && Input.GetKeyDown(KeyCode.Space))
+        {
+            if (mazeGenerator != null)
+            {
+                mazeGenerator.CreateMaze();   // builds rooms (first time) and carves maze :contentReference[oaicite:4]{index=4}
+            }
+
+            if (mazePlayer != null)
+            {
+                // show & enable maze player
+                mazePlayer.gameObject.SetActive(true);
+                mazePlayer.enabled = true;
+
+                // place at start
+                if (mazeStartPoint != null)
+                {
+                    mazePlayer.transform.position = mazeStartPoint.position;
+                }
+                else
+                {
+                    // fallback to (0,0) cell
+                    //help here
+                    mazePlayer.ResetToStart();
+                }
+            }
+
+            mazeGenerated = true;
+        }
+
+    }
+
+    /*
+    public void PlacePlayerAtStart()
+    {
+        currentIndex = new Vector2Int(0, 0); // or your start cell
+        transform.position = maze.GetWorldPosition(currentIndex);
+    }
+    */
 }

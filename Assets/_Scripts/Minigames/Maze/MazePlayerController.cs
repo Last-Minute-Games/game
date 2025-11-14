@@ -22,6 +22,20 @@ public class MazePlayerController : MonoBehaviour
         {
             Debug.LogError("MazePlayerController: Maze reference not set!");
         }
+
+        ResetToStart();
+    }
+    public void ResetToStart() {
+        currentIndex = new Vector2Int(0, 0); // use (0,0) as maze start
+
+        if (maze != null)
+        {
+            transform.position = maze.GetWorldPosition(currentIndex);
+        }
+        else
+        {
+            Debug.LogError("MazePlayerController: Maze reference not set!");
+        }
     }
 
     private void Update()

@@ -26,14 +26,20 @@ public class Room : MonoBehaviour
 
     public bool visited { get; set; } = false;
 
+
     Dictionary<Directions, bool> dirflags = new Dictionary<Directions, bool>();
 
-    private void Start()
+    private void Awake()
     {
         walls[Directions.TOP] = topWall;
         walls[Directions.RIGHT] = rightWall;
         walls[Directions.BOTTOM] = bottomWall;
         walls[Directions.LEFT] = leftWall;
+
+        dirflags[Directions.TOP] = true;
+        dirflags[Directions.RIGHT] = true;
+        dirflags[Directions.BOTTOM] = true;
+        dirflags[Directions.LEFT] = true;
 
     }
 

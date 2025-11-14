@@ -262,7 +262,7 @@ public class GenerateMaze : MonoBehaviour
         }
     }
 
-
+    /*
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space)) {
@@ -271,6 +271,7 @@ public class GenerateMaze : MonoBehaviour
             }
         }
     }
+    */
 
     public Room GetRoom(Vector2Int index)
     {
