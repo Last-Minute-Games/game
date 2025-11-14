@@ -36,6 +36,13 @@ namespace Systems.Overworld.Intro
             if (hasPlayed) yield break;
             hasPlayed = true;
             
+            // Pause the ClockTimer if it exists
+            if (ClockTimer.Instance != null)
+            {
+                ClockTimer.Instance.PauseTimer(true);
+                Debug.Log("[OverworldWakeUpCutscene] ClockTimer paused");
+            }
+            
             // Enable SleepingMain sprite renderer
             if (sleepingMainSpriteRenderer != null)
             {
@@ -86,6 +93,18 @@ namespace Systems.Overworld.Intro
             if (screenFader != null)    
             {
                 yield return StartCoroutine(screenFader.EyesOpeningEffect());
+                
+                // Immediately disable the black bar panels after eyes open
+                if (screenFader.topPanel != null)
+                {
+                    screenFader.topPanel.gameObject.SetActive(false);
+                    Debug.Log("[OverworldWakeUpCutscene] Top panel disabled immediately");
+                }
+                if (screenFader.bottomPanel != null)
+                {
+                    screenFader.bottomPanel.gameObject.SetActive(false);
+                    Debug.Log("[OverworldWakeUpCutscene] Bottom panel disabled immediately");
+                }
             }
             else
             {
@@ -189,6 +208,13 @@ namespace Systems.Overworld.Intro
             });
             
             yield return new WaitForSeconds(2f); // Just wait for fade to complete
+            
+            // Resume the ClockTimer at the end of the cutscene
+            if (ClockTimer.Instance != null)
+            {
+                ClockTimer.Instance.PauseTimer(false);
+                Debug.Log("[OverworldWakeUpCutscene] ClockTimer resumed");
+            }
             
             Debug.Log("[OverworldWakeUpCutscene] Complete");
             yield return null;

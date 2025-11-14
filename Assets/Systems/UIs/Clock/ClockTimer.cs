@@ -11,6 +11,7 @@ public class ClockTimer : MonoBehaviour
     public Sprite[] clockFrames;
     public float totalTime = 60f;
     public string nextSceneName = "NextScene";
+    public bool startAutomatically = true;
 
     [Header("Transition / Fade")]
     public ScreenFader screenFader;
@@ -37,6 +38,22 @@ public class ClockTimer : MonoBehaviour
     public AudioSource tickAudioSource;
     public AudioClip tickClip;
     [Range(0f, 1f)] public float tickVolume = 0.5f;
+
+    // Singleton-like reference for easy access
+    public static ClockTimer Instance { get; private set; }
+
+    void Awake()
+    {
+        // Set up singleton instance
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.LogWarning("[ClockTimer] Multiple ClockTimer instances found!");
+        }
+    }
 
     void Start()
     {
@@ -88,8 +105,21 @@ public class ClockTimer : MonoBehaviour
             tickAudioSource.spatialBlend = 0f; // make it 2D
         }
 
-        StartTimer(totalTime);
+        if (startAutomatically)
+        {
+            StartTimer(totalTime);
+            Debug.Log("[ClockTimer] Timer started automatically");
+        }
+        
         StartCoroutine(InitialFadeIn()); // fade in at game start
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
     void Update()
@@ -186,7 +216,24 @@ public class ClockTimer : MonoBehaviour
         Debug.Log($"[ClockTimer] Timer started: {totalTime}s");
     }
 
-    public void PauseTimer(bool pause) => isPaused = pause;
+    public void PauseTimer(bool pause)
+    {
+        isPaused = pause;
+        Debug.Log($"[ClockTimer] Timer {(pause ? "paused" : "resumed")}");
+        
+        // Pause/resume warning audio if playing
+        if (warningAudioSource != null && warningAudioSource.isPlaying)
+        {
+            if (pause)
+            {
+                warningAudioSource.Pause();
+            }
+            else
+            {
+                warningAudioSource.UnPause();
+            }
+        }
+    }
 
     public void AddTime(float seconds)
     {
