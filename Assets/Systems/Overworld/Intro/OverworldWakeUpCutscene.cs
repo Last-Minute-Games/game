@@ -2,6 +2,7 @@
 using cherrydev;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UI;
 using Unity.Cinemachine;
 
 namespace Systems.Overworld.Intro
@@ -302,31 +303,84 @@ namespace Systems.Overworld.Intro
             
             Debug.Log("[OverworldWakeUpCutscene] Setting up cutscene...");
             
-            // Set up ScreenFader with eyes closed at start
+            // Set up ScreenFader with eyes ALREADY closed at start (player is waking up)
             ScreenFader screenFader = FindFirstObjectByType<ScreenFader>();
-            if (screenFader != null && screenFader.topPanel != null && screenFader.bottomPanel != null)
+            if (screenFader != null)
             {
-                Debug.Log("[OverworldWakeUpCutscene] Setting up eyes closed position");
-                // Position the panels to cover the screen (eyes closed)
-                screenFader.topPanel.anchoredPosition = Vector2.zero;
-                screenFader.bottomPanel.anchoredPosition = Vector2.zero;
-                // Make sure fade canvas is hidden
-                if (fadeCanvasGroup != null)
-                {
-                    fadeCanvasGroup.alpha = 0f;
-                }
+                Debug.Log("[OverworldWakeUpCutscene] Setting up eyes closed position (player waking up)");
+                StartCoroutine(SetupEyesAlreadyClosedState(screenFader));
             }
             else
             {
-                // Fallback: use fade canvas if ScreenFader panels not available
+                // Fallback: use fade canvas if ScreenFader not available
                 if (fadeCanvasGroup != null)
                 {
                     fadeCanvasGroup.alpha = 1f; // Start opaque (black screen)
                     Debug.Log("[OverworldWakeUpCutscene] Fade canvas set to black (fallback)");
                 }
+                
+                Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
+                StartCoroutine(BeginWakeUpSequence());
+            }
+        }
+        
+        private IEnumerator SetupEyesAlreadyClosedState(ScreenFader screenFader)
+        {
+            // Create the panels manually and position them in closed state (covering screen)
+            // WITHOUT animating them - they should already be closed
+            
+            // Get or create the canvas
+            Canvas canvas = screenFader.fadePanel.GetComponentInParent<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError("[OverworldWakeUpCutscene] Cannot find Canvas!");
+                yield break;
             }
             
-            Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
+            // Create Top Panel
+            GameObject topPanelObj = new GameObject("EyeTopPanel");
+            topPanelObj.transform.SetParent(canvas.transform, false);
+            RectTransform topPanel = topPanelObj.AddComponent<RectTransform>();
+            Image topImage = topPanelObj.AddComponent<Image>();
+            topImage.color = Color.black;
+            topImage.raycastTarget = false;
+            
+            // Setup top panel RectTransform (stretches across top, half screen height)
+            topPanel.anchorMin = new Vector2(0, 0.5f);
+            topPanel.anchorMax = new Vector2(1, 1);
+            topPanel.pivot = new Vector2(0.5f, 0f);
+            topPanel.offsetMin = Vector2.zero;
+            topPanel.offsetMax = Vector2.zero;
+            topPanel.anchoredPosition = Vector2.zero; // Covering screen (eyes closed)
+            
+            // Create Bottom Panel
+            GameObject bottomPanelObj = new GameObject("EyeBottomPanel");
+            bottomPanelObj.transform.SetParent(canvas.transform, false);
+            RectTransform bottomPanel = bottomPanelObj.AddComponent<RectTransform>();
+            Image bottomImage = bottomPanelObj.AddComponent<Image>();
+            bottomImage.color = Color.black;
+            bottomImage.raycastTarget = false;
+            
+            // Setup bottom panel RectTransform (stretches across bottom, half screen height)
+            bottomPanel.anchorMin = new Vector2(0, 0);
+            bottomPanel.anchorMax = new Vector2(1, 0.5f);
+            bottomPanel.pivot = new Vector2(0.5f, 1f);
+            bottomPanel.offsetMin = Vector2.zero;
+            bottomPanel.offsetMax = Vector2.zero;
+            bottomPanel.anchoredPosition = Vector2.zero; // Covering screen (eyes closed)
+            
+            // Assign the panels to the ScreenFader
+            screenFader.topPanel = topPanel;
+            screenFader.bottomPanel = bottomPanel;
+            
+            // Make sure fade canvas is hidden
+            if (fadeCanvasGroup != null)
+            {
+                fadeCanvasGroup.alpha = 0f;
+            }
+            
+            Debug.Log("[OverworldWakeUpCutscene] Eyes already closed state set up, starting cutscene");
+            yield return null; // Wait one frame for everything to be set up
             StartCoroutine(BeginWakeUpSequence());
         }
         
@@ -346,7 +400,8 @@ namespace Systems.Overworld.Intro
             
             UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
             UnityEngine.PlayerPrefs.Save();
-            Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene")}");
+            Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene")}" +
+                      $" [next scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + 1}]");
         }
     }
 }
