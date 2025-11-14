@@ -16,6 +16,7 @@ namespace Systems.Overworld.Intro
         private PlayerInput2D playerInput;
         private Camera mainCamera;
         private CinemachineBrain cinemachineBrain;
+        private ClockTimer clockTimer;
         
         [Header("GameObjects")]
         [SerializeField] private GameObject sleepingMain;
@@ -28,6 +29,10 @@ namespace Systems.Overworld.Intro
         [SerializeField] private DialogBehaviour dialogBehaviour;
         [SerializeField] private DialogNodeGraph wakeUpDialogGraph;
         
+        [Header("HUD")]
+        [SerializeField] private HudInitializer hudInitializer;
+        [SerializeField] private bool autoFindHudInitializer = true;
+        
         private bool hasPlayed = false;
         
         private IEnumerator BeginWakeUpSequence()
@@ -36,6 +41,32 @@ namespace Systems.Overworld.Intro
             
             if (hasPlayed) yield break;
             hasPlayed = true;
+            
+            // Find HUD initializer if needed
+            if (hudInitializer == null && autoFindHudInitializer)
+            {
+                hudInitializer = FindObjectOfType<HudInitializer>();
+                if (hudInitializer != null)
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Found HudInitializer");
+                }
+            }
+            
+            // Find and pause ClockTimer
+            if (clockTimer == null)
+            {
+                clockTimer = FindObjectOfType<ClockTimer>();
+            }
+            
+            if (clockTimer != null)
+            {
+                clockTimer.PauseTimer(true);
+                Debug.Log("[OverworldWakeUpCutscene] Clock timer paused");
+            }
+            else
+            {
+                Debug.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found in scene");
+            }
             
             // Enable SleepingMain sprite renderer
             if (sleepingMainSpriteRenderer != null)
@@ -189,7 +220,28 @@ namespace Systems.Overworld.Intro
                 }
             });
             
-            yield return new WaitForSeconds(2f); // Just wait for fade to complete
+            yield return new WaitForSeconds(0.5f); // Wait for fade to complete
+            
+            // TRIGGER HUD INITIALIZATION ANIMATION
+            // This happens after the player is out of bed and can see the game world
+            if (hudInitializer != null)
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Triggering HUD initialization");
+                hudInitializer.TriggerAnimation();
+            }
+            else
+            {
+                Debug.LogWarning("[OverworldWakeUpCutscene] HudInitializer not found, cannot trigger HUD animation");
+            }
+            
+            // Resume ClockTimer at the same time as HUD animation
+            if (clockTimer != null)
+            {
+                clockTimer.PauseTimer(false);
+                Debug.Log("[OverworldWakeUpCutscene] Clock timer resumed");
+            }
+            
+            yield return new WaitForSeconds(2f); // Wait for HUD animation to play
             
             Debug.Log("[OverworldWakeUpCutscene] Complete");
             yield return null;
