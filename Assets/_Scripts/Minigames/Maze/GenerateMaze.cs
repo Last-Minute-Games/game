@@ -83,7 +83,7 @@ public class GenerateMaze : MonoBehaviour
 
     private void RemoveRoomWall(int x, int y, Room.Directions dir)
     {
-        if (dir == Room.Directions.NONE) {
+        if (dir != Room.Directions.NONE) {
             rooms[x, y].SetDirFlag(dir, false);
         }
         //rooms[x,y].SetDirFlag(dir, false);
@@ -280,7 +280,11 @@ public class GenerateMaze : MonoBehaviour
 
     public Vector3 GetWorldPosition(Vector2Int index)
     {
-        return new Vector3(index.x * roomWidth, index.y * roomHeight, 0f);
+        //old
+        //return new Vector3(index.x * roomWidth, index.y * roomHeight, 0f);
+        return transform.position + new Vector3(index.x * roomWidth,
+                                            index.y * roomHeight,
+                                            0f);
     }
 
     public Vector2Int GetMazeSize()
@@ -301,13 +305,19 @@ public class GenerateMaze : MonoBehaviour
         {
             for (int j = 0; j < numY; ++j)
             {
+                //in ordere to move the maze from the scene
+                GameObject room = Instantiate(roomPrefab, transform);
+                room.transform.localPosition = new Vector3(i * roomWidth, j * roomHeight, 0.0f);
+
+                //old maze start
+                /*
                 GameObject room = Instantiate(
                     roomPrefab,
                     new Vector3(i * roomWidth, j * roomHeight, 0.0f),
                     Quaternion.identity,
                     transform   // keep rooms grouped under this object
                 );
-
+                */
                 room.name = "Room_" + i.ToString() + "_" + j.ToString();
                 rooms[i, j] = room.GetComponent<Room>();
                 rooms[i, j].Index = new Vector2Int(i, j);
