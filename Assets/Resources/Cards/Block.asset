@@ -12,13 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d25d76a890fff1ddb4d8fba905828ff, type: 3}
   m_Name: Block
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  Name: Block
-  Description: Defend bro
-  IntentionText: 
-  Artwork: {fileID: 0}
-  IntentionIcon: {fileID: 0}
-  effectDataList:
-  - effectType: 1
-    magnitude: 5
-    duration: 1
-  UniqueID: 0
+  itemName: 
+  description: 
+  artwork: {fileID: 0}
+  icon: {fileID: 0}
+  effectData: []
+  uniqueID: 0
+  intentionText: 
+  soundCue: {fileID: 0}
+  energyCost: 0
+  sourceAnim: 1
+  targetAnim: 2
+  isVariableCard: 0
+  poorArtwork: {fileID: 0}
+  potentArtwork: {fileID: 0}
+  minMultiplierThreshold: 0.335
+  maxMultiplierThreshold: 0.52
+  weakPrefix: Poor
+  strongPrefix: Potent
+  weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  strongPrefixColor: {r: 1, g: 0.4, b: 0.4, a: 1}

@@ -45,11 +45,11 @@ public class CardData : GameItemData
 
     [Header("Variability Threshold")]
 
-    [Tooltip("The lower bound range of the variability threshold.")]
-    [Range(0f, 1f)] public float minMultiplierThreshold = 0.33f;
-
     [Tooltip("The upper bound range of the variability threshold.")]
     [Range(0f, 1f)] public float maxMultiplierThreshold = 0.66f;
+
+    [Tooltip("The lower bound range of the variability threshold.")]
+    [Range(0f, 1f)] public float minMultiplierThreshold = 0.33f;
 
     // naming prefixes
     [Header("Name Prefixes")]
@@ -110,5 +110,23 @@ public class CardData : GameItemData
                 $"<color=#{GetStrongPrefixColorTag()}>{strongPrefix}</color>",
             _ => string.Empty
         };
+    }
+
+    protected override void OnValidate()
+    {
+          
+        base.OnValidate();
+
+        // Ensure max ≥ min
+        if (maxMultiplierThreshold < minMultiplierThreshold)
+            maxMultiplierThreshold = minMultiplierThreshold;
+
+        // Ensure min ≤ max
+        if (minMultiplierThreshold > maxMultiplierThreshold)
+            minMultiplierThreshold = maxMultiplierThreshold;
+
+        // Optional: clamp inside 0–1 range (even though Range attribute does this in inspector)
+        minMultiplierThreshold = Mathf.Clamp01(minMultiplierThreshold);
+        maxMultiplierThreshold = Mathf.Clamp01(maxMultiplierThreshold);
     }
 }
