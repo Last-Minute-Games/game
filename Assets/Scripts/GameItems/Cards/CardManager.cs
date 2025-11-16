@@ -42,7 +42,7 @@ public class CardManager
     {
         foreach (var card in allCardPool)
         {
-            if (card.UniqueID == uniqueID)
+            if (card.uniqueID == uniqueID)
                 return card;
         }
 
@@ -59,54 +59,54 @@ public class CardManager
         hand.Clear();
     }
 
-    // -----------------------------------------------------------
-    // Apply the effects of a given card to a target entity
-    // -----------------------------------------------------------
-    public void ApplyCard(CardData card, EntityData source, ref EntityData target)
-    {
-        if (card == null) return;
-
-        foreach (var effect in card.effectDataList)
-        {
-            switch (effect.effectType)
-            {
-                case EffectType.Damage:
-                    target.TakeDamage(effect.magnitude);
-                    break;
-
-                case EffectType.Block:
-                    source.GainBlock(effect.magnitude);
-                    break;
-
-                case EffectType.Heal:
-                    source.Heal(effect.magnitude);
-                    break;
-
-                case EffectType.Draw:
-                    // Card draw logic handled by PlayerManager
-                    Debug.Log($"{source.name} would draw {effect.magnitude} cards.");
-                    break;
-
-                case EffectType.ApplyStatus:
-                    target.statuses.Add(new StatusEffect
-                    {
-                        name = "Status",
-                        stacks = effect.magnitude
-                    });
-                    break;
-            }
-        }
-
-        // Play sound cue if assigned
-        // if (card.SoundCue != null && card.SoundCue.Clip != null)
-        // {
-        //     AudioSource.PlayClipAtPoint(card.SoundCue.Clip, Vector3.zero, card.SoundCue.Volume);
-        // }
-
-        // Move card to discard pile
-        hand.Remove(card);
-        discardPile.Add(card);
-    }
+    // // -----------------------------------------------------------
+    // // Apply the effects of a given card to a target entity
+    // // -----------------------------------------------------------
+    // public void ApplyCard(CardData card, EntityData source, ref EntityData target)
+    // {
+    //     if (card == null) return;
+    //
+    //     foreach (var effect in card.effectDataList)
+    //     {
+    //         switch (effect.effectType)
+    //         {
+    //             case EffectType.Damage:
+    //                 target.TakeDamage(effect.magnitude);
+    //                 break;
+    //
+    //             case EffectType.Block:
+    //                 source.GainBlock(effect.magnitude);
+    //                 break;
+    //
+    //             case EffectType.Heal:
+    //                 source.Heal(effect.magnitude);
+    //                 break;
+    //
+    //             case EffectType.Draw:
+    //                 // Card draw logic handled by PlayerManager
+    //                 Debug.Log($"{source.name} would draw {effect.magnitude} cards.");
+    //                 break;
+    //
+    //             case EffectType.ApplyStatus:
+    //                 target.statuses.Add(new StatusEffect
+    //                 {
+    //                     name = "Status",
+    //                     stacks = effect.magnitude
+    //                 });
+    //                 break;
+    //         }
+    //     }
+    //
+    //     // Play sound cue if assigned
+    //     // if (card.SoundCue != null && card.SoundCue.Clip != null)
+    //     // {
+    //     //     AudioSource.PlayClipAtPoint(card.SoundCue.Clip, Vector3.zero, card.SoundCue.Volume);
+    //     // }
+    //
+    //     // Move card to discard pile
+    //     hand.Remove(card);
+    //     discardPile.Add(card);
+    // }
 
     // -----------------------------------------------------------
     // Shuffle the draw pile (utility)

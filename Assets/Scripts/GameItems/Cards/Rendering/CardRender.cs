@@ -46,13 +46,13 @@ public class CardRender : MonoBehaviour
     {
         Data = data;
         // Name/Description
-        if (cardName != null) cardName.text = data != null ? data.Name : string.Empty;
-        if (descriptionText != null) descriptionText.text = data != null ? data.Description : string.Empty;
+        if (cardName != null) cardName.text = data != null ? data.name : string.Empty;
+        if (descriptionText != null) descriptionText.text = data != null ? data.description : string.Empty;
 
         // Icon
         if (cardIcon != null)
         {
-            var sprite = data != null && data.Artwork != null ? data.Artwork : fallbackIcon;
+            var sprite = data != null && data.artwork != null ? data.artwork : fallbackIcon;
             cardIcon.sprite = sprite;
             cardIcon.enabled = sprite != null;
             // Preserve aspect for nicer visuals

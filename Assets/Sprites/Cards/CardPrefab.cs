@@ -49,9 +49,9 @@ public class CardPrefab : MonoBehaviour,
     public void Bind(CardData data)
     {
         Data = data;
-        if (nameText != null) nameText.text = data != null ? data.Name : string.Empty;
-        if (descriptionText != null) descriptionText.text = data != null ? data.Description : string.Empty;
-        if (artworkImage != null) artworkImage.sprite = data != null ? data.Artwork : null;
+        if (nameText != null) nameText.text = data != null ? data.name : string.Empty;
+        if (descriptionText != null) descriptionText.text = data != null ? data.description : string.Empty;
+        if (artworkImage != null) artworkImage.sprite = data != null ? data.artwork : null;
     }
 
     // Convenience for animation helpers that expect these hooks

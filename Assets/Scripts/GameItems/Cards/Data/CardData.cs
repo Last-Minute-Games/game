@@ -1,37 +1,114 @@
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 [CreateAssetMenu(menuName = "Cards/Card Data", fileName = "NewCardData")]
-public class CardData : ScriptableObject
+public class CardData : GameItemData
 {
+    // --------------------------------------------------
+    // CARD INFO
+    // --------------------------------------------------
+
     [Header("Card Info")]
-    [Tooltip("Display name of the card.")]
-    public string Name;
+    [Tooltip("Displayed text for the card's intention (e.g., 'Deal damage', 'Block', etc.).")]
+    [TextArea(1, 3)]
+    public string intentionText;
 
-    [TextArea(2, 4)]
-    [Tooltip("In-game description of what the card does.")]
-    public string Description;
+    [Tooltip("Sound cue played when this card is used.")]
+    public SFXCueData soundCue;
 
-    [Tooltip("Short phrase shown above enemies (e.g., 'Attack', 'Block').")]
-    public string IntentionText;
+    [Tooltip("Energy cost to play this card.")]
+    public int energyCost;
 
-    [Tooltip("Main card artwork shown in the card UI.")]
-    public Sprite Artwork;
+    // --------------------------------------------------
+    // ANIMATION SETTINGS
+    // --------------------------------------------------
 
-    [Tooltip("Small icon for intent display.")]
-    public Sprite IntentionIcon;
+    [Header("Animation Settings")]
+    [Tooltip("Animation played by the source entity when this card is used (e.g., Attack).")]
+    public EnemyAnim sourceAnim = EnemyAnim.Attack;
 
-    [FormerlySerializedAs("EffectDataList")]
-    [Header("Card Data")]
-    [Tooltip("List of effects that this card will trigger when played.")]
-    public List<EffectData> effectDataList = new();
+    [Tooltip("Animation played by the target entity when this card is used (e.g., Hurt).")]
+    public EnemyAnim targetAnim = EnemyAnim.Hurt;
 
-    // [Header("Audio")]
-    // [Tooltip("Optional sound cue to play when the card is used.")]
-    // public SFXCueData SoundCue;
+    // --------------------------------------------------
+    // VARIABILITY SETTINGS
+    // --------------------------------------------------
 
-    [Header("Metadata")]
-    [Tooltip("Unique identifier for this card.")]
-    public int UniqueID;
+    [Header("Variability Settings")]
+    [Tooltip("If true, this card can roll variable potency (Poor, Normal, Potent) based on its multiplier range.")]
+    public bool isVariableCard = false;
+
+    [Tooltip("Artwork shown when the card rolls a Poor outcome (optional).")]
+    public Sprite poorArtwork;
+
+    [Tooltip("Artwork shown when the card rolls a Potent outcome (optional).")]
+    public Sprite potentArtwork;
+
+    [Header("Variability Threshold")]
+
+    [Tooltip("The lower bound range of the variability threshold.")]
+    [Range(0f, 1f)] public float minMultiplierThreshold = 0.33f;
+
+    [Tooltip("The upper bound range of the variability threshold.")]
+    [Range(0f, 1f)] public float maxMultiplierThreshold = 0.66f;
+
+    // naming prefixes
+    [Header("Name Prefixes")]
+    public string weakPrefix = "Poor";
+    public string strongPrefix = "Potent";
+
+    [Tooltip("Color for weak prefix text.")]
+    public Color weakPrefixColor = Color.gray;
+
+    [Tooltip("Color for strong prefix text.")]
+    public Color strongPrefixColor = new Color(1f, 0.4f, 0.4f);
+
+    // --------------------------------------------------
+    // VALIDATION HELPERS
+    // --------------------------------------------------
+
+    // checks if card variability is valid
+    public bool IsCardVariabilityValid()
+    {
+        return isVariableCard && effectData != null && effectData.Count == 1;
+    }
+
+    // postcopy rolled effect
+    public CardVariationTier GetVariationTier(EffectData rolledEffect)
+    {
+        float min = rolledEffect.minMultiplier;
+        float max = rolledEffect.maxMultiplier;
+        float baseVal = rolledEffect.baseValue;
+        float post = rolledEffect.postCopyValue;
+        float lowBound = baseVal * min;
+        float highBound = baseVal * max;
+
+        if (post == baseVal) // for cases where there is no gap between minT, maxT and multiplier isn't on
+            return CardVariationTier.NormalModifier;
+
+        // Normalize
+        float t = Mathf.InverseLerp(lowBound, highBound, post);
+
+        if (t <= minMultiplierThreshold)
+            return CardVariationTier.WeakModifier;
+        if (t >= maxMultiplierThreshold)
+            return CardVariationTier.StrongModifier;
+        return CardVariationTier.NormalModifier; // ultimate fallback
+    }
+    public string GetWeakPrefixColorTag() =>
+        ColorUtility.ToHtmlStringRGB(weakPrefixColor);
+
+    public string GetStrongPrefixColorTag() =>
+        ColorUtility.ToHtmlStringRGB(strongPrefixColor);
+
+    public string GetColoredPrefix(CardVariationTier tier)
+    {
+        return tier switch
+        {
+            CardVariationTier.WeakModifier =>
+                $"<color=#{GetWeakPrefixColorTag()}>{weakPrefix}</color>",
+            CardVariationTier.StrongModifier =>
+                $"<color=#{GetStrongPrefixColorTag()}>{strongPrefix}</color>",
+            _ => string.Empty
+        };
+    }
 }

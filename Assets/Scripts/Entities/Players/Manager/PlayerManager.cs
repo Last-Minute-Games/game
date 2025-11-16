@@ -73,19 +73,19 @@ public class PlayerManager : MonoBehaviour
 
         int handSize = playerData.config != null ? Mathf.Max(1, playerData.config.defaultHandSize) : 5;
         for (int i = 0; i < handSize; i++)
-            cardManager.DrawCard();
+          cardManager.DrawCard();
     }
 
     public bool TryPlayCard(CardData card, ref EntityData target)
     {
-        if (playerData == null || card == null) return false;
+      if (playerData == null || card == null) return false;
 
-        // Simplified energy check (1 per card until card has explicit cost)
-        if (energy < 1)
-            return false;
+      // Simplified energy check (1 per card until card has explicit cost)
+      if (energy < 1)
+        return false;
 
-        energy -= 1; // TODO: replace with card.energyCost when available
-        cardManager.ApplyCard(card, playerData.entity, ref target);
+      energy -= 1; // TODO: replace with card.energyCost when available
+                   // cardManager.ApplyCard(card, playerData.entity, ref target); // TODO: re-fix definition of ApplyCard with actual combat system
         return true;
     }
 
