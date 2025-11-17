@@ -1,4 +1,4 @@
-﻿﻿using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -33,13 +33,6 @@ public class ClockTimer : MonoBehaviour
     public float warningThreshold = 10f; // time before end to start sound
     private bool warningPlayed = false;
 
-    [Header("Clock Bell Warning (5 seconds)")]
-    public AudioSource bellAudioSource;
-    public AudioClip bellClip;
-    [Range(0f, 1f)] public float bellVolume = 0.8f;
-    public float bellTriggerTime = 5f;
-    private bool bellPlayed = false;
-    
     [Header("Clock Tick Audio")]
     public AudioSource tickAudioSource;
     public AudioClip tickClip;
@@ -58,7 +51,7 @@ public class ClockTimer : MonoBehaviour
         clockImage.sprite = clockFrames[0];
 
         screenFader.SetPanelAlpha(0f);
-        
+
         // Setup end message text
         if (endMessageText != null)
         {
@@ -67,7 +60,7 @@ public class ClockTimer : MonoBehaviour
             endMessageText.alignment = TMPro.TextAlignmentOptions.Center;
             endMessageText.fontSize = 72; // Large dramatic text
             endMessageText.color = Color.red; // Red for dramatic effect
-            
+
             // Ensure the text is positioned correctly in the center
             RectTransform textRect = endMessageText.GetComponent<RectTransform>();
             if (textRect != null)
@@ -77,7 +70,7 @@ public class ClockTimer : MonoBehaviour
                 textRect.offsetMin = Vector2.zero;
                 textRect.offsetMax = Vector2.zero;
             }
-            
+
             endMessageText.gameObject.SetActive(false);
         }
 
@@ -86,12 +79,6 @@ public class ClockTimer : MonoBehaviour
             warningAudioSource = gameObject.AddComponent<AudioSource>();
             warningAudioSource.playOnAwake = false;
             warningAudioSource.spatialBlend = 0f; // make it 2D
-        }
-        if (bellAudioSource == null)
-        {
-            bellAudioSource = gameObject.AddComponent<AudioSource>();
-            bellAudioSource.playOnAwake = false;
-            bellAudioSource.spatialBlend = 0f;
         }
 
         // Setup tick audio source
@@ -126,7 +113,7 @@ public class ClockTimer : MonoBehaviour
                 clockImage.sprite = clockFrames[frameIndex];
                 lastFrameIndex = frameIndex;
                 Debug.Log($"[ClockTimer] Frame changed: {frameIndex}/{frameCount - 1} | Time left: {timeLeft:F2}s");
-                
+
                 // Play tick sound
                 PlayTickSound();
             }
@@ -138,12 +125,7 @@ public class ClockTimer : MonoBehaviour
                 Debug.Log($"[ClockTimer] Time left: {timeLeft:F1}s");
                 lastWholeSecond = currentSecond;
             }
-            if (timeLeft <= bellTriggerTime && !bellPlayed && bellClip != null)
-            {
-                PlayBellSound();
-                bellPlayed = true;
-                Debug.Log("[ClockTimer] Grandfather clock bell triggered at 5 seconds!");
-            }
+
             // Handle warning heartbeat when time is low
             if (timeLeft <= warningThreshold && warningClip != null)
             {
@@ -180,7 +162,7 @@ public class ClockTimer : MonoBehaviour
             if (timeLeft <= 0f && !hasEnded)
             {
                 hasEnded = true;
-                IsTimeEnded = true; 
+                IsTimeEnded = true;
                 Debug.Log("[ClockTimer] Timer finished! Showing message and transitioning...");
                 StartCoroutine(FadeMessageThenTransition());
             }
@@ -240,29 +222,23 @@ public class ClockTimer : MonoBehaviour
         // Keep the warning sound playing (don't stop it yet)
         // It will continue until the new scene loads
 
-        // First, do the eyes closing effect if split panels are available
-        if (screenFader != null && screenFader.topPanel != null && screenFader.bottomPanel != null)
+        // Do the eyes closing effect
+        if (screenFader != null)
         {
             yield return StartCoroutine(screenFader.EyesClosingEffect());
-        }
-        else
-        {
-            // Fallback to regular fade if no split panels
-            if (screenFader != null)
-                yield return StartCoroutine(screenFader.FadeOut());
         }
 
         // Now show "YOU DIED!" message
         if (endMessageText != null)
         {
             endMessageText.gameObject.SetActive(true);
-            
+
             // Force the text properties again to ensure they're applied
             endMessageText.text = "YOU DIED!";
             endMessageText.color = Color.red;
             endMessageText.fontSize = 72;
             endMessageText.alignment = TMPro.TextAlignmentOptions.Center;
-            
+
             // Bring to front (set high sorting order)
             Canvas textCanvas = endMessageText.GetComponent<Canvas>();
             if (textCanvas == null)
@@ -270,7 +246,7 @@ public class ClockTimer : MonoBehaviour
                 textCanvas = endMessageText.gameObject.AddComponent<Canvas>();
                 textCanvas.overrideSorting = true;
                 textCanvas.sortingOrder = 1000; // Very high to be on top
-                
+
                 // Add GraphicRaycaster if needed
                 if (endMessageText.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
                 {
@@ -282,7 +258,7 @@ public class ClockTimer : MonoBehaviour
                 textCanvas.overrideSorting = true;
                 textCanvas.sortingOrder = 1000;
             }
-            
+
             endMessageText.alpha = 0f;
 
             // Fade in message
@@ -305,29 +281,13 @@ public class ClockTimer : MonoBehaviour
             while (elapsed < fadeOutDuration)
             {
                 elapsed += Time.deltaTime;
-                float progress = elapsed / fadeOutDuration;
-
-                // Fade out
-                endMessageText.alpha = Mathf.Clamp01(1f - progress);
-
-                // Scale down slightly
-                if (textRect != null)
-                {
-                    float scale = Mathf.Lerp(1f, 0.8f, progress);
-                    textRect.localScale = Vector3.one * scale;
-                }
-
+                endMessageText.alpha = Mathf.Clamp01(1f - (elapsed / fadeOutDuration));
                 yield return null;
             }
 
             endMessageText.alpha = 0f;
-            if (textRect != null)
-            {
-                textRect.localScale = Vector3.one; // Reset scale
-            }
             endMessageText.gameObject.SetActive(false);
         }
-
 
         // Now stop the warning sound before transitioning
         if (warningAudioSource != null && warningAudioSource.isPlaying)
@@ -348,15 +308,6 @@ public class ClockTimer : MonoBehaviour
         {
             tickAudioSource.volume = tickVolume;
             tickAudioSource.PlayOneShot(tickClip);
-        }
-    }
-    private void PlayBellSound()
-    {
-        if (bellAudioSource != null && bellClip != null)
-        {
-            bellAudioSource.volume = bellVolume;
-            bellAudioSource.PlayOneShot(bellClip);
-            Debug.Log("[ClockTimer] Grandfather clock bell sound played");
         }
     }
 

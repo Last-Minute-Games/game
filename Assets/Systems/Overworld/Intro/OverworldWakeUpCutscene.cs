@@ -355,49 +355,15 @@ namespace Systems.Overworld.Intro
             // Create the panels manually and position them in closed state (covering screen)
             // WITHOUT animating them - they should already be closed
             
-            // Get or create the canvas
-            Canvas canvas = screenFader.fadePanel.GetComponentInParent<Canvas>();
-            if (canvas == null)
-            {
-                Debug.LogError("[OverworldWakeUpCutscene] Cannot find Canvas!");
-                yield break;
-            }
+            // We need to trigger the eyes closing effect to create the panels,
+            // but we'll do it instantly (duration 0) so they appear closed immediately
+            float originalDuration = screenFader.splitPanelDuration;
+            screenFader.splitPanelDuration = 0f; // Instant
             
-            // Create Top Panel
-            GameObject topPanelObj = new GameObject("EyeTopPanel");
-            topPanelObj.transform.SetParent(canvas.transform, false);
-            RectTransform topPanel = topPanelObj.AddComponent<RectTransform>();
-            Image topImage = topPanelObj.AddComponent<Image>();
-            topImage.color = Color.black;
-            topImage.raycastTarget = false;
+            yield return StartCoroutine(screenFader.EyesClosingEffect());
             
-            // Setup top panel RectTransform (stretches across top, half screen height)
-            topPanel.anchorMin = new Vector2(0, 0.5f);
-            topPanel.anchorMax = new Vector2(1, 1);
-            topPanel.pivot = new Vector2(0.5f, 0f);
-            topPanel.offsetMin = Vector2.zero;
-            topPanel.offsetMax = Vector2.zero;
-            topPanel.anchoredPosition = Vector2.zero; // Covering screen (eyes closed)
-            
-            // Create Bottom Panel
-            GameObject bottomPanelObj = new GameObject("EyeBottomPanel");
-            bottomPanelObj.transform.SetParent(canvas.transform, false);
-            RectTransform bottomPanel = bottomPanelObj.AddComponent<RectTransform>();
-            Image bottomImage = bottomPanelObj.AddComponent<Image>();
-            bottomImage.color = Color.black;
-            bottomImage.raycastTarget = false;
-            
-            // Setup bottom panel RectTransform (stretches across bottom, half screen height)
-            bottomPanel.anchorMin = new Vector2(0, 0);
-            bottomPanel.anchorMax = new Vector2(1, 0.5f);
-            bottomPanel.pivot = new Vector2(0.5f, 1f);
-            bottomPanel.offsetMin = Vector2.zero;
-            bottomPanel.offsetMax = Vector2.zero;
-            bottomPanel.anchoredPosition = Vector2.zero; // Covering screen (eyes closed)
-            
-            // Assign the panels to the ScreenFader
-            screenFader.topPanel = topPanel;
-            screenFader.bottomPanel = bottomPanel;
+            // Restore original duration for the opening effect
+            screenFader.splitPanelDuration = originalDuration;
             
             // Make sure fade canvas is hidden
             if (fadeCanvasGroup != null)
