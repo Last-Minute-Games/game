@@ -3,6 +3,10 @@ using UnityEngine;
 
 public class MazePlayerController : MonoBehaviour
 {
+
+    [SerializeField] private MazePopupController popupController; // drag MazePopup here
+    private Vector2Int endIndex;
+
     [SerializeField] private GenerateMaze maze;      // drag your GenerateMaze object here
     [SerializeField] private float moveDuration = 0.15f;  // how fast it slides between cells
 
@@ -12,11 +16,14 @@ public class MazePlayerController : MonoBehaviour
     private void Start()
     {
         // Start in the bottom-left cell (0,0). Change if you want a different start.
-        currentIndex = new Vector2Int(0, 0);
+        ResetToStart();
+
+        //currentIndex = new Vector2Int(0, 0);
 
         if (maze != null)
         {
-            transform.position = maze.GetWorldPosition(currentIndex);
+            Vector2Int size = maze.GetMazeSize();   // uses NumX/NumY internally
+            endIndex = new Vector2Int(size.x - 1, size.y - 1); // top-right cell
         }
         else
         {
@@ -112,6 +119,12 @@ public class MazePlayerController : MonoBehaviour
         }
 
         currentIndex = newIndex;
+        transform.position = endPos;
         isMoving = false;
+
+        if (currentIndex == endIndex && popupController != null)
+        {
+            popupController.Hide();
+        }
     }
 }

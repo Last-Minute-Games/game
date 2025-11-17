@@ -6,6 +6,10 @@ using System;
 using UnityEditor.PackageManager.Requests;
 public class GenerateMaze : MonoBehaviour
 {
+
+    public int NumX => numX;
+    public int NumY => numY;
+
     [SerializeField] GameObject roomPrefab;
 
     //The grid

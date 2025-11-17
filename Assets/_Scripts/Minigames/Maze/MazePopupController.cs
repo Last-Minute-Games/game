@@ -3,6 +3,9 @@ using UnityEngine.UI;
 
 public class MazePopupController : MonoBehaviour
 {
+    [Header("Camera (used only to place the maze)")]
+    public Camera mainCamera;
+
     [Header("Popup Wiring")]
     [Tooltip("Root window panel that contains the maze (like Blackjack window).")]
     public GameObject window;
@@ -95,6 +98,44 @@ public class MazePopupController : MonoBehaviour
         // Swap overworld sprite to maze sprite (optional; you mostly see the head in the maze)
         if (overworldSpriteRenderer != null && mazePlayerSprite != null)
             overworldSpriteRenderer.sprite = mazePlayerSprite;
+
+        CenterMazeOnCamera();
+
+    }
+    private void CenterMazeOnCamera()
+    {
+        if (mazeRoot == null)
+            return;
+
+        if (mainCamera == null)
+            mainCamera = Camera.main;
+
+        if (mainCamera == null)
+            return;
+
+        // Collect all renderers in the maze (rooms, walls, etc.)
+        var renderers = mazeRoot.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0)
+            return;
+
+        // Combine their bounds to get the whole maze size & center
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+
+        // Camera center in world space (x,y) – we don't move camera, just read it
+        Vector3 camCenter = mainCamera.transform.position;
+
+        // We only care about x,y; keep maze's existing Z
+        Vector3 targetCenter = new Vector3(camCenter.x, camCenter.y, bounds.center.z);
+
+        // How much to move MazeRoot so its center matches camera center
+        Vector3 delta = targetCenter - bounds.center;
+
+        // Move the whole maze
+        mazeRoot.transform.position += new Vector3(delta.x, delta.y, 0f);
     }
 
     public void Hide()
@@ -154,6 +195,9 @@ public class MazePopupController : MonoBehaviour
             {
                 mazeGenerator.CreateMaze();   // builds rooms (first time) and carves maze :contentReference[oaicite:4]{index=4}
             }
+
+            //roomsjust 
+            CenterMazeOnCamera();
 
             if (mazePlayer != null)
             {
