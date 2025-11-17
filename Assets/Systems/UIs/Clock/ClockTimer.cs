@@ -18,6 +18,10 @@ public class ClockTimer : MonoBehaviour
     public float preFadeTime = 15f;
     public float messageDisplayTime = 2f;
 
+    [Header("Timing")]
+    // How many seconds before actual 0 the clock should stop normal progression and play the break sequence
+    public float endEarlyBy = 3f; // Changed from 2f to match grandfatherThreshold
+
     private float timeLeft;
     private int frameCount;
     private int lastFrameIndex = -1;
@@ -42,7 +46,7 @@ public class ClockTimer : MonoBehaviour
     public AudioSource grandfatherAudioSource;
     public AudioClip grandfatherClip; // one-shot bell/clock sound
     [Range(0f, 1f)] public float grandfatherVolume = 1f;
-    public float grandfatherThreshold = 5f; // play at 5 seconds
+    public float grandfatherThreshold = 3f; // play at 3 seconds
     private bool grandfatherPlayed = false;
 
     [Header("Break / Repair Animation")]
@@ -57,8 +61,8 @@ public class ClockTimer : MonoBehaviour
     // Factor to speed up frames in the special range (13-19)
     private const float SPECIAL_FRAME_FACTOR = 0.4f;
 
-    // Trigger the fast break once when hitting 4 seconds
-    private bool fastBreakTriggered = false;
+    // Trigger the breaking sequence when hitting grandfatherThreshold
+    private bool breakSequenceTriggered = false;
 
     void Start()
     {
@@ -125,7 +129,7 @@ public class ClockTimer : MonoBehaviour
         string hudFlag = GetCurrentSceneHudFlagName();
         // Backwards-compat: HudInitializer currently sets a global "hudshown" flag.
         // Check both the per-scene flag and the legacy/global flag so reconstruction
-        // works whether the initializer used per-scene or global setting.
+        // works whether the initializer used per-scenes or global setting.
         bool hudShownBefore = GameFlags.HasFlag(hudFlag) || GameFlags.HasFlag("hudshown");
         Debug.Log($"[ClockTimer] Checking HUD flags: {hudFlag} -> {GameFlags.HasFlag(hudFlag)}, global hudshown -> {GameFlags.HasFlag("hudshown")} -> hudShownBefore={hudShownBefore}");
         if (hudShownBefore)
@@ -169,61 +173,84 @@ public class ClockTimer : MonoBehaviour
             timeLeft -= Time.deltaTime;
             timeLeft = Mathf.Max(timeLeft, 0f);
 
-            // Trigger fast breaking animation at 4s
-            if (!fastBreakTriggered && timeLeft <= 4f && !isSpecialAnimating)
+            // Trigger breaking animation and grandfather clock at grandfatherThreshold (3s)
+            if (!breakSequenceTriggered && timeLeft <= grandfatherThreshold && !isSpecialAnimating)
             {
-                fastBreakTriggered = true;
+                breakSequenceTriggered = true;
 
-                // Only run fast break if we have enough frames to play the sequence
+                // Play grandfather clock sound
+                if (!grandfatherPlayed && grandfatherClip != null)
+                {
+                    grandfatherPlayed = true;
+                    if (grandfatherAudioSource != null)
+                    {
+                        grandfatherAudioSource.PlayOneShot(grandfatherClip, grandfatherVolume);
+                        Debug.Log($"[ClockTimer] Played grandfather clock sound at {grandfatherThreshold}s");
+                    }
+                }
+
+                // Stop warning heartbeat so it doesn't overlap
+                if (warningAudioSource != null && warningAudioSource.isPlaying)
+                    warningAudioSource.Stop();
+
+                // Only run break sequence if we have enough frames
                 if (clockFrames != null && frameCount > breakEndIndex)
                 {
-                    // stop warning heartbeat so it doesn't overlap
-                    if (warningAudioSource != null && warningAudioSource.isPlaying)
-                        warningAudioSource.Stop();
+                    // Calculate frame duration so the break sequence (13->19) takes exactly grandfatherThreshold seconds
+                    int numBreakFrames = breakEndIndex - breakStartIndex;
+                    float breakSequenceDuration = grandfatherThreshold; // 3 seconds
+                    float calculatedFrameDur = numBreakFrames > 0 ? (breakSequenceDuration / numBreakFrames) : breakFrameDuration;
 
-                    // compute a weighted base frameDuration so full break animation runs in ~4s
-                    int step = breakStartIndex <= breakEndIndex ? 1 : -1;
-                    int steps = Mathf.Abs(breakEndIndex - breakStartIndex);
-                    float totalDuration = 4f; // desired total time for break
-
-                    float totalWeight = 0f;
-                    int idx = breakStartIndex;
-                    for (int s = 0; s < steps; s++)
+                    // Ensure we don't leave a previous special routine running
+                    if (specialAnimRoutine != null)
                     {
-                        int next = idx + step;
-                        bool special = (next >= breakStartIndex && next <= breakEndIndex) || (idx >= breakStartIndex && idx <= breakEndIndex);
-                        totalWeight += special ? SPECIAL_FRAME_FACTOR : 1f;
-                        idx += step;
+                        StopCoroutine(specialAnimRoutine);
+                        specialAnimRoutine = null;
+                        isSpecialAnimating = false;
                     }
 
-                    float baseFrameDur = steps > 0 ? (totalDuration / Mathf.Max(0.0001f, totalWeight)) : 0.08f;
-
-                    // Start the breaking sequence but don't end the timer
-                    specialAnimRoutine = StartCoroutine(PlayClockSequence(breakStartIndex, breakEndIndex, baseFrameDur, false));
+                    // Start the breaking sequence
+                    Debug.Log($"[ClockTimer] Starting break sequence at {timeLeft:F2}s, duration: {breakSequenceDuration}s, frameDur: {calculatedFrameDur:F3}s");
+                    specialAnimRoutine = StartCoroutine(PlayClockSequence(breakStartIndex, breakEndIndex, calculatedFrameDur, true));
                 }
                 else
                 {
-                    Debug.LogWarning("[ClockTimer] Skipping fast break: not enough clock frames to play break sequence");
+                    Debug.LogWarning("[ClockTimer] Skipping break sequence: not enough clock frames");
                 }
             }
 
             // Clock animation (skip if special sequence is playing)
             if (!isSpecialAnimating)
             {
-                float progress = 1f - (timeLeft / totalTime);
-                int frameIndex = Mathf.FloorToInt(progress * frameCount);
-                frameIndex = Mathf.Clamp(frameIndex, 0, frameCount - 1);
-
-                if (frameIndex != lastFrameIndex)
+                // Normal phase: play frames from 0 up to (breakStartIndex - 1) over the time until grandfatherThreshold
+                if (timeLeft > grandfatherThreshold)
                 {
-                    if (clockImage != null && clockFrames != null && frameIndex >= 0 && frameIndex < clockFrames.Length)
-                    {
-                        clockImage.sprite = clockFrames[frameIndex];
-                        lastFrameIndex = frameIndex;
-                        Debug.Log($"[ClockTimer] Frame changed: {frameIndex}/{frameCount - 1} | Time left: {timeLeft:F2}s");
+                    float effectiveDuration = Mathf.Max(0.01f, totalTime - grandfatherThreshold);
+                    float elapsed = totalTime - timeLeft;
+                    float normalProgress = Mathf.Clamp01(elapsed / effectiveDuration);
 
-                        // Play tick sound
-                        PlayTickSound();
+                    // number of normal frames (0 .. breakStartIndex-1)
+                    int normalFrameCount = Mathf.Clamp(breakStartIndex, 0, frameCount);
+
+                    int normalFrameIndex = 0;
+                    if (normalFrameCount > 0)
+                    {
+                        // Map progress [0,1) to frames [0, normalFrameCount-1]. When progress==1 clamp ensures last frame is normalFrameCount-1
+                        normalFrameIndex = Mathf.FloorToInt(normalProgress * (float)normalFrameCount);
+                        normalFrameIndex = Mathf.Clamp(normalFrameIndex, 0, normalFrameCount - 1);
+                    }
+
+                    if (normalFrameIndex != lastFrameIndex)
+                    {
+                        if (clockImage != null && clockFrames != null && normalFrameIndex >= 0 && normalFrameIndex < clockFrames.Length)
+                        {
+                            clockImage.sprite = clockFrames[normalFrameIndex];
+                            lastFrameIndex = normalFrameIndex;
+                            Debug.Log($"[ClockTimer] Frame changed: {normalFrameIndex}/{normalFrameCount - 1} | Time left: {timeLeft:F2}s");
+
+                            // Play tick sound
+                            PlayTickSound();
+                        }
                     }
                 }
             }
@@ -236,19 +263,8 @@ public class ClockTimer : MonoBehaviour
                 lastWholeSecond = currentSecond;
             }
 
-            // Play grandfather clock sound at threshold
-            if (!grandfatherPlayed && timeLeft <= grandfatherThreshold && grandfatherClip != null)
-            {
-                grandfatherPlayed = true;
-                if (grandfatherAudioSource != null)
-                {
-                    grandfatherAudioSource.PlayOneShot(grandfatherClip, grandfatherVolume);
-                    Debug.Log("[ClockTimer] Played grandfather clock sound at 5s");
-                }
-            }
-
-            // Handle warning heartbeat when time is low
-            if (timeLeft <= warningThreshold && warningClip != null)
+            // Handle warning heartbeat when time is low (but stop before grandfather clock)
+            if (timeLeft <= warningThreshold && timeLeft > grandfatherThreshold && warningClip != null)
             {
                 if (!warningAudioSource.isPlaying)
                 {
@@ -279,13 +295,13 @@ public class ClockTimer : MonoBehaviour
                 screenFader.SetPanelAlpha(Mathf.MoveTowards(currentAlpha, fadeTarget, Time.deltaTime / preFadeTime));
             }
 
-            // Timer ends
+            // Timer ends when reaching 0
             if (timeLeft <= 0f && !hasEnded)
             {
                 hasEnded = true;
                 IsTimeEnded = true;
-                Debug.Log("[ClockTimer] Timer finished! Breaking clock, then showing message and transitioning...");
-                StartCoroutine(ClockBreakThenFade());
+                Debug.Log("[ClockTimer] Timer reached 0! Starting death sequence...");
+                StartCoroutine(FadeMessageThenTransition());
             }
         }
     }
@@ -303,7 +319,7 @@ public class ClockTimer : MonoBehaviour
 
         warningPlayed = false;
         grandfatherPlayed = false;
-        fastBreakTriggered = false;
+        breakSequenceTriggered = false;
 
         if (screenFader != null)
             screenFader.SetPanelAlpha(0f);
@@ -450,7 +466,7 @@ public class ClockTimer : MonoBehaviour
         int step = startIndex <= endIndex ? 1 : -1;
         int index = startIndex;
 
-        Debug.Log($"[ClockTimer] PlayClockSequence START: {startIndex} -> {endIndex}, frameDuration={frameDuration}, step={step}");
+        Debug.Log($"[ClockTimer] PlayClockSequence START: {startIndex} -> {endIndex}, frameDuration={frameDuration:F3}s, step={step}");
 
         while (true)
         {
@@ -477,19 +493,10 @@ public class ClockTimer : MonoBehaviour
             if (index == endIndex)
                 break;
 
-            int nextIndex = index + step;
-
-            // Use faster timing for frames within the special break range
-            float wait = frameDuration;
-            if ((nextIndex >= breakStartIndex && nextIndex <= breakEndIndex) || (index >= breakStartIndex && index <= breakEndIndex))
-            {
-                wait = frameDuration * SPECIAL_FRAME_FACTOR;
-            }
-
-            Debug.Log($"[ClockTimer] Playing frame {displayIndex} -> next {nextIndex}, wait={wait:F3}s");
+            Debug.Log($"[ClockTimer] Playing frame {displayIndex}, waiting {frameDuration:F3}s");
 
             index += step;
-            yield return new WaitForSeconds(wait);
+            yield return new WaitForSeconds(frameDuration);
         }
 
         Debug.Log($"[ClockTimer] PlayClockSequence COMPLETE: reached {endIndex}");
@@ -515,12 +522,15 @@ public class ClockTimer : MonoBehaviour
 
     private IEnumerator ClockBreakThenFade()
     {
-        // Play break anim 13 -> 20 before death sequence
-        if (clockFrames != null && frameCount > breakEndIndex && clockImage != null)
+        // The break animation should already be playing from the Update loop
+        // Wait for it to complete if still running
+        if (specialAnimRoutine != null && isSpecialAnimating)
         {
-            yield return StartCoroutine(PlayClockSequence(breakStartIndex, breakEndIndex, breakFrameDuration, true));
+            Debug.Log("[ClockTimer] Waiting for break sequence to complete...");
+            yield return specialAnimRoutine;
         }
 
+        // Now proceed with death sequence
         yield return StartCoroutine(FadeMessageThenTransition());
     }
 
