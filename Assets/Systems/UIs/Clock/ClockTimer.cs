@@ -20,7 +20,7 @@ public class ClockTimer : MonoBehaviour
 
     [Header("Timing")]
     // How many seconds before actual 0 the clock should stop normal progression and play the break sequence
-    public float endEarlyBy = 3f; // Changed from 2f to match grandfatherThreshold
+    public float endEarlyBy = 0; // Changed from 2f to match grandfatherThreshold
 
     private float timeLeft;
     private int frameCount;
@@ -54,6 +54,16 @@ public class ClockTimer : MonoBehaviour
     public int breakEndIndex = 19; // adjusted from 20 to 19
     public float breakFrameDuration = 0.08f;
     public float repairFrameDuration = 0.08f;
+
+    // When to trigger the destruction/break sequence (seconds left)
+    [Tooltip("Seconds left at which the break/destruction sequence begins")]
+    public float breakTriggerTime = 2f;
+
+    // Durations for the reconstruct (re-animate) visual: move/scale and repair sequence
+    [Tooltip("Duration to move/scale the clock to center and back (seconds)")]
+    public float reconstructMoveDuration = 1.2f;
+    [Tooltip("Total duration for the repair sequence while centered (seconds)")]
+    public float reconstructSequenceDuration = 1.2f;
 
     private bool isSpecialAnimating = false;
     private Coroutine specialAnimRoutine;
@@ -173,13 +183,13 @@ public class ClockTimer : MonoBehaviour
             timeLeft -= Time.deltaTime;
             timeLeft = Mathf.Max(timeLeft, 0f);
 
-            // Trigger breaking animation and grandfather clock at grandfatherThreshold (3s)
-            if (!breakSequenceTriggered && timeLeft <= grandfatherThreshold && !isSpecialAnimating)
+            // Trigger breaking animation at configured breakTriggerTime (e.g. 2s)
+            if (!breakSequenceTriggered && timeLeft <= breakTriggerTime && !isSpecialAnimating)
             {
                 breakSequenceTriggered = true;
 
-                // Play grandfather clock sound
-                if (!grandfatherPlayed && grandfatherClip != null)
+                // Play grandfather clock sound (still uses grandfatherThreshold)
+                if (!grandfatherPlayed && grandfatherClip != null && timeLeft <= grandfatherThreshold)
                 {
                     grandfatherPlayed = true;
                     if (grandfatherAudioSource != null)
@@ -196,10 +206,10 @@ public class ClockTimer : MonoBehaviour
                 // Only run break sequence if we have enough frames
                 if (clockFrames != null && frameCount > breakEndIndex)
                 {
-                    // Calculate frame duration so the break sequence (13->19) takes exactly grandfatherThreshold seconds
-                    int numBreakFrames = breakEndIndex - breakStartIndex;
-                    float breakSequenceDuration = grandfatherThreshold; // 3 seconds
-                    float calculatedFrameDur = numBreakFrames > 0 ? (breakSequenceDuration / numBreakFrames) : breakFrameDuration;
+                    // Calculate frame duration so the break sequence (13->19) takes exactly breakTriggerTime seconds
+                    int numBreakFrames = Mathf.Abs(breakEndIndex - breakStartIndex);
+                    float breakSequenceDuration = Mathf.Max(0.01f, breakTriggerTime);
+                    float calculatedFrameDur = numBreakFrames > 0 ? (breakSequenceDuration / (float)numBreakFrames) : breakFrameDuration;
 
                     // Ensure we don't leave a previous special routine running
                     if (specialAnimRoutine != null)
@@ -209,9 +219,9 @@ public class ClockTimer : MonoBehaviour
                         isSpecialAnimating = false;
                     }
 
-                    // Start the breaking sequence
+                    // Start the breaking sequence (no ticks)
                     Debug.Log($"[ClockTimer] Starting break sequence at {timeLeft:F2}s, duration: {breakSequenceDuration}s, frameDur: {calculatedFrameDur:F3}s");
-                    specialAnimRoutine = StartCoroutine(PlayClockSequence(breakStartIndex, breakEndIndex, calculatedFrameDur, true));
+                    specialAnimRoutine = StartCoroutine(PlayClockSequence(breakStartIndex, breakEndIndex, calculatedFrameDur, false));
                 }
                 else
                 {
@@ -222,10 +232,10 @@ public class ClockTimer : MonoBehaviour
             // Clock animation (skip if special sequence is playing)
             if (!isSpecialAnimating)
             {
-                // Normal phase: play frames from 0 up to (breakStartIndex - 1) over the time until grandfatherThreshold
-                if (timeLeft > grandfatherThreshold)
+                // Normal phase: play frames from 0 up to (breakStartIndex - 1) over the time until breakTriggerTime
+                if (timeLeft > breakTriggerTime)
                 {
-                    float effectiveDuration = Mathf.Max(0.01f, totalTime - grandfatherThreshold);
+                    float effectiveDuration = Mathf.Max(0.01f, totalTime - breakTriggerTime);
                     float elapsed = totalTime - timeLeft;
                     float normalProgress = Mathf.Clamp01(elapsed / effectiveDuration);
 
@@ -263,8 +273,8 @@ public class ClockTimer : MonoBehaviour
                 lastWholeSecond = currentSecond;
             }
 
-            // Handle warning heartbeat when time is low (but stop before grandfather clock)
-            if (timeLeft <= warningThreshold && timeLeft > grandfatherThreshold && warningClip != null)
+            // Handle warning heartbeat when time is low (but stop before breakTriggerTime)
+            if (timeLeft <= warningThreshold && timeLeft > breakTriggerTime && warningClip != null)
             {
                 if (!warningAudioSource.isPlaying)
                 {
@@ -504,6 +514,33 @@ public class ClockTimer : MonoBehaviour
         specialAnimRoutine = null;
     }
 
+    private IEnumerator AnimateRectTransform(Transform t, Vector2 targetAnchoredPos, Vector3 targetScale, float duration)
+    {
+        if (t == null) yield break;
+        var rt = t as RectTransform;
+        if (rt == null) yield break;
+
+        RectTransform parentRt = rt.parent as RectTransform;
+        if (parentRt == null) yield break;
+
+        Vector2 startPos = rt.anchoredPosition;
+        Vector3 startScale = rt.localScale;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            if (this == null || !this.isActiveAndEnabled || rt == null) yield break;
+            elapsed += Time.deltaTime;
+            float f = Mathf.Clamp01(elapsed / duration);
+            rt.anchoredPosition = Vector2.Lerp(startPos, targetAnchoredPos, f);
+            rt.localScale = Vector3.Lerp(startScale, targetScale, f);
+            yield return null;
+        }
+
+        rt.anchoredPosition = targetAnchoredPos;
+        rt.localScale = targetScale;
+    }
+
     private IEnumerator ReconstructThenStart()
     {
         // Optional safety check
@@ -512,8 +549,93 @@ public class ClockTimer : MonoBehaviour
             // Start in the fully broken state (frame 20)
             clockImage.sprite = clockFrames[breakEndIndex];
 
-            // Play 20 -> 13 without ticks
-            yield return StartCoroutine(PlayClockSequence(breakEndIndex, breakStartIndex, repairFrameDuration, false));
+            // Disable player input / movement while reconstructing
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            PlayerInput2D playerInput = null;
+            CharacterMotor2D motor = null;
+            bool prevInputEnabled = true;
+            bool prevMotorDialogue = false;
+
+            if (playerObj != null)
+            {
+                playerInput = playerObj.GetComponent<PlayerInput2D>();
+                motor = playerObj.GetComponent<CharacterMotor2D>();
+
+                if (playerInput != null)
+                {
+                    prevInputEnabled = playerInput.isInputEnabled;
+                    playerInput.isInputEnabled = false;
+                }
+
+                if (motor != null)
+                {
+                    prevMotorDialogue = motor.IsDialogueActive;
+                    motor.SetDialogueActive(true);
+                }
+            }
+
+            // Move clock to center and enlarge, play 19 -> 13 and then 13 -> 1 without ticks, then restore
+            RectTransform rt = clockImage.GetComponent<RectTransform>();
+            if (rt != null)
+            {
+                // Save original transform state
+                Vector2 origAnchored = rt.anchoredPosition;
+                Vector3 origScale = rt.localScale;
+                int origSibling = rt.GetSiblingIndex();
+
+                // Bring to front
+                rt.SetAsLastSibling();
+
+                // Target: centered in parent (anchoredPosition = 0) and doubled in scale
+                Vector2 centerAnchored = Vector2.zero;
+                Vector3 targetScale = origScale * 4f;
+
+                // Animate to center/scale
+                float moveDur = Mathf.Clamp(reconstructMoveDuration, 0.2f, 5f);
+                yield return StartCoroutine(AnimateRectTransform(rt, centerAnchored, targetScale, moveDur));
+
+                // Play repair sequence in two parts: 19->13 then 13->1
+                // Calculate total steps and per-frame duration so the whole sequence fits reconstructSequenceDuration
+                int stepsPartA = Mathf.Abs(breakEndIndex - breakStartIndex); // e.g. 19->13
+                int stepsPartB = Mathf.Abs(breakStartIndex - 1); // 13->1
+                int totalSteps = Mathf.Max(1, stepsPartA + stepsPartB);
+                float seqDur = Mathf.Max(0.01f, reconstructSequenceDuration);
+                float frameDur = seqDur / totalSteps;
+
+                // Play 19 -> 13 (repair)
+                yield return StartCoroutine(PlayClockSequence(breakEndIndex, breakStartIndex, frameDur, false));
+
+                // Play 13 -> 1 (clock whole)
+                yield return StartCoroutine(PlayClockSequence(breakStartIndex, 1, frameDur, false));
+
+                // Animate back to original position/scale
+                yield return StartCoroutine(AnimateRectTransform(rt, origAnchored, origScale, moveDur));
+
+                // Restore sibling index
+                rt.SetSiblingIndex(origSibling);
+            }
+            else
+            {
+                // Fallback: just play the sequences if no RectTransform
+                int stepsPartA = Mathf.Abs(breakEndIndex - breakStartIndex);
+                int stepsPartB = Mathf.Abs(breakStartIndex - 1);
+                int totalSteps = Mathf.Max(1, stepsPartA + stepsPartB);
+                float seqDur = Mathf.Max(0.01f, reconstructSequenceDuration);
+                float frameDur = seqDur / totalSteps;
+
+                yield return StartCoroutine(PlayClockSequence(breakEndIndex, breakStartIndex, frameDur, false));
+                yield return StartCoroutine(PlayClockSequence(breakStartIndex, 1, frameDur, false));
+            }
+
+            // Restore player input / movement
+            if (playerInput != null)
+            {
+                playerInput.isInputEnabled = prevInputEnabled;
+            }
+            if (motor != null)
+            {
+                motor.SetDialogueActive(prevMotorDialogue);
+            }
         }
 
         StartTimer(totalTime);
