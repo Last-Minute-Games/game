@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using cherrydev;
 using DG.Tweening;
 using UnityEngine;
@@ -42,6 +42,13 @@ namespace Systems.Overworld.Intro
             if (hasPlayed) yield break;
             hasPlayed = true;
             
+<<<<<<< HEAD
+            // Pause the ClockTimer if it exists
+            if (ClockTimer.Instance != null)
+            {
+                ClockTimer.Instance.PauseTimer(true);
+                Debug.Log("[OverworldWakeUpCutscene] ClockTimer paused");
+=======
             // Find HUD initializer if needed
             if (hudInitializer == null && autoFindHudInitializer)
             {
@@ -66,6 +73,7 @@ namespace Systems.Overworld.Intro
             else
             {
                 Debug.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found in scene");
+>>>>>>> 0943325 (wawawawa)
             }
             
             // Enable SleepingMain sprite renderer
@@ -118,6 +126,18 @@ namespace Systems.Overworld.Intro
             if (screenFader != null)    
             {
                 yield return StartCoroutine(screenFader.EyesOpeningEffect());
+                
+                // Immediately disable the black bar panels after eyes open
+                if (screenFader.topPanel != null)
+                {
+                    screenFader.topPanel.gameObject.SetActive(false);
+                    Debug.Log("[OverworldWakeUpCutscene] Top panel disabled immediately");
+                }
+                if (screenFader.bottomPanel != null)
+                {
+                    screenFader.bottomPanel.gameObject.SetActive(false);
+                    Debug.Log("[OverworldWakeUpCutscene] Bottom panel disabled immediately");
+                }
             }
             else
             {
@@ -243,6 +263,13 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(2f); // Wait for HUD animation to play
             
+            // Resume the ClockTimer at the end of the cutscene
+            if (ClockTimer.Instance != null)
+            {
+                ClockTimer.Instance.PauseTimer(false);
+                Debug.Log("[OverworldWakeUpCutscene] ClockTimer resumed");
+            }
+            
             Debug.Log("[OverworldWakeUpCutscene] Complete");
             yield return null;
         }
@@ -355,15 +382,49 @@ namespace Systems.Overworld.Intro
             // Create the panels manually and position them in closed state (covering screen)
             // WITHOUT animating them - they should already be closed
             
-            // We need to trigger the eyes closing effect to create the panels,
-            // but we'll do it instantly (duration 0) so they appear closed immediately
-            float originalDuration = screenFader.splitPanelDuration;
-            screenFader.splitPanelDuration = 0f; // Instant
+            // Get or create the canvas
+            Canvas canvas = screenFader.fadePanel.GetComponentInParent<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError("[OverworldWakeUpCutscene] Cannot find Canvas!");
+                yield break;
+            }
             
-            yield return StartCoroutine(screenFader.EyesClosingEffect());
+            // Create Top Panel
+            GameObject topPanelObj = new GameObject("EyeTopPanel");
+            topPanelObj.transform.SetParent(canvas.transform, false);
+            RectTransform topPanel = topPanelObj.AddComponent<RectTransform>();
+            Image topImage = topPanelObj.AddComponent<Image>();
+            topImage.color = Color.black;
+            topImage.raycastTarget = false;
             
-            // Restore original duration for the opening effect
-            screenFader.splitPanelDuration = originalDuration;
+            // Setup top panel RectTransform (stretches across top, half screen height)
+            topPanel.anchorMin = new Vector2(0, 0.5f);
+            topPanel.anchorMax = new Vector2(1, 1);
+            topPanel.pivot = new Vector2(0.5f, 0f);
+            topPanel.offsetMin = Vector2.zero;
+            topPanel.offsetMax = Vector2.zero;
+            topPanel.anchoredPosition = Vector2.zero; // Covering screen (eyes closed)
+            
+            // Create Bottom Panel
+            GameObject bottomPanelObj = new GameObject("EyeBottomPanel");
+            bottomPanelObj.transform.SetParent(canvas.transform, false);
+            RectTransform bottomPanel = bottomPanelObj.AddComponent<RectTransform>();
+            Image bottomImage = bottomPanelObj.AddComponent<Image>();
+            bottomImage.color = Color.black;
+            bottomImage.raycastTarget = false;
+            
+            // Setup bottom panel RectTransform (stretches across bottom, half screen height)
+            bottomPanel.anchorMin = new Vector2(0, 0);
+            bottomPanel.anchorMax = new Vector2(1, 0.5f);
+            bottomPanel.pivot = new Vector2(0.5f, 1f);
+            bottomPanel.offsetMin = Vector2.zero;
+            bottomPanel.offsetMax = Vector2.zero;
+            bottomPanel.anchoredPosition = Vector2.zero; // Covering screen (eyes closed)
+            
+            // Assign the panels to the ScreenFader
+            screenFader.topPanel = topPanel;
+            screenFader.bottomPanel = bottomPanel;
             
             // Make sure fade canvas is hidden
             if (fadeCanvasGroup != null)
