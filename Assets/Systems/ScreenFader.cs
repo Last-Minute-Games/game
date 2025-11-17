@@ -5,6 +5,8 @@ using System.Collections;
 
 public class ScreenFader : MonoBehaviour
 {
+    private static ScreenFader s_instance;
+
     [Header("UI")]
     public Image fadePanel;
     public float fadeDuration = 2f;
@@ -21,26 +23,48 @@ public class ScreenFader : MonoBehaviour
 
     private void Awake()
     {
+        // Singleton: ensure only one ScreenFader persists
+        if (s_instance != null && s_instance != this)
+        {
+            Debug.Log("[ScreenFader] Duplicate instance detected, destroying new one.");
+            Destroy(gameObject);
+            return;
+        }
+
+        s_instance = this;
+        DontDestroyOnLoad(gameObject);
+
         if (fadePanel == null)
         {
             Debug.LogError("ScreenFader: Fade panel not assigned!");
             return;
         }
 
-        DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
 
-        // Start fully transparent
+        // Start fully transparent and disabled
         fadePanel.color = new Color(0, 0, 0, 0f);
+        if (fadePanel.gameObject.activeSelf)
+            fadePanel.gameObject.SetActive(false);
     }
 
     private void OnDestroy()
     {
+        // Unsubscribe and clear singleton reference
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        if (s_instance == this) s_instance = null;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // If a duplicate ScreenFader existed in the new scene it's already been destroyed in Awake of that instance.
+
+        // If not transitioning, ensure the fade overlay isn't accidentally left active
+        if (fadePanel != null && !isTransitioning)
+        {
+            fadePanel.gameObject.SetActive(false);
+        }
+
         // Check if we should open eyes on this scene load
         if (shouldOpenEyesOnSceneLoad)
         {
@@ -124,6 +148,10 @@ public class ScreenFader : MonoBehaviour
     {
         isTransitioning = true;
 
+        // Ensure overlay is visible
+        if (fadePanel != null && !fadePanel.gameObject.activeSelf)
+            fadePanel.gameObject.SetActive(true);
+
         float t = 0f;
         Color c = fadePanel.color;
         while (t < fadeDuration)
@@ -139,6 +167,10 @@ public class ScreenFader : MonoBehaviour
 
     public IEnumerator FadeIn()
     {
+        // Ensure overlay is visible to fade from
+        if (fadePanel != null && !fadePanel.gameObject.activeSelf)
+            fadePanel.gameObject.SetActive(true);
+
         float t = 0f;
         Color c = fadePanel.color;
         c.a = 1f;
@@ -154,6 +186,10 @@ public class ScreenFader : MonoBehaviour
 
         fadePanel.color = new Color(0, 0, 0, 0f);
         isTransitioning = false;
+
+        // Hide overlay once finished
+        if (fadePanel != null && fadePanel.gameObject.activeSelf)
+            fadePanel.gameObject.SetActive(false);
     }
 
     public void SetPanelAlpha(float alpha)
@@ -163,6 +199,12 @@ public class ScreenFader : MonoBehaviour
             Color c = fadePanel.color;
             c.a = Mathf.Clamp01(alpha);
             fadePanel.color = c;
+
+            // If alpha > 0 ensure it's active
+            if (alpha > 0f && !fadePanel.gameObject.activeSelf)
+                fadePanel.gameObject.SetActive(true);
+            else if (alpha <= 0f && fadePanel.gameObject.activeSelf && !isTransitioning)
+                fadePanel.gameObject.SetActive(false);
         }
     }
 
@@ -171,6 +213,10 @@ public class ScreenFader : MonoBehaviour
     /// </summary>
     public IEnumerator EyesClosingEffect()
     {
+        // Ensure overlay is visible so panels render on the same canvas
+        if (fadePanel != null && !fadePanel.gameObject.activeSelf)
+            fadePanel.gameObject.SetActive(true);
+
         // Create panels on demand
         if (topPanel == null || bottomPanel == null)
         {
@@ -275,7 +321,8 @@ public class ScreenFader : MonoBehaviour
             c.a = 0f;
             fadePanel.color = c;
             // Also disable the FadeOverlay GameObject to be safe
-            fadePanel.gameObject.SetActive(false);
+            if (fadePanel.gameObject.activeSelf)
+                fadePanel.gameObject.SetActive(false);
             Debug.Log("[ScreenFader] Cleared and disabled fade panel");
         }
 
@@ -293,6 +340,17 @@ public class ScreenFader : MonoBehaviour
 
         while (!asyncLoad.isDone)
             yield return null;
+
+        // Reset split panels after scene loads
+        if (topPanel != null && bottomPanel != null)
+        {
+            // Ensure panels are positioned off-screen for the new scene
+            Canvas canvas = fadePanel.GetComponentInParent<Canvas>();
+            RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+            float screenHeight = canvasRect.rect.height;
+            topPanel.anchoredPosition = new Vector2(0, screenHeight / 2f);
+            bottomPanel.anchoredPosition = new Vector2(0, -screenHeight / 2f);
+        }
     }
 
     /// <summary>

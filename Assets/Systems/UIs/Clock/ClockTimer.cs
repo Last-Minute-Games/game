@@ -38,6 +38,13 @@ public class ClockTimer : MonoBehaviour
     public AudioClip tickClip;
     [Range(0f, 1f)] public float tickVolume = 0.5f;
 
+    [Header("Grandfather Clock")]
+    public AudioSource grandfatherAudioSource;
+    public AudioClip grandfatherClip; // one-shot bell/clock sound
+    [Range(0f, 1f)] public float grandfatherVolume = 1f;
+    public float grandfatherThreshold = 5f; // play at 5 seconds
+    private bool grandfatherPlayed = false;
+
 
     void Start()
     {
@@ -47,6 +54,7 @@ public class ClockTimer : MonoBehaviour
             return;
         }
         warningPlayed = false;
+        grandfatherPlayed = false;
         frameCount = clockFrames.Length;
         clockImage.sprite = clockFrames[0];
 
@@ -89,6 +97,14 @@ public class ClockTimer : MonoBehaviour
             tickAudioSource.spatialBlend = 0f; // make it 2D
         }
 
+        // Setup grandfather clock audio source
+        if (grandfatherAudioSource == null)
+        {
+            grandfatherAudioSource = gameObject.AddComponent<AudioSource>();
+            grandfatherAudioSource.playOnAwake = false;
+            grandfatherAudioSource.spatialBlend = 0f;
+        }
+
         StartTimer(totalTime);
         StartCoroutine(InitialFadeIn()); // fade in at game start
     }
@@ -124,6 +140,17 @@ public class ClockTimer : MonoBehaviour
             {
                 Debug.Log($"[ClockTimer] Time left: {timeLeft:F1}s");
                 lastWholeSecond = currentSecond;
+            }
+
+            // Play grandfather clock sound at threshold
+            if (!grandfatherPlayed && timeLeft <= grandfatherThreshold && grandfatherClip != null)
+            {
+                grandfatherPlayed = true;
+                if (grandfatherAudioSource != null)
+                {
+                    grandfatherAudioSource.PlayOneShot(grandfatherClip, grandfatherVolume);
+                    Debug.Log("[ClockTimer] Played grandfather clock sound at 5s");
+                }
             }
 
             // Handle warning heartbeat when time is low
@@ -179,6 +206,9 @@ public class ClockTimer : MonoBehaviour
         hasEnded = false;
         IsTimeEnded = false;
         isPaused = false;
+
+        warningPlayed = false;
+        grandfatherPlayed = false;
 
         screenFader.SetPanelAlpha(0f);
         if (endMessageText != null)

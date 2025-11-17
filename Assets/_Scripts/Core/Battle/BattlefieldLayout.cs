@@ -26,8 +26,6 @@ public class BattlefieldLayout : MonoBehaviour
     private readonly List<List<string>> roundEnemyIDs = new()
     {
         new() { "sexy_eyeball" },
-        new() { "bat", "sexy_eyeball", "jerry" },
-        new() { "bat", "gargoyle", "jerry" },
     };
 
     private void Start()
