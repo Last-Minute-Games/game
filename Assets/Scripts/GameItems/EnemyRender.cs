@@ -1,197 +1,222 @@
-using System.Collections;
-using UnityEngine;
-using UnityEngine.Animations;
-using UnityEngine.Playables;
+using Entities.Enemies.Helpers;
 
-[RequireComponent(typeof(RectTransform))]
-[RequireComponent(typeof(Animator))]
-[RequireComponent(typeof(SpriteRenderer))]
-public class EnemyRender : MonoBehaviour
+namespace GameItems
 {
-    [Header("Runtime")] 
-    public EnemyData data;
+    using System.Collections;
+    using UnityEngine;
+    using UnityEngine.Animations;
+    using UnityEngine.Playables;
 
-    [Header("Animator States (Controller-driven)")]
-    public string idleState = "Idle";
-    public string attackState = "Attack";
-    public string hurtState = "Hurt";
-    public string deathState = "Death";
-    public int animatorLayer = 0;
-    public float crossFadeDuration = 0.08f;
-
-    private Animator _animator;
-    private SpriteRenderer _sprite;
-
-    // Playables (fallback when no AnimatorController)
-    private PlayableGraph _graph;
-    private AnimationPlayableOutput _output;
-    private AnimationClipPlayable _currentPlayable;
-    private bool _graphCreated;
-    private Coroutine _returnToIdleRoutine;
-
-    private bool UsingAnimatorController => data != null && data.animatorController != null;
-
-    private void Awake()
+    [RequireComponent(typeof(Animator))]
+    [RequireComponent(typeof(SpriteRenderer))]
+    [RequireComponent(typeof(BoxCollider2D))]
+    public class EnemyRender : MonoBehaviour
     {
-        _animator = GetComponent<Animator>();
-        _sprite = GetComponent<SpriteRenderer>();
-    }
+        [Header("Runtime")] 
+        public EnemyData data;
 
-    private void OnDisable() => StopGraph();
-    private void OnDestroy() => StopGraph();
+        [Header("Animator States (Controller-driven)")]
+        public string idleState = "Idle";
+        public string attackState = "Attack";
+        public string hurtState = "Hurt";
+        public string deathState = "Death";
+        public int animatorLayer;
+        public float crossFadeDuration = 0.08f;
 
-    public void Bind(EnemyData enemyData)
-    {
-        data = enemyData;
+        private Animator _animator;
+        private SpriteRenderer _sprite;
+        private EnemyHealth _health;
+        private BoxCollider2D _hitboxCollider;
 
-        // Assign Animator Controller if provided
-        if (_animator != null)
-            _animator.runtimeAnimatorController = data != null ? data.animatorController : null;
+        // Playables (fallback when no AnimatorController)
+        private PlayableGraph _graph;
+        private AnimationPlayableOutput _output;
+        private AnimationClipPlayable _currentPlayable;
+        private bool _graphCreated;
+        private Coroutine _returnToIdleRoutine;
 
-        // Set default sprite artwork
-        if (_sprite != null)
+        private bool UsingAnimatorController => data != null && data.animatorController != null;
+
+        private void Awake()
         {
-            _sprite.sprite = data != null ? data.artwork : null;
-            _sprite.enabled = _sprite.sprite != null;
+            _hitboxCollider = GetComponent<BoxCollider2D>();
+            _animator = GetComponent<Animator>();
+            _sprite = GetComponent<SpriteRenderer>();
         }
 
-        PlayIdle();
-    }
+        private void OnDisable() => StopGraph();
+        private void OnDestroy() => StopGraph();
 
-    public void PlayIdle()
-    {
-        if (UsingAnimatorController && HasState(idleState))
+        public void Bind(EnemyData enemyData)
         {
-            StopGraph();
-            CrossFadeState(idleState, 0f);
-            return;
+            data = enemyData;
+
+            // Assign Animator Controller if provided
+            if (_animator != null)
+                _animator.runtimeAnimatorController = data != null ? data.animatorController : null;
+
+            // Set default sprite artwork
+            if (_sprite != null)
+            {
+                _sprite.sprite = data != null ? data.artwork : null;
+                _sprite.enabled = _sprite.sprite != null;
+            }
+            
+            _health = GetComponentInChildren<EnemyHealth>();
+            
+            _hitboxCollider.offset = new Vector2(0f, 0.05f);
+            _hitboxCollider.size = new Vector2(0.3f, 0.3f);
+
+            // Update health display
+            UpdateHealth();
+
+            PlayIdle();
         }
 
-        if (data == null || data.idleClip == null)
+        public void UpdateHealth()
         {
-            StopGraph(); // static sprite only
-            return;
-        }
-        PlayClip(data.idleClip, loop: true, returnToIdleOnEnd: false);
-    }
-
-    public void PlayAttack()
-    {
-        if (UsingAnimatorController && HasState(attackState))
-        {
-            StopGraph();
-            CrossFadeState(attackState, 0f);
-            return;
+            if (_health != null && data != null)
+            {
+                _health.SetHealth(data.entity.health, data.entity.maxHealth);
+                _health.SetShield(data.entity.block);
+            }
         }
 
-        if (data == null || data.attackClip == null)
-            return;
-
-        PlayClip(data.attackClip, loop: false, returnToIdleOnEnd: true);
-    }
-
-    public void PlayHurt()
-    {
-        if (UsingAnimatorController && HasState(hurtState))
+        public void PlayIdle()
         {
-            StopGraph();
-            CrossFadeState(hurtState, 0f);
-            return;
+            if (UsingAnimatorController && HasState(idleState))
+            {
+                StopGraph();
+                CrossFadeState(idleState, 0f);
+                return;
+            }
+
+            if (data == null || data.idleClip == null)
+            {
+                StopGraph(); // static sprite only
+                return;
+            }
+            PlayClip(data.idleClip, loop: true, returnToIdleOnEnd: false);
         }
 
-        if (data == null || data.hurtClip == null)
-            return;
-
-        PlayClip(data.hurtClip, loop: false, returnToIdleOnEnd: true);
-    }
-
-    public void PlayDeath()
-    {
-        if (UsingAnimatorController && HasState(deathState))
+        public void PlayAttack()
         {
-            StopGraph();
-            CrossFadeState(deathState, 0f);
-            return;
+            if (UsingAnimatorController && HasState(attackState))
+            {
+                StopGraph();
+                CrossFadeState(attackState, 0f);
+                return;
+            }
+
+            if (data == null || data.attackClip == null)
+                return;
+
+            PlayClip(data.attackClip, loop: false, returnToIdleOnEnd: true);
         }
 
-        if (data == null || data.deathClip == null)
+        public void PlayHurt()
         {
-            StopGraph();
-            if (_sprite != null) _sprite.enabled = false; // hide on death if no clip
-            return;
-        }
-        PlayClip(data.deathClip, loop: false, returnToIdleOnEnd: false);
-    }
+            if (UsingAnimatorController && HasState(hurtState))
+            {
+                StopGraph();
+                CrossFadeState(hurtState, 0f);
+                return;
+            }
 
-    private void CrossFadeState(string stateName, float normalizedTime)
-    {
-        if (_animator == null) return;
-        _animator.CrossFade(stateName, crossFadeDuration, animatorLayer, normalizedTime);
-    }
+            if (data == null || data.hurtClip == null)
+                return;
 
-    private bool HasState(string stateName)
-    {
-        if (_animator == null || _animator.runtimeAnimatorController == null) return false;
-        int hash = Animator.StringToHash(stateName);
-        return _animator.HasState(animatorLayer, hash);
-    }
-
-    private void PlayClip(AnimationClip clip, bool loop, bool returnToIdleOnEnd)
-    {
-        if (!Application.isPlaying || clip == null) return;
-        EnsureGraph();
-
-        if (_returnToIdleRoutine != null)
-        {
-            StopCoroutine(_returnToIdleRoutine);
-            _returnToIdleRoutine = null;
+            PlayClip(data.hurtClip, loop: false, returnToIdleOnEnd: true);
         }
 
-        if (_currentPlayable.IsValid())
-            _currentPlayable.Destroy();
-
-        _currentPlayable = AnimationClipPlayable.Create(_graph, clip);
-        _currentPlayable.SetApplyFootIK(false);
-        _currentPlayable.SetApplyPlayableIK(false);
-        _currentPlayable.SetTime(0);
-
-        _output.SetSourcePlayable(_currentPlayable);
-        _graph.Play();
-
-        if (!loop && returnToIdleOnEnd)
-            _returnToIdleRoutine = StartCoroutine(ReturnToIdleAfter(clip.length));
-    }
-
-    private IEnumerator ReturnToIdleAfter(float duration)
-    {
-        yield return new WaitForSeconds(duration);
-        PlayIdle();
-    }
-
-    private void EnsureGraph()
-    {
-        if (_graphCreated) return;
-        _graph = PlayableGraph.Create($"EnemyRenderGraph_{name}");
-        _graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
-        _output = AnimationPlayableOutput.Create(_graph, "EnemyAnimOutput", _animator);
-        _graphCreated = true;
-    }
-
-    private void StopGraph()
-    {
-        if (_returnToIdleRoutine != null)
+        public void PlayDeath()
         {
-            StopCoroutine(_returnToIdleRoutine);
-            _returnToIdleRoutine = null;
+            if (UsingAnimatorController && HasState(deathState))
+            {
+                StopGraph();
+                CrossFadeState(deathState, 0f);
+                return;
+            }
+
+            if (data == null || data.deathClip == null)
+            {
+                StopGraph();
+                if (_sprite != null) _sprite.enabled = false; // hide on death if no clip
+                return;
+            }
+            PlayClip(data.deathClip, loop: false, returnToIdleOnEnd: false);
         }
-        if (_currentPlayable.IsValid())
+
+        private void CrossFadeState(string stateName, float normalizedTime)
         {
-            _currentPlayable.Destroy();
+            if (_animator == null) return;
+            _animator.CrossFade(stateName, crossFadeDuration, animatorLayer, normalizedTime);
         }
-        if (_graphCreated && _graph.IsValid())
+
+        private bool HasState(string stateName)
         {
-            _graph.Destroy();
+            if (_animator == null || _animator.runtimeAnimatorController == null) return false;
+            int hash = Animator.StringToHash(stateName);
+            return _animator.HasState(animatorLayer, hash);
         }
-        _graphCreated = false;
+
+        private void PlayClip(AnimationClip clip, bool loop, bool returnToIdleOnEnd)
+        {
+            if (!Application.isPlaying || clip == null) return;
+            EnsureGraph();
+
+            if (_returnToIdleRoutine != null)
+            {
+                StopCoroutine(_returnToIdleRoutine);
+                _returnToIdleRoutine = null;
+            }
+
+            if (_currentPlayable.IsValid())
+                _currentPlayable.Destroy();
+
+            _currentPlayable = AnimationClipPlayable.Create(_graph, clip);
+            _currentPlayable.SetApplyFootIK(false);
+            _currentPlayable.SetApplyPlayableIK(false);
+            _currentPlayable.SetTime(0);
+
+            _output.SetSourcePlayable(_currentPlayable);
+            _graph.Play();
+
+            if (!loop && returnToIdleOnEnd)
+                _returnToIdleRoutine = StartCoroutine(ReturnToIdleAfter(clip.length));
+        }
+
+        private IEnumerator ReturnToIdleAfter(float duration)
+        {
+            yield return new WaitForSeconds(duration);
+            PlayIdle();
+        }
+
+        private void EnsureGraph()
+        {
+            if (_graphCreated) return;
+            _graph = PlayableGraph.Create($"EnemyRenderGraph_{name}");
+            _graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
+            _output = AnimationPlayableOutput.Create(_graph, "EnemyAnimOutput", _animator);
+            _graphCreated = true;
+        }
+
+        private void StopGraph()
+        {
+            if (_returnToIdleRoutine != null)
+            {
+                StopCoroutine(_returnToIdleRoutine);
+                _returnToIdleRoutine = null;
+            }
+            if (_currentPlayable.IsValid())
+            {
+                _currentPlayable.Destroy();
+            }
+            if (_graphCreated && _graph.IsValid())
+            {
+                _graph.Destroy();
+            }
+            _graphCreated = false;
+        }
     }
 }

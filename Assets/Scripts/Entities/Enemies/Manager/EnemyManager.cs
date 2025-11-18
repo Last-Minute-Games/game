@@ -1,3 +1,6 @@
+using Entities.Enemies.Helpers;
+using GameItems;
+
 namespace Entities.Enemies.Manager
 {
     using System.Collections.Generic;
@@ -11,17 +14,23 @@ namespace Entities.Enemies.Manager
         [Header("Rendering")]
         [Tooltip("Parent container where enemy GameObjects (SpriteRenderer + Animator) will be spawned in world space.")]
         public Transform uiContainer; // now a Transform, not a RectTransform
+        [Tooltip("Prefab for the enemy health bar UI (must have EnemyHealth component).")]
+        [SerializeField] private GameObject healthBarPrefab;
 
         [Header("Layout (Line-up)")]
         [Tooltip("Horizontal spacing between enemies in world units.")]
         [SerializeField] private float horizontalSpacing = 2f;
         [Tooltip("Fixed Y offset for the line-up (local to container).")]
-        [SerializeField] private float yOffset = 0f;
+        [SerializeField] private float yOffset;
         [Tooltip("Center the lineup around X=0. If false, lineup starts at X=0 and grows positive.")]
         [SerializeField] private bool centerAlign = true;
         [Tooltip("Automatically layout enemies after (re)building.")]
         [SerializeField] private bool autoLayoutOnBuild = true;
 
+        [Header("Health Bar Settings")]
+        [Tooltip("Local position offset for health bar relative to enemy.")]
+        [SerializeField] private Vector3 healthBarOffset = new Vector3(0f, 0.17f, 0f);
+        
         private readonly List<EnemyRender> _activeRenders = new();
 
         public void InitializeEnemies(List<EnemyData> enemyList)
@@ -45,11 +54,16 @@ namespace Entities.Enemies.Manager
                 return;
             }
 
+            if (healthBarPrefab == null)
+            {
+                Debug.LogWarning("EnemyManager: healthBarPrefab not set. Health bars will not be created.");
+            }
+
             for (int i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
                 var go = new GameObject(string.IsNullOrEmpty(enemy.enemyName) ? $"Enemy_{i}" : enemy.enemyName,
-                    typeof(Animator), typeof(SpriteRenderer), typeof(EnemyRender));
+                    typeof(Animator), typeof(SpriteRenderer), typeof(GameItems.EnemyRender));
 
                 // Parent under the provided container
                 var t = go.transform;
@@ -64,7 +78,23 @@ namespace Entities.Enemies.Manager
                 sr.sprite = enemy.artwork;
                 sr.sortingOrder = i; // order by spawn index (front-to-back or vice versa as needed)
 
-                var render = go.GetComponent<EnemyRender>();
+                // Add health bar if prefab is available
+                if (healthBarPrefab != null)
+                {
+                    var healthBarGo = Instantiate(healthBarPrefab, go.transform);
+                    var healthComp = healthBarGo.GetComponent<EnemyHealth>();
+                    if (healthComp != null)
+                    {
+                        healthComp.SetLocalPosition(healthBarOffset);
+                        // Initial health will be set in EnemyRender.Bind
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"EnemyManager: healthBarPrefab for {enemy.enemyName} does not have EnemyHealth component.");
+                    }
+                }
+
+                var render = go.GetComponent<GameItems.EnemyRender>();
                 render.Bind(enemy);
 
                 _activeRenders.Add(render);
@@ -122,6 +152,26 @@ namespace Entities.Enemies.Manager
                 }
 
                 enemy.ExecuteIntent(ref player);
+            }
+        }
+
+        // Call after enemy takes damage to update health display
+        public void UpdateEnemyHealth(EnemyData enemy)
+        {
+            var render = GetRenderFor(enemy);
+            if (render != null)
+            {
+                render.UpdateHealth();
+                
+                // Play hurt animation if still alive
+                if (enemy.entity.isAlive)
+                {
+                    render.PlayHurt();
+                }
+                else
+                {
+                    render.PlayDeath();
+                }
             }
         }
 

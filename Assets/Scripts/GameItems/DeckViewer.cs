@@ -134,7 +134,7 @@ namespace GameItems
                 var go = Instantiate(cardPrefab);
                 
                 var sortingGroup = go.GetComponent<SortingGroup>();
-                sortingGroup.sortingOrder = index;
+                sortingGroup.sortingOrder = index + 100;
 
                 // Parent and reset transform (optional)
                 if (content != null)
