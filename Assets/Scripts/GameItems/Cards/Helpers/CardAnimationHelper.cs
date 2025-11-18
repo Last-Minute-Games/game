@@ -34,6 +34,14 @@ public class CardAnimationHelper : MonoBehaviour
         rect.DOScale(originalScale, drawDuration).SetEase(Ease.OutBack);
     }
 
+    public void AnimateDiscard(CardPrefab card)
+    {
+        var rect = card.GetComponent<RectTransform>();
+        originalScale = rect.localScale;
+
+        rect.DOScale(Vector3.zero, discardDuration).SetEase(Ease.OutBack);
+    }
+
     // Called by FXHelper.OnCardHover()
     public void HoverVisuals(CardPrefab card)
     {
@@ -66,7 +74,7 @@ public class CardAnimationHelper : MonoBehaviour
 
         if (arrowHelper != null)
         {
-            arrowHelper.UpdateArrowFrom(card.transform.position, cursorPos);
+            arrowHelper.UpdateArrow(card.transform.position, cursorPos);
         }
     }
 

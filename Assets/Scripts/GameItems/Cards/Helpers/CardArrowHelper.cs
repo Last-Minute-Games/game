@@ -18,10 +18,15 @@ public class CardArrowHelper : MonoBehaviour
     private List<Image> bodySegments = new();
     private Image arrowHead;
     private bool isDrawing;
+    
+    private CardFXHelper _fxHelper;
 
     void Awake()
     {
         mainCam = Camera.main;
+        
+        _fxHelper = GetComponent<CardFXHelper>();
+        if (_fxHelper == null) _fxHelper = gameObject.AddComponent<CardFXHelper>();
     }
 
     void Update()
@@ -71,10 +76,17 @@ public class CardArrowHelper : MonoBehaviour
         arrowHead.rectTransform.localScale = Vector3.one * spriteScale;
     }
 
+<<<<<<< Updated upstream
     private void UpdateArrow()
     {
         Vector3 start = new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
         Vector3 end = Input.mousePosition;
+=======
+    public void UpdateArrow(Vector2 start = default, Vector2 end = default)
+    {
+        if (start == default) start = new Vector2(Screen.width / 2f, Screen.height / 2f);
+        if (end == default) end = Input.mousePosition;
+>>>>>>> Stashed changes
 
         // World-to-screen conversion
         Vector3 worldStart = mainCam.ScreenToWorldPoint(new Vector3(start.x, start.y, 10f));
