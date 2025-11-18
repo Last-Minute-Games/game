@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System.Collections;
 
 public class JournalUI : MonoBehaviour
@@ -21,7 +22,7 @@ public class JournalUI : MonoBehaviour
 
     bool isOpen;
     bool isInputEnabled = true;
-
+    
     void Awake()
     {
         // Force toggle key to Q (override any Inspector changes)
@@ -77,6 +78,18 @@ public class JournalUI : MonoBehaviour
 
     void Update()
     {
+        // CRITICAL: Completely consume Space key when journal is open - prevent ALL processing
+        // This runs FIRST before any other logic to ensure Space never does anything
+        if (isOpen && Input.GetKeyDown(KeyCode.Space))
+        {
+            // Clear EventSystem selection to prevent button activation
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(null);
+            
+            // Completely consume the input - don't process ANYTHING else
+            return;
+        }
+        
         // Don't allow opening if input is disabled or if game is paused
         if (!isInputEnabled)
         {
@@ -108,7 +121,7 @@ public class JournalUI : MonoBehaviour
             return;
         }
         
-        SetOpen(!isOpen);
+        SetOpen(!isOpen, playSound: true);
     }
 
     public void Open()
@@ -122,33 +135,43 @@ public class JournalUI : MonoBehaviour
             return;
         }
         
-        SetOpen(true);
+        SetOpen(true, playSound: true);
     }
 
     public void Close()
     {
         Debug.Log("[JournalUI] Close() called.");
-        SetOpen(false);
+        SetOpen(false, playSound: true);
     }
 
-    void SetOpen(bool value, bool instant = false)
+    void SetOpen(bool value, bool instant = false, bool playSound = true)
     {
-        Debug.Log($"[JournalUI] SetOpen called. Target state: {(value ? "Open" : "Closed")}, Instant: {instant}");
+        Debug.Log($"[JournalUI] SetOpen called. Target state: {(value ? "Open" : "Closed")}, Instant: {instant}, PlaySound: {playSound}");
 
-        // Try to play sound, but don't crash if handler is null or throws
-        try
+        // Play sound only if explicitly requested
+        if (playSound)
         {
-            if (_environmentSoundHandler != null)
-                _environmentSoundHandler.PlayJournalSound(value);
-            else
-                Debug.LogWarning("[JournalUI] EnvironmentSoundHandler is null - skipping sound");
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogWarning($"[JournalUI] Failed to play journal sound: {ex.Message}");
+            try
+            {
+                if (_environmentSoundHandler != null)
+                    _environmentSoundHandler.PlayJournalSound(value);
+                else
+                    Debug.LogWarning("[JournalUI] EnvironmentSoundHandler is null - skipping sound");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[JournalUI] Failed to play journal sound: {ex.Message}");
+            }
         }
         
         isOpen = value;
+
+        // Clear EventSystem selection when opening to prevent any button activation
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+            Debug.Log("[JournalUI] Cleared EventSystem selection");
+        }
 
         // Pause/unpause the clock timer
         if (_clockTimer != null)
