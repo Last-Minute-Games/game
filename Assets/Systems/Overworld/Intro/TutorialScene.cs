@@ -403,9 +403,8 @@ namespace Systems.Overworld.Intro
 
             _mysteriousManIntro = GameObject.Find("MysteriousManNPC").GetComponent<MysteriousManIntro>();
 
-            // Completely disable Space key for dialogue in the tutorial scene
-            // This prevents Space from triggering dialogue completion and re-enabling player input
-            dialogBehaviour.SetNextSentenceKeyCodes(new List<KeyCode>()); 
+            // Configure dialogue to only accept left mouse click (no keyboard keys)
+            dialogBehaviour.SetNextSentenceKeyCodes(new List<KeyCode> { KeyCode.Mouse0 });
 
             // iterate buttons
             foreach (Transform page in _journalPages.transform)
