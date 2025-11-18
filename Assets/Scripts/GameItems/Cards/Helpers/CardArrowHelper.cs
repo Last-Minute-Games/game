@@ -18,15 +18,10 @@ public class CardArrowHelper : MonoBehaviour
     private List<Image> bodySegments = new();
     private Image arrowHead;
     private bool isDrawing;
-    
-    private CardFXHelper _fxHelper;
 
     void Awake()
     {
         mainCam = Camera.main;
-        
-        _fxHelper = GetComponent<CardFXHelper>();
-        if (_fxHelper == null) _fxHelper = gameObject.AddComponent<CardFXHelper>();
     }
 
     void Update()
@@ -40,14 +35,14 @@ public class CardArrowHelper : MonoBehaviour
             UpdateArrow();
     }
 
-    private void StartDrawing()
+    public void StartDrawing()
     {
         isDrawing = true;
         ClearArrow();
         CreateSegments();
     }
 
-    private void StopDrawing()
+    public void StopDrawing()
     {
         isDrawing = false;
         ClearArrow();

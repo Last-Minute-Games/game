@@ -3,11 +3,9 @@ using DG.Tweening;
 
 public class CardAnimationHelper : MonoBehaviour
 {
-    [Header("Arrow Helper")]
-    public CardArrowHelper arrowHelper;
+    [Header("Arrow Helper")] public CardArrowHelper arrowHelper;
 
-    [Header("Visual Settings")]
-    public float hoverScale = 1.1f;
+    [Header("Visual Settings")] public float hoverScale = 1.1f;
     public float selectScale = 1.15f;
     public float dragScale = 1.12f;
     public float returnDuration = 0.25f;
@@ -25,7 +23,7 @@ public class CardAnimationHelper : MonoBehaviour
     }
 
     // Called by FXHelper.OnCardDrawn()
-    public void AnimateDraw(CardPrefab card)
+    public void AnimateDraw(CardRender card)
     {
         var rect = card.GetComponent<RectTransform>();
         originalScale = rect.localScale;
@@ -34,7 +32,7 @@ public class CardAnimationHelper : MonoBehaviour
         rect.DOScale(originalScale, drawDuration).SetEase(Ease.OutBack);
     }
 
-    public void AnimateDiscard(CardPrefab card)
+    public void AnimateDiscard(CardRender card)
     {
         var rect = card.GetComponent<RectTransform>();
         originalScale = rect.localScale;
@@ -43,14 +41,14 @@ public class CardAnimationHelper : MonoBehaviour
     }
 
     // Called by FXHelper.OnCardHover()
-    public void HoverVisuals(CardPrefab card)
+    public void HoverVisuals(CardRender card)
     {
         var rect = card.GetComponent<RectTransform>();
         rect.DOScale(hoverScale, 0.15f);
     }
 
     // Called by FXHelper.OnCardSelect()
-    public void SelectVisuals(CardPrefab card)
+    public void SelectVisuals(CardRender card)
     {
         var rect = card.GetComponent<RectTransform>();
         originalPosition = rect.localPosition;
@@ -60,7 +58,7 @@ public class CardAnimationHelper : MonoBehaviour
     }
 
     // Basic drag following cursor (NO ARROW)
-    public void DragFollowMouseWithCard(CardPrefab card, Vector2 cursorPos)
+    public void DragFollowMouseWithCard(CardRender card, Vector2 cursorPos)
     {
         var rect = card.GetComponent<RectTransform>();
         rect.position = cursorPos;
@@ -68,7 +66,7 @@ public class CardAnimationHelper : MonoBehaviour
     }
 
     // Drag following cursor WITH ARROW (Enemy targeting)
-    public void DragFollowMouseWithArrow(CardPrefab card, Vector2 cursorPos)
+    public void DragFollowMouseWithArrow(CardRender card, Vector2 cursorPos)
     {
         DragFollowMouseWithCard(card, cursorPos);
 
@@ -79,25 +77,27 @@ public class CardAnimationHelper : MonoBehaviour
     }
 
     // Called when player lets go but target is invalid
-    public void ReturnToPosition(CardPrefab card)
+    public void ReturnToPosition(CardRender card)
     {
         var rect = card.GetComponent<RectTransform>();
 
         // clear arrow
-        arrowHelper?.StopDrawingArrow();
+        arrowHelper?.StopDrawing();
 
         rect.DOScale(originalScale, 0.15f);
         rect.DOLocalMove(originalPosition, returnDuration).SetEase(Ease.OutCubic);
     }
 
     // Called when card successfully hits a target
-    public void PlayRelease(CardPrefab card)
+    public void PlayRelease(CardRender card)
     {
         var rect = card.GetComponent<RectTransform>();
 
-        arrowHelper?.StopDrawingArrow();
+        arrowHelper?.StopDrawing();
 
         rect
             .DOScale(0f, 0.2f)
             .SetEase(Ease.InBack)
-            .OnCompl
+            .OnComplete(() => Destroy(card.gameObject));
+    }
+}

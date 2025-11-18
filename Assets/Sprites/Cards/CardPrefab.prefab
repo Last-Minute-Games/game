@@ -549,6 +549,11 @@ GameObject:
   - component: {fileID: 2816092647931019686}
   - component: {fileID: 3706004249726771520}
   - component: {fileID: 8629514613465934759}
+  - component: {fileID: 4068029804613255231}
+  - component: {fileID: 7766711488497858900}
+  - component: {fileID: 4169964949755314617}
+  - component: {fileID: 462765082267403525}
+  - component: {fileID: 2793538343484307477}
   m_Layer: 0
   m_Name: CardPrefab
   m_TagString: Untagged
@@ -618,7 +623,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.12678361, y: -0.38034844}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -628,8 +633,105 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.02, y: 4.42}
+  m_Size: {x: 3.7525244, y: 5.77235}
   m_EdgeRadius: 0
+--- !u!114 &4068029804613255231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cfbf0138f6c7d71eba92d46324529a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardFXHelper
+  sfxHelper: {fileID: 7766711488497858900}
+  animHelper: {fileID: 4169964949755314617}
+--- !u!114 &7766711488497858900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 759aa836c80f8eaf4ac90083c7f9128e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardSFXHelper
+  drawCue: {fileID: 0}
+  hoverCue: {fileID: 0}
+  selectCue: {fileID: 0}
+  dragCue: {fileID: 0}
+  confirmCue: {fileID: 0}
+  cancelCue: {fileID: 0}
+  discardCue: {fileID: 0}
+--- !u!114 &4169964949755314617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1911a02489142f4b4988437dbb4ab932, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardAnimationHelper
+  arrowHelper: {fileID: 462765082267403525}
+  hoverScale: 1.1
+  selectScale: 1.15
+  dragScale: 1.12
+  returnDuration: 0.25
+  drawDuration: 0.35
+  discardDuration: 0.35
+--- !u!114 &462765082267403525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a83addab40e8b85cca937ebfdad9c143, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardArrowHelper
+  bodySprite: {fileID: 0}
+  headSprite: {fileID: 0}
+  segmentCount: 20
+  curvatureHeight: 2.5
+  segmentSpacing: 0.25
+  spriteScale: 0.01
+--- !u!114 &2793538343484307477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6905502446284140818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ff96eb572064403815a34006f040778, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardPrefab
+  Data: {fileID: 0}
+  artworkImage: {fileID: 0}
+  nameText: {fileID: 0}
+  descriptionText: {fileID: 0}
+  hoverScale: 1.05
+  dragScale: 1.05
+  OnClicked:
+    m_PersistentCalls:
+      m_Calls: []
+  OnBeginDragEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnEndDragEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &7109222236421661107
 GameObject:
   m_ObjectHideFlags: 0

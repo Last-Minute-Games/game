@@ -14,7 +14,7 @@ public class CardFXHelper : MonoBehaviour
     // ────────────────────────────────
 
     // Draw card onto player hand
-    public void OnCardDrawn(CardPrefab card)
+    public void OnCardDrawn(CardRender card)
     {
         if (card == null)
         {
@@ -27,20 +27,22 @@ public class CardFXHelper : MonoBehaviour
     }
 
     // When hovering over a card
-    public void OnCardHover(CardPrefab card)
+    public void OnCardHover(CardRender card)
     {
         if (card == null)
         {
             Debug.LogWarning("[CardFXHelper] OnCardHover called with null card.");
             return;
         }
+        
+        Debug.Log("On Hover");
 
         animHelper?.HoverVisuals(card);
         sfxHelper?.PlayHover();
     }
 
     // When selecting (clicking / picking up) a card
-    public void OnCardSelect(CardPrefab card)
+    public void OnCardSelect(CardRender card)
     {
         if (card == null)
         {
@@ -56,7 +58,7 @@ public class CardFXHelper : MonoBehaviour
     }
 
     // Called every frame while dragging the card
-    public void OnCardDrag(CardPrefab card, Vector2 cursorPos)
+    public void OnCardDrag(CardRender card, Vector2 cursorPos)
     {
         if (card == null)
         {
@@ -84,7 +86,7 @@ public class CardFXHelper : MonoBehaviour
     }
 
     // When card is released (played or cancelled)
-    public void OnCardRelease(CardPrefab card, bool validTarget)
+    public void OnCardRelease(CardRender card, bool validTarget)
     {
         if (card == null)
         {
@@ -107,7 +109,7 @@ public class CardFXHelper : MonoBehaviour
     }
 
     // When card is discarded or removed from hand (visually, needs data to be handled via manager)
-    public void OnCardDiscard(CardPrefab card)
+    public void OnCardDiscard(CardRender card)
     {
         if (card == null)
         {

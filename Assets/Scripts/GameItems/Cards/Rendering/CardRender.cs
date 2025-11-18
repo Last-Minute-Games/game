@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 // CardRender populates the UI for a single card instance using a prefab with the
 // following expected hierarchy (names can be adjusted, but these are auto-detected):
@@ -14,11 +15,17 @@ using UnityEngine.UI;
 //
 // You can either assign the fields in the inspector, or leave them null and CardRender
 // will attempt to find them by name among the children (case-insensitive contains check).
-public class CardRender : MonoBehaviour
+public class CardRender : MonoBehaviour,
+    IPointerEnterHandler,
+    IPointerExitHandler,
+    IPointerDownHandler,
+    IBeginDragHandler,
+    IDragHandler,
+    IEndDragHandler
 {
     [Header("UI References")] 
-    [SerializeField] private Image cardBackground;
-    [SerializeField] private Image cardIcon;
+    [SerializeField] private SpriteRenderer cardBackground;
+    [SerializeField] private SpriteRenderer cardIcon;
     [SerializeField] private TMP_Text energyCost;
     [SerializeField] private TMP_Text cardName;
     [SerializeField] private TMP_Text descriptionText;
@@ -31,15 +38,21 @@ public class CardRender : MonoBehaviour
 
     [Header("Runtime")] 
     public CardData Data;
+    
+    private CardFXHelper _fxHelper;
+    private bool _isDragging;
 
     private void Awake()
     {
         // Auto-wire references if not assigned
-        if (cardBackground == null) cardBackground = FindChildByName<Image>("CardBackground");
-        if (cardIcon == null) cardIcon = FindChildByName<Image>("CardIcon");
+        if (cardBackground == null) cardBackground = FindChildByName<SpriteRenderer>("CardBackground");
+        if (cardIcon == null) cardIcon = FindChildByName<SpriteRenderer>("CardIcon");
         if (energyCost == null) energyCost = FindChildByName<TMP_Text>("EnergyCost");
         if (cardName == null) cardName = FindChildByName<TMP_Text>("CardName");
         if (descriptionText == null) descriptionText = FindChildByName<TMP_Text>("DescriptionText");
+        
+        _fxHelper = GetComponent<CardFXHelper>();
+        if (_fxHelper == null) _fxHelper = gameObject.AddComponent<CardFXHelper>();
     }
 
     public void Bind(CardData data, int? energy = null)
@@ -56,7 +69,7 @@ public class CardRender : MonoBehaviour
             cardIcon.sprite = sprite;
             cardIcon.enabled = sprite != null;
             // Preserve aspect for nicer visuals
-            cardIcon.preserveAspect = true;
+            // cardIcon.preserveAspect = true;
         }
 
         // Energy
@@ -65,6 +78,73 @@ public class CardRender : MonoBehaviour
         {
             energyCost.text = energyVal > 0 ? energyVal.ToString() : string.Empty;
         }
+    }
+
+    // ─────────────────────────────────────────────
+    // Pointer & Mouse listeners to drive CardFXHelper
+    // ─────────────────────────────────────────────
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (_fxHelper != null && !_isDragging)
+        {
+            _fxHelper.OnCardHover(this);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        // Intentionally no FX call on exit to avoid snapping animations;
+        // CardAnimationHelper will restore on release/cancel when appropriate.
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (_fxHelper != null)
+        {
+            _fxHelper.OnCardSelect(this);
+        }
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        _isDragging = true;
+        if (_fxHelper != null)
+        {
+            // Ensure select visuals/sfx when drag starts
+            _fxHelper.OnCardSelect(this);
+        }
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (_fxHelper != null)
+        {
+            _fxHelper.OnCardDrag(this, eventData.position);
+        }
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        _isDragging = false;
+        if (_fxHelper != null)
+        {
+            // Without validation context here, default to invalid target
+            _fxHelper.OnCardRelease(this, validTarget: false);
+        }
+    }
+
+    // Optional support for non-UI hover via physics raycast (if collider present)
+    private void OnMouseOver()
+    {
+        if (_fxHelper != null && !_isDragging)
+        {
+            _fxHelper.OnCardHover(this);
+        }
+    }
+
+    private void OnMouseExit()
+    {
+        // No-op; exit visuals are handled elsewhere (e.g., release/cancel)
     }
 
     public void SetEnergy(int value)
