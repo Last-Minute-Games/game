@@ -6,6 +6,9 @@ public class OverworldCoinGameLauncher : MonoBehaviour
     public GameObject coinFlipPopupPrefab;
     public MonoBehaviour[] controlsToDisable;
 
+    [Header("HUD (optional)")]
+    public GameObject hudGroup;
+
     [Header("Protection")]
     public float sceneOpenDelay = 0.35f; // block instant open after load/room swap
     public float reopenCooldown = 0.25f; // block double taps
@@ -42,15 +45,29 @@ public class OverworldCoinGameLauncher : MonoBehaviour
         if (_popupInstance != null) return;
 
         _popupInstance = Instantiate(coinFlipPopupPrefab);
+
+        // NEW: pause the overworld timer
+        FindObjectOfType<ClockTimer>()?.PauseTimer(true);
+
         foreach (var c in controlsToDisable) if (c) c.enabled = false;
+
+        if (hudGroup != null) //HUD off
+            hudGroup.SetActive(false);
     }
 
     public void CloseCoinFlipPopup()
     {
         if (_popupInstance == null) return;
 
+        
+
         Destroy(_popupInstance);
         foreach (var c in controlsToDisable) if (c) c.enabled = true;
+
+        if (hudGroup != null)
+            hudGroup.SetActive(true);
+
+        FindObjectOfType<ClockTimer>()?.PauseTimer(false);
 
         _lastCloseTime = Time.unscaledTime;
         _canOpen = false;
