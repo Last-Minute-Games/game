@@ -76,11 +76,22 @@ public class ClockTimer : MonoBehaviour
 
     void Start()
     {
-        if (clockFrames == null || clockFrames.Length == 0 || clockImage == null || screenFader == null)
+        // If we don't have a screenFader assigned try to find one in the scene
+        if (screenFader == null)
+        {
+            screenFader = FindObjectOfType<ScreenFader>();
+            if (screenFader == null)
+            {
+                Debug.LogWarning("[ClockTimer] screenFader reference missing in inspector and none found in scene. Scene transition will fall back to direct load.");
+            }
+        }
+
+        if (clockFrames == null || clockFrames.Length == 0 || clockImage == null)
         {
             Debug.LogError("[ClockTimer] Missing references!");
             return;
         }
+
         warningPlayed = false;
         grandfatherPlayed = false;
         frameCount = clockFrames.Length;
@@ -144,7 +155,7 @@ public class ClockTimer : MonoBehaviour
         Debug.Log($"[ClockTimer] Checking HUD flags: {hudFlag} -> {GameFlags.HasFlag(hudFlag)}, global hudshown -> {GameFlags.HasFlag("hudshown")} -> hudShownBefore={hudShownBefore}");
         if (hudShownBefore)
         {
-            // HUD already shown previously — reconstruct clock (20 -> 13) then start
+            // HUD already shown previously — reconstruct clock (19 -> 13 -> 1) then start
             specialAnimRoutine = StartCoroutine(ReconstructThenStart());
         }
         else
@@ -155,6 +166,12 @@ public class ClockTimer : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        // Subscribe to scene load events so if this component persists we can reset
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
     private void OnDisable()
     {
         // Stop any running special animation to avoid touching destroyed UI
@@ -163,11 +180,66 @@ public class ClockTimer : MonoBehaviour
             StopCoroutine(specialAnimRoutine);
             specialAnimRoutine = null;
         }
+
+        // Unsubscribe scene loaded
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void OnDestroy()
     {
         OnDisable();
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log($"[ClockTimer] Scene loaded: {scene.name}. Resetting timer state for loop.");
+
+        // Try to find a ScreenFader in the newly loaded scene if we don't have one
+        if (screenFader == null)
+        {
+            screenFader = FindObjectOfType<ScreenFader>();
+            if (screenFader != null)
+                Debug.Log("[ClockTimer] Found ScreenFader in new scene during OnSceneLoaded.");
+        }
+
+        // Reset states so the death sequence plays again on the next run
+        ResetForNewScene();
+    }
+
+    private void ResetForNewScene()
+    {
+        // Stop any audio
+        if (warningAudioSource != null && warningAudioSource.isPlaying)
+            warningAudioSource.Stop();
+
+        // Stop special animation
+        if (specialAnimRoutine != null)
+        {
+            try { StopCoroutine(specialAnimRoutine); } catch { }
+            specialAnimRoutine = null;
+        }
+        isSpecialAnimating = false;
+
+        // Reset timing and flags
+        hasEnded = false;
+        IsTimeEnded = false;
+        isPaused = false;
+        warningPlayed = false;
+        grandfatherPlayed = false;
+        breakSequenceTriggered = false;
+        lastFrameIndex = -1;
+        lastWholeSecond = -1;
+
+        // Reset UI
+        if (screenFader != null)
+            screenFader.SetPanelAlpha(0f);
+        if (endMessageText != null)
+            endMessageText.alpha = 0f;
+        if (clockImage != null && clockFrames != null && clockFrames.Length > 0)
+            clockImage.sprite = clockFrames[0];
+
+        // Restart timer for the new scene so the sequence can play again
+        StartTimer(totalTime);
     }
 
     void Update()
@@ -372,6 +444,16 @@ public class ClockTimer : MonoBehaviour
 
     private IEnumerator FadeMessageThenTransition()
     {
+        // Try to find ScreenFader if we lost the reference
+        if (screenFader == null)
+        {
+            screenFader = FindObjectOfType<ScreenFader>();
+            if (screenFader != null)
+            {
+                Debug.Log("[ClockTimer] Found ScreenFader during death sequence");
+            }
+        }
+
         // Keep the warning sound playing (don't stop it yet)
         // It will continue until the new scene loads
 
@@ -447,11 +529,40 @@ public class ClockTimer : MonoBehaviour
             warningAudioSource.Stop();
 
         // Transition to the next scene - KEEP PANELS CLOSED
-        if (!string.IsNullOrEmpty(nextSceneName) && screenFader != null)
+        if (string.IsNullOrEmpty(nextSceneName))
         {
-            // Tell ScreenFader to keep panels closed during transition
+            Debug.LogError("[ClockTimer] nextSceneName is empty or null - cannot transition.");
+            yield break;
+        }
+
+        Debug.Log($"[ClockTimer] Preparing transition to scene '{nextSceneName}'. ScreenFader assigned: {screenFader != null}");
+
+        if (screenFader != null)
+        {
+            // Use ScreenFader transition coroutine
             screenFader.shouldOpenEyesOnSceneLoad = true;
+            Debug.Log($"[ClockTimer] Calling ScreenFader.TransitionToSceneKeepPanelsClosed('{nextSceneName}')");
             yield return StartCoroutine(screenFader.TransitionToSceneKeepPanelsClosed(nextSceneName));
+            Debug.Log($"[ClockTimer] Returned from ScreenFader.TransitionToSceneKeepPanelsClosed('{nextSceneName}')");
+
+            // Note: if the scene did not change, check build settings and logs.
+            Debug.Log($"[ClockTimer] Current active scene after ScreenFader call: {SceneManager.GetActiveScene().name} (expected: {nextSceneName})");
+        }
+        else
+        {
+            Debug.LogWarning("[ClockTimer] screenFader is null - attempting direct async load of next scene.");
+            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(nextSceneName);
+            if (asyncLoad == null)
+            {
+                Debug.LogError($"[ClockTimer] SceneManager.LoadSceneAsync returned null for '{nextSceneName}'. Make sure the scene is added to Build Settings.");
+                yield break;
+            }
+
+            Debug.Log($"[ClockTimer] Started direct async load for '{nextSceneName}'. allowSceneActivation={asyncLoad.allowSceneActivation}");
+            asyncLoad.allowSceneActivation = true;
+            while (!asyncLoad.isDone)
+                yield return null;
+            Debug.Log($"[ClockTimer] Direct async load finished for '{nextSceneName}'. Active scene is now: {SceneManager.GetActiveScene().name}");
         }
     }
 
@@ -546,7 +657,7 @@ public class ClockTimer : MonoBehaviour
         // Optional safety check
         if (clockFrames != null && frameCount > breakEndIndex && clockImage != null)
         {
-            // Start in the fully broken state (frame 20)
+            // Start in the fully broken state (frame 19, which is breakEndIndex)
             clockImage.sprite = clockFrames[breakEndIndex];
 
             // Disable player input / movement while reconstructing
@@ -574,7 +685,15 @@ public class ClockTimer : MonoBehaviour
                 }
             }
 
-            // Move clock to center and enlarge, play 19 -> 13 and then 13 -> 1 without ticks, then restore
+            // First, play the eyes opening animation if panels are closed
+            if (screenFader != null && screenFader.shouldOpenEyesOnSceneLoad)
+            {
+                Debug.Log("[ClockTimer] Playing eyes opening before clock reconstruction");
+                screenFader.shouldOpenEyesOnSceneLoad = false;
+                yield return StartCoroutine(screenFader.EyesOpeningEffect());
+            }
+
+            // Move clock to center and enlarge while KEEPING frame 19 visible
             RectTransform rt = clockImage.GetComponent<RectTransform>();
             if (rt != null)
             {
@@ -590,11 +709,43 @@ public class ClockTimer : MonoBehaviour
                 Vector2 centerAnchored = Vector2.zero;
                 Vector3 targetScale = origScale * 4f;
 
-                // Animate to center/scale
-                float moveDur = Mathf.Clamp(reconstructMoveDuration, 0.2f, 5f);
-                yield return StartCoroutine(AnimateRectTransform(rt, centerAnchored, targetScale, moveDur));
+                // Ensure we're showing frame 19 and set isSpecialAnimating to prevent Update() from changing frames
+                clockImage.sprite = clockFrames[breakEndIndex];
+                isSpecialAnimating = true;
+                Debug.Log($"[ClockTimer] Starting zoom-in animation with frame {breakEndIndex} locked");
 
-                // Play repair sequence in two parts: 19->13 then 13->1
+                // Animate to center/scale (while frame 19 stays visible)
+                float moveDur = Mathf.Clamp(reconstructMoveDuration, 0.2f, 5f);
+                
+                Vector2 startPos = rt.anchoredPosition;
+                Vector3 startScale = rt.localScale;
+                float elapsed = 0f;
+                
+                while (elapsed < moveDur)
+                {
+                    if (this == null || !this.isActiveAndEnabled || rt == null) 
+                    {
+                        isSpecialAnimating = false;
+                        yield break;
+                    }
+                    
+                    elapsed += Time.deltaTime;
+                    float f = Mathf.Clamp01(elapsed / moveDur);
+                    rt.anchoredPosition = Vector2.Lerp(startPos, centerAnchored, f);
+                    rt.localScale = Vector3.Lerp(startScale, targetScale, f);
+                    
+                    // Keep frame 19 locked during animation
+                    clockImage.sprite = clockFrames[breakEndIndex];
+                    yield return null;
+                }
+                
+                rt.anchoredPosition = centerAnchored;
+                rt.localScale = targetScale;
+                clockImage.sprite = clockFrames[breakEndIndex];
+
+                Debug.Log("[ClockTimer] Zoom-in complete, starting repair sequence");
+
+                // NOW play repair sequence in two parts: 19->13 then 13->1
                 // Calculate total steps and per-frame duration so the whole sequence fits reconstructSequenceDuration
                 int stepsPartA = Mathf.Abs(breakEndIndex - breakStartIndex); // e.g. 19->13
                 int stepsPartB = Mathf.Abs(breakStartIndex - 1); // 13->1
@@ -608,15 +759,49 @@ public class ClockTimer : MonoBehaviour
                 // Play 13 -> 1 (clock whole)
                 yield return StartCoroutine(PlayClockSequence(breakStartIndex, 1, frameDur, false));
 
+                Debug.Log("[ClockTimer] Repair sequence complete, zooming back out");
+
                 // Animate back to original position/scale
-                yield return StartCoroutine(AnimateRectTransform(rt, origAnchored, origScale, moveDur));
+                startPos = rt.anchoredPosition;
+                startScale = rt.localScale;
+                elapsed = 0f;
+                
+                // Keep the final frame (frame 1) locked during zoom-out
+                int finalFrame = 1;
+                
+                while (elapsed < moveDur)
+                {
+                    if (this == null || !this.isActiveAndEnabled || rt == null) 
+                    {
+                        isSpecialAnimating = false;
+                        yield break;
+                    }
+                    
+                    elapsed += Time.deltaTime;
+                    float f = Mathf.Clamp01(elapsed / moveDur);
+                    rt.anchoredPosition = Vector2.Lerp(startPos, origAnchored, f);
+                    rt.localScale = Vector3.Lerp(startScale, origScale, f);
+                    
+                    // Keep frame 1 locked during zoom-out
+                    clockImage.sprite = clockFrames[finalFrame];
+                    yield return null;
+                }
+                
+                rt.anchoredPosition = origAnchored;
+                rt.localScale = origScale;
+                clockImage.sprite = clockFrames[finalFrame];
 
                 // Restore sibling index
                 rt.SetSiblingIndex(origSibling);
+                
+                isSpecialAnimating = false;
             }
             else
             {
                 // Fallback: just play the sequences if no RectTransform
+                // Ensure frame 19 is visible
+                clockImage.sprite = clockFrames[breakEndIndex];
+                
                 int stepsPartA = Mathf.Abs(breakEndIndex - breakStartIndex);
                 int stepsPartB = Mathf.Abs(breakStartIndex - 1);
                 int totalSteps = Mathf.Max(1, stepsPartA + stepsPartB);
@@ -639,7 +824,7 @@ public class ClockTimer : MonoBehaviour
         }
 
         StartTimer(totalTime);
-        yield return StartCoroutine(InitialFadeIn());
+        // Don't do an additional fade in since eyes opening already revealed the scene
     }
 
     private IEnumerator ClockBreakThenFade()
