@@ -65,9 +65,9 @@ public class CardRender : MonoBehaviour,
         // Icon
         if (cardIcon != null)
         {
-            var sprite = data != null && data.artwork != null ? data.artwork : fallbackIcon;
-            cardIcon.sprite = sprite;
-            cardIcon.enabled = sprite != null;
+            // var sprite = data != null && data.artwork != null ? data.artwork : fallbackIcon;
+            // cardIcon.sprite = sprite;
+            // cardIcon.enabled = sprite != null;
             // Preserve aspect for nicer visuals
             // cardIcon.preserveAspect = true;
         }
