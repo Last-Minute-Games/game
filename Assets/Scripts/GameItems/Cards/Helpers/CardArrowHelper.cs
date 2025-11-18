@@ -75,18 +75,11 @@ public class CardArrowHelper : MonoBehaviour
         arrowHead.SetNativeSize();
         arrowHead.rectTransform.localScale = Vector3.one * spriteScale;
     }
-
-<<<<<<< Updated upstream
-    private void UpdateArrow()
-    {
-        Vector3 start = new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
-        Vector3 end = Input.mousePosition;
-=======
+    
     public void UpdateArrow(Vector2 start = default, Vector2 end = default)
     {
         if (start == default) start = new Vector2(Screen.width / 2f, Screen.height / 2f);
         if (end == default) end = Input.mousePosition;
->>>>>>> Stashed changes
 
         // World-to-screen conversion
         Vector3 worldStart = mainCam.ScreenToWorldPoint(new Vector3(start.x, start.y, 10f));
