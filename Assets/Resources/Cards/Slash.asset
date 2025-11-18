@@ -12,13 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d25d76a890fff1ddb4d8fba905828ff, type: 3}
   m_Name: Slash
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  Name: Slash
-  Description: Strike bro
-  IntentionText: 
-  Artwork: {fileID: 0}
-  IntentionIcon: {fileID: 0}
-  effectDataList:
-  - effectType: 0
-    magnitude: 5
-    duration: 1
-  UniqueID: 0
+  itemName: Slash
+  description: 'bark
+
+'
+  artwork: {fileID: -68835398901110454, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
+  icon: {fileID: 8928576263349182094, guid: 99c1f1743219056a8a85a286b39b3ecf, type: 3}
+  effectData:
+  - {fileID: 11400000, guid: d54761f9709cf1f7e83c7ddb56253d03, type: 2}
+  uniqueID: 0
+  intentionText: xxx
+  soundCue: {fileID: 0}
+  energyCost: 0
+  sourceAnim: 1
+  targetAnim: 2
+  isVariableCard: 1
+  poorArtwork: {fileID: 6393125008886508775, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
+  potentArtwork: {fileID: 7418950461046361184, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
+  maxMultiplierThreshold: 0.633
+  minMultiplierThreshold: 0.33
+  weakPrefix: Poor
+  strongPrefix: Potent
+  weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  strongPrefixColor: {r: 1, g: 0.4, b: 0.4, a: 1}
