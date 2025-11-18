@@ -1,3 +1,4 @@
+using GameItems;
 using GameItems.Cards;
 using TMPro;
 using UnityEngine;
@@ -171,9 +172,47 @@ public class CardRender : MonoBehaviour,
         _isDragging = false;
         if (_fxHelper != null)
         {
-            // Without validation context here, default to invalid target
-            _fxHelper.OnCardRelease(this, validTarget: false);
+            // Check if card was dropped over an enemy
+            bool validTarget = CheckIfOverEnemy(eventData.position);
+            _fxHelper.OnCardRelease(this, validTarget: validTarget);
         }
+    }
+
+    private bool CheckIfOverEnemy(Vector2 screenPosition)
+    {
+        // Convert screen position to world position
+        Camera cam = Camera.main;
+        if (cam == null)
+        {
+            Debug.LogWarning("[CardRender] Camera.main is null, cannot check enemy collision.");
+            return false;
+        }
+
+        Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, cam.nearClipPlane));
+        
+        // Raycast at the drop position to check for enemy colliders, ignoring the card itself
+        RaycastHit2D[] hits = Physics2D.RaycastAll(worldPos, Vector2.zero, 0f);
+        
+        foreach (var hit in hits)
+        {
+            if (hit.collider == null) continue;
+            
+            // Skip if it's this card's collider
+            if (hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform))
+                continue;
+            
+            Debug.Log($"Hit: {hit.collider.name}");
+            
+            // Check if the hit object has an EnemyRender component
+            EnemyRender enemyRender = hit.collider.GetComponent<EnemyRender>();
+            if (enemyRender != null && enemyRender.data is { entity: { isAlive: true } })
+            {
+                Debug.Log($"[CardRender] Card dropped on enemy: {enemyRender.data.enemyName}");
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // Optional support for non-UI hover via physics raycast (if collider present)
@@ -221,4 +260,3 @@ public class CardRender : MonoBehaviour,
         return null;
     }
 }
-
