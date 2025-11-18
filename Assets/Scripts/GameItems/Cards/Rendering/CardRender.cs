@@ -1,3 +1,4 @@
+using GameItems.Cards;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,6 +39,7 @@ public class CardRender : MonoBehaviour,
 
     [Header("Runtime")] 
     public CardData Data;
+    public CardInstance Instance;
     
     private CardFXHelper _fxHelper;
     private bool _isDragging;
@@ -55,25 +57,66 @@ public class CardRender : MonoBehaviour,
         if (_fxHelper == null) _fxHelper = gameObject.AddComponent<CardFXHelper>();
     }
 
-    public void Bind(CardData data, int? energy = null)
+    public void Bind(CardData data)
     {
+        Instance = null;
         Data = data;
         // Name/Description
         if (cardName != null) cardName.text = data != null ? data.name : string.Empty;
         if (descriptionText != null) descriptionText.text = data != null ? data.description : string.Empty;
 
-        // Icon
-        if (cardIcon != null)
+        cardBackground.sprite = data != null ? data.artwork : null;
+        cardIcon.sprite = data != null ? data.icon : null;
+        
+        // Energy
+        int energyVal = data.energyCost;
+        if (energyCost != null)
         {
-            // var sprite = data != null && data.artwork != null ? data.artwork : fallbackIcon;
-            // cardIcon.sprite = sprite;
-            // cardIcon.enabled = sprite != null;
-            // Preserve aspect for nicer visuals
-            // cardIcon.preserveAspect = true;
+            energyCost.text = energyVal > 0 ? energyVal.ToString() : string.Empty;
+        }
+    }
+
+    public void Bind(CardInstance instance, int? energy = null)
+    {
+        Instance = instance;
+        Data = instance != null ? instance.data : null;
+
+        // Name with variability tier prefix if present
+        if (cardName != null)
+        {
+            if (instance != null && instance.tier.HasValue && Data != null)
+            {
+                string prefix = Data.GetColoredPrefix(instance.tier.Value);
+                cardName.text = string.IsNullOrEmpty(prefix) ? Data.name : $"{prefix} {Data.name}";
+            }
+            else
+            {
+                cardName.text = Data != null ? Data.name : string.Empty;
+            }
         }
 
-        // Energy
-        int energyVal = energy ?? defaultEnergyCost;
+        // Description: keep base text; optionally append rolled summary for clarity
+        if (descriptionText != null)
+        {
+            string baseDesc = Data != null ? Data.description : string.Empty;
+            if (instance != null && instance.rolledEffects != null && instance.rolledEffects.Count > 0)
+            {
+                int dmg = instance.GetTotal(OperationType.Damage);
+                int blk = instance.GetTotal(OperationType.AddShield);
+                string summary = string.Empty;
+                if (dmg != 0) summary += $" +{dmg} Damage";
+                if (blk != 0) summary += (summary.Length > 0 ? "," : "") + $" +{blk} Block";
+                if (!string.IsNullOrEmpty(summary)) baseDesc = $"{baseDesc}\n[{summary.Trim()}]";
+            }
+            descriptionText.text = baseDesc;
+        }
+
+        // Sprites from data
+        cardBackground.sprite = Data != null ? Data.artwork : null;
+        cardIcon.sprite = Data != null ? Data.icon : null;
+
+        // Energy from CardData
+        int energyVal = energy ?? (Data != null ? Data.energyCost : defaultEnergyCost);
         if (energyCost != null)
         {
             energyCost.text = energyVal > 0 ? energyVal.ToString() : string.Empty;
@@ -178,3 +221,4 @@ public class CardRender : MonoBehaviour,
         return null;
     }
 }
+

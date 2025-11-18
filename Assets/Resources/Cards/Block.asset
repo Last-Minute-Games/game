@@ -12,22 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d25d76a890fff1ddb4d8fba905828ff, type: 3}
   m_Name: Block
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  itemName: 
-  description: 
-  artwork: {fileID: 0}
-  icon: {fileID: 0}
-  effectData: []
+  itemName: Block
+  description: Defend
+  artwork: {fileID: -1526429089148878959, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
+  icon: {fileID: -1948493957703550831, guid: 8c78d79fd5fcdbcc3b86f33f91020dcf, type: 3}
+  effectData:
+  - {fileID: 11400000, guid: 0f999d46db230894bae14c1f6f9844fb, type: 2}
   uniqueID: 0
   intentionText: 
   soundCue: {fileID: 0}
-  energyCost: 0
-  sourceAnim: 1
-  targetAnim: 2
-  isVariableCard: 0
-  poorArtwork: {fileID: 0}
-  potentArtwork: {fileID: 0}
-  minMultiplierThreshold: 0.335
+  energyCost: 1
+  sourceAnim: 0
+  targetAnim: 0
+  isVariableCard: 1
+  poorArtwork: {fileID: 6358022096593553520, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
+  potentArtwork: {fileID: 3580847615617075277, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   maxMultiplierThreshold: 0.52
+  minMultiplierThreshold: 0.335
   weakPrefix: Poor
   strongPrefix: Potent
   weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}

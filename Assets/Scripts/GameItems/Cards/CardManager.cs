@@ -1,149 +1,197 @@
-using UnityEngine;
-using System.Collections.Generic;
-
-[System.Serializable]
-public class CardManager
+namespace GameItems.Cards
 {
-    [Header("Card Pools")]
-    public List<CardData> allCardPool = new();     // All available cards in the game
-    public List<CardData> drawPile = new();        // Current draw pile
-    public List<CardData> hand = new();            // Cards currently in hand
-    public List<CardData> discardPile = new();     // Discarded cards
+    using System.Collections.Generic;
+    using UnityEngine;
 
-    private System.Random rng = new();
-
-    // -----------------------------------------------------------
-    // Generate a set of random cards (e.g., for initial deck, rewards, etc.)
-    // -----------------------------------------------------------
-    public List<CardData> GenerateRandomCards(int number)
+    [System.Serializable]
+    public class CardManager
     {
-        List<CardData> result = new();
-        if (allCardPool.Count == 0)
+        [Header("Card Pools")]
+        public List<CardData> allCardPool = new();     // All available cards in the game
+        public List<CardData> drawPile = new();        // Current draw pile
+        public List<CardData> hand = new();            // Cards currently in hand
+        public List<CardData> discardPile = new();     // Discarded cards
+
+        [Header("Runtime (Rolled Instances)")]
+        public List<CardInstance> handInstances = new();
+
+        private System.Random _rng = new();
+
+        // -----------------------------------------------------------
+        // Generate a set of random cards (e.g., for initial deck, rewards, etc.)
+        // -----------------------------------------------------------
+        public List<CardData> GenerateRandomCards(int number)
         {
-            Debug.LogWarning("CardManager: No cards available in allCardPool.");
+            List<CardData> result = new();
+            if (allCardPool.Count == 0)
+            {
+                Debug.LogWarning("CardManager: No cards available in allCardPool.");
+                return result;
+            }
+
+            for (int i = 0; i < number; i++)
+            {
+                var card = allCardPool[_rng.Next(allCardPool.Count)];
+                result.Add(card);
+            }
+            
+            Debug.Log($"CardManager: Generated {number} random cards.");
+
             return result;
         }
 
-        for (int i = 0; i < number; i++)
+        // -----------------------------------------------------------
+        // Retrieve a card by its UniqueID from the global pool
+        // -----------------------------------------------------------
+        public CardData PullCard(int uniqueID)
         {
-            var card = allCardPool[rng.Next(allCardPool.Count)];
-            result.Add(card);
-        }
-        
-        Debug.Log($"CardManager: Generated {number} random cards.");
-
-        return result;
-    }
-
-    // -----------------------------------------------------------
-    // Retrieve a card by its UniqueID from the global pool
-    // -----------------------------------------------------------
-    public CardData PullCard(int uniqueID)
-    {
-        foreach (var card in allCardPool)
-        {
-            if (card.uniqueID == uniqueID)
-                return card;
-        }
-
-        Debug.LogWarning($"CardManager: Card with UniqueID {uniqueID} not found.");
-        return null;
-    }
-
-    // -----------------------------------------------------------
-    // Move all cards from hand to discard pile (e.g., at end of turn)
-    // -----------------------------------------------------------
-    public void DiscardCardPile()
-    {
-        discardPile.AddRange(hand);
-        hand.Clear();
-    }
-
-    // // -----------------------------------------------------------
-    // // Apply the effects of a given card to a target entity
-    // // -----------------------------------------------------------
-    // public void ApplyCard(CardData card, EntityData source, ref EntityData target)
-    // {
-    //     if (card == null) return;
-    //
-    //     foreach (var effect in card.effectDataList)
-    //     {
-    //         switch (effect.effectType)
-    //         {
-    //             case EffectType.Damage:
-    //                 target.TakeDamage(effect.magnitude);
-    //                 break;
-    //
-    //             case EffectType.Block:
-    //                 source.GainBlock(effect.magnitude);
-    //                 break;
-    //
-    //             case EffectType.Heal:
-    //                 source.Heal(effect.magnitude);
-    //                 break;
-    //
-    //             case EffectType.Draw:
-    //                 // Card draw logic handled by PlayerManager
-    //                 Debug.Log($"{source.name} would draw {effect.magnitude} cards.");
-    //                 break;
-    //
-    //             case EffectType.ApplyStatus:
-    //                 target.statuses.Add(new StatusEffect
-    //                 {
-    //                     name = "Status",
-    //                     stacks = effect.magnitude
-    //                 });
-    //                 break;
-    //         }
-    //     }
-    //
-    //     // Play sound cue if assigned
-    //     // if (card.SoundCue != null && card.SoundCue.Clip != null)
-    //     // {
-    //     //     AudioSource.PlayClipAtPoint(card.SoundCue.Clip, Vector3.zero, card.SoundCue.Volume);
-    //     // }
-    //
-    //     // Move card to discard pile
-    //     hand.Remove(card);
-    //     discardPile.Add(card);
-    // }
-
-    // -----------------------------------------------------------
-    // Shuffle the draw pile (utility)
-    // -----------------------------------------------------------
-    public void ShuffleDrawPile()
-    {
-        for (int i = 0; i < drawPile.Count; i++)
-        {
-            int swap = rng.Next(drawPile.Count);
-            (drawPile[i], drawPile[swap]) = (drawPile[swap], drawPile[i]);
-        }
-    }
-
-    // -----------------------------------------------------------
-    // Draw a card from the draw pile to the hand
-    // -----------------------------------------------------------
-    public void DrawCard()
-    {
-        if (drawPile.Count == 0)
-        {
-            ReshuffleDiscardIntoDraw();
-            if (drawPile.Count == 0)
+            foreach (var card in allCardPool)
             {
-                Debug.Log("No cards left to draw.");
-                return;
+                if (card.uniqueID == uniqueID)
+                    return card;
+            }
+
+            Debug.LogWarning($"CardManager: Card with UniqueID {uniqueID} not found.");
+            return null;
+        }
+
+        // -----------------------------------------------------------
+        // Shuffle the draw pile (utility)
+        // -----------------------------------------------------------
+        public void ShuffleDrawPile()
+        {
+            for (int i = 0; i < drawPile.Count; i++)
+            {
+                int swap = _rng.Next(drawPile.Count);
+                (drawPile[i], drawPile[swap]) = (drawPile[swap], drawPile[i]);
             }
         }
 
-        var card = drawPile[0];
-        drawPile.RemoveAt(0);
-        hand.Add(card);
-    }
+        // -----------------------------------------------------------
+        // Draw a card from the draw pile to the hand
+        // -----------------------------------------------------------
+        public void DrawCard()
+        {
+            if (drawPile.Count == 0)
+            {
+                ReshuffleDiscardIntoDraw();
+                if (drawPile.Count == 0)
+                {
+                    Debug.Log("No cards left to draw.");
+                    return;
+                }
+            }
 
-    private void ReshuffleDiscardIntoDraw()
-    {
-        drawPile.AddRange(discardPile);
-        discardPile.Clear();
-        ShuffleDrawPile();
+            var card = drawPile[0];
+            drawPile.RemoveAt(0);
+            hand.Add(card);
+
+            // Create a runtime instance with rolled values for this draw
+            var instance = CardInstance.FromData(card, applyVariability: true);
+            if (instance != null)
+            {
+                handInstances.Add(instance);
+            }
+        }
+
+        public CardInstance GetLatestInstanceFor(CardData data)
+        {
+            for (int i = handInstances.Count - 1; i >= 0; i--)
+            {
+                if (handInstances[i] != null && handInstances[i].data == data)
+                    return handInstances[i];
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the rolled total for a given operation on the most recent instance of the specified card.
+        /// Falls back to summing base values on CardData if no instance exists.
+        /// </summary>
+        public int GetRolledTotal(CardData data, OperationType op)
+        {
+            var inst = GetLatestInstanceFor(data);
+            if (inst != null)
+            {
+                return inst.GetTotal(op);
+            }
+
+            int sum = 0;
+            if (data != null && data.effectData != null)
+            {
+                foreach (var e in data.effectData)
+                {
+                    if (e != null && e.operationType == op)
+                        sum += e.baseValue;
+                }
+            }
+            return sum;
+        }
+
+        // -----------------------------------------------------------
+        // Move all cards from hand to discard pile (e.g., at end of turn)
+        // -----------------------------------------------------------
+        public void DiscardCardPile()
+        {
+            discardPile.AddRange(hand);
+            hand.Clear();
+            handInstances.Clear();
+        }
+
+        private void ReshuffleDiscardIntoDraw()
+        {
+            drawPile.AddRange(discardPile);
+            discardPile.Clear();
+            ShuffleDrawPile();
+        }
+
+        // // -----------------------------------------------------------
+        // // Apply the effects of a given card to a target entity
+        // // -----------------------------------------------------------
+        // public void ApplyCard(CardData card, EntityData source, ref EntityData target)
+        // {
+        //     if (card == null) return;
+    //
+        //     foreach (var effect in card.effectDataList)
+        //     {
+        //         switch (effect.effectType)
+        //         {
+        //             case EffectType.Damage:
+        //                 target.TakeDamage(effect.magnitude);
+        //                 break;
+    //
+        //             case EffectType.Block:
+        //                 source.GainBlock(effect.magnitude);
+        //                 break;
+    //
+        //             case EffectType.Heal:
+        //                 source.Heal(effect.magnitude);
+        //                 break;
+    //
+        //             case EffectType.Draw:
+        //                 // Card draw logic handled by PlayerManager
+        //                 Debug.Log($"{source.name} would draw {effect.magnitude} cards.");
+        //                 break;
+    //
+        //             case EffectType.ApplyStatus:
+        //                 target.statuses.Add(new StatusEffect
+        //                 {
+        //                     name = "Status",
+        //                     stacks = effect.magnitude
+        //                 });
+        //                 break;
+        //         }
+        //     }
+    //
+        //     // Play sound cue if assigned
+        //     // if (card.SoundCue != null && card.SoundCue.Clip != null)
+        //     // {
+        //     //     AudioSource.PlayClipAtPoint(card.SoundCue.Clip, Vector3.zero, card.SoundCue.Volume);
+        //     // }
+    //
+        //     // Move card to discard pile
+        //     hand.Remove(card);
+        //     discardPile.Add(card);
+        // }
     }
 }

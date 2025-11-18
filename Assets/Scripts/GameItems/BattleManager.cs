@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Entities.Enemies.Manager;
+using GameItems;
 
 public class BattleManager : MonoBehaviour
 {

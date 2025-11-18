@@ -155,6 +155,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
   enemies: []
   uiContainer: {fileID: 865282854}
+  horizontalSpacing: 3.5
+  yOffset: 0
+  centerAlign: 1
+  autoLayoutOnBuild: 1
 --- !u!4 &121033907
 Transform:
   m_ObjectHideFlags: 0
@@ -1230,6 +1234,7 @@ MonoBehaviour:
     drawPile: []
     hand: []
     discardPile: []
+    handInstances: []
 --- !u!4 &963561600
 Transform:
   m_ObjectHideFlags: 0

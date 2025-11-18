@@ -83,7 +83,7 @@ MeshRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 99
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &2674195546351327370
 MonoBehaviour:
@@ -257,7 +257,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 99
   m_Sprite: {fileID: 8928576263349182094, guid: c8bb689e6c6436bc9a3d713cab3fabeb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -347,7 +347,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 99
   m_Sprite: {fileID: -68835398901110454, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -442,7 +442,7 @@ MeshRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 99
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &8502815425582641477
 MonoBehaviour:
@@ -553,7 +553,6 @@ GameObject:
   - component: {fileID: 7766711488497858900}
   - component: {fileID: 4169964949755314617}
   - component: {fileID: 462765082267403525}
-  - component: {fileID: 2793538343484307477}
   m_Layer: 0
   m_Name: CardPrefab
   m_TagString: Untagged
@@ -687,6 +686,7 @@ MonoBehaviour:
   returnDuration: 0.25
   drawDuration: 0.35
   discardDuration: 0.35
+  dragCamera: {fileID: 0}
 --- !u!114 &462765082267403525
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -705,33 +705,6 @@ MonoBehaviour:
   curvatureHeight: 2.5
   segmentSpacing: 0.25
   spriteScale: 0.01
---- !u!114 &2793538343484307477
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6905502446284140818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ff96eb572064403815a34006f040778, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardPrefab
-  Data: {fileID: 0}
-  artworkImage: {fileID: 0}
-  nameText: {fileID: 0}
-  descriptionText: {fileID: 0}
-  hoverScale: 1.05
-  dragScale: 1.05
-  OnClicked:
-    m_PersistentCalls:
-      m_Calls: []
-  OnBeginDragEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  OnEndDragEvent:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &7109222236421661107
 GameObject:
   m_ObjectHideFlags: 0
@@ -815,7 +788,7 @@ MeshRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 99
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &7669131349046554690
 MonoBehaviour:
