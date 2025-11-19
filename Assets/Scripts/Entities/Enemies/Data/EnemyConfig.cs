@@ -49,7 +49,7 @@ public class EnemyConfig : ScriptableObject
         return data;
     }
 
-    procted void OnValidate()
+    protected void OnValidate()
     {
         // ensure multipliers are valid
         if (minMultiplier > maxMultiplier)
@@ -57,6 +57,6 @@ public class EnemyConfig : ScriptableObject
 
         // clamp
         minMultipler = Mathf.Max(0f, minMultiplier);
-        maxMultiplier = Mathf.Max(minMultiplier, maxMultiplier)
+        maxMultiplier = Mathf.Max(minMultiplier, maxMultiplier);
     }
 }
