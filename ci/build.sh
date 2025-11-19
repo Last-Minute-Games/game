@@ -20,7 +20,9 @@ if [ ! -f "$UNITY" ]; then
 fi
 
 # Determine build method and target based on platform
-case "${BUILD_TARGET,,}" in
+# Convert to lowercase for comparison (compatible with bash 3.2 on macOS)
+BUILD_TARGET_LOWER=$(echo "$BUILD_TARGET" | tr '[:upper:]' '[:lower:]')
+case "$BUILD_TARGET_LOWER" in
     "macos"|"osx")
         BUILD_METHOD="BuildScript.BuildMacOS"
         UNITY_BUILD_TARGET="StandaloneOSX"
