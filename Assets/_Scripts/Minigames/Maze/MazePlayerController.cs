@@ -53,22 +53,22 @@ public class MazePlayerController : MonoBehaviour
         Vector2Int delta = Vector2Int.zero;
 
         // WASD / arrows
-        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {
             dirEnum = Room.Directions.TOP;
             delta = Vector2Int.up;
         }
-        else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
             dirEnum = Room.Directions.RIGHT;
             delta = Vector2Int.right;
         }
-        else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+        else if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
         {
             dirEnum = Room.Directions.BOTTOM;
             delta = Vector2Int.down;
         }
-        else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
             dirEnum = Room.Directions.LEFT;
             delta = Vector2Int.left;

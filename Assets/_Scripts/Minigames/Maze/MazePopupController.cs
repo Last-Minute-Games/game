@@ -99,7 +99,30 @@ public class MazePopupController : MonoBehaviour
         if (overworldSpriteRenderer != null && mazePlayerSprite != null)
             overworldSpriteRenderer.sprite = mazePlayerSprite;
 
+        if (mazeGenerator != null)
+        {
+            mazeGenerator.CreateMaze();   // builds rooms (if needed) and carves maze
+        }
+
         CenterMazeOnCamera();
+
+        if (mazePlayer != null)
+        {
+            mazePlayer.gameObject.SetActive(true);
+            mazePlayer.enabled = true;
+
+            if (mazeStartPoint != null)
+            {
+                mazePlayer.transform.position = mazeStartPoint.position;
+            }
+            else
+            {
+                // Use MazePlayerController's helper to go to (0,0)
+                mazePlayer.ResetToStart();
+            }
+        }
+
+        mazeGenerated = true;
 
     }
     private void CenterMazeOnCamera()
@@ -184,6 +207,7 @@ public class MazePopupController : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    /*
     void Update()
     {
         if (!isOpen) return;
@@ -222,6 +246,8 @@ public class MazePopupController : MonoBehaviour
         }
 
     }
+
+    */
 
     /*
     public void PlacePlayerAtStart()
