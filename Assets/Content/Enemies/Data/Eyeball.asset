@@ -17,7 +17,11 @@ MonoBehaviour:
   attackPower: 20
   defensePower: 6
   artwork: {fileID: 8658351832292309105, guid: 3e586d66359f7b248afc8a29083042d5, type: 3}
-  actionPattern: []
+  actionPattern:
+  - intent: 0
+    value: 11
+  - intent: 1
+    value: 8
   animatorController: {fileID: 9100000, guid: 681fab083306c8942a3eec79ae9b2441, type: 2}
   idleAnim: {fileID: 11400000, guid: 56abeb48810e5264595cdd64835bc8fb, type: 2}
   attackAnim: {fileID: 11400000, guid: c5e8990e1d4cea94aa10bb317a9e6885, type: 2}
