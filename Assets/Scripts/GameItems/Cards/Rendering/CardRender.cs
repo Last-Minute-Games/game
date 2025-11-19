@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GameItems;
 using GameItems.Cards;
 using TMPro;
@@ -172,26 +173,142 @@ public class CardRender : MonoBehaviour,
         _isDragging = false;
         if (_fxHelper != null)
         {
-            // Check if card was dropped over an enemy
-            bool validTarget = CheckIfOverEnemy(eventData.position);
+            bool validTarget = false;
+            TargetRule rule = Data.GetDominatingTargetRule();
+            
+            switch (rule)
+            {
+                // Check if card was dropped over an enemy
+                case TargetRule.Enemy:
+                {
+                    var enemy = GetEnemyOnMouse(eventData.position);
+                    if (enemy != null) {
+                        validTarget = true;
+                        ApplyCardEffects(enemy);
+
+                    }
+
+                    break;
+                }
+                case TargetRule.Self:
+                    // Self-targeting cards are always valid on release
+                    validTarget = true;
+                    break;
+            }
+            
             _fxHelper.OnCardRelease(this, validTarget: validTarget);
         }
     }
 
-    private bool CheckIfOverEnemy(Vector2 screenPosition)
+    private void ApplyCardEffects(EnemyRender targetEnemy)
+    {
+        if (Data == null)
+        {
+            Debug.LogWarning("[CardRender] Cannot apply card effects - Data is null");
+            return;
+        }
+
+        // Use rolled effects from Instance if available, otherwise use base effects from Data
+        List<EffectData> effectsToApply = Instance != null && Instance.rolledEffects != null && Instance.rolledEffects.Count > 0
+            ? Instance.rolledEffects
+            : Data.effectData;
+
+        if (effectsToApply == null || effectsToApply.Count == 0)
+        {
+            Debug.LogWarning($"[CardRender] Card '{Data.itemName}' has no effects to apply");
+            return;
+        }
+
+        foreach (var effect in effectsToApply)
+        {
+            if (effect == null) continue;
+
+            // Get the actual value to apply (rolled value if from instance, base value otherwise)
+            int value = (Instance != null && Instance.rolledEffects != null && Instance.rolledEffects.Contains(effect))
+                ? effect.postCopyValue
+                : effect.baseValue;
+
+            switch (effect.operationType)
+            {
+                case OperationType.Damage:
+                    if (targetEnemy != null && targetEnemy.data != null)
+                    {
+                        targetEnemy.data.entity.TakeDamage(value);
+                        Debug.Log($"[CardRender] Dealt {value} damage to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.entity.health}/{targetEnemy.data.entity.maxHealth}");
+                        
+                        // Update enemy health display
+                        var enemyManager = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
+                        if (enemyManager != null)
+                        {
+                            enemyManager.UpdateEnemyHealth(targetEnemy.data);
+                        }
+                        else
+                        {
+                            // Fallback: update directly
+                            targetEnemy.UpdateHealth();
+                            if (targetEnemy.data.entity.isAlive)
+                                targetEnemy.PlayHurt();
+                            else
+                                targetEnemy.PlayDeath();
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[CardRender] Damage effect requires an enemy target");
+                    }
+                    break;
+
+                case OperationType.AddShield:
+                    // Find the player to add block
+                    var playerManager = FindFirstObjectByType<PlayerManager>();
+                    if (playerManager != null && playerManager.playerData != null)
+                    {
+                        playerManager.playerData.entity.GainBlock(value);
+                        Debug.Log($"[CardRender] Player gained {value} block. Total block: {playerManager.playerData.entity.block}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[CardRender] Could not find PlayerManager to apply block");
+                    }
+                    break;
+
+                case OperationType.Heal:
+                    var healPlayerManager = FindFirstObjectByType<PlayerManager>();
+                    if (healPlayerManager != null && healPlayerManager.playerData != null)
+                    {
+                        healPlayerManager.playerData.entity.Heal(value);
+                        Debug.Log($"[CardRender] Player healed {value} HP. Current HP: {healPlayerManager.playerData.entity.health}/{healPlayerManager.playerData.entity.maxHealth}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[CardRender] Could not find PlayerManager to apply heal");
+                    }
+                    break;
+
+                default:
+                    Debug.LogWarning($"[CardRender] OperationType {effect.operationType} not yet implemented in CardRender");
+                    break;
+            }
+        }
+    }
+
+    private EnemyRender GetEnemyOnMouse(Vector2 screenPosition)
     {
         // Convert screen position to world position
         Camera cam = Camera.main;
         if (cam == null)
         {
             Debug.LogWarning("[CardRender] Camera.main is null, cannot check enemy collision.");
-            return false;
+            return null;
         }
 
         Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, cam.nearClipPlane));
         
         // Raycast at the drop position to check for enemy colliders, ignoring the card itself
-        RaycastHit2D[] hits = Physics2D.RaycastAll(worldPos, Vector2.zero, 0f);
+        RaycastHit2D[] hits = new RaycastHit2D[10];
+        ContactFilter2D filter = new ContactFilter2D();
+        
+        Physics2D.Raycast(worldPos, Vector2.zero, filter, hits);
         
         foreach (var hit in hits)
         {
@@ -208,11 +325,11 @@ public class CardRender : MonoBehaviour,
             if (enemyRender != null && enemyRender.data is { entity: { isAlive: true } })
             {
                 Debug.Log($"[CardRender] Card dropped on enemy: {enemyRender.data.enemyName}");
-                return true;
+                return enemyRender;
             }
         }
 
-        return false;
+        return null;
     }
 
     // Optional support for non-UI hover via physics raycast (if collider present)
