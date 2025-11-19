@@ -17,10 +17,14 @@ namespace Entities.Players.Prefab
         [Header("Energy UI")]
         public TextMeshProUGUI energyText;
 
+        [Header("Animation Helpers")]
+        public PlayerAnimationHelper animationHelper;
+
         [Header("Healthbar UI")]
         public Image healthbarFill;
         public TextMeshProUGUI healthText;
         public TextMeshProUGUI shieldText;
+        public Image healthbarUI;
 
         [Header("Timer UI (from TimerPanel)")]
         [Tooltip("TimerText component from TimerPanel")]
