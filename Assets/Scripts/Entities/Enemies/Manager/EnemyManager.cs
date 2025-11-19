@@ -1,4 +1,3 @@
-using Entities.Enemies.Data;
 using Entities.Enemies.Helpers;
 using Entities.Players.Data;
 using GameItems;
@@ -65,7 +64,7 @@ namespace Entities.Enemies.Manager
             {
                 var enemy = enemies[i];
                 var go = new GameObject(string.IsNullOrEmpty(enemy.enemyName) ? $"Enemy_{i}" : enemy.enemyName,
-                    typeof(Animator), typeof(SpriteRenderer), typeof(GameItems.EnemyRender));
+                    typeof(Animator), typeof(SpriteRenderer), typeof(EnemyRender));
 
                 // Parent under the provided container
                 var t = go.transform;
@@ -96,7 +95,7 @@ namespace Entities.Enemies.Manager
                     }
                 }
 
-                var render = go.GetComponent<GameItems.EnemyRender>();
+                var render = go.GetComponent<EnemyRender>();
                 render.Bind(enemy);
 
                 _activeRenders.Add(render);

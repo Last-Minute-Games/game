@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using Entities.Enemies.Data;
 using Entities.Enemies.Manager;
 using Entities.Players.Data;
 using GameItems;
