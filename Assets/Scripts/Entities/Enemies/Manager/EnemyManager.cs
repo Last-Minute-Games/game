@@ -137,7 +137,57 @@ namespace Entities.Enemies.Manager
             }
         }
 
-        // Enemies execute their previously decided intents
+        // Enemies execute their previously decided intents with delays (turn-based feel)
+        public System.Collections.IEnumerator ExecuteEnemyTurnSequence(PlayerData player)
+        {
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                var enemy = enemies[i];
+                if (!enemy.isAlive) continue;
+
+                Debug.Log($"[EnemyManager] {enemy.enemyName} is taking their turn...");
+
+                // Get the render for animation
+                var r = GetRenderFor(enemy);
+
+                // Play intent animation based on type
+                if (enemy.currentIntent == EnemyIntent.Attack)
+                {
+                    if (r != null) r.PlayAttack();
+                    
+                    // Wait for attack animation to play out
+                    yield return new WaitForSeconds(0.5f);
+                }
+                else if (enemy.currentIntent == EnemyIntent.Block)
+                {
+                    if (r != null) r.PlayIdle(); // Or a defend animation if you have one
+                    yield return new WaitForSeconds(0.3f);
+                }
+                else
+                {
+                    // Default for Heal/Buff/other intents
+                    if (r != null) r.PlayIdle();
+                    yield return new WaitForSeconds(0.3f);
+                }
+
+                // Execute the intent (apply damage, gain block, etc.)
+                enemy.ExecuteIntent(player);
+
+                // Brief pause to show the effect
+                yield return new WaitForSeconds(0.4f);
+
+                // Return to idle after action
+                if (r != null) r.PlayIdle();
+
+                // Delay before next enemy acts
+                yield return new WaitForSeconds(0.6f);
+            }
+
+            Debug.Log("[EnemyManager] All enemies have completed their turns.");
+        }
+
+        // Legacy synchronous method - kept for backwards compatibility but deprecated
+        [System.Obsolete("Use ExecuteEnemyTurnSequence coroutine instead for turn-based delays")]
         public void ExecuteEnemyTurn(ref PlayerData player)
         {
             for (int i = 0; i < enemies.Count; i++)

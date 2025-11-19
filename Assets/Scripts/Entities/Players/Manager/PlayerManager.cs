@@ -112,6 +112,17 @@ public class PlayerManager : MonoBehaviour
 
         // Apply card effects
         ApplyCardEffects(cardData, cardInstance, targetEnemy);
+
+        // Move card from hand to discard pile and remove its instance
+        if (cardManager != null)
+        {
+            bool removed = cardManager.PlayCardFromHand(cardData, cardInstance);
+            Debug.Log($"[PlayerManager] PlayCard moved card '{cardData.name}' from hand to discard. RemovedFromHand={removed}");
+        }
+        else
+        {
+            Debug.LogWarning("[PlayerManager] cardManager is null when trying to move played card to discard.");
+        }
         
         Debug.Log($"[PlayerManager] Successfully played card: {cardData.name}. Energy remaining: {playerData.currentEnergy}/{playerData.maxEnergy}");
         return true;

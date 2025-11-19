@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using GameItems;
 using GameItems.Cards;
+using GameItems.Cards.Helpers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -43,7 +44,7 @@ public class CardRender : MonoBehaviour,
     public CardData Data;
     public CardInstance Instance;
     
-    private CardFXHelper _fxHelper;
+    private GameItems.Cards.Helpers.CardFXHelper _fxHelper;
     private bool _isDragging;
 
     private void Awake()
@@ -55,8 +56,8 @@ public class CardRender : MonoBehaviour,
         if (cardName == null) cardName = FindChildByName<TMP_Text>("CardName");
         if (descriptionText == null) descriptionText = FindChildByName<TMP_Text>("DescriptionText");
         
-        _fxHelper = GetComponent<CardFXHelper>();
-        if (_fxHelper == null) _fxHelper = gameObject.AddComponent<CardFXHelper>();
+        _fxHelper = GetComponent<GameItems.Cards.Helpers.CardFXHelper>();
+        if (_fxHelper == null) _fxHelper = gameObject.AddComponent<GameItems.Cards.Helpers.CardFXHelper>();
     }
 
     public void Bind(CardData data)
@@ -209,6 +210,15 @@ public class CardRender : MonoBehaviour,
                     {
                         // Card couldn't be played (not enough energy, etc.)
                         validTarget = false;
+                    }
+                    else
+                    {
+                        // Card was played successfully - refresh deck viewers smartly
+                        var roundManager = FindFirstObjectByType<RoundManager>();
+                        if (roundManager != null && roundManager.handViewer != null)
+                        {
+                            roundManager.handViewer.RebuildSmart();
+                        }
                     }
                 }
                 else

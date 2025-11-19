@@ -110,6 +110,150 @@ namespace GameItems
             yield return new WaitForSeconds(duration);
         }
 
+        /// <summary>
+        /// Smart rebuild that only updates cards that changed (removes played cards, adds new ones).
+        /// Existing cards stay in place and smoothly rearrange.
+        /// </summary>
+        public void RebuildSmart()
+        {
+            if (cardPrefab == null)
+            {
+                Debug.LogWarning("DeckViewer: cardPrefab not assigned");
+                return;
+            }
+
+            var list = ResolveCards();
+            if (list == null)
+            {
+                Debug.LogWarning("DeckViewer: No card list available.");
+                return;
+            }
+
+            Debug.Log($"[DeckViewer] Smart rebuild: {list.Count} cards in data, {_renders.Count} currently rendered");
+
+            // For hand cards, use instance-based tracking to handle duplicates
+            bool useInstanceTracking = (playerManager != null && source == Source.Hand);
+            List<CardInstance> instances = null;
+            
+            if (useInstanceTracking)
+            {
+                instances = new List<CardInstance>(playerManager.cardManager.handInstances);
+            }
+
+            // Build a list of which renders to keep based on what's in the data
+            List<CardRender> rendersToKeep = new List<CardRender>();
+            List<int> usedDataIndices = new List<int>();
+
+            // Match existing renders with current data
+            for (int i = 0; i < _renders.Count; i++)
+            {
+                if (_renders[i] == null)
+                    continue;
+
+                bool shouldKeep = false;
+
+                if (useInstanceTracking && _renders[i].Instance != null)
+                {
+                    // Check if this instance still exists in handInstances
+                    if (instances.Contains(_renders[i].Instance))
+                    {
+                        shouldKeep = true;
+                        int dataIndex = instances.IndexOf(_renders[i].Instance);
+                        usedDataIndices.Add(dataIndex);
+                    }
+                }
+                else
+                {
+                    // Fall back to data-based matching for non-hand sources
+                    for (int j = 0; j < list.Count; j++)
+                    {
+                        if (!usedDataIndices.Contains(j) && list[j] == _renders[i].Data)
+                        {
+                            shouldKeep = true;
+                            usedDataIndices.Add(j);
+                            break;
+                        }
+                    }
+                }
+
+                if (shouldKeep)
+                {
+                    rendersToKeep.Add(_renders[i]);
+                }
+                else
+                {
+                    Debug.Log($"[DeckViewer] Removing card: {_renders[i].Data.name}");
+                    Destroy(_renders[i].gameObject);
+                }
+            }
+
+            _renders.Clear();
+            _renders.AddRange(rendersToKeep);
+
+            // Add new cards that aren't rendered yet
+            if (useInstanceTracking)
+            {
+                for (int i = 0; i < instances.Count; i++)
+                {
+                    if (usedDataIndices.Contains(i))
+                        continue; // Already have a render for this instance
+
+                    var inst = instances[i];
+                    Debug.Log($"[DeckViewer] Adding new card: {inst.data.name}");
+                    
+                    var go = Instantiate(cardPrefab);
+                    var sortingGroup = go.GetComponent<SortingGroup>();
+                    if (sortingGroup != null)
+                        sortingGroup.sortingOrder = i + 100;
+
+                    if (content != null)
+                        go.transform.SetParent(content, false);
+
+                    var render = go.GetComponent<CardRender>();
+                    if (render == null) render = go.AddComponent<CardRender>();
+
+                    render.Bind(inst);
+                    _renders.Add(render);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (usedDataIndices.Contains(i))
+                        continue; // Already have a render for this card
+
+                    var cardData = list[i];
+                    Debug.Log($"[DeckViewer] Adding new card: {cardData.name}");
+                    
+                    var go = Instantiate(cardPrefab);
+                    var sortingGroup = go.GetComponent<SortingGroup>();
+                    if (sortingGroup != null)
+                        sortingGroup.sortingOrder = i + 100;
+
+                    if (content != null)
+                        go.transform.SetParent(content, false);
+
+                    var render = go.GetComponent<CardRender>();
+                    if (render == null) render = go.AddComponent<CardRender>();
+
+                    render.Bind(cardData);
+                    _renders.Add(render);
+                }
+            }
+
+            // Re-animate all cards to their new positions
+            if (splineContainer != null && autoLayoutOnSpline)
+            {
+                if (_layoutRoutine != null) StopCoroutine(_layoutRoutine);
+                _layoutRoutine = StartCoroutine(UpdateCardPositions(tweenDuration));
+            }
+        }
+
+        /// <summary>
+        /// Full rebuild - clears everything and rebuilds from scratch.
+        /// Use this for initial setup or when switching sources.
+        /// </summary>
         public void Rebuild()
         {
             Clear();
@@ -134,7 +278,8 @@ namespace GameItems
                 var go = Instantiate(cardPrefab);
                 
                 var sortingGroup = go.GetComponent<SortingGroup>();
-                sortingGroup.sortingOrder = index + 100;
+                if (sortingGroup != null)
+                    sortingGroup.sortingOrder = index + 100;
 
                 // Parent and reset transform (optional)
                 if (content != null)
@@ -168,8 +313,12 @@ namespace GameItems
             }
 
             // Tween cards along spline if configured
+            Debug.Log("splineContainer: " + splineContainer);
+            Debug.Log("autoLayoutOnSpline: " + autoLayoutOnSpline);
+            
             if (splineContainer != null && autoLayoutOnSpline)
             {
+                Debug.Log("Layout cards along spline.");
                 if (_layoutRoutine != null) StopCoroutine(_layoutRoutine);
                 _layoutRoutine = StartCoroutine(UpdateCardPositions(tweenDuration));
             }
@@ -224,5 +373,89 @@ namespace GameItems
         }
 
         public IReadOnlyList<CardRender> GetRenders() => _renders;
+
+        /// <summary>
+        /// Animates all cards flying to a discard position with a stagger effect, then clears them.
+        /// Call this when the round ends for a smooth card game feel.
+        /// </summary>
+        /// <param name="discardTargetWorldPos">World position where cards fly to (usually discard pile)</param>
+        /// <param name="duration">Time for each card to fly</param>
+        /// <param name="staggerDelay">Delay between each card starting its animation</param>
+        /// <param name="onComplete">Callback when all cards have been discarded</param>
+        public void AnimateDiscardAll(Vector3 discardTargetWorldPos, float duration = 0.4f, float staggerDelay = 0.05f, System.Action onComplete = null)
+        {
+            if (_renders.Count == 0)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            Debug.Log($"[DeckViewer] Animating {_renders.Count} cards to discard pile");
+
+            int totalCards = _renders.Count;
+            int completedCards = 0;
+
+            for (int i = 0; i < _renders.Count; i++)
+            {
+                if (_renders[i] == null) continue;
+
+                var card = _renders[i];
+                float delay = i * staggerDelay;
+
+                // Animate card flying to discard pile
+                Sequence cardSequence = DOTween.Sequence();
+                
+                // Slight delay based on position in hand
+                if (delay > 0)
+                    cardSequence.AppendInterval(delay);
+
+                // Tween to discard position with arc motion
+                cardSequence.Append(card.transform
+                    .DOMove(discardTargetWorldPos, duration)
+                    .SetEase(Ease.InQuad));
+
+                // Rotate and scale down while flying
+                cardSequence.Join(card.transform
+                    .DORotate(new Vector3(0, 0, Random.Range(-15f, 15f)), duration)
+                    .SetEase(Ease.InOutQuad));
+
+                cardSequence.Join(card.transform
+                    .DOScale(0.3f, duration)
+                    .SetEase(Ease.InQuad));
+
+                // Destroy after animation
+                cardSequence.OnComplete(() =>
+                {
+                    if (card != null)
+                        Destroy(card.gameObject);
+
+                    completedCards++;
+                    if (completedCards >= totalCards)
+                    {
+                        _renders.Clear();
+                        Debug.Log("[DeckViewer] All cards discarded and cleared");
+                        onComplete?.Invoke();
+                    }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Smooth clear - animates cards out before clearing.
+        /// Use this instead of Clear() for end-of-turn visual polish.
+        /// </summary>
+        public void ClearSmooth(Vector3? discardTarget = null, System.Action onComplete = null)
+        {
+            if (_renders.Count == 0)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            // Default discard target: down and to the right
+            Vector3 target = discardTarget ?? (transform.position + new Vector3(2f, -3f, 0));
+            
+            AnimateDiscardAll(target, duration: 0.4f, staggerDelay: 0.05f, onComplete);
+        }
     }
 }

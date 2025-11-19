@@ -22,6 +22,14 @@ public class RoundManager : MonoBehaviour
     
     private bool timerActive = false;
 
+    [Header("UI")]
+    [Tooltip("Optional: Deck viewer that shows the current hand.")]
+    public GameItems.DeckViewer handViewer;
+    [Tooltip("Optional: Deck viewer that shows the draw pile.")]
+    public GameItems.DeckViewer drawPileViewer;
+    [Tooltip("Optional: Deck viewer that shows the discard pile.")]
+    public GameItems.DeckViewer discardPileViewer;
+
     // -------------------------------------------------------
     // Initialization
     // -------------------------------------------------------
@@ -80,6 +88,8 @@ public class RoundManager : MonoBehaviour
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
         player.StartTurn();
+
+        RefreshDeckViewers();
         
         // Start turn timer
         StartTurnTimer();
@@ -97,10 +107,32 @@ public class RoundManager : MonoBehaviour
         
         Debug.Log("Player turn ended.");
 
-        player.EndTurn();
-        playerTurn = false;
+        // Animate cards flying to discard pile before actually discarding
+        if (handViewer != null && handViewer.GetRenders().Count > 0)
+        {
+            // Calculate discard pile position (or use a default)
+            Vector3 discardTarget = discardPileViewer != null 
+                ? discardPileViewer.transform.position 
+                : handViewer.transform.position + new Vector3(3f, -2f, 0);
 
-        StartCoroutine(EnemyPhase());
+            // Animate cards to discard, then continue with turn end
+            handViewer.AnimateDiscardAll(discardTarget, duration: 0.4f, staggerDelay: 0.05f, onComplete: () =>
+            {
+                // After animation completes, actually discard in CardManager
+                player.EndTurn();
+                RefreshDeckViewers();
+                playerTurn = false;
+                StartCoroutine(EnemyPhase());
+            });
+        }
+        else
+        {
+            // No cards to animate, proceed immediately
+            player.EndTurn();
+            RefreshDeckViewers();
+            playerTurn = false;
+            StartCoroutine(EnemyPhase());
+        }
     }
 
     // -------------------------------------------------------
@@ -112,8 +144,8 @@ public class RoundManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
-        // Enemies execute their actions
-        enemyManager.ExecuteEnemyTurn(ref player.playerData);
+        // Enemies execute their actions one at a time with delays (turn-based)
+        yield return StartCoroutine(enemyManager.ExecuteEnemyTurnSequence(player.playerData));
 
         yield return new WaitForSeconds(0.5f);
 
@@ -139,6 +171,8 @@ public class RoundManager : MonoBehaviour
         // Roll intents for the upcoming enemy turn so the player can plan accordingly
         enemyManager.RollNextIntents();
         player.StartTurn();
+
+        RefreshDeckViewers();
         
         // Restart turn timer
         StartTurnTimer();
@@ -172,6 +206,30 @@ public class RoundManager : MonoBehaviour
         else
         {
             Debug.Log("⚠️ Battle ended unexpectedly.");
+        }
+    }
+
+    // -------------------------------------------------------
+    // Refresh all deck viewers to sync with CardManager state
+    // -------------------------------------------------------
+    private void RefreshDeckViewers()
+    {
+        if (handViewer != null)
+        {
+            handViewer.SetPlayer(player);
+            handViewer.SetSource(GameItems.DeckViewer.Source.Hand, rebuild: true);
+        }
+
+        if (drawPileViewer != null)
+        {
+            drawPileViewer.SetPlayer(player);
+            drawPileViewer.SetSource(GameItems.DeckViewer.Source.DrawPile, rebuild: true);
+        }
+
+        if (discardPileViewer != null)
+        {
+            discardPileViewer.SetPlayer(player);
+            discardPileViewer.SetSource(GameItems.DeckViewer.Source.DiscardPile, rebuild: true);
         }
     }
 }

@@ -145,6 +145,49 @@ namespace GameItems.Cards
             ShuffleDrawPile();
         }
 
+        // -----------------------------------------------------------
+        // Move a specific card from hand to discard pile and remove its instance
+        // -----------------------------------------------------------
+        public bool PlayCardFromHand(CardData data, CardInstance instance = null)
+        {
+            if (data == null)
+            {
+                Debug.LogWarning("[CardManager] PlayCardFromHand called with null CardData");
+                return false;
+            }
+
+            // Remove the card from hand
+            bool removed = hand.Remove(data);
+            if (!removed)
+            {
+                Debug.LogWarning($"[CardManager] Card '{data.name}' not found in hand when trying to play it.");
+            }
+
+            // Add to discard pile regardless so we don't lose track of it
+            discardPile.Add(data);
+
+            // Remove the corresponding instance if provided or infer by data
+            if (instance != null)
+            {
+                handInstances.Remove(instance);
+            }
+            else
+            {
+                // Fallback: remove the most recent instance for this data
+                for (int i = handInstances.Count - 1; i >= 0; i--)
+                {
+                    if (handInstances[i] != null && handInstances[i].data == data)
+                    {
+                        handInstances.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            Debug.Log($"[CardManager] Played card '{data.name}'. Hand: {hand.Count}, Discard: {discardPile.Count}, Instances: {handInstances.Count}");
+            return removed;
+        }
+
         // // -----------------------------------------------------------
         // // Apply the effects of a given card to a target entity
         // // -----------------------------------------------------------
