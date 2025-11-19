@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using GameItems;
 using UnityEngine;
+using Entities.Players.Data;
+using Entities.Enemies.Helpers;
 
 [Serializable]
 public struct EnemyAction
@@ -19,22 +20,20 @@ public enum EnemyIntent
 }
 
 [Serializable]
-public class EnemyData
+public class EnemyData : EntityData
 {
     [Header("Core Stats")]
-    public EntityData entity;         // Shared health, block, status data
     public int attackPower;           // Base attack power for intents
     public int defensePower;          // Optional, if you have defensive actions
 
     [Header("Intent System")]
     public EnemyIntent currentIntent; // What the enemy plans to do this turn
     public Sprite intentIcon;         // Icon shown above the enemy (attack, block, buff)
-    public string intentText;         // Text like “Attack” or “Buff Self”
+    public string intentText;         // Text like "Attack" or "Buff Self"
     public int intentValue;           // How much damage or block that intent will do
 
     [Header("Behavior")]
     public List<EnemyAction> actionPattern; // Optional list of possible actions
-    private int actionIndex;                 // Current action in the pattern
 
     [Header("Metadata")]
     public int enemyID;
@@ -45,7 +44,7 @@ public class EnemyData
     [Header("Animator (Optional)")]
     public RuntimeAnimatorController animatorController; // If set, animator-driven states are used
 
-    [Header("Animation Clips (Optional, fallback when no Animator Controller)")]
+    [Header("Sprite Animations (Lightweight alternative to AnimationClips)")]
     public SpriteAnimation idleAnim;
     public SpriteAnimation attackAnim;
     public SpriteAnimation hurtAnim;
@@ -59,10 +58,11 @@ public class EnemyData
         enemyName = name;
         attackPower = atk;
         defensePower = def;
-        entity = new EntityData();
-        entity.Initialize(name, maxHealth);
+        
+        // Call base EntityData initialization
+        base.Initialize(name, maxHealth);
+        
         actionPattern = new List<EnemyAction>();
-        actionIndex = 0;
     }
 
     // -------------------------------------------------------
@@ -90,8 +90,10 @@ public class EnemyData
     // -------------------------------------------------------
     // Execute current intent
     // -------------------------------------------------------
-    public void ExecuteIntent(ref EntityData player)
+    public void ExecuteIntent(PlayerData player)
     {
+        if (player == null) return;
+        
         switch (currentIntent)
         {
             case EnemyIntent.Attack:
@@ -99,18 +101,20 @@ public class EnemyData
                 break;
 
             case EnemyIntent.Block:
-                entity.GainBlock(intentValue);
+                GainBlock(intentValue);  // Now calls inherited method
                 break;
 
             case EnemyIntent.Heal:
-                entity.Heal(intentValue);
+                Heal(intentValue);  // Now calls inherited method
                 break;
 
             case EnemyIntent.Buff:
-                entity.ApplyStatus("Strength", intentValue);
+                ApplyStatus("Strength", intentValue);  // Now calls inherited method
                 break;
         }
     }
 
-    public bool IsAlive() => entity.isAlive;
+    public bool IsAlive() => isAlive;  // Now uses inherited field
 }
+
+

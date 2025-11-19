@@ -236,8 +236,8 @@ public class CardRender : MonoBehaviour,
                 case OperationType.Damage:
                     if (targetEnemy != null && targetEnemy.data != null)
                     {
-                        targetEnemy.data.entity.TakeDamage(value);
-                        Debug.Log($"[CardRender] Dealt {value} damage to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.entity.health}/{targetEnemy.data.entity.maxHealth}");
+                        targetEnemy.data.TakeDamage(value);
+                        Debug.Log($"[CardRender] Dealt {value} damage to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
                         
                         // Update enemy health display
                         var enemyManager = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
@@ -249,7 +249,7 @@ public class CardRender : MonoBehaviour,
                         {
                             // Fallback: update directly
                             targetEnemy.UpdateHealth();
-                            if (targetEnemy.data.entity.isAlive)
+                            if (targetEnemy.data.isAlive)
                                 targetEnemy.PlayHurt();
                             else
                                 targetEnemy.PlayDeath();
@@ -266,8 +266,8 @@ public class CardRender : MonoBehaviour,
                     var playerManager = FindFirstObjectByType<PlayerManager>();
                     if (playerManager != null && playerManager.playerData != null)
                     {
-                        playerManager.playerData.entity.GainBlock(value);
-                        Debug.Log($"[CardRender] Player gained {value} block. Total block: {playerManager.playerData.entity.block}");
+                        playerManager.playerData.GainBlock(value);
+                        Debug.Log($"[CardRender] Player gained {value} block. Total block: {playerManager.playerData.block}");
                     }
                     else
                     {
@@ -279,8 +279,8 @@ public class CardRender : MonoBehaviour,
                     var healPlayerManager = FindFirstObjectByType<PlayerManager>();
                     if (healPlayerManager != null && healPlayerManager.playerData != null)
                     {
-                        healPlayerManager.playerData.entity.Heal(value);
-                        Debug.Log($"[CardRender] Player healed {value} HP. Current HP: {healPlayerManager.playerData.entity.health}/{healPlayerManager.playerData.entity.maxHealth}");
+                        healPlayerManager.playerData.Heal(value);
+                        Debug.Log($"[CardRender] Player healed {value} HP. Current HP: {healPlayerManager.playerData.currentHealth}/{healPlayerManager.playerData.maxHealth}");
                     }
                     else
                     {
@@ -325,7 +325,7 @@ public class CardRender : MonoBehaviour,
             
             // Check if the hit object has an EnemyRender component
             EnemyRender enemyRender = hit.collider.GetComponent<EnemyRender>();
-            if (enemyRender != null && enemyRender.data is { entity: { isAlive: true } })
+            if (enemyRender != null && enemyRender.data is { isAlive: true })
             {
                 Debug.Log($"[CardRender] Card dropped on enemy: {enemyRender.data.enemyName}");
                 return enemyRender;

@@ -1,13 +1,8 @@
-using Entities.Enemies.Data;
 using Entities.Enemies.Helpers;
+using UnityEngine;
 
 namespace GameItems
 {
-    using System.Collections;
-    using UnityEngine;
-    using UnityEngine.Animations;
-    using UnityEngine.Playables;
-
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(SpriteRenderer))]
     [RequireComponent(typeof(BoxCollider2D))]
