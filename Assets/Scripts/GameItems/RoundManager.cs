@@ -67,11 +67,11 @@ public class RoundManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         // Enemies execute their actions
-        enemyManager.ExecuteEnemyTurn(ref player.playerData.entity);
+        enemyManager.ExecuteEnemyTurn(ref player.playerData);
 
         yield return new WaitForSeconds(0.5f);
 
-        if (player.playerData.entity.isAlive && !enemyManager.AllEnemiesDefeated())
+        if (player.playerData.isAlive && !enemyManager.AllEnemiesDefeated())
         {
             NextRound();
         }
@@ -102,7 +102,7 @@ public class RoundManager : MonoBehaviour
     {
         battleActive = false;
 
-        if (!player.playerData.entity.isAlive)
+        if (!player.playerData.isAlive)
         {
             Debug.Log("💀 Player defeated!");
         }

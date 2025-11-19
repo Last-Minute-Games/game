@@ -1,4 +1,6 @@
+using Entities.Enemies.Data;
 using Entities.Enemies.Helpers;
+using Entities.Players.Data;
 using GameItems;
 
 namespace Entities.Enemies.Manager
@@ -127,7 +129,7 @@ namespace Entities.Enemies.Manager
             for (int i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
-                if (!enemy.entity.isAlive) continue;
+                if (!enemy.isAlive) continue;
                 enemy.DecideNextIntent();
 
                 // Ensure idle is playing so player sees them idling before attack
@@ -137,12 +139,12 @@ namespace Entities.Enemies.Manager
         }
 
         // Enemies execute their previously decided intents
-        public void ExecuteEnemyTurn(ref EntityData player)
+        public void ExecuteEnemyTurn(ref PlayerData player)
         {
             for (int i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
-                if (!enemy.entity.isAlive) continue;
+                if (!enemy.isAlive) continue;
 
                 // Play attack animation right before executing if intent is attack
                 if (enemy.currentIntent == EnemyIntent.Attack)
@@ -151,7 +153,7 @@ namespace Entities.Enemies.Manager
                     if (r != null) r.PlayAttack();
                 }
 
-                enemy.ExecuteIntent(ref player);
+                enemy.ExecuteIntent(player);
             }
         }
 
@@ -164,7 +166,7 @@ namespace Entities.Enemies.Manager
                 render.UpdateHealth();
                 
                 // Play hurt animation if still alive
-                if (enemy.entity.isAlive)
+                if (enemy.isAlive)
                 {
                     render.PlayHurt();
                 }
@@ -187,7 +189,7 @@ namespace Entities.Enemies.Manager
         public bool AllEnemiesDefeated()
         {
             foreach (var e in enemies)
-                if (e.entity.isAlive) return false;
+                if (e.isAlive) return false;
             return true;
         }
     }

@@ -1,115 +1,105 @@
 using System;
 using System.Collections.Generic;
+using Entities.Players.Data;
 using UnityEngine;
 
-[Serializable]
-public struct EnemyAction
+namespace Entities.Enemies.Data
 {
-    public EnemyIntent intent;
-    public int value;
-}
-
-public enum EnemyIntent
-{
-    Attack,
-    Block,
-    Heal,
-    Buff
-}
-
-[Serializable]
-public class EnemyData
-{
-    [Header("Core Stats")]
-    public EntityData entity;         // Shared health, block, status data
-    public int attackPower;           // Base attack power for intents
-    public int defensePower;          // Optional, if you have defensive actions
-
-    [Header("Intent System")]
-    public EnemyIntent currentIntent; // What the enemy plans to do this turn
-    public Sprite intentIcon;         // Icon shown above the enemy (attack, block, buff)
-    public string intentText;         // Text like “Attack” or “Buff Self”
-    public int intentValue;           // How much damage or block that intent will do
-
-    [Header("Behavior")]
-    public List<EnemyAction> actionPattern; // Optional list of possible actions
-    private int actionIndex;                 // Current action in the pattern
-
-    [Header("Metadata")]
-    public int enemyID;
-    public string enemyName;
-    public Sprite artwork;                  // Optional portrait or sprite
-    public AudioClip attackSFX;             // Optional sound for attack
-
-    [Header("Animator (Optional)")]
-    public RuntimeAnimatorController animatorController; // If set, animator-driven states are used
-
-    [Header("Animation Clips (Optional, fallback when no Animator Controller)")]
-    public AnimationClip idleClip;          // Optional idle animation
-    public AnimationClip attackClip;        // Optional attack animation
-    public AnimationClip hurtClip;          // Optional hurt animation
-    public AnimationClip deathClip;         // Optional death animation
-
-    // -------------------------------------------------------
-    // Initialization
-    // -------------------------------------------------------
-    public void Initialize(string name, int maxHealth, int atk, int def)
+    [Serializable]
+    public struct EnemyAction
     {
-        enemyName = name;
-        attackPower = atk;
-        defensePower = def;
-        entity = new EntityData();
-        entity.Initialize(name, maxHealth);
-        actionPattern = new List<EnemyAction>();
-        actionIndex = 0;
+        public EnemyIntent intent;
+        public int value;
     }
 
-    // -------------------------------------------------------
-    // Enemy chooses what to do next
-    // -------------------------------------------------------
-    public void DecideNextIntent()
+    public enum EnemyIntent
     {
-        if (actionPattern == null || actionPattern.Count == 0)
+        Attack,
+        Block,
+        Heal,
+        Buff
+    }
+
+    [Serializable]
+    public class EnemyData : EntityData
+    {
+        [Header("Core Stats")] public int attackPower;
+        public int defensePower;
+
+        [Header("Intent System")] public EnemyIntent currentIntent;
+        public Sprite intentIcon;
+        public string intentText;
+        public int intentValue;
+
+        [Header("Behavior")] public List<EnemyAction> actionPattern;
+        private int actionIndex;
+
+        [Header("Metadata")] public int enemyID;
+        public string enemyName;
+        public Sprite artwork;
+        public AudioClip attackSFX;
+
+        [Header("Animator (Optional)")] public RuntimeAnimatorController animatorController;
+
+        [Header("Animation Clips (Optional, fallback when no Animator Controller)")]
+        public AnimationClip idleClip;
+
+        public AnimationClip attackClip;
+        public AnimationClip hurtClip;
+        public AnimationClip deathClip;
+
+        public void Initialize(string name, int maxHealth, int atk, int def)
         {
-            // Default: simple attack
-            currentIntent = EnemyIntent.Attack;
-            intentValue = attackPower;
-            intentText = "Attack";
-            return;
+            enemyName = name;
+            attackPower = atk;
+            defensePower = def;
+
+            // Call base entity initialization
+            base.Initialize(name, maxHealth);
+
+            actionPattern = new List<EnemyAction>();
+            actionIndex = 0;
         }
 
-        // Randomly select an action from the pattern (Slay the Spire-like)
-        int idx = UnityEngine.Random.Range(0, actionPattern.Count);
-        var nextAction = actionPattern[idx];
-        currentIntent = nextAction.intent;
-        intentValue = nextAction.value;
-        intentText = nextAction.intent.ToString();
-    }
-
-    // -------------------------------------------------------
-    // Execute current intent
-    // -------------------------------------------------------
-    public void ExecuteIntent(ref EntityData player)
-    {
-        switch (currentIntent)
+        public void DecideNextIntent()
         {
-            case EnemyIntent.Attack:
-                player.TakeDamage(intentValue);
-                break;
+            if (actionPattern == null || actionPattern.Count == 0)
+            {
+                currentIntent = EnemyIntent.Attack;
+                intentValue = attackPower;
+                intentText = "Attack";
+                return;
+            }
 
-            case EnemyIntent.Block:
-                entity.GainBlock(intentValue);
-                break;
-
-            case EnemyIntent.Heal:
-                entity.Heal(intentValue);
-                break;
-
-            case EnemyIntent.Buff:
-                entity.ApplyStatus("Strength", intentValue);
-                break;
+            int idx = UnityEngine.Random.Range(0, actionPattern.Count);
+            var nextAction = actionPattern[idx];
+            currentIntent = nextAction.intent;
+            intentValue = nextAction.value;
+            intentText = nextAction.intent.ToString();
         }
-    }
 
-    public bool IsAlive() => entity.isAlive;
+        public void ExecuteIntent(PlayerData player)
+        {
+            switch (currentIntent)
+            {
+                case EnemyIntent.Attack:
+                    player.TakeDamage(intentValue);
+                    break;
+
+                case EnemyIntent.Block:
+                    GainBlock(intentValue); // now from base class
+                    break;
+
+                case EnemyIntent.Heal:
+                    Heal(intentValue); // now from base class
+                    break;
+
+                case EnemyIntent.Buff:
+                    ApplyStatus("Strength", intentValue);
+                    break;
+            }
+        }
+
+        public bool IsAlive() => isAlive; // from base class
+    }
 }

@@ -1228,9 +1228,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d304789259295b4cba3d9812905b1d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
-  playerData: {fileID: 11400000, guid: 0175138bf060a12b6898d5eac10944f2, type: 2}
-  energy: 3
-  maxEnergy: 3
+  playerConfig: {fileID: 0}
+  playerData:
+    name: 
+    maxHealth: 0
+    currentHealth: 0
+    block: 0
+    isAlive: 0
+    baseEnergy: 0
+    maxEnergy: 0
+    usableCards: []
+    currentEnergy: 0
   cardManager:
     allCardPool: []
     drawPile: []
@@ -1741,6 +1749,7 @@ MonoBehaviour:
   enemyManager: {fileID: 121033906}
   roundManager: {fileID: 246031882}
   deckViewer: {fileID: 998311090}
+  playerConfig: {fileID: 11400000, guid: fea807a87b25d2144a2716d859712d85, type: 2}
   enemyDatabase:
   - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
   - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}

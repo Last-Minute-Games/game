@@ -1,53 +1,59 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Entities.Players.Data;
 using GameItems.Cards;
 
 public class PlayerManager : MonoBehaviour
 {
-    [Header("Data")]
-    public PlayerData playerData; // Assign in Inspector
+    [Header("Config")]
+    [Tooltip("Player configuration asset (ScriptableObject).")]
+    public PlayerConfig playerConfig; // Assign in Inspector
 
     [Header("Runtime State")]
-    public int energy;
-    public int maxEnergy;
+    public PlayerData playerData; // Runtime instance created from config
     public CardManager cardManager = new CardManager();
 
     private bool _initialized;
 
     private void Awake()
     {
-        if (playerData == null)
+        if (playerConfig == null)
         {
-            Debug.LogError("PlayerManager: No PlayerData assigned.");
+            Debug.LogError("PlayerManager: No PlayerConfig assigned.");
             return;
         }
 
-        InitializeFromData();
+        InitializeFromConfig();
     }
 
-    // New: runtime API to support code paths that pass PlayerData programmatically
-    public void Initialize(PlayerData data)
+    // Runtime API to support code paths that pass PlayerConfig programmatically
+    public void Initialize(PlayerConfig config)
     {
-        playerData = data;
-        if (playerData == null)
+        playerConfig = config;
+        if (playerConfig == null)
         {
-            Debug.LogError("PlayerManager.Initialize: Provided PlayerData is null.");
+            Debug.LogError("PlayerManager.Initialize: Provided PlayerConfig is null.");
             return;
         }
-        InitializeFromData();
+        _initialized = false;
+        InitializeFromConfig();
     }
 
-    private void InitializeFromData()
+    private void InitializeFromConfig()
     {
         if (_initialized) return;
         _initialized = true;
 
-        // Initialize runtime entity from PlayerData
-        playerData.InitializeRuntime();
+        // Create runtime instance from config
+        playerData = playerConfig != null ? playerConfig.CreateRuntimeInstance() : null;
+        if (playerData == null)
+        {
+            Debug.LogError("PlayerManager: Failed to create runtime PlayerData from PlayerConfig.");
+            return;
+        }
 
-        // Energy setup
-        maxEnergy = Mathf.Max(1, playerData.maxEnergy > 0 ? playerData.maxEnergy : (playerData.config != null ? playerData.config.defaultMaxEnergy : 3));
-        energy = Mathf.Clamp(playerData.baseEnergy > 0 ? playerData.baseEnergy : (playerData.config != null ? playerData.config.defaultBaseEnergy : 3), 0, maxEnergy);
+        // Energy is now managed by PlayerData itself
+        playerData.currentEnergy = playerData.baseEnergy;
 
         // Card pools
         cardManager.allCardPool = playerData.usableCards != null && playerData.usableCards.Count > 0
@@ -69,24 +75,27 @@ public class PlayerManager : MonoBehaviour
     {
         if (playerData == null) return;
 
-        energy = maxEnergy;
-        playerData.entity.ResetBlock();
+        // Reset energy and block
+        playerData.ResetEnergy();
+        playerData.block = 0;
 
-        int handSize = playerData.config != null ? Mathf.Max(1, playerData.config.defaultHandSize) : 5;
+        // Draw hand
+        int handSize = playerConfig != null && playerConfig.config != null 
+            ? Mathf.Max(1, playerConfig.config.defaultHandSize) 
+            : 5;
         for (int i = 0; i < handSize; i++)
-          cardManager.DrawCard();
+            cardManager.DrawCard();
     }
 
     public bool TryPlayCard(CardData card, ref EntityData target)
     {
-      if (playerData == null || card == null) return false;
+        if (playerData == null || card == null) return false;
 
-      // Simplified energy check (1 per card until card has explicit cost)
-      if (energy < 1)
-        return false;
+        // Simplified energy check (1 per card until card has explicit cost)
+        if (!playerData.SpendEnergy(1))
+            return false;
 
-      energy -= 1; // TODO: replace with card.energyCost when available
-                   // cardManager.ApplyCard(card, playerData.entity, ref target); // TODO: re-fix definition of ApplyCard with actual combat system
+        // cardManager.ApplyCard(card, playerData, ref target); // TODO: re-fix definition of ApplyCard with actual combat system
         return true;
     }
 

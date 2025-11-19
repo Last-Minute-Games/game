@@ -1,3 +1,4 @@
+using Entities.Enemies.Data;
 using Entities.Enemies.Helpers;
 
 namespace GameItems
@@ -77,8 +78,8 @@ namespace GameItems
         {
             if (_health != null && data != null)
             {
-                _health.SetHealth(data.entity.health, data.entity.maxHealth);
-                _health.SetShield(data.entity.block);
+                _health.SetHealth(data.currentHealth, data.maxHealth);
+                _health.SetShield(data.block);
             }
         }
 

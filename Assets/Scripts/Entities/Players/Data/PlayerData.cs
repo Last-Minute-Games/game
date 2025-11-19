@@ -1,62 +1,47 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
-[CreateAssetMenu(menuName = "Player/Player Data", fileName = "NewPlayerData")]
-public class PlayerData : ScriptableObject
+namespace Entities.Players.Data
 {
-    [Header("References")]
-    [Tooltip("Reference to global configuration settings.")]
-    public GameConfig config;
-
-    [Header("Core Stats (overrides config if set)")]
-    public string playerName = "Player";
-    public int baseHealth;
-    public int baseShield;
-
-    [Header("Energy Settings")]
-    [Tooltip("Starting energy")]
-    public int baseEnergy;
-
-    [Tooltip("Maximum energy cap")]
-    public int maxEnergy;
-
-    [Header("Collections")]
-    [Tooltip("Cards the player can use (initial deck and pool)")]
-    public List<CardData> usableCards = new List<CardData>();
-
-    // Runtime entity state (not saved as defaults)
-    [System.NonSerialized]
-    public EntityData entity;
-
-    private void OnValidate()
+    [Serializable]
+    public class PlayerData : EntityData
     {
-        if (config != null)
-        {
-            // Pull defaults from GameConfig
-            if (baseHealth <= 0) baseHealth = config.defaultHealth;
-            if (baseShield < 0) baseShield = config.defaultShield;
-            if (baseEnergy <= 0) baseEnergy = config.defaultBaseEnergy;
-            if (maxEnergy <= 0) maxEnergy = config.defaultMaxEnergy;
+        [Header("Energy Settings")]
+        public int baseEnergy;
+        public int maxEnergy;
 
-            // Populate cards from config if none assigned
-            if ((usableCards == null || usableCards.Count == 0) && config.defaultCards != null)
-            {
-                usableCards = new List<CardData>(config.defaultCards);
-            }
-            // Note: default relics are not defined in GameConfig currently.
+        [Header("Collections")]
+        public List<CardData> usableCards = new List<CardData>();
+
+        // Current energy (runtime state)
+        public int currentEnergy;
+
+        public void Initialize(string playerName, int maxHealth, int energy, int maxEnergyLimit)
+        {
+            // Call base entity initialization
+            base.Initialize(playerName, maxHealth);
+
+            baseEnergy = energy;
+            maxEnergy = maxEnergyLimit;
+            currentEnergy = baseEnergy;
         }
 
-        // Basic sanity
-        if (maxEnergy < baseEnergy) maxEnergy = baseEnergy;
-        if (usableCards == null) usableCards = new List<CardData>();
-        if (usableCards.Count == 0)
-            Debug.LogWarning("PlayerData: No usable cards assigned.");
-    }
+        public void ResetEnergy()
+        {
+            currentEnergy = baseEnergy;
+        }
 
-    public void InitializeRuntime()
-    {
-        entity = new EntityData();
-        entity.Initialize(string.IsNullOrEmpty(playerName) ? "Player" : playerName, Mathf.Max(1, baseHealth));
-        if (baseShield > 0) entity.GainBlock(baseShield);
+        public void GainEnergy(int amount)
+        {
+            currentEnergy = Mathf.Min(currentEnergy + amount, maxEnergy);
+        }
+
+        public bool SpendEnergy(int amount)
+        {
+            if (currentEnergy < amount) return false;
+            currentEnergy -= amount;
+            return true;
+        }
     }
 }

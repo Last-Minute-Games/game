@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Entities.Enemies.Data;
 using Entities.Enemies.Manager;
+using Entities.Players.Data;
 using GameItems;
 
 public class BattleManager : MonoBehaviour
@@ -9,16 +11,28 @@ public class BattleManager : MonoBehaviour
     public EnemyManager enemyManager;
     public RoundManager roundManager;
     [SerializeField] private DeckViewer deckViewer; // Reference to the DeckViewer
+
+    [Header("Config")]
+    [Tooltip("Player configuration asset used to initialize the runtime player.")]
+    [SerializeField] private PlayerConfig playerConfig;
     
     private void Start()
     {
-        // 1️⃣ Initialize Player (runtime-only example)
-        var playerData = ScriptableObject.CreateInstance<PlayerData>();
-        playerData.InitializeRuntime();
+        if (playerManager == null)
+        {
+            Debug.LogError("BattleManager: PlayerManager is not assigned.");
+            return;
+        }
 
-        // Give the player a starter pool/deck (CardData ScriptableObjects in Resources/Cards)
-        playerData.usableCards = new List<CardData>(Resources.LoadAll<CardData>("Cards"));
-        playerManager.Initialize(playerData);
+        // 1️⃣ Initialize Player using config asset
+        if (playerConfig != null)
+        {
+            playerManager.Initialize(playerConfig);
+        }
+        else
+        {
+            Debug.LogWarning("BattleManager: No PlayerConfig assigned; using PlayerManager's existing PlayerConfig.");
+        }
 
         // 2️⃣ Initialize Enemies
         List<EnemyData> enemies = GenerateEnemyWave();
@@ -38,7 +52,7 @@ public class BattleManager : MonoBehaviour
         }
     }
     
-    [SerializeField] private List<EnemyDataSO> enemyDatabase;
+    [SerializeField] private List<EnemyConfig> enemyDatabase;
 
     private List<EnemyData> GenerateEnemyWave()
     {
