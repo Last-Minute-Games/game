@@ -26,23 +26,23 @@ public class CardRender : MonoBehaviour,
     IDragHandler,
     IEndDragHandler
 {
-    [Header("UI References")] [SerializeField]
-    private SpriteRenderer cardBackground;
-
+    [Header("UI References")] 
+    [SerializeField] private SpriteRenderer cardBackground;
     [SerializeField] private SpriteRenderer cardIcon;
     [SerializeField] private TMP_Text energyCost;
     [SerializeField] private TMP_Text cardName;
     [SerializeField] private TMP_Text descriptionText;
 
-    [Header("Defaults")] [Tooltip("Shown when CardData does not specify an artwork.")] [SerializeField]
-    private Sprite fallbackIcon;
+    [Header("Defaults")] 
+    [Tooltip("Shown when CardData does not specify an artwork.")]
+    [SerializeField] private Sprite fallbackIcon;
+    [Tooltip("Used if no energy value is provided when binding.")]
+    [SerializeField] private int defaultEnergyCost = 1;
 
-    [Tooltip("Used if no energy value is provided when binding.")] [SerializeField]
-    private int defaultEnergyCost = 1;
-
-    [Header("Runtime")] public CardData Data;
+    [Header("Runtime")] 
+    public CardData Data;
     public CardInstance Instance;
-
+    
     private CardFXHelper _fxHelper;
     private bool _isDragging;
 
@@ -54,7 +54,7 @@ public class CardRender : MonoBehaviour,
         if (energyCost == null) energyCost = FindChildByName<TMP_Text>("EnergyCost");
         if (cardName == null) cardName = FindChildByName<TMP_Text>("CardName");
         if (descriptionText == null) descriptionText = FindChildByName<TMP_Text>("DescriptionText");
-
+        
         _fxHelper = GetComponent<CardFXHelper>();
         if (_fxHelper == null) _fxHelper = gameObject.AddComponent<CardFXHelper>();
     }
@@ -69,7 +69,7 @@ public class CardRender : MonoBehaviour,
 
         cardBackground.sprite = data != null ? data.artwork : null;
         cardIcon.sprite = data != null ? data.icon : null;
-
+        
         // Energy
         int energyVal = data.energyCost;
         if (energyCost != null)
@@ -110,7 +110,6 @@ public class CardRender : MonoBehaviour,
                 if (blk != 0) summary += (summary.Length > 0 ? "," : "") + $" +{blk} Block";
                 if (!string.IsNullOrEmpty(summary)) baseDesc = $"{baseDesc}\n[{summary.Trim()}]";
             }
-
             descriptionText.text = baseDesc;
         }
 
@@ -176,17 +175,19 @@ public class CardRender : MonoBehaviour,
         {
             bool validTarget = false;
             TargetRule rule = Data.GetDominatingTargetRule();
-
+            
+            Debug.Log(rule);
+            
             switch (rule)
             {
                 // Check if card was dropped over an enemy
                 case TargetRule.Enemy:
                 {
                     var enemy = GetEnemyOnMouse(eventData.position);
-                    if (enemy != null)
-                    {
+                    if (enemy != null) {
                         validTarget = true;
                         ApplyCardEffects(enemy);
+
                     }
 
                     break;
@@ -194,14 +195,15 @@ public class CardRender : MonoBehaviour,
                 case TargetRule.Self:
                     // Self-targeting cards are always valid on release
                     validTarget = true;
+                    ApplyCardEffects();
                     break;
             }
-
+            
             _fxHelper.OnCardRelease(this, validTarget: validTarget);
         }
     }
 
-    private void ApplyCardEffects(EnemyRender targetEnemy)
+    private void ApplyCardEffects(EnemyRender targetEnemy = null)
     {
         if (Data == null)
         {
@@ -210,10 +212,9 @@ public class CardRender : MonoBehaviour,
         }
 
         // Use rolled effects from Instance if available, otherwise use base effects from Data
-        List<EffectData> effectsToApply =
-            Instance != null && Instance.rolledEffects != null && Instance.rolledEffects.Count > 0
-                ? Instance.rolledEffects
-                : Data.effectData;
+        List<EffectData> effectsToApply = Instance != null && Instance.rolledEffects != null && Instance.rolledEffects.Count > 0
+            ? Instance.rolledEffects
+            : Data.effectData;
 
         if (effectsToApply == null || effectsToApply.Count == 0)
         {
@@ -235,10 +236,9 @@ public class CardRender : MonoBehaviour,
                 case OperationType.Damage:
                     if (targetEnemy != null && targetEnemy.data != null)
                     {
-                        targetEnemy.data.TakeDamage(value);
-                        Debug.Log(
-                            $"[CardRender] Dealt {value} damage to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
-
+                        targetEnemy.data.entity.TakeDamage(value);
+                        Debug.Log($"[CardRender] Dealt {value} damage to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.entity.health}/{targetEnemy.data.entity.maxHealth}");
+                        
                         // Update enemy health display
                         var enemyManager = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
                         if (enemyManager != null)
@@ -249,7 +249,7 @@ public class CardRender : MonoBehaviour,
                         {
                             // Fallback: update directly
                             targetEnemy.UpdateHealth();
-                            if (targetEnemy.data.isAlive)
+                            if (targetEnemy.data.entity.isAlive)
                                 targetEnemy.PlayHurt();
                             else
                                 targetEnemy.PlayDeath();
@@ -259,7 +259,6 @@ public class CardRender : MonoBehaviour,
                     {
                         Debug.LogWarning("[CardRender] Damage effect requires an enemy target");
                     }
-
                     break;
 
                 case OperationType.AddShield:
@@ -267,35 +266,30 @@ public class CardRender : MonoBehaviour,
                     var playerManager = FindFirstObjectByType<PlayerManager>();
                     if (playerManager != null && playerManager.playerData != null)
                     {
-                        playerManager.playerData.GainBlock(value);
-                        Debug.Log(
-                            $"[CardRender] Player gained {value} block. Total block: {playerManager.playerData.block}");
+                        playerManager.playerData.entity.GainBlock(value);
+                        Debug.Log($"[CardRender] Player gained {value} block. Total block: {playerManager.playerData.entity.block}");
                     }
                     else
                     {
                         Debug.LogWarning("[CardRender] Could not find PlayerManager to apply block");
                     }
-
                     break;
 
                 case OperationType.Heal:
                     var healPlayerManager = FindFirstObjectByType<PlayerManager>();
                     if (healPlayerManager != null && healPlayerManager.playerData != null)
                     {
-                        healPlayerManager.playerData.Heal(value);
-                        Debug.Log(
-                            $"[CardRender] Player healed {value} HP. Current HP: {healPlayerManager.playerData.currentHealth}/{healPlayerManager.playerData.maxHealth}");
+                        healPlayerManager.playerData.entity.Heal(value);
+                        Debug.Log($"[CardRender] Player healed {value} HP. Current HP: {healPlayerManager.playerData.entity.health}/{healPlayerManager.playerData.entity.maxHealth}");
                     }
                     else
                     {
                         Debug.LogWarning("[CardRender] Could not find PlayerManager to apply heal");
                     }
-
                     break;
 
                 default:
-                    Debug.LogWarning(
-                        $"[CardRender] OperationType {effect.operationType} not yet implemented in CardRender");
+                    Debug.LogWarning($"[CardRender] OperationType {effect.operationType} not yet implemented in CardRender");
                     break;
             }
         }
@@ -312,26 +306,26 @@ public class CardRender : MonoBehaviour,
         }
 
         Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, cam.nearClipPlane));
-
+        
         // Raycast at the drop position to check for enemy colliders, ignoring the card itself
         RaycastHit2D[] hits = new RaycastHit2D[10];
         ContactFilter2D filter = new ContactFilter2D();
-
+        
         Physics2D.Raycast(worldPos, Vector2.zero, filter, hits);
-
+        
         foreach (var hit in hits)
         {
             if (hit.collider == null) continue;
-
+            
             // Skip if it's this card's collider
             if (hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform))
                 continue;
-
+            
             Debug.Log($"Hit: {hit.collider.name}");
-
+            
             // Check if the hit object has an EnemyRender component
             EnemyRender enemyRender = hit.collider.GetComponent<EnemyRender>();
-            if (enemyRender != null && enemyRender.data is { isAlive: true })
+            if (enemyRender != null && enemyRender.data is { entity: { isAlive: true } })
             {
                 Debug.Log($"[CardRender] Card dropped on enemy: {enemyRender.data.enemyName}");
                 return enemyRender;
@@ -383,7 +377,6 @@ public class CardRender : MonoBehaviour,
             if (c.name.ToLowerInvariant().Contains(containsName))
                 return c;
         }
-
         return null;
     }
 }

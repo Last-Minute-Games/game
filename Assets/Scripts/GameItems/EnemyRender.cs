@@ -24,37 +24,58 @@ namespace GameItems
         public int animatorLayer;
         public float crossFadeDuration = 0.08f;
 
-        private Animator _animator;
         private SpriteRenderer _sprite;
         private EnemyHealth _health;
         private BoxCollider2D _hitboxCollider;
 
-        // Playables (fallback when no AnimatorController)
-        private PlayableGraph _graph;
-        private AnimationPlayableOutput _output;
-        private AnimationClipPlayable _currentPlayable;
-        private bool _graphCreated;
-        private Coroutine _returnToIdleRoutine;
-
-        private bool UsingAnimatorController => data != null && data.animatorController != null;
+        // Manual sprite animation state
+        private SpriteAnimation _currentAnimation;
+        private float _frameTimer;
+        private int _currentFrame;
+        private bool _isAnimationPlaying;
 
         private void Awake()
         {
             _hitboxCollider = GetComponent<BoxCollider2D>();
-            _animator = GetComponent<Animator>();
             _sprite = GetComponent<SpriteRenderer>();
         }
 
-        private void OnDisable() => StopGraph();
-        private void OnDestroy() => StopGraph();
+        private void Update()
+        {
+            if (!_isAnimationPlaying || _currentAnimation == null || _currentAnimation.frames.Count == 0)
+                return;
+
+            _frameTimer += Time.deltaTime;
+            float frameDuration = 1f / _currentAnimation.frameRate;
+
+            if (_frameTimer >= frameDuration)
+            {
+                _frameTimer -= frameDuration;
+                _currentFrame++;
+
+                if (_currentFrame >= _currentAnimation.frames.Count)
+                {
+                    if (_currentAnimation.loop)
+                    {
+                        _currentFrame = 0;
+                    }
+                    else
+                    {
+                        _isAnimationPlaying = false;
+                        PlayIdle(); // Revert to idle when non-looping animation finishes
+                        return;
+                    }
+                }
+
+                _sprite.sprite = _currentAnimation.frames[_currentFrame];
+            }
+        }
+
+
 
         public void Bind(EnemyData enemyData)
         {
             data = enemyData;
-
-            // Assign Animator Controller if provided
-            if (_animator != null)
-                _animator.runtimeAnimatorController = data != null ? data.animatorController : null;
 
             // Set default sprite artwork
             if (_sprite != null)
@@ -85,139 +106,53 @@ namespace GameItems
 
         public void PlayIdle()
         {
-            if (UsingAnimatorController && HasState(idleState))
-            {
-                StopGraph();
-                CrossFadeState(idleState, 0f);
-                return;
-            }
-
-            if (data == null || data.idleClip == null)
-            {
-                StopGraph(); // static sprite only
-                return;
-            }
-            PlayClip(data.idleClip, loop: true, returnToIdleOnEnd: false);
+            if (data != null && data.idleAnim != null)
+                PlayAnimation(data.idleAnim);
         }
 
         public void PlayAttack()
         {
-            if (UsingAnimatorController && HasState(attackState))
-            {
-                StopGraph();
-                CrossFadeState(attackState, 0f);
-                return;
-            }
-
-            if (data == null || data.attackClip == null)
-                return;
-
-            PlayClip(data.attackClip, loop: false, returnToIdleOnEnd: true);
+            if (data != null && data.attackAnim != null)
+                PlayAnimation(data.attackAnim);
         }
 
         public void PlayHurt()
         {
-            if (UsingAnimatorController && HasState(hurtState))
-            {
-                StopGraph();
-                CrossFadeState(hurtState, 0f);
-                return;
-            }
-
-            if (data == null || data.hurtClip == null)
-                return;
-
-            PlayClip(data.hurtClip, loop: false, returnToIdleOnEnd: true);
+            if (data != null && data.hurtAnim != null)
+                PlayAnimation(data.hurtAnim);
         }
 
         public void PlayDeath()
         {
-            if (UsingAnimatorController && HasState(deathState))
+            if (data != null && data.deathAnim != null)
             {
-                StopGraph();
-                CrossFadeState(deathState, 0f);
+                PlayAnimation(data.deathAnim);
+            }
+            else
+            {
+                // Hide on death if no clip
+                if (_sprite != null) _sprite.enabled = false; 
+            }
+        }
+
+        private void PlayAnimation(SpriteAnimation anim)
+        {
+            if (anim == null || anim.frames.Count == 0)
+            {
+                _isAnimationPlaying = false;
                 return;
             }
 
-            if (data == null || data.deathClip == null)
-            {
-                StopGraph();
-                if (_sprite != null) _sprite.enabled = false; // hide on death if no clip
-                return;
-            }
-            PlayClip(data.deathClip, loop: false, returnToIdleOnEnd: false);
+            _currentAnimation = anim;
+            _isAnimationPlaying = true;
+            _currentFrame = 0;
+            _frameTimer = 0f;
+
+            // Set the first frame immediately
+            _sprite.sprite = _currentAnimation.frames[0];
         }
 
-        private void CrossFadeState(string stateName, float normalizedTime)
-        {
-            if (_animator == null) return;
-            _animator.CrossFade(stateName, crossFadeDuration, animatorLayer, normalizedTime);
-        }
-
-        private bool HasState(string stateName)
-        {
-            if (_animator == null || _animator.runtimeAnimatorController == null) return false;
-            int hash = Animator.StringToHash(stateName);
-            return _animator.HasState(animatorLayer, hash);
-        }
-
-        private void PlayClip(AnimationClip clip, bool loop, bool returnToIdleOnEnd)
-        {
-            if (!Application.isPlaying || clip == null) return;
-            EnsureGraph();
-
-            if (_returnToIdleRoutine != null)
-            {
-                StopCoroutine(_returnToIdleRoutine);
-                _returnToIdleRoutine = null;
-            }
-
-            if (_currentPlayable.IsValid())
-                _currentPlayable.Destroy();
-
-            _currentPlayable = AnimationClipPlayable.Create(_graph, clip);
-            _currentPlayable.SetApplyFootIK(false);
-            _currentPlayable.SetApplyPlayableIK(false);
-            _currentPlayable.SetTime(0);
-
-            _output.SetSourcePlayable(_currentPlayable);
-            _graph.Play();
-
-            if (!loop && returnToIdleOnEnd)
-                _returnToIdleRoutine = StartCoroutine(ReturnToIdleAfter(clip.length));
-        }
-
-        private IEnumerator ReturnToIdleAfter(float duration)
-        {
-            yield return new WaitForSeconds(duration);
-            PlayIdle();
-        }
-
-        private void EnsureGraph()
-        {
-            if (_graphCreated) return;
-            _graph = PlayableGraph.Create($"EnemyRenderGraph_{name}");
-            _graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
-            _output = AnimationPlayableOutput.Create(_graph, "EnemyAnimOutput", _animator);
-            _graphCreated = true;
-        }
-
-        private void StopGraph()
-        {
-            if (_returnToIdleRoutine != null)
-            {
-                StopCoroutine(_returnToIdleRoutine);
-                _returnToIdleRoutine = null;
-            }
-            if (_currentPlayable.IsValid())
-            {
-                _currentPlayable.Destroy();
-            }
-            if (_graphCreated && _graph.IsValid())
-            {
-                _graph.Destroy();
-            }
-            _graphCreated = false;
-        }
+        // Remove all the old Playables and Animator-related methods
+        // ... (CrossFadeState, HasState, PlayClip, ReturnToIdleAfterClip, EnsureGraph, StopGraph)
     }
 }
