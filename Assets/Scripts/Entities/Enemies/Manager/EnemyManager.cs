@@ -1,4 +1,5 @@
 using Entities.Enemies.Helpers;
+using Entities.Enemies.Data;
 using Entities.Players.Data;
 using GameItems;
 
@@ -11,6 +12,10 @@ namespace Entities.Enemies.Manager
     {
         [Header("Data")]
         public List<EnemyData> enemies = new();
+
+        [Header("Intent Icons")]
+        [Tooltip("Optional: Global intent icon config. If set, all enemies without their own icons will use this.")]
+        public IntentIconConfig globalIntentIcons;
 
         [Header("Rendering")]
         [Tooltip("Parent container where enemy GameObjects (SpriteRenderer + Animator) will be spawned in world space.")]
@@ -129,6 +134,13 @@ namespace Entities.Enemies.Manager
             {
                 var enemy = enemies[i];
                 if (!enemy.isAlive) continue;
+
+                // Auto-assign global intent icons if enemy doesn't have its own
+                if (enemy.intentIcons == null && globalIntentIcons != null)
+                {
+                    enemy.intentIcons = globalIntentIcons.ToMapping();
+                }
+
                 enemy.DecideNextIntent();
 
                 // Ensure idle is playing so player sees them idling before attack
