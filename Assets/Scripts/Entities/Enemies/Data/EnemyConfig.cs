@@ -56,7 +56,7 @@ public class EnemyConfig : ScriptableObject
             minMultiplier = maxMultiplier;
 
         // clamp
-        minMultipler = Mathf.Max(0f, minMultiplier);
+        minMultiplier = Mathf.Max(0f, minMultiplier);
         maxMultiplier = Mathf.Max(minMultiplier, maxMultiplier);
     }
 }
