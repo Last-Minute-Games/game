@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GameItems;
 using UnityEngine;
 
 [Serializable]
@@ -45,10 +46,10 @@ public class EnemyData
     public RuntimeAnimatorController animatorController; // If set, animator-driven states are used
 
     [Header("Animation Clips (Optional, fallback when no Animator Controller)")]
-    public AnimationClip idleClip;          // Optional idle animation
-    public AnimationClip attackClip;        // Optional attack animation
-    public AnimationClip hurtClip;          // Optional hurt animation
-    public AnimationClip deathClip;         // Optional death animation
+    public SpriteAnimation idleAnim;
+    public SpriteAnimation attackAnim;
+    public SpriteAnimation hurtAnim;
+    public SpriteAnimation deathAnim;
 
     // -------------------------------------------------------
     // Initialization

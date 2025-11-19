@@ -176,6 +176,8 @@ public class CardRender : MonoBehaviour,
             bool validTarget = false;
             TargetRule rule = Data.GetDominatingTargetRule();
             
+            Debug.Log(rule);
+            
             switch (rule)
             {
                 // Check if card was dropped over an enemy
@@ -193,6 +195,7 @@ public class CardRender : MonoBehaviour,
                 case TargetRule.Self:
                     // Self-targeting cards are always valid on release
                     validTarget = true;
+                    ApplyCardEffects();
                     break;
             }
             
@@ -200,7 +203,7 @@ public class CardRender : MonoBehaviour,
         }
     }
 
-    private void ApplyCardEffects(EnemyRender targetEnemy)
+    private void ApplyCardEffects(EnemyRender targetEnemy = null)
     {
         if (Data == null)
         {

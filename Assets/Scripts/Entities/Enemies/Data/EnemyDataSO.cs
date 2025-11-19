@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using GameItems;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Enemies/Enemy Data", fileName = "NewEnemy")]
-public class EnemyDataSO : ScriptableObject
+namespace Entities.Enemies.Data
 {
+    [CreateAssetMenu(menuName = "Enemies/Enemy Data", fileName = "NewEnemy")]
+    public class EnemyDataSO : ScriptableObject
+    {
     [Header("Core")]
     public string enemyName;
     public int maxHealth;
@@ -16,15 +19,15 @@ public class EnemyDataSO : ScriptableObject
     [Tooltip("If assigned, this RuntimeAnimatorController will drive the enemy's animation states (Idle/Attack/Hurt/Death). Drag & drop here.")]
     public RuntimeAnimatorController animatorController;
 
-    [Header("Animation Clips (Optional, used if no Animator Controller)")]
-    [Tooltip("Looping idle animation clip for this enemy (optional).")]
-    public AnimationClip idleClip;
-    [Tooltip("Attack animation clip for this enemy (optional).")]
-    public AnimationClip attackClip;
-    [Tooltip("Hurt animation clip for this enemy (optional).")]
-    public AnimationClip hurtClip;
-    [Tooltip("Death animation clip for this enemy (optional).")]
-    public AnimationClip deathClip;
+    [Header("Sprite Animations (used if no Animator Controller)")]
+    [Tooltip("Looping idle animation for this enemy.")]
+    public SpriteAnimation idleAnim;
+    [Tooltip("Attack animation for this enemy.")]
+    public SpriteAnimation attackAnim;
+    [Tooltip("Hurt animation for this enemy.")]
+    public SpriteAnimation hurtAnim;
+    [Tooltip("Death animation for this enemy.")]
+    public SpriteAnimation deathAnim;
 
     public EnemyData CreateRuntimeInstance()
     {
@@ -34,10 +37,11 @@ public class EnemyDataSO : ScriptableObject
         data.artwork = artwork;
         // Propagate animator controller and animation clips
         data.animatorController = animatorController;
-        data.idleClip = idleClip;
-        data.attackClip = attackClip;
-        data.hurtClip = hurtClip;
-        data.deathClip = deathClip;
+        data.idleAnim = idleAnim;
+        data.attackAnim = attackAnim;
+        data.hurtAnim = hurtAnim;
+        data.deathAnim = deathAnim;
         return data;
     }
+}
 }
