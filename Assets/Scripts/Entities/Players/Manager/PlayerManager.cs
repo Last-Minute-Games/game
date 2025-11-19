@@ -87,16 +87,115 @@ public class PlayerManager : MonoBehaviour
             cardManager.DrawCard();
     }
 
+    /// <summary>
+    /// Attempts to play a card, checking energy cost and applying effects.
+    /// </summary>
+    /// <param name="cardData">The base card data</param>
+    /// <param name="cardInstance">Optional card instance with rolled effects</param>
+    /// <param name="targetEnemy">Target enemy for damage effects (null for self-target cards)</param>
+    /// <returns>True if card was successfully played</returns>
+    public bool PlayCard(CardData cardData, CardInstance cardInstance = null, EnemyRender targetEnemy = null)
+    {
+        if (playerData == null || cardData == null)
+        {
+            Debug.LogWarning("[PlayerManager] Cannot play card - playerData or cardData is null");
+            return false;
+        }
+
+        // Check energy cost
+        int energyCost = cardData.energyCost > 0 ? cardData.energyCost : 1;
+        if (!playerData.SpendEnergy(energyCost))
+        {
+            Debug.LogWarning($"[PlayerManager] Not enough energy to play {cardData.name}. Need {energyCost}, have {playerData.currentEnergy}");
+            return false;
+        }
+
+        // Apply card effects
+        ApplyCardEffects(cardData, cardInstance, targetEnemy);
+        
+        Debug.Log($"[PlayerManager] Successfully played card: {cardData.name}. Energy remaining: {playerData.currentEnergy}/{playerData.maxEnergy}");
+        return true;
+    }
+
+    private void ApplyCardEffects(CardData cardData, CardInstance cardInstance, EnemyRender targetEnemy)
+    {
+        // Use rolled effects from instance if available, otherwise use base effects
+        List<EffectData> effectsToApply = cardInstance != null && cardInstance.rolledEffects != null && cardInstance.rolledEffects.Count > 0
+            ? cardInstance.rolledEffects
+            : cardData.effectData;
+
+        if (effectsToApply == null || effectsToApply.Count == 0)
+        {
+            Debug.LogWarning($"[PlayerManager] Card '{cardData.itemName}' has no effects to apply");
+            return;
+        }
+
+        foreach (var effect in effectsToApply)
+        {
+            if (effect == null) continue;
+
+            // Get the actual value to apply (rolled value if from instance, base value otherwise)
+            int value = (cardInstance != null && cardInstance.rolledEffects != null && cardInstance.rolledEffects.Contains(effect))
+                ? effect.postCopyValue
+                : effect.baseValue;
+
+            switch (effect.operationType)
+            {
+                case OperationType.Damage:
+                    if (targetEnemy != null && targetEnemy.data != null)
+                    {
+                        targetEnemy.data.TakeDamage(value);
+                        Debug.Log($"[PlayerManager] Dealt {value} damage to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
+
+                        // Update enemy health display
+                        var enemyManager = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
+                        if (enemyManager != null)
+                        {
+                            enemyManager.UpdateEnemyHealth(targetEnemy.data);
+                        }
+                        else
+                        {
+                            // Fallback: update directly
+                            targetEnemy.UpdateHealth();
+                            if (targetEnemy.data.isAlive)
+                                targetEnemy.PlayHurt();
+                            else
+                                targetEnemy.PlayDeath();
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[PlayerManager] Damage effect requires an enemy target");
+                    }
+                    break;
+
+                case OperationType.AddShield:
+                    if (playerData != null)
+                    {
+                        playerData.GainBlock(value);
+                        Debug.Log($"[PlayerManager] Player gained {value} block. Total block: {playerData.block}");
+                    }
+                    break;
+
+                case OperationType.Heal:
+                    if (playerData != null)
+                    {
+                        playerData.Heal(value);
+                        Debug.Log($"[PlayerManager] Player healed {value} HP. Current HP: {playerData.currentHealth}/{playerData.maxHealth}");
+                    }
+                    break;
+
+                default:
+                    Debug.LogWarning($"[PlayerManager] OperationType {effect.operationType} not yet implemented");
+                    break;
+            }
+        }
+    }
+
     public bool TryPlayCard(CardData card, ref EntityData target)
     {
-        if (playerData == null || card == null) return false;
-
-        // Simplified energy check (1 per card until card has explicit cost)
-        if (!playerData.SpendEnergy(1))
-            return false;
-
-        // cardManager.ApplyCard(card, playerData, ref target); // TODO: re-fix definition of ApplyCard with actual combat system
-        return true;
+        // Legacy method - kept for compatibility, delegates to new PlayCard method
+        return PlayCard(card, null, null);
     }
 
     public void EndTurn()

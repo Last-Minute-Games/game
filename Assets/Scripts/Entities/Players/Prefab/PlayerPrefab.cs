@@ -2,13 +2,15 @@ using Entities.Players.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 namespace Entities.Players.Prefab
 {
     public class PlayerPrefab : MonoBehaviour
     {
         [Header("References")]
-        public PlayerData playerData;
+        [Tooltip("Reference to the PlayerManager that holds the runtime PlayerData")]
+        public PlayerManager playerManager;
 
         [Header("Energy UI")]
         public TextMeshProUGUI energyText;
@@ -18,29 +20,136 @@ namespace Entities.Players.Prefab
         public TextMeshProUGUI healthText;
         public TextMeshProUGUI shieldText;
 
+        [Header("Tween Settings")]
+        [Tooltip("Base duration for health bar animation")]
+        [SerializeField] private float baseDuration = 0.3f;
+        
+        [Tooltip("Duration multiplier per health point lost")]
+        [SerializeField] private float durationPerHealthPoint = 0.02f;
+        
+        [Tooltip("Maximum tween duration")]
+        [SerializeField] private float maxDuration = 1.0f;
+
+        [Tooltip("Easing curve for health bar animation")]
+        [SerializeField] private Ease tweenEase = Ease.OutCubic;
+
+        private int _lastHealth;
+        private int _lastMaxHealth;
+
         private void Start()
         {
-            if (playerData == null)
+            // Try to find PlayerManager if not assigned
+            if (playerManager == null)
             {
-                Debug.LogError("PlayerData not assigned to PlayerPrefab!");
+                playerManager = FindFirstObjectByType<PlayerManager>();
+            }
+
+            if (playerManager == null)
+            {
+                Debug.LogError("PlayerManager not found! PlayerPrefab cannot initialize.");
                 return;
             }
 
-            // Initialize visuals
+            // Wait one frame for PlayerManager to initialize its runtime data
+            StartCoroutine(InitializeAfterFrame());
+        }
+
+        private System.Collections.IEnumerator InitializeAfterFrame()
+        {
+            yield return null; // Wait one frame
+
+            if (playerManager.playerData == null)
+            {
+                Debug.LogError("PlayerManager.playerData is null! Cannot initialize PlayerPrefab.");
+                yield break;
+            }
+
+            // Initialize visuals with runtime data
+            _lastHealth = playerManager.playerData.currentHealth;
+            _lastMaxHealth = playerManager.playerData.maxHealth;
             SetupUI();
+        }
+
+        private void Update()
+        {
+            // Continuously update UI to reflect runtime state
+            if (playerManager != null && playerManager.playerData != null)
+            {
+                UpdateUI();
+            }
         }
 
         private void SetupUI()
         {
+            var data = playerManager.playerData;
+
             // Set Energy
-            energyText.text = $"{playerData.baseEnergy}/{playerData.maxEnergy}";
+            if (energyText != null)
+                energyText.text = $"{data.currentEnergy}/{data.maxEnergy}";
 
             // Set Healthbar
-            healthbarFill.fillAmount = 1f; // full
-            healthbarFill.color = new Color32(108, 15, 15, 255);
+            if (healthbarFill != null)
+            {
+                healthbarFill.fillAmount = data.maxHealth > 0 ? data.currentHealth / (float)data.maxHealth : 0f;
+                healthbarFill.color = new Color32(108, 15, 15, 255);
+            }
 
-            healthText.text = $"{playerData.currentHealth}/{playerData.maxHealth}";
-            shieldText.text = ""; // empty / invisible
+            if (healthText != null)
+                healthText.text = $"{data.currentHealth}/{data.maxHealth}";
+            
+            if (shieldText != null)
+                shieldText.text = data.block > 0 ? data.block.ToString() : "";
+        }
+
+        private void UpdateUI()
+        {
+            var data = playerManager.playerData;
+
+            // Update Energy
+            if (energyText != null)
+                energyText.text = $"{data.currentEnergy}/{data.maxEnergy}";
+
+            // Update Health with tween animation
+            if (healthText != null)
+                healthText.text = $"{data.currentHealth}/{data.maxHealth}";
+
+            if (healthbarFill != null)
+            {
+                float targetFillAmount = data.maxHealth > 0 ? data.currentHealth / (float)data.maxHealth : 0f;
+                
+                // Only animate if health changed
+                if (data.currentHealth != _lastHealth || data.maxHealth != _lastMaxHealth)
+                {
+                    int healthChange = Mathf.Abs(data.currentHealth - _lastHealth);
+                    
+                    // Calculate dynamic duration based on health change
+                    float duration = baseDuration + (healthChange * durationPerHealthPoint);
+                    duration = Mathf.Clamp(duration, baseDuration, maxDuration);
+
+                    // Kill any existing tween and animate to new value
+                    healthbarFill.DOKill();
+                    healthbarFill.DOFillAmount(targetFillAmount, duration)
+                        .SetEase(tweenEase);
+
+                    _lastHealth = data.currentHealth;
+                    _lastMaxHealth = data.maxHealth;
+                }
+            }
+
+            // Update Shield
+            if (shieldText != null)
+                shieldText.text = data.block > 0 ? data.block.ToString() : "";
+        }
+
+        /// <summary>
+        /// Force an immediate UI update (useful for events)
+        /// </summary>
+        public void RefreshUI()
+        {
+            if (playerManager != null && playerManager.playerData != null)
+            {
+                UpdateUI();
+            }
         }
     }
 }

@@ -178,122 +178,50 @@ public class CardRender : MonoBehaviour,
             
             Debug.Log(rule);
             
+            EnemyRender targetEnemy = null;
+            
             switch (rule)
             {
                 // Check if card was dropped over an enemy
                 case TargetRule.Enemy:
                 {
-                    var enemy = GetEnemyOnMouse(eventData.position);
-                    if (enemy != null) {
+                    targetEnemy = GetEnemyOnMouse(eventData.position);
+                    if (targetEnemy != null)
+                    {
                         validTarget = true;
-                        ApplyCardEffects(enemy);
-
                     }
-
                     break;
                 }
                 case TargetRule.Self:
                     // Self-targeting cards are always valid on release
                     validTarget = true;
-                    ApplyCardEffects();
                     break;
+            }
+
+            // If valid target, attempt to play the card through PlayerManager
+            if (validTarget)
+            {
+                var playerManager = FindFirstObjectByType<PlayerManager>();
+                if (playerManager != null)
+                {
+                    bool cardPlayed = playerManager.PlayCard(Data, Instance, targetEnemy);
+                    if (!cardPlayed)
+                    {
+                        // Card couldn't be played (not enough energy, etc.)
+                        validTarget = false;
+                    }
+                }
+                else
+                {
+                    Debug.LogError("[CardRender] PlayerManager not found!");
+                    validTarget = false;
+                }
             }
             
             _fxHelper.OnCardRelease(this, validTarget: validTarget);
         }
     }
 
-    private void ApplyCardEffects(EnemyRender targetEnemy = null)
-    {
-        if (Data == null)
-        {
-            Debug.LogWarning("[CardRender] Cannot apply card effects - Data is null");
-            return;
-        }
-
-        // Use rolled effects from Instance if available, otherwise use base effects from Data
-        List<EffectData> effectsToApply = Instance != null && Instance.rolledEffects != null && Instance.rolledEffects.Count > 0
-            ? Instance.rolledEffects
-            : Data.effectData;
-
-        if (effectsToApply == null || effectsToApply.Count == 0)
-        {
-            Debug.LogWarning($"[CardRender] Card '{Data.itemName}' has no effects to apply");
-            return;
-        }
-
-        foreach (var effect in effectsToApply)
-        {
-            if (effect == null) continue;
-
-            // Get the actual value to apply (rolled value if from instance, base value otherwise)
-            int value = (Instance != null && Instance.rolledEffects != null && Instance.rolledEffects.Contains(effect))
-                ? effect.postCopyValue
-                : effect.baseValue;
-
-            switch (effect.operationType)
-            {
-                case OperationType.Damage:
-                    if (targetEnemy != null && targetEnemy.data != null)
-                    {
-                        targetEnemy.data.TakeDamage(value);
-                        Debug.Log($"[CardRender] Dealt {value} damage to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
-                        
-                        // Update enemy health display
-                        var enemyManager = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
-                        if (enemyManager != null)
-                        {
-                            enemyManager.UpdateEnemyHealth(targetEnemy.data);
-                        }
-                        else
-                        {
-                            // Fallback: update directly
-                            targetEnemy.UpdateHealth();
-                            if (targetEnemy.data.isAlive)
-                                targetEnemy.PlayHurt();
-                            else
-                                targetEnemy.PlayDeath();
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning("[CardRender] Damage effect requires an enemy target");
-                    }
-                    break;
-
-                case OperationType.AddShield:
-                    // Find the player to add block
-                    var playerManager = FindFirstObjectByType<PlayerManager>();
-                    if (playerManager != null && playerManager.playerData != null)
-                    {
-                        playerManager.playerData.GainBlock(value);
-                        Debug.Log($"[CardRender] Player gained {value} block. Total block: {playerManager.playerData.block}");
-                    }
-                    else
-                    {
-                        Debug.LogWarning("[CardRender] Could not find PlayerManager to apply block");
-                    }
-                    break;
-
-                case OperationType.Heal:
-                    var healPlayerManager = FindFirstObjectByType<PlayerManager>();
-                    if (healPlayerManager != null && healPlayerManager.playerData != null)
-                    {
-                        healPlayerManager.playerData.Heal(value);
-                        Debug.Log($"[CardRender] Player healed {value} HP. Current HP: {healPlayerManager.playerData.currentHealth}/{healPlayerManager.playerData.maxHealth}");
-                    }
-                    else
-                    {
-                        Debug.LogWarning("[CardRender] Could not find PlayerManager to apply heal");
-                    }
-                    break;
-
-                default:
-                    Debug.LogWarning($"[CardRender] OperationType {effect.operationType} not yet implemented in CardRender");
-                    break;
-            }
-        }
-    }
 
     private EnemyRender GetEnemyOnMouse(Vector2 screenPosition)
     {
