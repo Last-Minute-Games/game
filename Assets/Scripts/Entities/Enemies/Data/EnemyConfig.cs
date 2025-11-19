@@ -37,7 +37,13 @@ public class EnemyConfig : ScriptableObject
     public EnemyData CreateRuntimeInstance()
     {
         var data = new EnemyData();
-        data.Initialize(enemyName, maxHealth, attackPower, defensePower);
+        float enemyStatMultiplier = GetMiddleBiasedMultiplier();
+        Debug.Log($"{enemyStatMultiplier} enemy multiplier applied");
+
+        data.Initialize(enemyName, 
+            (int)(maxHealth * enemyStatMultiplier), 
+            (int)(attackPower * enemyStatMultiplier), 
+            (int)(defensePower * enemyStatMultiplier));
         data.actionPattern = new List<EnemyAction>(actionPattern);
         data.artwork = artwork;
         // Propagate animator controller and sprite animations
@@ -47,6 +53,15 @@ public class EnemyConfig : ScriptableObject
         data.hurtAnim = hurtAnim;
         data.deathAnim = deathAnim;
         return data;
+    }
+
+    public float GetMiddleBiasedMultiplier()
+    {
+        // generates two uniform random values, averages them → triangle distribution
+        float a = Random.Range(minMultiplier, maxMultiplier);
+        float b = Random.Range(minMultiplier, maxMultiplier);
+
+        return (a + b) * 0.5f;
     }
 
     protected void OnValidate()
