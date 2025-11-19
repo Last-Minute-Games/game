@@ -27,6 +27,13 @@ public class EnemyConfig : ScriptableObject
     [Tooltip("Death sprite animation for this enemy (optional).")]
     public SpriteAnimation deathAnim;
 
+    [Header("Enemy variability multiplier to be applied to enemy stats.")]
+    [Tooltip("Minimum possible multiplier applied to enemy stats.")]
+    [Range(0f, 2f)] public float minMultiplier = 1f;
+
+    [Tooltip("Maximum possible multiplier applied to enemy stats.")]
+    [Range(0f, 2f)] public float maxMultiplier = 1f;
+
     public EnemyData CreateRuntimeInstance()
     {
         var data = new EnemyData();
@@ -40,5 +47,16 @@ public class EnemyConfig : ScriptableObject
         data.hurtAnim = hurtAnim;
         data.deathAnim = deathAnim;
         return data;
+    }
+
+    protected void OnValidate()
+    {
+        // ensure multipliers are valid
+        if (minMultiplier > maxMultiplier)
+            minMultiplier = maxMultiplier;
+
+        // clamp
+        minMultiplier = Mathf.Max(0f, minMultiplier);
+        maxMultiplier = Mathf.Max(minMultiplier, maxMultiplier);
     }
 }
