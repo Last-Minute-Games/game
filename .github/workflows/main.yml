@@ -1,5 +1,8 @@
 name: Build Multi-Platform (self-hosted)
 
+# Windows and Linux builds run on Windows runners using PowerShell
+# macOS builds run on macOS runners using bash
+
 on:
   push:
     branches: [ main ]
@@ -20,7 +23,7 @@ jobs:
           git tag -a $tag -m "Automated release $tag"
           git push origin $tag
           Write-Host "Created and pushed tag $tag"
-  build:
+  build-windows-linux:
     needs: [tag]
     if: always()
     runs-on: self-hosted
@@ -29,6 +32,7 @@ jobs:
       run:
         shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
 
+    # Windows and Linux builds run on Windows runners using PowerShell
     strategy:
       matrix:
         platform: [Windows, Linux]
@@ -196,11 +200,212 @@ jobs:
           retention-days: 14
           compression-level: 6
 
+  build-macos:
+    needs: [tag]
+    if: always()
+    runs-on: self-hosted
+    environment: main
+    defaults:
+      run:
+        shell: bash
+
+    # macOS builds run on macOS runners using bash
+    # Build for both x64 (Intel) and ARM64 (Apple Silicon)
+    strategy:
+      matrix:
+        architecture: [x64, ARM64]
+
+    env:
+      UNITY_VERSION: "6000.2.2f1"
+      PROJECT_PATH: ${{ github.workspace }}
+      BUILDS_ROOT: "$HOME/Builds"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Compute version from tag or build number
+      - name: Compute version
+        id: ver
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            v="${{ github.ref_name }}"
+          else
+            v="${{ github.run_number }}"
+          fi
+          echo "VERSION=$v" >> $GITHUB_ENV
+          echo "VERSION = $v"
+
+      # Cache Unity Library
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-macOS-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
+          restore-keys: |
+            Library-macOS-${{ env.UNITY_VERSION }}-
+            Library-macOS-
+          enableCrossOsArchive: true
+
+      # Make a unique output dir for this run and expose it to later steps
+      - name: Compute output dir
+        id: paths
+        run: |
+          outDir="$BUILDS_ROOT/CastleOfTime-$VERSION-macOS-${{ matrix.architecture }}"
+          echo "OUT_DIR=$outDir" >> $GITHUB_ENV
+          echo "ARCHITECTURE=${{ matrix.architecture }}" >> $GITHUB_ENV
+          echo "OUT_DIR = $outDir"
+          echo "ARCHITECTURE = ${{ matrix.architecture }}"
+
+      # (Optional) Ensure the output root exists
+      - name: Ensure builds root exists
+        run: mkdir -p "$BUILDS_ROOT"
+
+      # Build the updater executables before Unity builds
+      - name: Build updater
+        run: |
+          echo "Building auto-updater for macOS ${{ matrix.architecture }}..."
+          if ! command -v dotnet &> /dev/null; then
+            echo "❌ .NET SDK not found. Install .NET 6.0+ to build the updater."
+            exit 1
+          fi
+          chmod +x ./Updater/build-updater.sh
+          ./Updater/build-updater.sh Release macOS ${{ matrix.architecture }}
+          echo "✅ Updater built successfully"
+
+      # (Optional) Preflight: make sure no GUI editor is locking the project
+      - name: Kill stray Unity processes / clear lock
+        run: |
+          pkill -x Unity 2>/dev/null || true
+          pkill -x UnityPackageManager 2>/dev/null || true
+          lock="$PROJECT_PATH/Temp/UnityLockfile"
+          if [ -f "$lock" ]; then
+            rm -f "$lock"
+          fi
+
+      # Run your bash build script
+      - name: Build (macOS ${{ matrix.architecture }})
+        run: |
+          chmod +x ./ci/build.sh
+          ./ci/build.sh "$UNITY_VERSION" "$PROJECT_PATH" "$OUT_DIR" "macOS" "$VERSION" "${{ matrix.architecture }}"
+
+      # Clean up log files from build output
+      - name: Clean up logs
+        run: |
+          find "$OUT_DIR" -name "*.log" -type f -delete
+          echo "Removed all .log files from build output"
+
+      # Zip the build folder
+      - name: Zip build
+        id: zip
+        run: |
+          zipPath="$BUILDS_ROOT/CastleOfTime-$VERSION-macOS-${{ matrix.architecture }}.zip"
+          if [ -f "$zipPath" ]; then
+            rm -f "$zipPath"
+          fi
+          cd "$OUT_DIR"
+          zip -r "$zipPath" .
+          echo "ZIP_PATH=$zipPath" >> $GITHUB_ENV
+          echo "ZIP_PATH = $zipPath"
+          echo "zipPath=$zipPath" >> $GITHUB_OUTPUT
+
+      # Upload the zipped build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CastleOfTime-${{ env.VERSION }}-macOS-${{ matrix.architecture }}
+          path: ${{ steps.zip.outputs.zipPath }}
+          retention-days: 14
+          compression-level: 0
+
+      # Upload to itch.io using Butler (skip in artifact-only mode)
+      - name: Upload to itch.io (macOS ${{ matrix.architecture }})
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          # Install butler if not present
+          butlerPath="$HOME/.local/share/itch/butler"
+          if [ ! -f "$butlerPath" ]; then
+            echo "Installing butler..."
+            butlerZip="$TMPDIR/butler.zip"
+            butlerDir="$HOME/.local/share/itch"
+            
+            mkdir -p "$butlerDir"
+            
+            # Download butler (macOS)
+            curl -L "https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default" -o "$butlerZip"
+            
+            # Extract
+            unzip -q "$butlerZip" -d "$butlerDir"
+            rm -f "$butlerZip"
+            
+            # Make executable
+            chmod +x "$butlerPath"
+            
+            echo "Butler installed to $butlerDir"
+          fi
+          
+          # Upload to itch.io - push the build folder directly (not zip)
+          # Use architecture-specific channel
+          if [ "${{ matrix.architecture }}" = "ARM64" ]; then
+            channel="macos-arm64"
+          else
+            channel="macos-x64"
+          fi
+          itchTarget="playlastminutegames/castle-of-time:$channel"
+          
+          echo "Uploading to itch.io: $itchTarget"
+          echo "  Build folder: $OUT_DIR"
+          echo "  Version: $VERSION"
+          echo "  Architecture: ${{ matrix.architecture }}"
+          
+          "$butlerPath" push "$OUT_DIR" "$itchTarget" --userversion "$VERSION" --fix-permissions
+          
+          if [ $? -ne 0 ]; then
+            echo "Butler upload failed"
+            exit 1
+          fi
+          
+          echo "Successfully uploaded to itch.io!"
+
+      - name: Collect logs
+        if: always()
+        run: |
+          logs="$RUNNER_TEMP/unity-logs-macOS-${{ matrix.architecture }}"
+          mkdir -p "$logs"
+
+          # Editor logs (macOS)
+          editor="$HOME/Library/Logs/Unity/Editor.log"
+          if [ -f "$editor" ]; then
+            cp "$editor" "$logs/"
+          fi
+
+          # UPM logs (macOS)
+          upm="$HOME/Library/Logs/Unity/cache/upm/logs"
+          if [ -d "$upm" ]; then
+            cp -r "$upm" "$logs/"
+          fi
+
+          # Build output logs only (no build files)
+          if [ -d "$OUT_DIR" ]; then
+            find "$OUT_DIR" -name "*.log" -type f -exec cp {} "$logs/" \;
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Logs-${{ github.run_number }}-macOS-${{ matrix.architecture }}
+          path: ${{ runner.temp }}/unity-logs-macOS-${{ matrix.architecture }}
+          retention-days: 14
+          compression-level: 6
+
   # Create GitHub Release with manifest.json for custom auto-updater
   release:
     runs-on: self-hosted
-    needs: [tag, build]
-    if: ${{ needs.tag.result == 'success' && needs.build.result == 'success' && github.ref == 'refs/heads/main' }}
+    needs: [tag, build-windows-linux, build-macos]
+    if: ${{ needs.tag.result == 'success' && needs.build-windows-linux.result == 'success' && needs.build-macos.result == 'success' && github.ref == 'refs/heads/main' }}
     environment: main
     defaults:
       run:
@@ -245,12 +450,14 @@ jobs:
             **For standalone installs:** Download the appropriate zip file for your platform:
             - Windows: `CastleOfTime-${{ env.VERSION }}-Windows.zip`
             - Linux: `CastleOfTime-${{ env.VERSION }}-Linux.zip`
+            - macOS Intel (x64): `CastleOfTime-${{ env.VERSION }}-macOS-x64.zip`
+            - macOS Apple Silicon (ARM64): `CastleOfTime-${{ env.VERSION }}-macOS-ARM64.zip`
             
             The included launcher will automatically check for and download future updates from GitHub Releases.
 
   notify:
     runs-on: self-hosted
-    needs: [build]
+    needs: [build-windows-linux, build-macos]
     if: always()
     environment: main
     defaults:
@@ -260,7 +467,10 @@ jobs:
     steps:
       - name: Send webhook notification
         run: |
-          $status = "${{ needs.build.result }}"
+          $windowsLinuxStatus = "${{ needs.build-windows-linux.result }}"
+          $macosStatus = "${{ needs.build-macos.result }}"
+          $overallStatus = if ($windowsLinuxStatus -eq "success" -and $macosStatus -eq "success") { "success" } else { "failure" }
+          $status = $overallStatus
           $runUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           $artifactUrl = "$runUrl#artifacts"
           
@@ -286,6 +496,8 @@ jobs:
             "Multi-platform build $status and uploaded to itch.io"
           }
           
+          $platformsStatus = "Windows/Linux: $windowsLinuxStatus | macOS: $macosStatus"
+          
           # Build JSON using PSCustomObject and ConvertTo-Json
           $payload = [PSCustomObject]@{
             embeds = @(
@@ -302,8 +514,13 @@ jobs:
                   }
                   [PSCustomObject]@{
                     name = "Platforms"
-                    value = "Windows + Linux"
+                    value = "Windows + Linux + macOS"
                     inline = $true
+                  }
+                  [PSCustomObject]@{
+                    name = "Platform Status"
+                    value = $platformsStatus
+                    inline = $false
                   }
                   [PSCustomObject]@{
                     name = "Commit"

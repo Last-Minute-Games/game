@@ -90,6 +90,78 @@ public static class BuildScript
         UnityEngine.Debug.Log("[BuildScript] Linux build completed successfully!");
     }
 
+    public static void BuildMacOS()
+    {
+        UnityEngine.Debug.Log("[BuildScript] Starting macOS build...");
+        UnityEngine.Debug.Log($"[BuildScript] Current BuildTarget: {EditorUserBuildSettings.activeBuildTarget}");
+        
+        // Check if macOS build support is installed
+        if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX))
+        {
+            UnityEngine.Debug.LogError("[BuildScript] macOS build support is not installed!");
+            throw new System.Exception("macOS build target is not supported. Please install macOS Build Support module in Unity Hub.");
+        }
+        
+        // Read architecture from command line (x64 or ARM64)
+        string archArg = GetArg("-buildArchitecture");
+        OSArchitecture architecture = OSArchitecture.x64; // Default to x64
+        
+        if (!string.IsNullOrEmpty(archArg))
+        {
+            if (archArg.Equals("ARM64", System.StringComparison.OrdinalIgnoreCase) || 
+                archArg.Equals("arm64", System.StringComparison.OrdinalIgnoreCase))
+            {
+                architecture = OSArchitecture.ARM64;
+                UnityEngine.Debug.Log("[BuildScript] Building for ARM64 (Apple Silicon)");
+            }
+            else if (archArg.Equals("x64", System.StringComparison.OrdinalIgnoreCase) ||
+                     archArg.Equals("x86_64", System.StringComparison.OrdinalIgnoreCase))
+            {
+                architecture = OSArchitecture.x64;
+                UnityEngine.Debug.Log("[BuildScript] Building for x64 (Intel)");
+            }
+            else
+            {
+                UnityEngine.Debug.LogWarning($"[BuildScript] Unknown architecture '{archArg}', defaulting to x64");
+            }
+        }
+        else
+        {
+            UnityEngine.Debug.Log("[BuildScript] No architecture specified, defaulting to x64");
+        }
+        
+        // Set the architecture before building
+        PlayerSettings.SetArchitecture(NamedBuildTarget.Standalone, (int)architecture);
+        UnityEngine.Debug.Log($"[BuildScript] Set architecture to: {architecture}");
+        
+        string[] scenes = EditorBuildSettings.scenes
+            .Where(s => s.enabled)
+            .Select(s => s.path)
+            .ToArray();
+
+        UnityEngine.Debug.Log($"[BuildScript] Building {scenes.Length} scenes: {string.Join(", ", scenes)}");
+
+        // Read custom output path from command line if provided
+        string customPath = GetArg("-customBuildPath");
+        string archSuffix = architecture == OSArchitecture.ARM64 ? "-ARM64" : "-x64";
+        string buildPath = string.IsNullOrEmpty(customPath)
+            ? $"Builds/macOS/Game{archSuffix}.app"
+            : System.IO.Path.Combine(customPath, $"CastleOfTime{archSuffix}.app");
+
+        UnityEngine.Debug.Log($"[BuildScript] Output path: {buildPath}");
+
+        var report = BuildPipeline.BuildPlayer(
+            scenes, buildPath, BuildTarget.StandaloneOSX, BuildOptions.None);
+
+        if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
+        {
+            UnityEngine.Debug.LogError($"[BuildScript] Build failed: {report.summary.result}");
+            throw new System.Exception("Build failed: " + report.summary.result);
+        }
+        
+        UnityEngine.Debug.Log($"[BuildScript] macOS {architecture} build completed successfully!");
+    }
+
     private static string GetArg(string name)
     {
         string[] args = System.Environment.GetCommandLineArgs();
