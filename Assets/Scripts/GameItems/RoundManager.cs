@@ -13,6 +13,15 @@ public class RoundManager : MonoBehaviour
     public bool playerTurn = true;
     public bool battleActive = false;
 
+    [Header("Timer Settings")]
+    [Tooltip("Time in seconds for each player turn")]
+    public float turnTimeLimit = 15f;
+    
+    [Tooltip("Current remaining time in the turn")]
+    public float currentTurnTime;
+    
+    private bool timerActive = false;
+
     // -------------------------------------------------------
     // Initialization
     // -------------------------------------------------------
@@ -20,6 +29,36 @@ public class RoundManager : MonoBehaviour
     {
         player = playerManager;
         enemyManager = enemyMgr;
+    }
+
+    // -------------------------------------------------------
+    // Update - Handle turn timer
+    // -------------------------------------------------------
+    private void Update()
+    {
+        if (!battleActive || !playerTurn || !timerActive) return;
+
+        // Countdown timer
+        currentTurnTime -= Time.deltaTime;
+
+        // Check if timer expired
+        if (currentTurnTime <= 0f)
+        {
+            Debug.Log("⏰ Turn timer expired! Ending player turn.");
+            currentTurnTime = 0f;
+            timerActive = false;
+            EndPlayerTurn();
+            return;
+        }
+
+        // Check if player has run out of energy (optional auto-end)
+        if (player != null && player.playerData != null && player.playerData.currentEnergy <= 0)
+        {
+            Debug.Log("⚡ Player energy depleted! Ending turn early.");
+            timerActive = false;
+            EndPlayerTurn();
+            return;
+        }
     }
 
     // -------------------------------------------------------
@@ -41,6 +80,9 @@ public class RoundManager : MonoBehaviour
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
         player.StartTurn();
+        
+        // Start turn timer
+        StartTurnTimer();
     }
 
     // -------------------------------------------------------
@@ -48,7 +90,11 @@ public class RoundManager : MonoBehaviour
     // -------------------------------------------------------
     public void EndPlayerTurn()
     {
-        if (!battleActive) return;
+        if (!battleActive || !playerTurn) return;
+        
+        // Stop timer
+        timerActive = false;
+        
         Debug.Log("Player turn ended.");
 
         player.EndTurn();
@@ -93,6 +139,19 @@ public class RoundManager : MonoBehaviour
         // Roll intents for the upcoming enemy turn so the player can plan accordingly
         enemyManager.RollNextIntents();
         player.StartTurn();
+        
+        // Restart turn timer
+        StartTurnTimer();
+    }
+
+    // -------------------------------------------------------
+    // Start/Restart the turn timer
+    // -------------------------------------------------------
+    private void StartTurnTimer()
+    {
+        currentTurnTime = turnTimeLimit;
+        timerActive = true;
+        Debug.Log($"⏱️ Turn timer started: {turnTimeLimit} seconds");
     }
 
     // -------------------------------------------------------
