@@ -1,4 +1,3 @@
-using Entities.Players.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,6 +11,9 @@ namespace Entities.Players.Prefab
         [Tooltip("Reference to the PlayerManager that holds the runtime PlayerData")]
         public PlayerManager playerManager;
 
+        [Tooltip("Reference to the RoundManager for timer updates")]
+        public RoundManager roundManager;
+
         [Header("Energy UI")]
         public TextMeshProUGUI energyText;
 
@@ -19,6 +21,32 @@ namespace Entities.Players.Prefab
         public Image healthbarFill;
         public TextMeshProUGUI healthText;
         public TextMeshProUGUI shieldText;
+
+        [Header("Timer UI (from TimerPanel)")]
+        [Tooltip("TimerText component from TimerPanel")]
+        public TextMeshProUGUI timerText;
+        
+        [Tooltip("TimerFill component from TimerPanel")]
+        public Image timerFill;
+        
+        [Tooltip("Optional TimerBG component")]
+        public Image timerBG;
+
+        [Header("Timer Visual Settings")]
+        [Tooltip("Color when time is plentiful")]
+        public Color normalTimerColor = Color.white;
+
+        [Tooltip("Color when time is running low")]
+        public Color warningTimerColor = Color.yellow;
+
+        [Tooltip("Color when time is almost out")]
+        public Color criticalTimerColor = Color.red;
+
+        [Tooltip("Time threshold for warning color (seconds)")]
+        public float warningThreshold = 7f;
+
+        [Tooltip("Time threshold for critical color (seconds)")]
+        public float criticalThreshold = 3f;
 
         [Header("Tween Settings")]
         [Tooltip("Base duration for health bar animation")]
@@ -50,6 +78,17 @@ namespace Entities.Players.Prefab
                 return;
             }
 
+            // Try to find RoundManager if not assigned
+            if (roundManager == null)
+            {
+                roundManager = FindFirstObjectByType<RoundManager>();
+            }
+
+            if (roundManager == null)
+            {
+                Debug.LogWarning("RoundManager not found! Timer UI will not update.");
+            }
+
             // Wait one frame for PlayerManager to initialize its runtime data
             StartCoroutine(InitializeAfterFrame());
         }
@@ -77,6 +116,9 @@ namespace Entities.Players.Prefab
             {
                 UpdateUI();
             }
+
+            // Update timer UI
+            UpdateTimerUI();
         }
 
         private void SetupUI()
@@ -142,6 +184,63 @@ namespace Entities.Players.Prefab
         }
 
         /// <summary>
+        /// Updates the timer UI based on RoundManager state
+        /// </summary>
+        private void UpdateTimerUI()
+        {
+            if (roundManager == null || !roundManager.playerTurn || !roundManager.battleActive)
+            {
+                // Hide timer when not player's turn
+                if (timerText != null) timerText.text = "";
+                if (timerFill != null) timerFill.fillAmount = 0f;
+                return;
+            }
+
+            float timeRemaining = roundManager.currentTurnTime;
+            float timeLimit = roundManager.turnTimeLimit;
+
+            // Update text
+            if (timerText != null)
+            {
+                timerText.text = $"{Mathf.CeilToInt(timeRemaining)}s";
+
+                // Update color based on time remaining
+                if (timeRemaining <= criticalThreshold)
+                {
+                    timerText.color = criticalTimerColor;
+                }
+                else if (timeRemaining <= warningThreshold)
+                {
+                    timerText.color = warningTimerColor;
+                }
+                else
+                {
+                    timerText.color = normalTimerColor;
+                }
+            }
+
+            // Update fill image
+            if (timerFill != null && timeLimit > 0)
+            {
+                timerFill.fillAmount = timeRemaining / timeLimit;
+
+                // Update fill color
+                if (timeRemaining <= criticalThreshold)
+                {
+                    timerFill.color = criticalTimerColor;
+                }
+                else if (timeRemaining <= warningThreshold)
+                {
+                    timerFill.color = warningTimerColor;
+                }
+                else
+                {
+                    timerFill.color = normalTimerColor;
+                }
+            }
+        }
+
+        /// <summary>
         /// Force an immediate UI update (useful for events)
         /// </summary>
         public void RefreshUI()
@@ -153,3 +252,4 @@ namespace Entities.Players.Prefab
         }
     }
 }
+
