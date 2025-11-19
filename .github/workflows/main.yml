@@ -9,20 +9,23 @@ on:
   workflow_dispatch:
 jobs:
   tag:
-    runs-on: [self-hosted, Windows, X64]
+    runs-on: [self-hosted, Linux, ARM64]
     if: ${{ github.ref == 'refs/heads/main' }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Create version tag
         run: |
-          $tag = "v1.0.${{ github.run_number }}"
+          tag="v1.0.${{ github.run_number }}"
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git tag -a $tag -m "Automated release $tag"
-          git push origin $tag
-          Write-Host "Created and pushed tag $tag"
+          git tag -a "$tag" -m "Automated release $tag"
+          git push origin "$tag"
+          echo "Created and pushed tag $tag"
   build-windows:
     needs: [tag]
     if: always()
@@ -566,6 +569,7 @@ jobs:
           compression-level: 6
 
   # Create GitHub Release with manifest.json for custom auto-updater
+  # Note: Release must run on Windows because butler (itch.io upload tool) doesn't support ARM64
   release:
     runs-on: [self-hosted, Windows, X64]
     needs: [tag, build-windows, build-linux, build-macos]
@@ -620,103 +624,118 @@ jobs:
             The included launcher will automatically check for and download future updates from GitHub Releases.
 
   notify:
-    runs-on: [self-hosted, Windows, X64]
+    runs-on: [self-hosted, Linux, ARM64]
     needs: [build-windows, build-linux, build-macos]
     if: always()
     environment: main
     defaults:
       run:
-        shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
+        shell: bash
 
     steps:
       - name: Send webhook notification
         run: |
-          $windowsStatus = "${{ needs.build-windows.result }}"
-          $linuxStatus = "${{ needs.build-linux.result }}"
-          $macosStatus = "${{ needs.build-macos.result }}"
-          $overallStatus = if ($windowsStatus -eq "success" -and $linuxStatus -eq "success" -and $macosStatus -eq "success") { "success" } else { "failure" }
-          $status = $overallStatus
-          $runUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          $artifactUrl = "$runUrl#artifacts"
+          windowsStatus="${{ needs.build-windows.result }}"
+          linuxStatus="${{ needs.build-linux.result }}"
+          macosStatus="${{ needs.build-macos.result }}"
           
-          $webhook = "${{ secrets.DISCORD_WEBHOOK_URL }}"
-          if ([string]::IsNullOrWhiteSpace($webhook)) {
-            Write-Host "No webhook URL configured, skipping notification"
+          if [ "$windowsStatus" = "success" ] && [ "$linuxStatus" = "success" ] && [ "$macosStatus" = "success" ]; then
+            overallStatus="success"
+          else
+            overallStatus="failure"
+          fi
+          
+          status="$overallStatus"
+          runUrl="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          artifactUrl="$runUrl#artifacts"
+          
+          webhook="${{ secrets.DISCORD_WEBHOOK_URL }}"
+          if [ -z "$webhook" ]; then
+            echo "No webhook URL configured, skipping notification"
             exit 0
-          }
+          fi
           
-          $color = if ($status -eq "success") { 3066993 } else { 15158332 }
-          $emoji = if ($status -eq "success") { "Test Build" } else { "Failed Build" }
+          if [ "$status" = "success" ]; then
+            color="3066993"
+            emoji="✅ Build"
+          else
+            color="15158332"
+            emoji="❌ Failed Build"
+          fi
           
-          $commitShort = "${{ github.sha }}".Substring(0, 7)
-          $commitUrl = "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          commitShort="${GITHUB_SHA:0:7}"
+          commitUrl="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
           
-          $itchUrl = "https://playlastminutegames.itch.io/castle-of-time"
+          itchUrl="https://playlastminutegames.itch.io/castle-of-time"
           
-          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+          timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
           
-          $description = if ("${{ github.ref }}" -ne "refs/heads/main") {
-            "Multi-platform build $status (artifact only - skipped itch.io)"
-          } else {
-            "Multi-platform build $status and uploaded to itch.io"
-          }
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            description="Multi-platform build $status (artifact only - skipped itch.io)"
+          else
+            description="Multi-platform build $status and uploaded to itch.io"
+          fi
           
-          $platformsStatus = "Windows: $windowsStatus | Linux: $linuxStatus | macOS: $macosStatus"
+          platformsStatus="Windows: $windowsStatus | Linux: $linuxStatus | macOS: $macosStatus"
           
-          # Build JSON using PSCustomObject and ConvertTo-Json
-          $payload = [PSCustomObject]@{
-            embeds = @(
-              [PSCustomObject]@{
-                title = "$emoji CastleOfTime Build #${{ github.run_number }}"
-                description = $description
-                url = $itchUrl
-                color = $color
-                fields = @(
-                  [PSCustomObject]@{
-                    name = "Status"
-                    value = $status
-                    inline = $true
-                  }
-                  [PSCustomObject]@{
-                    name = "Platforms"
-                    value = "Windows + Linux + macOS (x64 + ARM64)"
-                    inline = $true
-                  }
-                  [PSCustomObject]@{
-                    name = "Platform Status"
-                    value = $platformsStatus
-                    inline = $false
-                  }
-                  [PSCustomObject]@{
-                    name = "Commit"
-                    value = "[$commitShort]($commitUrl)"
-                    inline = $true
-                  }
-                  [PSCustomObject]@{
-                    name = "Play on itch.io"
-                    value = $itchUrl
-                    inline = $false
-                  }
-                  [PSCustomObject]@{
-                    name = "Download Artifacts"
-                    value = "[View Artifacts]($artifactUrl)"
-                    inline = $false
-                  }
-                )
-                timestamp = $timestamp
-                footer = [PSCustomObject]@{
-                  text = "Castle of Time • Last Minute Games"
+          # Build JSON payload
+          json=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "$emoji CastleOfTime Build #${{ github.run_number }}",
+              "description": "$description",
+              "url": "$itchUrl",
+              "color": $color,
+              "fields": [
+                {
+                  "name": "Status",
+                  "value": "$status",
+                  "inline": true
+                },
+                {
+                  "name": "Platforms",
+                  "value": "Windows + Linux + macOS (x64 + ARM64)",
+                  "inline": true
+                },
+                {
+                  "name": "Platform Status",
+                  "value": "$platformsStatus",
+                  "inline": false
+                },
+                {
+                  "name": "Commit",
+                  "value": "[$commitShort]($commitUrl)",
+                  "inline": true
+                },
+                {
+                  "name": "Play on itch.io",
+                  "value": "$itchUrl",
+                  "inline": false
+                },
+                {
+                  "name": "Download Artifacts",
+                  "value": "[View Artifacts]($artifactUrl)",
+                  "inline": false
                 }
+              ],
+              "timestamp": "$timestamp",
+              "footer": {
+                "text": "Castle of Time • Last Minute Games"
               }
-            )
+            }]
           }
+          EOF
+          )
           
-          $json = $payload | ConvertTo-Json -Depth 10 -Compress
+          response=$(curl -s -w "\n%{http_code}" -X POST "$webhook" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "$json")
           
-          try {
-            Invoke-RestMethod -Uri $webhook -Method Post -Body ([System.Text.Encoding]::UTF8.GetBytes($json)) -ContentType "application/json; charset=utf-8"
-            Write-Host "Webhook sent successfully"
-          } catch {
-            Write-Host "Failed to send webhook: $_"
+          http_code=$(echo "$response" | tail -n1)
+          if [ "$http_code" = "200" ] || [ "$http_code" = "204" ]; then
+            echo "Webhook sent successfully"
+          else
+            echo "Failed to send webhook (HTTP $http_code)"
+            echo "$response" | head -n-1
             exit 1
-          }
+          fi
