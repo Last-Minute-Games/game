@@ -135,8 +135,8 @@ namespace Entities.Enemies.Manager
                 var enemy = enemies[i];
                 if (!enemy.isAlive) continue;
 
-                // Reset block at the start of each round (like player does at start of turn)
-                enemy.block = 0;
+                // (ignore it for now) Reset block at the start of each round (like player does at start of turn)
+                // enemy.block = 0;
 
                 // Auto-assign global intent icons if enemy doesn't have its own
                 if (enemy.intentIcons == null && globalIntentIcons != null)
