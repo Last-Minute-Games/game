@@ -43,6 +43,18 @@ namespace GameItems.Cards.Helpers
             sfxHelper?.PlayHover();
         }
 
+        // When hover exits (mouse leaves the card)
+        public void OnCardHoverExit(CardRender card)
+        {
+            if (card == null)
+            {
+                Debug.LogWarning("[CardFXHelper] OnCardHoverExit called with null card.");
+                return;
+            }
+
+            animHelper?.HoverExit(card);
+        }
+
         // When selecting (clicking / picking up) a card
         public void OnCardSelect(CardRender card)
         {

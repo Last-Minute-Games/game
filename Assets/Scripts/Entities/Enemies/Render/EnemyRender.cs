@@ -8,6 +8,16 @@ public class EnemyRender : MonoBehaviour
 {
     [Header("Runtime")] public EnemyData data;
 
+    [Header("Intent Icon")]
+    [Tooltip("Offset from enemy position where intent icon appears")]
+    public Vector3 intentIconOffset = new Vector3(0f, 0.23f, 0f);
+    [Tooltip("Size of the intent icon sprite")]
+    public float intentIconSize = 0.04f;
+    [Tooltip("Sorting layer for intent icon")]
+    public string intentIconSortingLayer = "Default";
+    [Tooltip("Sorting order offset from enemy sprite")]
+    public int intentIconSortingOrderOffset = 10;
+
     [Header("Animator States (Controller-driven)")]
     public string idleState = "Idle";
 
@@ -18,6 +28,8 @@ public class EnemyRender : MonoBehaviour
     public float crossFadeDuration = 0.08f;
 
     private SpriteRenderer _sprite;
+    private SpriteRenderer _intentIconSprite;
+    private GameObject _intentIconObject;
     private EnemyHealth _health;
     private BoxCollider2D _hitboxCollider;
 
@@ -31,6 +43,18 @@ public class EnemyRender : MonoBehaviour
     {
         _hitboxCollider = GetComponent<BoxCollider2D>();
         _sprite = GetComponent<SpriteRenderer>();
+
+        // Create intent icon GameObject as child
+        _intentIconObject = new GameObject("IntentIcon");
+        _intentIconObject.transform.SetParent(transform);
+        _intentIconObject.transform.localPosition = intentIconOffset;
+        _intentIconObject.transform.localScale = Vector3.one * intentIconSize;
+
+        // Add SpriteRenderer for intent icon
+        _intentIconSprite = _intentIconObject.AddComponent<SpriteRenderer>();
+        _intentIconSprite.sortingLayerName = intentIconSortingLayer;
+        _intentIconSprite.sortingOrder = _sprite.sortingOrder + intentIconSortingOrderOffset;
+        _intentIconSprite.enabled = false; // Hidden by default
     }
 
     private void Update()
@@ -84,7 +108,59 @@ public class EnemyRender : MonoBehaviour
         // Update health display
         UpdateHealth();
 
+        // Update intent icon
+        UpdateIntentIcon();
+
         PlayIdle();
+    }
+
+    /// <summary>
+    /// Updates the intent icon based on the current enemy data intent.
+    /// Call this after rolling intents or when intent changes.
+    /// </summary>
+    public void UpdateIntentIcon()
+    {
+        if (data == null || _intentIconSprite == null)
+        {
+            HideIntentIcon();
+            return;
+        }
+
+        Sprite intentSprite = data.GetCurrentIntentIcon();
+        
+        if (intentSprite != null)
+        {
+            _intentIconSprite.sprite = intentSprite;
+            _intentIconSprite.enabled = true;
+        }
+        else
+        {
+            HideIntentIcon();
+            Debug.LogWarning($"[EnemyRender] No intent icon for {data.enemyName} with intent {data.currentIntent}");
+        }
+    }
+
+    /// <summary>
+    /// Hides the intent icon (e.g., when enemy is dead or has no intent).
+    /// </summary>
+    public void HideIntentIcon()
+    {
+        if (_intentIconSprite != null)
+        {
+            _intentIconSprite.enabled = false;
+        }
+    }
+
+    /// <summary>
+    /// Shows the intent icon with the given sprite.
+    /// </summary>
+    public void ShowIntentIcon(Sprite icon)
+    {
+        if (_intentIconSprite != null && icon != null)
+        {
+            _intentIconSprite.sprite = icon;
+            _intentIconSprite.enabled = true;
+        }
     }
 
     public void UpdateHealth()
@@ -116,6 +192,9 @@ public class EnemyRender : MonoBehaviour
 
     public void PlayDeath()
     {
+        // Hide intent icon on death
+        HideIntentIcon();
+
         if (data != null && data.deathAnim != null)
         {
             PlayAnimation(data.deathAnim);

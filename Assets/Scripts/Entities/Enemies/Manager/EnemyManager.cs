@@ -145,7 +145,11 @@ namespace Entities.Enemies.Manager
 
                 // Ensure idle is playing so player sees them idling before attack
                 var r = GetRenderFor(enemy);
-                if (r != null) r.PlayIdle();
+                if (r != null)
+                {
+                    r.PlayIdle();
+                    r.UpdateIntentIcon(); // Show the intent icon
+                }
             }
         }
 

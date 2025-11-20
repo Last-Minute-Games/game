@@ -7,7 +7,9 @@ namespace GameItems.Cards.Helpers
     {
         [Header("Arrow Helper")] public CardArrowHelper arrowHelper;
 
-        [Header("Visual Settings")] public float hoverScale = 1.1f;
+        [Header("Visual Settings")] 
+        public float hoverScale = 1.1f;
+        public float hoverYOffset = 0.5f; // How much the card moves up on hover
         public float selectScale = 1.15f;
         public float dragScale = 1.12f;
         public float returnDuration = 0.25f;
@@ -18,24 +20,42 @@ namespace GameItems.Cards.Helpers
         [SerializeField] private Camera dragCamera;
 
         // internal tracking
-        private Vector3 _originalScale = Vector3.one;
+        private Vector3 _baseScale = Vector3.one; // True original scale (never changes)
         private Vector3 _originalPosition;
+        private bool _isHovering;
+        private bool _isInitialized;
+
+        private void Start()
+        {
+            // Capture the true base scale at start
+            if (!_isInitialized)
+            {
+                _baseScale = transform.localScale;
+                _originalPosition = transform.localPosition;
+                _isInitialized = true;
+            }
+        }
 
         // Called by FXHelper.OnCardDrawn()
         public void AnimateDraw(CardRender card)
         {
             var cardTransform = card.transform;
-            _originalScale = cardTransform.localScale;
+            
+            // Initialize base scale if not done yet
+            if (!_isInitialized)
+            {
+                _baseScale = cardTransform.localScale;
+                _originalPosition = cardTransform.localPosition;
+                _isInitialized = true;
+            }
 
             cardTransform.localScale = Vector3.zero;
-            cardTransform.DOScale(_originalScale, drawDuration).SetEase(Ease.OutBack);
+            cardTransform.DOScale(_baseScale, drawDuration).SetEase(Ease.OutBack);
         }
 
         public void AnimateDiscard(CardRender card)
         {
             var cardTransform = card.transform;
-            _originalScale = cardTransform.localScale;
-
             cardTransform.DOScale(Vector3.zero, discardDuration).SetEase(Ease.OutBack);
         }
 
@@ -43,17 +63,64 @@ namespace GameItems.Cards.Helpers
         public void HoverVisuals(CardRender card)
         {
             var cardTransform = card.transform;
-            cardTransform.DOScale(hoverScale, 0.15f);
+            
+            // Store original position if not already hovering
+            if (!_isHovering)
+            {
+                _originalPosition = cardTransform.localPosition;
+                
+                // Initialize base scale if not done yet
+                if (!_isInitialized)
+                {
+                    _baseScale = cardTransform.localScale;
+                    _isInitialized = true;
+                }
+                
+                _isHovering = true;
+            }
+
+            // Scale up and move up (always relative to base scale)
+            cardTransform.DOScale(_baseScale * hoverScale, 0.15f).SetEase(Ease.OutQuad);
+            cardTransform.DOLocalMove(_originalPosition + new Vector3(0, hoverYOffset, 0), 0.15f).SetEase(Ease.OutQuad);
+        }
+
+        // Called when hover exits
+        public void HoverExit(CardRender card)
+        {
+            if (!_isHovering) return;
+
+            var cardTransform = card.transform;
+            _isHovering = false;
+
+            // Return to base scale and original position
+            cardTransform.DOScale(_baseScale, 0.15f).SetEase(Ease.OutQuad);
+            cardTransform.DOLocalMove(_originalPosition, 0.15f).SetEase(Ease.OutQuad);
         }
 
         // Called by FXHelper.OnCardSelect()
         public void SelectVisuals(CardRender card)
         {
             var cardTransform = card.transform;
+            
+            // Initialize base scale if not done yet
+            if (!_isInitialized)
+            {
+                _baseScale = cardTransform.localScale;
+                _originalPosition = cardTransform.localPosition;
+                _isInitialized = true;
+            }
+            
+            // If hovering, exit hover first
+            if (_isHovering)
+            {
+                _isHovering = false;
+            }
+            
+            // Store current position (might be offset from hover)
             _originalPosition = cardTransform.localPosition;
-            _originalScale = cardTransform.localScale;
 
-            cardTransform.DOScale(selectScale, 0.15f);
+            // Scale to select size (always relative to base scale)
+            cardTransform.DOScale(_baseScale * selectScale, 0.15f);
         }
 
         // Basic drag following cursor (NO ARROW)
@@ -94,7 +161,8 @@ namespace GameItems.Cards.Helpers
             Vector3 localTarget = cardTransform.parent.InverseTransformPoint(worldPoint);
             cardTransform.localPosition = localTarget;
             
-            cardTransform.localScale = Vector3.Lerp(cardTransform.localScale, Vector3.one * dragScale, 0.25f);
+            // Use base scale for drag scale (prevents compounding)
+            cardTransform.localScale = Vector3.Lerp(cardTransform.localScale, _baseScale * dragScale, 0.25f);
         }
 
         // Drag following cursor WITH ARROW (Enemy targeting)
@@ -124,7 +192,8 @@ namespace GameItems.Cards.Helpers
             // clear arrow
             arrowHelper?.StopDrawing();
 
-            cardTransform.DOScale(_originalScale, 0.15f);
+            // Return to base scale and original position
+            cardTransform.DOScale(_baseScale, 0.15f);
             cardTransform.DOLocalMove(_originalPosition, returnDuration).SetEase(Ease.OutCubic);
         }
 
