@@ -224,7 +224,10 @@ namespace Entities.Players.Prefab
 
             // Update Shield
             if (shieldText != null)
+            {
                 shieldText.text = block > 0 ? block.ToString() : "";
+                shieldText.color = Color.cyan; // blue color for shield
+            }
 
             // --- Block UI turned ON (0 → >0) ---
             if (_lastBlock <= 0 && block > 0)

@@ -94,21 +94,30 @@ namespace Entities.Enemies.Helpers
         public void SetShield(int shield)
         {
             TryInitialize(); // Ensure components are found
-            
-            if (_shieldText != null)
+
+            if (_shieldText == null)
             {
-                _shieldText.text = shield.ToString();
-                Debug.Log($"[EnemyHealth] SetShield called: shield={shield}, text set to '{_shieldText.text}'");
-            }
-            else
-            {
-                Debug.LogWarning("[EnemyHealth] ShieldText component not found! Make sure there's a child GameObject named 'ShieldText' with a TMP_Text component.");
+                Debug.LogWarning("[EnemyHealth] ShieldText component missing!");
+                return;
             }
 
+            // When shield > 0: show number, cyan color
             if (shield > 0)
+            {
+                _shieldText.text = shield.ToString();
+                _shieldText.color = Color.cyan;          // cyan!
+                _shieldText.enabled = true;              // ensure visible
+
                 StartShieldedBarAnimation();
+            }
             else
+            {
+                // Shield = 0 → hide text entirely
+                _shieldText.text = "";
+                _shieldText.enabled = false;
+
                 StopShieldedBarAnimation();
+            }
         }
 
         private void StartShieldedBarAnimation()
