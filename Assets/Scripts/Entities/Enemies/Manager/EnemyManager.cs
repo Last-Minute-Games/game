@@ -288,6 +288,7 @@ namespace Entities.Enemies.Manager
                     RemoveDeadEnemies(); // remove from manager list
                 }
             }
+            FindFirstObjectByType<RoundManager>()?.CheckImmediateEndConditions();
         }
 
         // for the start of player rounds, reset all enemy block helper

@@ -13,6 +13,9 @@ public class RoundManager : MonoBehaviour
     public bool playerTurn = true;
     public bool battleActive = false;
 
+    [Header("End Screen UI")]
+    public ScreenFadeUI endScreenUI;
+
     [Header("Timer Settings")]
     [Tooltip("Time in seconds for each player turn")]
     public float turnTimeLimit = 15f;
@@ -44,6 +47,7 @@ public class RoundManager : MonoBehaviour
     // -------------------------------------------------------
     private void Update()
     {
+        CheckImmediateEndConditions();
         if (!battleActive || !playerTurn || !timerActive) return;
 
         // Countdown timer
@@ -175,20 +179,12 @@ public class RoundManager : MonoBehaviour
     // -------------------------------------------------------
     private void EndBattle()
     {
+        // Prevent double calls
+        if (!battleActive) return;  
         battleActive = false;
 
-        if (!player.playerData.isAlive)
-        {
-            Debug.Log("💀 Player defeated!");
-        }
-        else if (enemyManager.AllEnemiesDefeated())
-        {
-            Debug.Log("🎉 Victory!");
-        }
-        else
-        {
-            Debug.Log("⚠️ Battle ended unexpectedly.");
-        }
+        // Redirect to immediate end logic
+        CheckImmediateEndConditions();
     }
 
     private void RefreshDeckViewers()
@@ -210,5 +206,71 @@ public class RoundManager : MonoBehaviour
             discardPileViewer.SetPlayer(player);
             discardPileViewer.SetSource(GameItems.DeckViewer.Source.DiscardPile, rebuild: true);
         }
+    }
+
+    // -------------------------------------------------------
+    // Checks if battle should end RIGHT NOW (not end of round)
+    // Call this whenever player/enemy health changes
+    // -------------------------------------------------------
+    public void CheckImmediateEndConditions()
+    {
+        if (!battleActive) return;
+
+        // Player dead
+        if (player.playerData.currentHealth <= 0)
+        {
+            Debug.Log("💀 Player died — immediate game over.");
+            battleActive = false;
+            HandlePlayerLose();
+            return;
+        }
+
+        // All enemies dead
+        if (enemyManager.AllEnemiesDefeated())
+        {
+            Debug.Log("🎉 All enemies defeated — immediate victory!");
+            battleActive = false;
+            HandlePlayerWin();
+            return;
+        }
+    }
+
+    // -------------------------------------------------------
+    // PLAYER WINS
+    // -------------------------------------------------------
+    private void HandlePlayerWin()
+    {
+        Debug.Log("🏆 Player Victory!");
+
+        // Fade screen + show text
+        if (endScreenUI != null)
+            endScreenUI.ShowMessage("YOU WIN", new Color(1f, 0.84f, 0.0f)); // gold
+
+        // TODO: Grant rewards, XP, show loot, update progression...
+
+        StartCoroutine(ReturnToOverworldDelayed());
+    }
+
+    // -------------------------------------------------------
+    // PLAYER LOSSES
+    // -------------------------------------------------------
+    private void HandlePlayerLose()
+    {
+        Debug.Log("❌ Player Defeat!");
+
+        if (endScreenUI != null)
+            endScreenUI.ShowMessage("YOU LOSE", Color.red);
+
+        // TODO: Trigger respawn, penalties, lose gold, stats reset...
+
+        StartCoroutine(ReturnToOverworldDelayed());
+    }
+
+    private IEnumerator ReturnToOverworldDelayed()
+    {
+        yield return new WaitForSeconds(3f);
+
+        // TODO: Replace with your actual overworld scene name
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
     }
 }
