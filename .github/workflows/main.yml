@@ -375,17 +375,9 @@ jobs:
     defaults:
       run:
         shell: bash
-    name: Build macOS (${{ matrix.display_name || matrix.architecture }})
+    name: Build macOS (Universal)
     # macOS builds run on macOS runners using bash
-    # Build for both x64 (Intel) and ARM64 (Apple Silicon)
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - architecture: x64
-            display_name: macOS Intel (x64)
-          - architecture: ARM64
-            display_name: macOS Apple Silicon (ARM64)
+    # Build universal binary that works on both Intel 64-bit and Apple Silicon
 
     env:
       UNITY_VERSION: "6000.2.2f1"
@@ -432,28 +424,28 @@ jobs:
       - name: Compute output dir
         id: paths
         run: |
-          outDir="$BUILDS_ROOT/CastleOfTime-$VERSION-macOS-${{ matrix.architecture }}"
+          outDir="$BUILDS_ROOT/CastleOfTime-$VERSION-macOS"
           echo "OUT_DIR=$outDir" >> $GITHUB_ENV
-          echo "ARCHITECTURE=${{ matrix.architecture }}" >> $GITHUB_ENV
           echo "OUT_DIR = $outDir"
-          echo "ARCHITECTURE = ${{ matrix.architecture }}"
           echo "BUILDS_ROOT = $BUILDS_ROOT"
 
       # (Optional) Ensure the output root exists
       - name: Ensure builds root exists
         run: mkdir -p "$BUILDS_ROOT"
 
-      # Build the updater executables before Unity builds
+      # Build the updater executables before Unity builds (build both architectures for updater)
       - name: Build updater
         run: |
-          echo "Building auto-updater for macOS ${{ matrix.architecture }}..."
+          echo "Building auto-updater for macOS (both x64 and ARM64)..."
           if ! command -v dotnet &> /dev/null; then
             echo "❌ .NET SDK not found. Install .NET 6.0+ to build the updater."
             exit 1
           fi
           chmod +x ./Updater/build-updater.sh
-          ./Updater/build-updater.sh Release macOS ${{ matrix.architecture }}
-          echo "✅ Updater built successfully"
+          # Build both architectures for the updater
+          ./Updater/build-updater.sh Release macOS x64
+          ./Updater/build-updater.sh Release macOS ARM64
+          echo "✅ Updater built successfully for both architectures"
 
       # (Optional) Preflight: make sure no GUI editor is locking the project
       - name: Kill stray Unity processes / clear lock
@@ -465,11 +457,12 @@ jobs:
             rm -f "$lock"
           fi
 
-      # Run your bash build script
-      - name: Build (${{ matrix.display_name }})
+      # Run your bash build script (build universal binary)
+      - name: Build (macOS Universal)
         run: |
           chmod +x ./ci/build.sh
-          ./ci/build.sh "$UNITY_VERSION" "$PROJECT_PATH" "$OUT_DIR" "macOS" "$VERSION" "${{ matrix.architecture }}"
+          # Don't pass architecture - build universal binary
+          ./ci/build.sh "$UNITY_VERSION" "$PROJECT_PATH" "$OUT_DIR" "macOS" "$VERSION"
 
       # Clean up log files from build output
       - name: Clean up logs
@@ -491,7 +484,7 @@ jobs:
           echo "Creating directory: $BUILDS_ROOT"
           mkdir -p "$BUILDS_ROOT"
           
-          zipPath="$BUILDS_ROOT/CastleOfTime-$VERSION-macOS-${{ matrix.architecture }}.zip"
+          zipPath="$BUILDS_ROOT/CastleOfTime-$VERSION-macOS.zip"
           echo "Zip path: $zipPath"
           
           if [ -f "$zipPath" ]; then
@@ -530,13 +523,13 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CastleOfTime-${{ env.VERSION }}-macOS-${{ matrix.architecture }}
+          name: CastleOfTime-${{ env.VERSION }}-macOS
           path: ${{ steps.zip.outputs.zipPath }}
           retention-days: 14
           compression-level: 0
 
       # Upload to itch.io using Butler (skip in artifact-only mode)
-      - name: Upload to itch.io (${{ matrix.display_name }})
+      - name: Upload to itch.io (macOS Universal)
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
@@ -564,18 +557,13 @@ jobs:
           fi
           
           # Upload to itch.io - push the build folder directly (not zip)
-          # Use architecture-specific channel
-          if [ "${{ matrix.architecture }}" = "ARM64" ]; then
-            channel="macos-arm64"
-          else
-            channel="macos-x64"
-          fi
+          channel="macos"
           itchTarget="playlastminutegames/castle-of-time:$channel"
           
           echo "Uploading to itch.io: $itchTarget"
           echo "  Build folder: $OUT_DIR"
           echo "  Version: $VERSION"
-          echo "  Architecture: ${{ matrix.architecture }}"
+          echo "  Architecture: Universal (Intel 64-bit + Apple Silicon)"
           
           "$butlerPath" push "$OUT_DIR" "$itchTarget" --userversion "$VERSION" --fix-permissions
           
@@ -589,7 +577,7 @@ jobs:
       - name: Collect logs
         if: always()
         run: |
-          logs="$RUNNER_TEMP/unity-logs-macOS-${{ matrix.architecture }}"
+          logs="$RUNNER_TEMP/unity-logs-macOS"
           mkdir -p "$logs"
 
           # Editor logs (macOS)
@@ -613,8 +601,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Logs-${{ github.run_number }}-macOS-${{ matrix.architecture }}
-          path: ${{ runner.temp }}/unity-logs-macOS-${{ matrix.architecture }}
+          name: Logs-${{ github.run_number }}-macOS
+          path: ${{ runner.temp }}/unity-logs-macOS
           retention-days: 14
           compression-level: 6
 
@@ -668,8 +656,7 @@ jobs:
             **For standalone installs:** Download the appropriate zip file for your platform:
             - Windows: `CastleOfTime-${{ env.VERSION }}-Windows.zip`
             - Linux: `CastleOfTime-${{ env.VERSION }}-Linux.zip`
-            - macOS Intel (x64): `CastleOfTime-${{ env.VERSION }}-macOS-x64.zip`
-            - macOS Apple Silicon (ARM64): `CastleOfTime-${{ env.VERSION }}-macOS-ARM64.zip`
+            - macOS Universal (Intel 64-bit + Apple Silicon): `CastleOfTime-${{ env.VERSION }}-macOS.zip`
             
             The included launcher will automatically check for and download future updates from GitHub Releases.
 

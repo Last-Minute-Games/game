@@ -69,11 +69,13 @@ echo "Starting Unity $BUILD_TARGET build ($ARCHITECTURE) to $OUT_DIR"
 EXIT_CODE=$?
 
 if [ $EXIT_CODE -ne 0 ]; then
-    echo "❌ Unity $BUILD_TARGET build ($ARCHITECTURE) failed with exit code: $EXIT_CODE"
+    if [ -n "$ARCHITECTURE" ] && [ "$ARCHITECTURE" != "" ]; then
+        echo "❌ Unity $BUILD_TARGET build ($ARCHITECTURE) failed with exit code: $EXIT_CODE"
+    else
+        echo "❌ Unity $BUILD_TARGET build (Universal) failed with exit code: $EXIT_CODE"
+    fi
     echo "Waiting 10 seconds for log file to be written..."
     sleep 10
-    
-    LOG_FILE="$OUT_DIR/unity-build-$BUILD_TARGET-$ARCHITECTURE.log"
     if [ -f "$LOG_FILE" ]; then
         echo "Tail of log:"
         tail -n 120 "$LOG_FILE"
@@ -83,7 +85,11 @@ if [ $EXIT_CODE -ne 0 ]; then
     exit $EXIT_CODE
 fi
 
-echo "✅ $BUILD_TARGET build ($ARCHITECTURE) completed. Output: $OUT_DIR"
+if [ -n "$ARCHITECTURE" ] && [ "$ARCHITECTURE" != "" ]; then
+    echo "✅ $BUILD_TARGET build ($ARCHITECTURE) completed. Output: $OUT_DIR"
+else
+    echo "✅ $BUILD_TARGET build (Universal) completed. Output: $OUT_DIR"
+fi
 # Also emit the path for CI steps that want to read it
 if [ -n "$GITHUB_WORKSPACE" ]; then
     echo "$OUT_DIR" > "$GITHUB_WORKSPACE/_last_build_dir.txt"
@@ -95,7 +101,9 @@ if [ -n "$VERSION" ]; then
     echo "Running post-build integration..."
     POST_BUILD_SCRIPT="$(dirname "$0")/post-build.sh"
     if [ -f "$POST_BUILD_SCRIPT" ]; then
-        bash "$POST_BUILD_SCRIPT" "$OUT_DIR" "$BUILD_TARGET" "$VERSION" "$ARCHITECTURE"
+        # Pass architecture only if specified, otherwise pass "universal"
+        ARCH_PARAM="${ARCHITECTURE:-universal}"
+        bash "$POST_BUILD_SCRIPT" "$OUT_DIR" "$BUILD_TARGET" "$VERSION" "$ARCH_PARAM"
         if [ $? -ne 0 ]; then
             echo "⚠️  Post-build script failed, but Unity build succeeded"
         fi
