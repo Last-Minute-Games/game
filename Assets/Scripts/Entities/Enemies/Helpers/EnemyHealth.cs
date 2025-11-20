@@ -1,6 +1,7 @@
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using System.Collections;
 
 namespace Entities.Enemies.Helpers
 {
@@ -26,11 +27,30 @@ namespace Entities.Enemies.Helpers
         [Tooltip("Easing curve for health bar animation")]
         [SerializeField] private Ease tweenEase = Ease.OutCubic;
 
+        [Header("Shielded Health Bar Animation")]
+        [Tooltip("Frames for animated shield healthbar.")]
+        public Sprite[] shieldedHealthBarFrames;
+
+        [Tooltip("FPS for shielded animation.")]
+        public float shieldAnimationFPS = 12f;
+
+        private SpriteRenderer _healthUI;
+        private Sprite _originalFrameSprite;
+        private Coroutine _shieldAnimRoutine;
+
         private void TryInitialize()
         {
             _healthText = transform.Find("HealthText")?.GetComponent<TMP_Text>();
             _shieldText = transform.Find("ShieldText")?.GetComponent<TMP_Text>();
             _healthBarFill = transform.Find("HealthBarFill").GetComponent<SpriteRenderer>();
+
+            // frame renderer (the thing that switches animation frames)
+            if (_healthUI == null)
+                _healthUI = transform.Find("HealthUI")?.GetComponent<SpriteRenderer>();
+
+            // Cache original sprite once
+            if (_healthUI != null && _originalFrameSprite == null)
+                _originalFrameSprite = _healthUI.sprite;
         }
 
         private void Awake()
@@ -44,7 +64,43 @@ namespace Entities.Enemies.Helpers
             transform.localPosition = position;
         }
 
-        public void SetShield(int shield) => _shieldText.text = shield.ToString();
+        // updated setshield to include animation helpers for shield healthbar
+        public void SetShield(int shield)
+        {
+            if (_shieldText != null)
+                _shieldText.text = shield > 0 ? shield.ToString() : "";
+
+            if (shield > 0)
+                StartShieldedBarAnimation();
+            else
+                StopShieldedBarAnimation();
+        }
+
+        private void StartShieldedBarAnimation()
+        {
+            if (_healthUI == null) return;
+
+            if (_shieldAnimRoutine != null)
+                StopCoroutine(_shieldAnimRoutine);
+
+            if (shieldedHealthBarFrames != null && shieldedHealthBarFrames.Length > 0)
+                _shieldAnimRoutine = StartCoroutine(ShieldLoop());
+        }
+
+        private void StopShieldedBarAnimation()
+        {
+            if (_healthUI == null) return;
+
+            if (_shieldAnimRoutine != null)
+            {
+                StopCoroutine(_shieldAnimRoutine);
+                _shieldAnimRoutine = null;
+            }
+
+            // Restore the original frame sprite
+            if (_originalFrameSprite != null)
+                _healthUI.sprite = _originalFrameSprite;
+        }
 
         public void SetHealth(int health, int maxHealth)
         {
@@ -78,6 +134,22 @@ namespace Entities.Enemies.Helpers
                 // Store current values for next comparison
                 _lastHealth = health;
                 _lastMaxHealth = maxHealth;
+            }
+        }
+
+        private IEnumerator ShieldLoop()
+        {
+            int frame = 0;
+            float delay = 1f / shieldAnimationFPS;
+
+            while (true)
+            {
+                if (_healthUI != null)
+                    _healthUI.sprite = shieldedHealthBarFrames[frame];
+
+                frame = (frame + 1) % shieldedHealthBarFrames.Length;
+
+                yield return new WaitForSeconds(delay);
             }
         }
     }
