@@ -40,9 +40,35 @@ namespace Entities.Enemies.Helpers
 
         private void TryInitialize()
         {
-            _healthText = transform.Find("HealthText")?.GetComponent<TMP_Text>();
-            _shieldText = transform.Find("ShieldText")?.GetComponent<TMP_Text>();
-            _healthBarFill = transform.Find("HealthBarFill").GetComponent<SpriteRenderer>();
+            if (_healthText == null)
+            {
+                _healthText = transform.Find("HealthText")?.GetComponent<TMP_Text>();
+                if (_healthText == null)
+                {
+                    Debug.LogWarning($"[EnemyHealth] HealthText not found on {gameObject.name}. Looking for child named 'HealthText'");
+                }
+            }
+            
+            if (_shieldText == null)
+            {
+                _shieldText = transform.Find("ShieldText")?.GetComponent<TMP_Text>();
+                if (_shieldText == null)
+                {
+                    Debug.LogWarning($"[EnemyHealth] ShieldText not found on {gameObject.name}. Looking for child named 'ShieldText'");
+                    
+                    // List all children to help debug
+                    Debug.Log($"[EnemyHealth] Children of {gameObject.name}:");
+                    for (int i = 0; i < transform.childCount; i++)
+                    {
+                        Debug.Log($"  - {transform.GetChild(i).name}");
+                    }
+                }
+            }
+            
+            if (_healthBarFill == null)
+            {
+                _healthBarFill = transform.Find("HealthBarFill")?.GetComponent<SpriteRenderer>();
+            }
 
             // frame renderer (the thing that switches animation frames)
             if (_healthUI == null)
@@ -67,8 +93,17 @@ namespace Entities.Enemies.Helpers
         // updated setshield to include animation helpers for shield healthbar
         public void SetShield(int shield)
         {
+            TryInitialize(); // Ensure components are found
+            
             if (_shieldText != null)
-                _shieldText.text = shield > 0 ? shield.ToString() : "";
+            {
+                _shieldText.text = shield.ToString();
+                Debug.Log($"[EnemyHealth] SetShield called: shield={shield}, text set to '{_shieldText.text}'");
+            }
+            else
+            {
+                Debug.LogWarning("[EnemyHealth] ShieldText component not found! Make sure there's a child GameObject named 'ShieldText' with a TMP_Text component.");
+            }
 
             if (shield > 0)
                 StartShieldedBarAnimation();

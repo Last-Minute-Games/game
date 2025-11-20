@@ -135,6 +135,9 @@ namespace Entities.Enemies.Manager
                 var enemy = enemies[i];
                 if (!enemy.isAlive) continue;
 
+                // Reset block at the start of each round (like player does at start of turn)
+                enemy.block = 0;
+
                 // Auto-assign global intent icons if enemy doesn't have its own
                 if (enemy.intentIcons == null && globalIntentIcons != null)
                 {
@@ -149,6 +152,7 @@ namespace Entities.Enemies.Manager
                 {
                     r.PlayIdle();
                     r.UpdateIntentIcon(); // Show the intent icon
+                    r.UpdateHealth(); // Update to show block = 0
                 }
             }
         }
@@ -188,6 +192,12 @@ namespace Entities.Enemies.Manager
 
                 // Execute the intent (apply damage, gain block, etc.)
                 enemy.ExecuteIntent(player);
+
+                // Update the enemy's health display to show new shield/health values
+                if (r != null)
+                {
+                    r.UpdateHealth();
+                }
 
                 // Brief pause to show the effect
                 yield return new WaitForSeconds(0.4f);
