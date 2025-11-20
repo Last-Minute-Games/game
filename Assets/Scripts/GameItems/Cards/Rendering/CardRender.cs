@@ -141,6 +141,10 @@ public class CardRender : MonoBehaviour,
     {
         // Intentionally no FX call on exit to avoid snapping animations;
         // CardAnimationHelper will restore on release/cancel when appropriate.
+
+        // temporarily ignoring the above and adding an implementation
+        if (_fxHelper != null && !_isDragging)
+            _fxHelper.OnCardExit(this);
     }
 
     public void OnPointerDown(PointerEventData eventData)

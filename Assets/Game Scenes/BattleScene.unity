@@ -154,7 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
   enemies: []
-  globalIntentIcons: {fileID: 11400000, guid: 505573758614f574c963c58b754c950c, type: 2}
+  globalIntentIcons: {fileID: 0}
   uiContainer: {fileID: 865282854}
   healthBarPrefab: {fileID: 5117226532624305066, guid: 366991c0e52b02e4c86f88e6719d6be3, type: 3}
   horizontalSpacing: 3.5
@@ -1825,6 +1825,10 @@ PrefabInstance:
       propertyPath: playerManager
       value: 
       objectReference: {fileID: 963561599}
+    - target: {fileID: 2102971280411821541, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+      propertyPath: animationHelper
+      value: 
+      objectReference: {fileID: 1888204934}
     - target: {fileID: 3211038239950150431, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
       propertyPath: m_Name
       value: PlayerPrefab

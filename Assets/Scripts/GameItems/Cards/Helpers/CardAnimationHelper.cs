@@ -141,6 +141,12 @@ namespace GameItems.Cards.Helpers
                 .OnComplete(() => Destroy(card.gameObject));
         }
 
+        public void HoverVisualsReverse(CardRender card)
+        {
+            var cardTransform = card.transform;
+            cardTransform.DOScale(_originalScale, 0.15f).SetEase(Ease.OutCubic);
+        }
+
         private Camera ResolveCamera()
         {
             return dragCamera != null ? dragCamera : Camera.main;

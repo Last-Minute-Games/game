@@ -122,5 +122,16 @@ namespace GameItems.Cards.Helpers
             animHelper?.AnimateDiscard(card);
             sfxHelper?.PlayDiscard();
         }
+
+        public void OnCardExit(CardRender card)
+        {
+            if (card == null)
+            {
+                Debug.LogWarning("[CardFXHelper] OnCardExit called with null card.");
+                return;
+            }
+
+            animHelper?.HoverVisualsReverse(card);
+        }
     }
 }
