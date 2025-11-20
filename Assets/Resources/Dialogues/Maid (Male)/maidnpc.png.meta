@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: c1a60bcc610457e4db42b0b844ba18df
+guid: 7d5cadf45aa79e544b09f5c24afc3a47
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4461092905613535732
-    second: adrianne_0
+      213: -5936918421003991529
+    second: maidnpc_0
+  - first:
+      213: -2011029740391570850
+    second: maidnpc_1
+  - first:
+      213: 2805936685490964400
+    second: maidnpc_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,24 +102,11 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: adrianne_0
+      name: maidnpc_0
       rect:
         serializedVersion: 2
         x: 0
@@ -128,8 +121,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4f92c1d9c5cf8ed30800000000000000
-      internalID: 4461092905613535732
+      spriteID: 7168597b624db9da0800000000000000
+      internalID: -5936918421003991529
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maidnpc_1
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 0
+        width: 1878
+        height: 2130
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e52e6332b136714e0800000000000000
+      internalID: -2011029740391570850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maidnpc_2
+      rect:
+        serializedVersion: 2
+        x: 1883
+        y: 421
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b70de88c80b0f620800000000000000
+      internalID: 2805936685490964400
       vertices: []
       indices: 
       edges: []
@@ -138,7 +175,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 965ee602b5c9a9b4e807dfef0ff3b835
+    spriteID: cd56ffa08e2bb47498997b7dcc04bc32
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +185,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      adrianne_0: 4461092905613535732
+      maidnpc_0: -5936918421003991529
+      maidnpc_1: -2011029740391570850
+      maidnpc_2: 2805936685490964400
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
