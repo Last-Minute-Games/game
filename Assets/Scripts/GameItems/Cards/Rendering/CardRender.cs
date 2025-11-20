@@ -153,13 +153,23 @@ public class CardRender : MonoBehaviour,
         }
     }
 
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        // If we didn't drag (OnEndDrag not called), reset the card
+        if (!_isDragging && _fxHelper != null)
+        {
+            // Simply exit hover - OnPointerEnter will handle re-hovering if needed
+            _fxHelper.OnCardHoverExit(this);
+        }
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         _isDragging = true;
         if (_fxHelper != null)
         {
-            // Ensure select visuals/sfx when drag starts
-            _fxHelper.OnCardSelect(this);
+            // Don't update original position - keep the one from OnPointerDown
+            _fxHelper.OnCardSelect(this, updatePosition: false);
         }
     }
 

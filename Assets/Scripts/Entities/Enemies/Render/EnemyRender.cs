@@ -1,5 +1,6 @@
 using Entities.Enemies.Helpers;
 using UnityEngine;
+using TMPro;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(SpriteRenderer))]
@@ -17,6 +18,14 @@ public class EnemyRender : MonoBehaviour
     public string intentIconSortingLayer = "Default";
     [Tooltip("Sorting order offset from enemy sprite")]
     public int intentIconSortingOrderOffset = 10;
+    
+    [Header("Intent Value Text")]
+    [Tooltip("Offset from icon where value text appears")]
+    public Vector3 intentValueOffset = new Vector3(0.5f, -0.3f, 0f);
+    [Tooltip("Font size for intent value")]
+    public float intentValueFontSize = 10f;
+    [Tooltip("Color for intent value text")]
+    public Color intentValueColor = Color.white;
 
     [Header("Animator States (Controller-driven)")]
     public string idleState = "Idle";
@@ -30,6 +39,8 @@ public class EnemyRender : MonoBehaviour
     private SpriteRenderer _sprite;
     private SpriteRenderer _intentIconSprite;
     private GameObject _intentIconObject;
+    private TMP_Text _intentValueText;
+    private GameObject _intentValueObject;
     private EnemyHealth _health;
     private BoxCollider2D _hitboxCollider;
 
@@ -55,6 +66,27 @@ public class EnemyRender : MonoBehaviour
         _intentIconSprite.sortingLayerName = intentIconSortingLayer;
         _intentIconSprite.sortingOrder = _sprite.sortingOrder + intentIconSortingOrderOffset;
         _intentIconSprite.enabled = false; // Hidden by default
+        
+        // Create intent value text as child of icon
+        _intentValueObject = new GameObject("IntentValueText");
+        _intentValueObject.transform.SetParent(_intentIconObject.transform);
+        _intentValueObject.transform.localPosition = intentValueOffset;
+        _intentValueObject.transform.localScale = Vector3.one; // Counter parent scale
+        
+        // Add TextMeshPro for value display
+        _intentValueText = _intentValueObject.AddComponent<TextMeshPro>();
+        _intentValueText.fontSize = intentValueFontSize;
+        _intentValueText.color = intentValueColor;
+        _intentValueText.alignment = TextAlignmentOptions.Center;
+        _intentValueText.enabled = false; // Hidden by default
+        
+        // Set sorting for text
+        var textRenderer = _intentValueText.GetComponent<MeshRenderer>();
+        if (textRenderer != null)
+        {
+            textRenderer.sortingLayerID = _intentIconSprite.sortingLayerID;
+            textRenderer.sortingOrder = _intentIconSprite.sortingOrder + 1;
+        }
     }
 
     private void Update()
@@ -132,6 +164,17 @@ public class EnemyRender : MonoBehaviour
         {
             _intentIconSprite.sprite = intentSprite;
             _intentIconSprite.enabled = true;
+            
+            // Show intent value if > 0
+            if (_intentValueText != null && data.intentValue > 0)
+            {
+                _intentValueText.text = data.intentValue.ToString();
+                _intentValueText.enabled = true;
+            }
+            else if (_intentValueText != null)
+            {
+                _intentValueText.enabled = false;
+            }
         }
         else
         {
@@ -148,6 +191,11 @@ public class EnemyRender : MonoBehaviour
         if (_intentIconSprite != null)
         {
             _intentIconSprite.enabled = false;
+        }
+        
+        if (_intentValueText != null)
+        {
+            _intentValueText.enabled = false;
         }
     }
 

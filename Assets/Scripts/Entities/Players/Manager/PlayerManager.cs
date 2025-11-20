@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using Entities.Players.Data;
 using GameItems.Cards;
-using Entities.Players.Prefab;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -72,19 +71,6 @@ public class PlayerManager : MonoBehaviour
         cardManager.ShuffleDrawPile();
     }
 
-    // helper function to refresh energy UI
-    public void RefreshEnergyUI()
-    {
-        var prefab = FindFirstObjectByType<PlayerPrefab>();
-        if (prefab != null && prefab.energyUI != null)
-        {
-            prefab.energyUI.UpdateEnergyUI(
-                playerData.currentEnergy,
-                playerData.maxEnergy
-            );
-        }
-    }
-
     public void StartTurn()
     {
         if (playerData == null) return;
@@ -92,9 +78,6 @@ public class PlayerManager : MonoBehaviour
         // Reset energy and block
         playerData.ResetEnergy();
         playerData.block = 0;
-
-
-        RefreshEnergyUI();
 
         // Draw hand
         int handSize = playerConfig != null && playerConfig.config != null 
@@ -127,8 +110,6 @@ public class PlayerManager : MonoBehaviour
             return false;
         }
 
-        RefreshEnergyUI();
-
         // Apply card effects
         ApplyCardEffects(cardData, cardInstance, targetEnemy);
 
@@ -136,7 +117,7 @@ public class PlayerManager : MonoBehaviour
         if (cardManager != null)
         {
             bool removed = cardManager.PlayCardFromHand(cardData, cardInstance);
-            Debug.Log($"[PlayerManager] PlayCard moved card '{cardData.name}' from hand to discard. RemovedFromHand={removed}");
+            Debug.Log($"[PlayerManager] PlayCard moved card '{{cardData.name}}' from hand to discard. RemovedFromHand={removed}");
         }
         else
         {
@@ -149,8 +130,6 @@ public class PlayerManager : MonoBehaviour
 
     private void ApplyCardEffects(CardData cardData, CardInstance cardInstance, EnemyRender targetEnemy)
     {
-        // TODO: cover all possible operationtypes and finalize card interaction logic, and be sure to update UI when appropriate
-
         // Use rolled effects from instance if available, otherwise use base effects
         List<EffectData> effectsToApply = cardInstance != null && cardInstance.rolledEffects != null && cardInstance.rolledEffects.Count > 0
             ? cardInstance.rolledEffects

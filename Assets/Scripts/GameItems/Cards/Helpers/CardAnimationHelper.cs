@@ -98,7 +98,8 @@ namespace GameItems.Cards.Helpers
         }
 
         // Called by FXHelper.OnCardSelect()
-        public void SelectVisuals(CardRender card)
+        // Called by FXHelper.OnCardSelect()
+        public void SelectVisuals(CardRender card, bool updatePosition = true)
         {
             var cardTransform = card.transform;
             
@@ -108,16 +109,37 @@ namespace GameItems.Cards.Helpers
                 _baseScale = cardTransform.localScale;
                 _originalPosition = cardTransform.localPosition;
                 _isInitialized = true;
+                Debug.Log($"[CardAnimationHelper] Initialized - base scale: {_baseScale}, original position: {_originalPosition}");
             }
             
-            // If hovering, exit hover first
-            if (_isHovering)
+            // Only update original position if requested
+            if (updatePosition)
             {
-                _isHovering = false;
+                // If hovering, we already have the original position from HoverVisuals
+                if (_isHovering)
+                {
+                    Debug.Log($"[CardAnimationHelper] Select while hovering - keeping original position: {_originalPosition}");
+                    _isHovering = false;
+                }
+                else
+                {
+                    // Not hovering, capture current position
+                    // _originalPosition = cardTransform.localPosition;
+                    Debug.Log($"[CardAnimationHelper] Select without hover - storing original position: {_originalPosition}");
+                }
             }
-            
-            // Store current position (might be offset from hover)
-            _originalPosition = cardTransform.localPosition;
+            else
+            {
+                // Don't update position (used when drag starts)
+                Debug.Log($"[CardAnimationHelper] Select (drag start) - keeping original position: {_originalPosition}");
+                if (_isHovering)
+                {
+                    _isHovering = false;
+                }
+            }
+
+            // Kill any existing tweens
+            cardTransform.DOKill();
 
             // Scale to select size (always relative to base scale)
             cardTransform.DOScale(_baseScale * selectScale, 0.15f);

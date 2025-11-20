@@ -107,32 +107,11 @@ public class RoundManager : MonoBehaviour
         
         Debug.Log("Player turn ended.");
 
-        // Animate cards flying to discard pile before actually discarding
-        if (handViewer != null && handViewer.GetRenders().Count > 0)
-        {
-            // Calculate discard pile position (or use a default)
-            Vector3 discardTarget = discardPileViewer != null 
-                ? discardPileViewer.transform.position 
-                : handViewer.transform.position + new Vector3(3f, -2f, 0);
+        player.EndTurn();
+        RefreshDeckViewers();
+        playerTurn = false;
 
-            // Animate cards to discard, then continue with turn end
-            handViewer.AnimateDiscardAll(discardTarget, duration: 0.4f, staggerDelay: 0.05f, onComplete: () =>
-            {
-                // After animation completes, actually discard in CardManager
-                player.EndTurn();
-                RefreshDeckViewers();
-                playerTurn = false;
-                StartCoroutine(EnemyPhase());
-            });
-        }
-        else
-        {
-            // No cards to animate, proceed immediately
-            player.EndTurn();
-            RefreshDeckViewers();
-            playerTurn = false;
-            StartCoroutine(EnemyPhase());
-        }
+        StartCoroutine(EnemyPhase());
     }
 
     // -------------------------------------------------------
@@ -144,8 +123,8 @@ public class RoundManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
-        // Enemies execute their actions one at a time with delays (turn-based)
-        yield return StartCoroutine(enemyManager.ExecuteEnemyTurnSequence(player.playerData));
+        // Enemies execute their actions
+        enemyManager.ExecuteEnemyTurn(ref player.playerData);
 
         yield return new WaitForSeconds(0.5f);
 
@@ -209,9 +188,6 @@ public class RoundManager : MonoBehaviour
         }
     }
 
-    // -------------------------------------------------------
-    // Refresh all deck viewers to sync with CardManager state
-    // -------------------------------------------------------
     private void RefreshDeckViewers()
     {
         if (handViewer != null)

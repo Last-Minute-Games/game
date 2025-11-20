@@ -56,7 +56,7 @@ namespace GameItems.Cards.Helpers
         }
 
         // When selecting (clicking / picking up) a card
-        public void OnCardSelect(CardRender card)
+        public void OnCardSelect(CardRender card, bool updatePosition = true)
         {
             if (card == null)
             {
@@ -64,7 +64,7 @@ namespace GameItems.Cards.Helpers
                 return;
             }
 
-            animHelper?.SelectVisuals(card);
+            animHelper?.SelectVisuals(card, updatePosition);
             sfxHelper?.PlaySelect();
 
             // Reset drag SFX gate for the new drag session

@@ -135,8 +135,7 @@ namespace Entities.Enemies.Manager
                 var enemy = enemies[i];
                 if (!enemy.isAlive) continue;
 
-                // (ignore it for now) Reset block at the start of each round (like player does at start of turn)
-                // enemy.block = 0;
+                // DON'T reset block here - let it persist through the player's turn
 
                 // Auto-assign global intent icons if enemy doesn't have its own
                 if (enemy.intentIcons == null && globalIntentIcons != null)
@@ -152,7 +151,7 @@ namespace Entities.Enemies.Manager
                 {
                     r.PlayIdle();
                     r.UpdateIntentIcon(); // Show the intent icon
-                    r.UpdateHealth(); // Update to show block = 0
+                    r.UpdateHealth(); // Keep existing block visible
                 }
             }
         }
@@ -160,6 +159,25 @@ namespace Entities.Enemies.Manager
         // Enemies execute their previously decided intents with delays (turn-based feel)
         public System.Collections.IEnumerator ExecuteEnemyTurnSequence(PlayerData player)
         {
+            // Reset all enemies' block at the START of the enemy turn
+            // (After the player has had their turn to attack shielded enemies)
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                var enemy = enemies[i];
+                if (enemy.isAlive)
+                {
+                    enemy.block = 0;
+                    var r = GetRenderFor(enemy);
+                    if (r != null)
+                    {
+                        r.UpdateHealth(); // Show shields disappearing
+                    }
+                }
+            }
+
+            // Small visual delay to show shields disappearing
+            yield return new WaitForSeconds(0.3f);
+
             for (int i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
