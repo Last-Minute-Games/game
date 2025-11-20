@@ -11,11 +11,15 @@ namespace Entities.Players.Prefab
         [Tooltip("Reference to the PlayerManager that holds the runtime PlayerData")]
         public PlayerManager playerManager;
 
+        [Tooltip("Reference to PlayerEnergyUIHelper that deals with Energy UI changes")]
+        public PlayerEnergyUIHelper energyUI;
+
         [Tooltip("Reference to the RoundManager for timer updates")]
         public RoundManager roundManager;
 
         [Header("Energy UI")]
         public TextMeshProUGUI energyText;
+        public Image energyIcon;
 
         [Header("Animation Helpers")]
         public PlayerAnimationHelper animationHelper;
