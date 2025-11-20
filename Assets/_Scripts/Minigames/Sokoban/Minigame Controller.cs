@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -36,6 +39,21 @@ public class MinigameController : MonoBehaviour
     [SerializeField] GameObject hudRoot;
     private CanvasGroup hudCanvasGroup;
     private bool hudWasActive;
+
+    [Header("Transition")]
+    [Tooltip("CanvasGroup used to fade the screen when entering/exiting the minigame.")]
+    [SerializeField] CanvasGroup transitionCanvasGroup;
+    [Tooltip("Optional text element that displays the current transition message.")]
+    [SerializeField] TMP_Text transitionStatusText;
+    [Tooltip("How long (in seconds) the screen stays fully faded while we reposition objects.")]
+    [SerializeField] float transitionCoveredDuration = 1.2f;
+    [Tooltip("Fade-in duration in seconds.")]
+    [SerializeField] float transitionFadeInDuration = 0.4f;
+    [Tooltip("Fade-out duration in seconds.")]
+    [SerializeField] float transitionFadeOutDuration = 0.4f;
+
+    private Coroutine transitionRoutine;
+    private bool isTransitionRunning;
 
     // References for internal logic
     private GameObject player;
@@ -91,32 +109,8 @@ public class MinigameController : MonoBehaviour
     /// </summary>
     public void StartSokoban()
     {
-        HideHUD();
-
         if (player == null || sokobanRoot == null) return;
-
-        // 1. Swap Player Controls: Disable Overworld, Enable Sokoban
-        overworldPlayerScript.enabled = false;
-        sokobanPlayerScript.enabled = true;
-
-        // 2. Teleport Player to the Puzzle Start Position (with rounding for grid alignment)
-        Vector3 targetPos = sokobanRoot.transform.position + new Vector3(playerStartPositionOffset.x, playerStartPositionOffset.y, 0f);
-        player.transform.position = new Vector3(
-            Mathf.Round(targetPos.x),
-            Mathf.Round(targetPos.y),
-            targetPos.z
-        );
-
-        // 3. ACTIVATE SPRITE SWAP
-        if (playerSpriteRenderer != null && sokobanPlayerSprite != null)
-        {
-            playerSpriteRenderer.sprite = sokobanPlayerSprite;
-        }
-
-        // 4. Activate the Puzzle: Make all walls/boxes/goals visible
-        sokobanRoot.SetActive(true);
-
-        Debug.Log("Sokoban Minigame started.");
+        RunTransition("ENTERING SOKOBAN", PerformSokobanStart);
     }
 
     /// <summary>
@@ -126,42 +120,7 @@ public class MinigameController : MonoBehaviour
     public void EndSokoban(bool solved)
     {
         if (player == null || sokobanRoot == null) return;
-
-        ///GameFlags.RemoveFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
-
-        FindObjectOfType<ClockTimer>().PauseTimer(false);   // Pause
-      
-        // 1. Deactivate the Puzzle: Hide all walls/boxes/goals
-        sokobanRoot.SetActive(false);
-
-        // 2. Swap Player Controls: Enable Overworld, Disable Sokoban
-        sokobanPlayerScript.enabled = false;
-        overworldPlayerScript.enabled = true;
-
-        // 3. RETURN SPRITE SWAP
-        if (playerSpriteRenderer != null && overworldPlayerSprite != null)
-        {
-            playerSpriteRenderer.sprite = overworldPlayerSprite;
-        }
-
-        // 4. Teleport Player back to the Overworld Exit Position (set dynamically by Activator)
-        player.transform.position = overworldExitPosition;
-
-        // --- FIX: SNAP CAMERA TO PLAYER'S NEW POSITION ---
-        if (Camera.main != null)
-        {
-            // Instantly moves the camera to follow the player, preventing the black screen/lag.
-            Camera.main.transform.position = new Vector3(
-                player.transform.position.x,
-                player.transform.position.y,
-                Camera.main.transform.position.z // Keep the original Z depth
-            );
-        }
-        ShowHUD();  // show global HUD again
-
-        GameFlags.SetFlag("minigame.sokoban.finish");
-
-        Debug.Log($"Sokoban Minigame finished. Solved: {solved}");
+        RunTransition(solved ? "YOU WIN" : "EXITING SOKOBAN", () => PerformSokobanEnd(solved));
     }
 
     /// <summary>
@@ -217,5 +176,137 @@ public class MinigameController : MonoBehaviour
         {
             hudRoot.SetActive(hudWasActive);
         }
+    }
+
+    private void RunTransition(string message, System.Action midAction)
+    {
+        if (isTransitionRunning)
+        {
+            return;
+        }
+
+        if (transitionCanvasGroup == null)
+        {
+            midAction?.Invoke();
+            return;
+        }
+
+        transitionRoutine = StartCoroutine(TransitionRoutine(message, midAction));
+    }
+
+    private IEnumerator TransitionRoutine(string message, System.Action midAction)
+    {
+        isTransitionRunning = true;
+
+        if (transitionStatusText != null)
+        {
+            transitionStatusText.text = message;
+        }
+
+        GameObject transitionObject = transitionCanvasGroup.gameObject;
+        if (!transitionObject.activeSelf)
+        {
+            transitionObject.SetActive(true);
+        }
+
+        transitionCanvasGroup.blocksRaycasts = true;
+        transitionCanvasGroup.interactable = true;
+
+        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
+
+        midAction?.Invoke();
+
+        if (transitionCoveredDuration > 0f)
+        {
+            yield return new WaitForSeconds(transitionCoveredDuration);
+        }
+
+        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 0f, transitionFadeOutDuration);
+
+        transitionCanvasGroup.blocksRaycasts = false;
+        transitionCanvasGroup.interactable = false;
+        transitionObject.SetActive(false);
+
+        transitionRoutine = null;
+        isTransitionRunning = false;
+    }
+
+    private IEnumerator FadeCanvasGroup(float start, float end, float duration)
+    {
+        if (duration <= 0f)
+        {
+            transitionCanvasGroup.alpha = end;
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            transitionCanvasGroup.alpha = Mathf.Lerp(start, end, t);
+            yield return null;
+        }
+
+        transitionCanvasGroup.alpha = end;
+    }
+
+    private void PerformSokobanStart()
+    {
+        HideHUD();
+
+        overworldPlayerScript.enabled = false;
+        sokobanPlayerScript.enabled = true;
+
+        Vector3 targetPos = sokobanRoot.transform.position + new Vector3(playerStartPositionOffset.x, playerStartPositionOffset.y, 0f);
+        player.transform.position = new Vector3(
+            Mathf.Round(targetPos.x),
+            Mathf.Round(targetPos.y),
+            targetPos.z
+        );
+
+        if (playerSpriteRenderer != null && sokobanPlayerSprite != null)
+        {
+            playerSpriteRenderer.sprite = sokobanPlayerSprite;
+        }
+
+        sokobanRoot.SetActive(true);
+
+        Debug.Log("Sokoban Minigame started.");
+    }
+
+    private void PerformSokobanEnd(bool solved)
+    {
+        ///GameFlags.RemoveFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
+
+        ClockTimer clockTimer = FindObjectOfType<ClockTimer>();
+        clockTimer?.PauseTimer(false);   // Pause
+
+        sokobanRoot.SetActive(false);
+
+        sokobanPlayerScript.enabled = false;
+        overworldPlayerScript.enabled = true;
+
+        if (playerSpriteRenderer != null && overworldPlayerSprite != null)
+        {
+            playerSpriteRenderer.sprite = overworldPlayerSprite;
+        }
+
+        player.transform.position = overworldExitPosition;
+
+        if (Camera.main != null)
+        {
+            Camera.main.transform.position = new Vector3(
+                player.transform.position.x,
+                player.transform.position.y,
+                Camera.main.transform.position.z
+            );
+        }
+
+        ShowHUD();
+
+        GameFlags.SetFlag("minigame.sokoban.finish");
+
+        Debug.Log($"Sokoban Minigame finished. Solved: {solved}");
     }
 }
