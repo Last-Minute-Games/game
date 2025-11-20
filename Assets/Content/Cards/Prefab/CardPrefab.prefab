@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1862430111713198886}
   - component: {fileID: 1060891179084182964}
   - component: {fileID: 4494407146708266946}
+  - component: {fileID: 5542221138239846905}
   m_Layer: 0
   m_Name: CardPrefab
   m_TagString: Untagged
@@ -59,6 +60,45 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 302919935411270648}
   m_CullTransparentMesh: 1
+--- !u!114 &5542221138239846905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302919935411270648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ff96eb572064403815a34006f040778, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardPrefab
+  Data: {fileID: 0}
+  artworkImage: {fileID: 0}
+  nameText: {fileID: 0}
+  descriptionText: {fileID: 0}
+  hoverScale: 1.05
+  dragScale: 1.05
+  OnClicked:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnBeginDragEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnEndDragEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &2698870603693720604
 GameObject:
   m_ObjectHideFlags: 0

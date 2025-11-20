@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d26a1297d19d4fb9a397e8fd03f17206, type: 3}
+  m_Name: NewPlayerConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Entities.Players.Data.PlayerConfig
+  config: {fileID: 11400000, guid: ebb416b5f719f46c0ab992ed16a61141, type: 2}
+  playerName: Player
+  baseHealth: 100
+  baseShield: 0
+  baseEnergy: 3
+  maxEnergy: 3
+  usableCards:
+  - {fileID: 11400000, guid: 32001d3f52fdf3f4fa223bbb2f634925, type: 2}
+  - {fileID: 11400000, guid: ebfbf4b26a5508845bc9cd0d9003c1b2, type: 2}
