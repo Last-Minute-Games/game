@@ -17,10 +17,14 @@ namespace Entities.Players.Prefab
         [Header("Energy UI")]
         public TextMeshProUGUI energyText;
 
+        [Header("Animation Helpers")]
+        public PlayerAnimationHelper animationHelper;
+
         [Header("Healthbar UI")]
         public Image healthbarFill;
         public TextMeshProUGUI healthText;
         public TextMeshProUGUI shieldText;
+        public Image healthbarUI;
 
         [Header("Timer UI (from TimerPanel)")]
         [Tooltip("TimerText component from TimerPanel")]
@@ -63,6 +67,9 @@ namespace Entities.Players.Prefab
 
         private int _lastHealth;
         private int _lastMaxHealth;
+
+        private int _lastBlock;
+        private Sprite _cachedNormalSprite;
 
         private void Start()
         {
@@ -107,6 +114,16 @@ namespace Entities.Players.Prefab
             _lastHealth = playerManager.playerData.currentHealth;
             _lastMaxHealth = playerManager.playerData.maxHealth;
             SetupUI();
+
+           // Register the UI image for animation
+            if (animationHelper != null && healthbarUI != null)
+                animationHelper.SetShieldedBarImage(healthbarUI);
+
+            // Cache normal sprite AFTER UI is set
+            _cachedNormalSprite = healthbarUI.sprite;
+
+            // Cache initial block
+            _lastBlock = playerManager.playerData.block;
         }
 
         private void Update()
@@ -178,9 +195,33 @@ namespace Entities.Players.Prefab
                 }
             }
 
+            int block = data.block;
+
             // Update Shield
             if (shieldText != null)
-                shieldText.text = data.block > 0 ? data.block.ToString() : "";
+                shieldText.text = block > 0 ? block.ToString() : "";
+
+            // --- Block UI turned ON (0 → >0) ---
+            if (_lastBlock <= 0 && block > 0)
+            {
+                // start shield animation
+                if (animationHelper != null)
+                    animationHelper.PlayShieldedBarAnimation(true);
+            }
+
+            // --- Block UI turned OFF (>0 → 0) ---
+            if (_lastBlock > 0 && block <= 0)
+            {
+                // stop animation
+                if (animationHelper != null)
+                    animationHelper.PlayShieldedBarAnimation(false);
+
+                // restore original sprite
+                if (healthbarUI != null && _cachedNormalSprite != null)
+                    healthbarUI.sprite = _cachedNormalSprite;
+            }
+
+            _lastBlock = block;
         }
 
         /// <summary>

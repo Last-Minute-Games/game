@@ -8,6 +8,9 @@ public class PlayerAnimationHelper : MonoBehaviour
     [Tooltip("Frames for the shielded (blue) health bar animation.")]
     public Sprite[] shieldedHealthBarFrames;
 
+    [Header("Default sprite")]
+    private Sprite originalSprite;
+
     [Tooltip("FPS for shield bar animation.")]
     public float shieldAnimationFPS = 12f;
 
@@ -18,6 +21,9 @@ public class PlayerAnimationHelper : MonoBehaviour
     public void SetShieldedBarImage(Image barImage)
     {
         currentShieldBarImage = barImage;
+
+        if (barImage != null)
+            originalSprite = barImage.sprite; // store default
     }
 
     // Start or stop the animation
@@ -29,8 +35,20 @@ public class PlayerAnimationHelper : MonoBehaviour
             shieldAnimRoutine = null;
         }
 
-        if (play && shieldedHealthBarFrames != null && shieldedHealthBarFrames.Length > 0)
+        if (!play)
+        {
+            ResetToOriginalSprite();
+            return;
+        }
+
+        if (shieldedHealthBarFrames != null && shieldedHealthBarFrames.Length > 0)
             shieldAnimRoutine = StartCoroutine(LoopShieldFrames());
+    }
+
+    public void ResetToOriginalSprite()
+    {
+        if (currentShieldBarImage != null && originalSprite != null)
+            currentShieldBarImage.sprite = originalSprite;
     }
 
     private IEnumerator LoopShieldFrames()

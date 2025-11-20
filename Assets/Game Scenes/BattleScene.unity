@@ -154,7 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
   enemies: []
-  globalIntentIcons: {fileID: 11400000, guid: 505573758614f574c963c58b754c950c, type: 2}
+  globalIntentIcons: {fileID: 0}
   uiContainer: {fileID: 865282854}
   healthBarPrefab: {fileID: 5117226532624305066, guid: 366991c0e52b02e4c86f88e6719d6be3, type: 3}
   horizontalSpacing: 3.5
@@ -1402,6 +1402,17 @@ MonoBehaviour:
   enemyDatabase:
   - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
   - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+--- !u!114 &1686650952 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7652091970123528050, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+  m_PrefabInstance: {fileID: 3644149388225263061}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!4 &1690466722 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8261802932031213085, guid: 038576810afe2b34b9599f0540bdeaef, type: 3}
@@ -1539,6 +1550,66 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
+--- !u!1 &1888204932
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1888204933}
+  - component: {fileID: 1888204934}
+  m_Layer: 0
+  m_Name: PlayerAnimationHelper
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1888204933
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1888204932}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 570844079}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1888204934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1888204932}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8d894a9336b4ad9f8c5d0e93b235f8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationHelper
+  shieldedHealthBarFrames:
+  - {fileID: -8170319192877739866, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  - {fileID: -737096891985190345, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  - {fileID: -6666959374648319544, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  - {fileID: -4714631566959530521, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  - {fileID: -1645879009704195589, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  - {fileID: -6491904168246505924, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  - {fileID: -3640710351273750036, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  - {fileID: 6995618244023243347, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  - {fileID: -7107821662837749527, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  - {fileID: -7030354293301315686, guid: 3fdccdadce36d7e7bb4c12dd31532a33, type: 3}
+  shieldAnimationFPS: 12
 --- !u!1 &2094887440
 GameObject:
   m_ObjectHideFlags: 0
@@ -1743,6 +1814,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 2102971280411821541, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+      propertyPath: healthbarUI
+      value: 
+      objectReference: {fileID: 1686650952}
+    - target: {fileID: 2102971280411821541, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
       propertyPath: roundManager
       value: 
       objectReference: {fileID: 246031882}
@@ -1750,6 +1825,10 @@ PrefabInstance:
       propertyPath: playerManager
       value: 
       objectReference: {fileID: 963561599}
+    - target: {fileID: 2102971280411821541, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+      propertyPath: animationHelper
+      value: 
+      objectReference: {fileID: 1888204934}
     - target: {fileID: 3211038239950150431, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
       propertyPath: m_Name
       value: PlayerPrefab
@@ -1772,7 +1851,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 1309454556844864374, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1888204933}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
 --- !u!1660057539 &9223372036854775807
