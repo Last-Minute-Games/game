@@ -102,13 +102,22 @@ public static class BuildScript
             throw new System.Exception("macOS build target is not supported. Please install macOS Build Support module in Unity Hub.");
         }
         
+        // CRITICAL: macOS MUST use IL2CPP or Mono with proper runtime included
+        // Setting IL2CPP explicitly ensures the runtime is properly bundled
+        var standaloneTarget = NamedBuildTarget.Standalone;
+        var currentBackend = PlayerSettings.GetScriptingBackend(standaloneTarget);
+        UnityEngine.Debug.Log($"[BuildScript] Current scripting backend: {currentBackend}");
+        
+        // Force IL2CPP for macOS builds to ensure runtime is included
+        PlayerSettings.SetScriptingBackend(standaloneTarget, ScriptingImplementation.IL2CPP);
+        UnityEngine.Debug.Log("[BuildScript] Set scripting backend to IL2CPP for macOS build");
+        
         // Build universal binary (Intel 64-bit + Apple Silicon)
-        // Unity 6 supports building universal binaries that work on both architectures
         // According to Unity docs: 0 = None, 1 = ARM64, 2 = Universal
         UnityEngine.Debug.Log("[BuildScript] Building universal binary for Intel 64-bit + Apple Silicon");
         
         // Set the architecture to universal (2) before building
-        PlayerSettings.SetArchitecture(NamedBuildTarget.Standalone, 2);
+        PlayerSettings.SetArchitecture(standaloneTarget, 2);
         UnityEngine.Debug.Log("[BuildScript] Set architecture to Universal (2) - Intel 64-bit + Apple Silicon");
         
         string[] scenes = EditorBuildSettings.scenes
@@ -121,7 +130,7 @@ public static class BuildScript
         // Read custom output path from command line if provided
         string customPath = GetArg("-customBuildPath");
         string buildPath = string.IsNullOrEmpty(customPath)
-            ? "Builds/macOS/Game.app"
+            ? "Builds/macOS/CastleOfTime.app"
             : System.IO.Path.Combine(customPath, "CastleOfTime.app");
 
         UnityEngine.Debug.Log($"[BuildScript] Output path: {buildPath}");
@@ -132,10 +141,12 @@ public static class BuildScript
         if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
         {
             UnityEngine.Debug.LogError($"[BuildScript] Build failed: {report.summary.result}");
-            throw new System.Exception("Build failed: " + report.summary.result);
+            UnityEngine.Debug.LogError($"[BuildScript] Build errors: {string.Join("\n", report.summary.totalErrors)}");
+            throw new System.Exception($"Build failed: {report.summary.result}");
         }
         
         UnityEngine.Debug.Log("[BuildScript] macOS universal binary build completed successfully!");
+        UnityEngine.Debug.Log($"[BuildScript] Build size: {report.summary.totalSize} bytes");
     }
 
     private static string GetArg(string name)
