@@ -156,6 +156,24 @@ namespace Entities.Enemies.Manager
             }
         }
 
+
+        public void RemoveDeadEnemies()
+        {
+            for (int i = enemies.Count - 1; i >= 0; i--)
+            {
+                if (!enemies[i].isAlive)
+                {
+                    enemies.RemoveAt(i);
+
+                    if (_activeRenders.Count > i)
+                        _activeRenders.RemoveAt(i);
+                }
+            }
+
+            // re-layout remaining enemies
+            // ApplyLineUpLayout();
+        }
+
         // Enemies execute their previously decided intents with delays (turn-based feel)
         public System.Collections.IEnumerator ExecuteEnemyTurnSequence(PlayerData player)
         {
@@ -266,6 +284,8 @@ namespace Entities.Enemies.Manager
                 else
                 {
                     render.PlayDeath();
+
+                    RemoveDeadEnemies(); // remove from manager list
                 }
             }
         }

@@ -243,14 +243,24 @@ public class EnemyRender : MonoBehaviour
         // Hide intent icon on death
         HideIntentIcon();
 
+        // if (data != null && data.deathAnim != null)
+        // {
+        //     PlayAnimation(data.deathAnim);
+        // }
+        // else
+        // {
+        //     // Hide on death if no clip
+        //     if (_sprite != null) _sprite.enabled = false;
+        // }
+        
+        // run death through coroutine
         if (data != null && data.deathAnim != null)
         {
-            PlayAnimation(data.deathAnim);
+            StartCoroutine(PlayDeathThenDestroy());
         }
         else
         {
-            // Hide on death if no clip
-            if (_sprite != null) _sprite.enabled = false;
+            Destroy(gameObject);
         }
     }
 
@@ -269,6 +279,21 @@ public class EnemyRender : MonoBehaviour
 
         // Set the first frame immediately
         _sprite.sprite = _currentAnimation.frames[0];
+    }
+
+
+    private System.Collections.IEnumerator PlayDeathThenDestroy()
+    {
+        // play the manual sprite animation
+        PlayAnimation(data.deathAnim);
+
+        // wait for death animation duration
+        float duration = data.deathAnim.Duration;
+        if (duration <= 0) duration = 0.5f;
+
+        yield return new WaitForSeconds(duration);
+
+        Destroy(gameObject);
     }
 
     // Remove all the old Playables and Animator-related methods
