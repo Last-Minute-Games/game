@@ -184,34 +184,27 @@ public class CardRender : MonoBehaviour,
     public void OnEndDrag(PointerEventData eventData)
     {
         _isDragging = false;
+
         if (_fxHelper != null)
         {
             bool validTarget = false;
             TargetRule rule = Data.GetDominatingTargetRule();
-            
-            Debug.Log(rule);
-            
+
             EnemyRender targetEnemy = null;
-            
+
             switch (rule)
             {
-                // Check if card was dropped over an enemy
                 case TargetRule.Enemy:
-                {
                     targetEnemy = GetEnemyOnMouse(eventData.position);
                     if (targetEnemy != null)
-                    {
                         validTarget = true;
-                    }
                     break;
-                }
+
                 case TargetRule.Self:
-                    // Self-targeting cards are always valid on release
                     validTarget = true;
                     break;
             }
 
-            // If valid target, attempt to play the card through PlayerManager
             if (validTarget)
             {
                 var playerManager = FindFirstObjectByType<PlayerManager>();
@@ -219,31 +212,28 @@ public class CardRender : MonoBehaviour,
                 {
                     bool cardPlayed = playerManager.PlayCard(Data, Instance, targetEnemy);
                     if (!cardPlayed)
-                    {
-                        // Card couldn't be played (not enough energy, etc.)
                         validTarget = false;
-                    }
                     else
                     {
-                        // Card was played successfully - refresh deck viewers smartly
                         var roundManager = FindFirstObjectByType<RoundManager>();
                         if (roundManager != null && roundManager.handViewer != null)
-                        {
                             roundManager.handViewer.RebuildSmart();
-                        }
                     }
                 }
                 else
                 {
-                    Debug.LogError("[CardRender] PlayerManager not found!");
                     validTarget = false;
                 }
             }
-            
-            _fxHelper.OnCardRelease(this, validTarget: validTarget);
+
+            _fxHelper.OnCardRelease(this, validTarget);
+
+            // ALWAYS FIX LAYOUT AFTER DRAG
+            var handViewer = FindFirstObjectByType<DeckViewer>();
+            if (handViewer != null)
+                handViewer.RebuildSmart();
         }
     }
-
 
     private EnemyRender GetEnemyOnMouse(Vector2 screenPosition)
     {
