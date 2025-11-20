@@ -15,6 +15,9 @@ public class CoinFlipPopupController : MonoBehaviour
 
         if (quitButton != null)
             quitButton.onClick.AddListener(OnQuitClicked);
+
+        // Hide popup on start (will be shown when OpenCoinFlipPopup is called)
+        gameObject.SetActive(false);
     }
 
     public void OnQuitClicked()
@@ -22,6 +25,6 @@ public class CoinFlipPopupController : MonoBehaviour
         if (launcher != null)
             launcher.CloseCoinFlipPopup();
         else
-            Destroy(gameObject); // fallback if launcher not found
+            gameObject.SetActive(false); // fallback: just hide it
     }
 }

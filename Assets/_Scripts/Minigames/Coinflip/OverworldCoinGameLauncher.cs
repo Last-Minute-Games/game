@@ -3,7 +3,8 @@ using UnityEngine;
 public class OverworldCoinGameLauncher : MonoBehaviour
 {
     [Header("Assign in Inspector")]
-    public GameObject coinFlipPopupPrefab;
+    [Tooltip("Direct reference to the coinflip popup GameObject in the scene.")]
+    public GameObject coinFlipPopup;
     public MonoBehaviour[] controlsToDisable;
 
     [Header("HUD (optional)")]
@@ -17,7 +18,6 @@ public class OverworldCoinGameLauncher : MonoBehaviour
     public float sceneOpenDelay = 0.35f; // block instant open after load/room swap
     public float reopenCooldown = 0.25f; // block double taps
 
-    GameObject _popupInstance;
     bool _canOpen = false;
     float _lastCloseTime = -999f;
     private Transform player;
@@ -58,12 +58,13 @@ public class OverworldCoinGameLauncher : MonoBehaviour
     {
         if (!_canOpen) return;
         if (Time.unscaledTime - _lastCloseTime < reopenCooldown) return;
-        if (_popupInstance != null) return;
+        if (coinFlipPopup == null || coinFlipPopup.activeSelf) return;
 
-        _popupInstance = Instantiate(coinFlipPopupPrefab);
+        // Show the existing popup GameObject
+        coinFlipPopup.SetActive(true);
 
-        // NEW: pause the overworld timer
-        FindObjectOfType<ClockTimer>()?.PauseTimer(true);
+        // Pause NPCs and ClockTimer (but NOT player input - using minigame pause)
+        GlobalPause.SetMinigamePaused(true);
 
         foreach (var c in controlsToDisable) if (c) c.enabled = false;
 
@@ -73,17 +74,18 @@ public class OverworldCoinGameLauncher : MonoBehaviour
 
     public void CloseCoinFlipPopup()
     {
-        if (_popupInstance == null) return;
+        if (coinFlipPopup == null || !coinFlipPopup.activeSelf) return;
 
+        // Hide the popup GameObject (don't destroy it)
+        coinFlipPopup.SetActive(false);
         
-
-        Destroy(_popupInstance);
         foreach (var c in controlsToDisable) if (c) c.enabled = true;
 
         if (hudGroup != null)
             hudGroup.SetActive(true);
 
-        FindObjectOfType<ClockTimer>()?.PauseTimer(false);
+        // Resume NPCs and ClockTimer (using minigame pause)
+        GlobalPause.SetMinigamePaused(false);
 
         _lastCloseTime = Time.unscaledTime;
         _canOpen = false;
