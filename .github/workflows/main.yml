@@ -204,7 +204,7 @@ jobs:
     defaults:
       run:
         shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
-
+    name: Build Linux
     # Linux builds run on Windows runners using PowerShell (Unity cross-compiles)
     env:
       UNITY_VERSION: "6000.2.2f1"
@@ -375,12 +375,17 @@ jobs:
     defaults:
       run:
         shell: bash
-
+    name: Build macOS (${{ matrix.display_name || matrix.architecture }})
     # macOS builds run on macOS runners using bash
     # Build for both x64 (Intel) and ARM64 (Apple Silicon)
     strategy:
+      fail-fast: false
       matrix:
-        architecture: [x64, ARM64]
+        include:
+          - architecture: x64
+            display_name: macOS Intel (x64)
+          - architecture: ARM64
+            display_name: macOS Apple Silicon (ARM64)
 
     env:
       UNITY_VERSION: "6000.2.2f1"
@@ -461,7 +466,7 @@ jobs:
           fi
 
       # Run your bash build script
-      - name: Build (macOS ${{ matrix.architecture }})
+      - name: Build (${{ matrix.display_name }})
         run: |
           chmod +x ./ci/build.sh
           ./ci/build.sh "$UNITY_VERSION" "$PROJECT_PATH" "$OUT_DIR" "macOS" "$VERSION" "${{ matrix.architecture }}"
@@ -531,7 +536,7 @@ jobs:
           compression-level: 0
 
       # Upload to itch.io using Butler (skip in artifact-only mode)
-      - name: Upload to itch.io (macOS ${{ matrix.architecture }})
+      - name: Upload to itch.io (${{ matrix.display_name }})
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
