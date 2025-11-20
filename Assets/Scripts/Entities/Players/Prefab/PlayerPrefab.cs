@@ -128,6 +128,22 @@ namespace Entities.Players.Prefab
 
             // Cache initial block
             _lastBlock = playerManager.playerData.block;
+
+            playerManager.playerData.OnEnergyChanged += HandleEnergyChanged;
+        }
+
+        private void HandleEnergyChanged()
+        {
+            // Update text ONLY
+            energyText.text = $"{playerManager.playerData.currentEnergy}/{playerManager.playerData.maxEnergy}";
+
+            // If you want gray-out at 0, add this line:
+            energyIcon.color = (playerManager.playerData.currentEnergy > 0)
+                ? Color.white
+                : new Color(0.5f, 0.5f, 0.5f);
+
+            // If you want pop animation:
+            energyText.transform.DOPunchScale(Vector3.one * 0.2f, 0.2f);
         }
 
         private void Update()

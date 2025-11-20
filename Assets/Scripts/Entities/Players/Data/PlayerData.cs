@@ -14,6 +14,8 @@ namespace Entities.Players.Data
         [Header("Collections")]
         public List<CardData> usableCards = new List<CardData>();
 
+        public event Action OnEnergyChanged;
+
         // Current energy (runtime state)
         public int currentEnergy;
 
@@ -30,17 +32,20 @@ namespace Entities.Players.Data
         public void ResetEnergy()
         {
             currentEnergy = baseEnergy;
+            OnEnergyChanged?.Invoke();
         }
 
         public void GainEnergy(int amount)
         {
             currentEnergy = Mathf.Min(currentEnergy + amount, maxEnergy);
+            OnEnergyChanged?.Invoke();
         }
 
         public bool SpendEnergy(int amount)
         {
             if (currentEnergy < amount) return false;
             currentEnergy -= amount;
+            OnEnergyChanged?.Invoke();
             return true;
         }
     }
