@@ -123,6 +123,9 @@ public class RoundManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
+        // 
+        enemyManager.ResetAllEnemyBlock();
+
         // Enemies execute their actions
         enemyManager.ExecuteEnemyTurn(ref player.playerData);
 

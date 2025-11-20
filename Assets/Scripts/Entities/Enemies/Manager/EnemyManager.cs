@@ -184,11 +184,11 @@ namespace Entities.Enemies.Manager
                 var enemy = enemies[i];
                 if (enemy.isAlive)
                 {
-                    enemy.block = 0;
+                    // enemy.block = 0;
                     var r = GetRenderFor(enemy);
                     if (r != null)
                     {
-                        r.UpdateHealth(); // Show shields disappearing
+                        // r.UpdateHealth(); // Show shields disappearing
                     }
                 }
             }
@@ -287,6 +287,21 @@ namespace Entities.Enemies.Manager
 
                     RemoveDeadEnemies(); // remove from manager list
                 }
+            }
+        }
+
+        // for the start of player rounds, reset all enemy block helper
+        public void ResetAllEnemyBlock()
+        {
+            foreach (var enemy in enemies)
+            {
+                if (!enemy.isAlive) continue;
+
+                enemy.block = 0;
+
+                var r = GetRenderFor(enemy);
+                if (r != null)
+                    r.UpdateHealth();
             }
         }
 
