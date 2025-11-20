@@ -62,6 +62,8 @@ public class EntityData
                 isPlayer ? TooltipDirection.Down : TooltipDirection.Up
             );
         }
+        if (isPlayer)
+            CameraShake.Shake(0.15f, (0.5f * ((float)amount/(float)maxHealth)));
     }
 
     public virtual void GainBlock(int amount)
