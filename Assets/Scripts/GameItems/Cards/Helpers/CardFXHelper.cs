@@ -15,9 +15,16 @@ namespace GameItems.Cards.Helpers
         // Public API (state-based actions)
         // ────────────────────────────────
 
+        // interaction lock for on draw/card pull events
+        public static class CardInteraction
+        {
+            public static bool Locked = false;
+        }
+
         // Draw card onto player hand
         public void OnCardDrawn(CardRender card)
         {
+            if (CardInteraction.Locked) return;
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardDrawn called with null card.");
@@ -31,6 +38,7 @@ namespace GameItems.Cards.Helpers
         // When hovering over a card
         public void OnCardHover(CardRender card)
         {
+            if (CardInteraction.Locked) return;
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardHover called with null card.");
@@ -46,6 +54,7 @@ namespace GameItems.Cards.Helpers
         // When hover exits (mouse leaves the card)
         public void OnCardHoverExit(CardRender card)
         {
+            if (CardInteraction.Locked) return;
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardHoverExit called with null card.");
@@ -58,6 +67,7 @@ namespace GameItems.Cards.Helpers
         // When selecting (clicking / picking up) a card
         public void OnCardSelect(CardRender card, bool updatePosition = true)
         {
+            if (CardInteraction.Locked) return;
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardSelect called with null card.");
@@ -74,6 +84,7 @@ namespace GameItems.Cards.Helpers
         // Called every frame while dragging the card
         public void OnCardDrag(CardRender card, Vector2 cursorPos)
         {
+            if (CardInteraction.Locked) return;
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardDrag called with null card.");
@@ -102,6 +113,7 @@ namespace GameItems.Cards.Helpers
         // When card is released (played or cancelled)
         public void OnCardRelease(CardRender card, bool validTarget)
         {
+            if (CardInteraction.Locked) return;
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardRelease called with null card.");
@@ -125,6 +137,7 @@ namespace GameItems.Cards.Helpers
         // When card is discarded or removed from hand (visually, needs data to be handled via manager)
         public void OnCardDiscard(CardRender card)
         {
+            if (CardInteraction.Locked) return;
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardDiscard called with null card.");
@@ -138,6 +151,7 @@ namespace GameItems.Cards.Helpers
         // On card exit, ensure Hover Visuals are reversed.
         public void OnCardExit(CardRender card)
         {
+            if (CardInteraction.Locked) return;
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardExit called with null card.");

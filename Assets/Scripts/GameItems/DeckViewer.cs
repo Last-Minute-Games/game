@@ -7,6 +7,7 @@ namespace GameItems
     using UnityEngine;
     using UnityEngine.Rendering;
     using UnityEngine.Splines;
+    using GameItems.Cards.Helpers;
 
     public class DeckViewer : MonoBehaviour
     {
@@ -104,10 +105,10 @@ namespace GameItems
                     .DORotate(rotation.eulerAngles, duration)
                     .SetEase(Ease.OutQuad);
             }
-            
-            
-
             yield return new WaitForSeconds(duration);
+
+            CardFXHelper.CardInteraction.Locked = false; // enable card interactions
+
         }
 
         /// <summary>
@@ -116,6 +117,7 @@ namespace GameItems
         /// </summary>
         public void RebuildSmart()
         {
+            CardFXHelper.CardInteraction.Locked = true;
             if (cardPrefab == null)
             {
                 Debug.LogWarning("DeckViewer: cardPrefab not assigned");
@@ -256,6 +258,8 @@ namespace GameItems
         /// </summary>
         public void Rebuild()
         {
+            CardFXHelper.CardInteraction.Locked = true; // lock card interaction to prevent malformation
+
             Clear();
             if (cardPrefab == null)
             {
