@@ -247,9 +247,11 @@ public class RoundManager : MonoBehaviour
             endScreenUI.ShowMessage("YOU WIN", new Color(1f, 0.84f, 0.0f)); // gold
 
         // TODO: update timer shit
-
-        StartCoroutine(ReturnToOverworldDelayed());
-    }
+        var clock = FindObjectOfType<ClockTimer>();
+        if (clock != null)
+            clock.AddTime(10f);   // TODO: adjust reward amount
+            StartCoroutine(ReturnToOverworldDelayed());
+        }
 
     // -------------------------------------------------------
     // PLAYER LOSSES
@@ -262,9 +264,11 @@ public class RoundManager : MonoBehaviour
             endScreenUI.ShowMessage("YOU LOSE", Color.red);
 
         // TODO: wrong todo just ummm timer change flag shit
-
-        StartCoroutine(ReturnToOverworldDelayed());
-    }
+        var clock = FindObjectOfType<ClockTimer>();
+        if (clock != null)
+            clock.RemoveTime(100f);   // TODO: adjust penalty amount
+            StartCoroutine(ReturnToOverworldDelayed());
+        }
 
     private IEnumerator ReturnToOverworldDelayed()
     {
