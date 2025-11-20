@@ -255,6 +255,9 @@ public class MinigameController : MonoBehaviour
     {
         HideHUD();
 
+        // Pause NPCs and timer, but NOT player input (using minigame pause)
+        GlobalPause.SetMinigamePaused(true);
+
         overworldPlayerScript.enabled = false;
         sokobanPlayerScript.enabled = true;
 
@@ -279,8 +282,8 @@ public class MinigameController : MonoBehaviour
     {
         ///GameFlags.RemoveFlag("InMinigame"); //somehting about line 77 in GAmeFlags.cs file
 
-        ClockTimer clockTimer = FindObjectOfType<ClockTimer>();
-        clockTimer?.PauseTimer(false);   // Pause
+        // Resume NPCs and timer (using minigame pause)
+        GlobalPause.SetMinigamePaused(false);
 
         sokobanRoot.SetActive(false);
 
