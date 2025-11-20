@@ -34,6 +34,8 @@ public class MinigameController : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] GameObject hudRoot;
+    private CanvasGroup hudCanvasGroup;
+    private bool hudWasActive;
 
     // References for internal logic
     private GameObject player;
@@ -65,6 +67,12 @@ public class MinigameController : MonoBehaviour
         winManager = sokobanRoot.GetComponentInChildren<WinConditionManager>();
         if (winManager == null) { Debug.LogError("WinConditionManager not found inside the Sokoban Root."); }
 
+        if (hudRoot != null)
+        {
+            hudCanvasGroup = hudRoot.GetComponent<CanvasGroup>();
+            hudWasActive = hudRoot.activeSelf;
+        }
+
         // --- FIX: SET INITIAL STATE (REQUIRED FOR IN-SCENE MINIGAMES) ---
         if (sokobanRoot != null)
         {
@@ -83,16 +91,7 @@ public class MinigameController : MonoBehaviour
     /// </summary>
     public void StartSokoban()
     {
-        if (hudRoot != null)
-        {
-            CanvasGroup cg = hudRoot.GetComponent<CanvasGroup>();
-            if (cg != null)
-            {
-                cg.alpha = 0f;
-                cg.interactable = false;
-                cg.blocksRaycasts = false;
-            }
-        } // hide global HUD
+        HideHUD();
 
         if (player == null || sokobanRoot == null) return;
 
@@ -158,16 +157,7 @@ public class MinigameController : MonoBehaviour
                 Camera.main.transform.position.z // Keep the original Z depth
             );
         }
-        if (hudRoot != null)
-        {
-            CanvasGroup cg = hudRoot.GetComponent<CanvasGroup>();
-            if (cg != null)
-            {
-                cg.alpha = 1f;
-                cg.interactable = true;
-                cg.blocksRaycasts = true;
-            }
-        }  // show global HUD again
+        ShowHUD();  // show global HUD again
 
         GameFlags.SetFlag("minigame.sokoban.finish");
 
@@ -194,5 +184,38 @@ public class MinigameController : MonoBehaviour
             g.ResetVisual();   // calls UpdateVisual(false)
 
         Debug.Log("Puzzle reset complete.");
+    }
+
+    private void HideHUD()
+    {
+        if (hudRoot == null) return;
+
+        if (hudCanvasGroup != null)
+        {
+            hudCanvasGroup.alpha = 0f;
+            hudCanvasGroup.interactable = false;
+            hudCanvasGroup.blocksRaycasts = false;
+        }
+        else
+        {
+            hudWasActive = hudRoot.activeSelf;
+            hudRoot.SetActive(false);
+        }
+    }
+
+    private void ShowHUD()
+    {
+        if (hudRoot == null) return;
+
+        if (hudCanvasGroup != null)
+        {
+            hudCanvasGroup.alpha = 1f;
+            hudCanvasGroup.interactable = true;
+            hudCanvasGroup.blocksRaycasts = true;
+        }
+        else
+        {
+            hudRoot.SetActive(hudWasActive);
+        }
     }
 }
