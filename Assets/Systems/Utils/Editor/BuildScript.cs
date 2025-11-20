@@ -104,12 +104,12 @@ public static class BuildScript
         
         // Build universal binary (Intel 64-bit + Apple Silicon)
         // Unity 6 supports building universal binaries that work on both architectures
-        OSArchitecture architecture = OSArchitecture.Universal;
+        // According to Unity docs: 0 = None, 1 = ARM64, 2 = Universal
         UnityEngine.Debug.Log("[BuildScript] Building universal binary for Intel 64-bit + Apple Silicon");
         
-        // Set the architecture to universal before building
-        PlayerSettings.SetArchitecture(NamedBuildTarget.Standalone, (int)architecture);
-        UnityEngine.Debug.Log("[BuildScript] Set architecture to Universal (Intel 64-bit + Apple Silicon)");
+        // Set the architecture to universal (2) before building
+        PlayerSettings.SetArchitecture(NamedBuildTarget.Standalone, 2);
+        UnityEngine.Debug.Log("[BuildScript] Set architecture to Universal (2) - Intel 64-bit + Apple Silicon");
         
         string[] scenes = EditorBuildSettings.scenes
             .Where(s => s.enabled)
