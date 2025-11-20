@@ -246,7 +246,7 @@ public class RoundManager : MonoBehaviour
         if (endScreenUI != null)
             endScreenUI.ShowMessage("YOU WIN", new Color(1f, 0.84f, 0.0f)); // gold
 
-        // TODO: Grant rewards, XP, show loot, update progression...
+        // TODO: update timer shit
 
         StartCoroutine(ReturnToOverworldDelayed());
     }
@@ -261,7 +261,7 @@ public class RoundManager : MonoBehaviour
         if (endScreenUI != null)
             endScreenUI.ShowMessage("YOU LOSE", Color.red);
 
-        // TODO: Trigger respawn, penalties, lose gold, stats reset...
+        // TODO: wrong todo just ummm timer change flag shit
 
         StartCoroutine(ReturnToOverworldDelayed());
     }
@@ -270,7 +270,6 @@ public class RoundManager : MonoBehaviour
     {
         yield return new WaitForSeconds(3f);
 
-        // TODO: Replace with your actual overworld scene name
         UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
     }
 }
