@@ -43,6 +43,11 @@ namespace GameItems.Cards.Helpers
         public void HoverVisuals(CardRender card)
         {
             var cardTransform = card.transform;
+
+            // Record original scale BEFORE any resizing happens
+            if (_originalScale == Vector3.zero)
+                _originalScale = cardTransform.localScale;
+
             cardTransform.DOScale(hoverScale, 0.15f);
         }
 
@@ -58,7 +63,8 @@ namespace GameItems.Cards.Helpers
         {
             var cardTransform = card.transform;
             _originalPosition = cardTransform.localPosition;
-            _originalScale = cardTransform.localScale;
+            // _originalScale = cardTransform.localScale;
+            // ^ removed to prevent hover or scale state as new 'original scale'
 
             cardTransform.DOScale(selectScale, 0.15f);
         }
