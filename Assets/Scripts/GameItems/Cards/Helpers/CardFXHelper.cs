@@ -123,6 +123,7 @@ namespace GameItems.Cards.Helpers
             sfxHelper?.PlayDiscard();
         }
 
+        // On card exit, ensure Hover Visuals are reversed.
         public void OnCardExit(CardRender card)
         {
             if (card == null)

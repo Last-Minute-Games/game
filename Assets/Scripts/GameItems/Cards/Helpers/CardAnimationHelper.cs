@@ -46,6 +46,13 @@ namespace GameItems.Cards.Helpers
             cardTransform.DOScale(hoverScale, 0.15f);
         }
 
+        // Called by FXHelper.OnCardExit()
+        public void HoverVisualsReverse(CardRender card)
+        {
+            var cardTransform = card.transform;
+            cardTransform.DOScale(_originalScale, 0.15f).SetEase(Ease.OutCubic);
+        }
+
         // Called by FXHelper.OnCardSelect()
         public void SelectVisuals(CardRender card)
         {
@@ -139,12 +146,6 @@ namespace GameItems.Cards.Helpers
                 .DOScale(0f, 0.2f)
                 .SetEase(Ease.InBack)
                 .OnComplete(() => Destroy(card.gameObject));
-        }
-
-        public void HoverVisualsReverse(CardRender card)
-        {
-            var cardTransform = card.transform;
-            cardTransform.DOScale(_originalScale, 0.15f).SetEase(Ease.OutCubic);
         }
 
         private Camera ResolveCamera()
