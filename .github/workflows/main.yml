@@ -466,10 +466,18 @@ jobs:
       - name: Zip build
         id: zip
         run: |
+          # Ensure the builds root directory exists
+          mkdir -p "$BUILDS_ROOT"
+          
           zipPath="$BUILDS_ROOT/CastleOfTime-$VERSION-macOS-${{ matrix.architecture }}.zip"
           if [ -f "$zipPath" ]; then
             rm -f "$zipPath"
           fi
+          
+          # Ensure the directory containing the zip file exists
+          zipDir=$(dirname "$zipPath")
+          mkdir -p "$zipDir"
+          
           cd "$OUT_DIR"
           zip -r "$zipPath" .
           echo "ZIP_PATH=$zipPath" >> $GITHUB_ENV
