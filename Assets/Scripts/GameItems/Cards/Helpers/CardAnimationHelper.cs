@@ -97,13 +97,6 @@ namespace GameItems.Cards.Helpers
             cardTransform.DOLocalMove(_originalPosition, 0.15f).SetEase(Ease.OutQuad);
         }
 
-        // Called by FXHelper.OnCardExit()
-        public void HoverVisualsReverse(CardRender card)
-        {
-            var cardTransform = card.transform;
-            cardTransform.DOScale(_originalScale, 0.15f).SetEase(Ease.OutCubic);
-        }
-
         // Called by FXHelper.OnCardSelect()
         public void SelectVisuals(CardRender card)
         {

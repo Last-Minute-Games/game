@@ -144,7 +144,7 @@ namespace GameItems.Cards.Helpers
                 return;
             }
 
-            animHelper?.HoverVisualsReverse(card);
+            animHelper?.HoverExit(card);
         }
     }
 }
