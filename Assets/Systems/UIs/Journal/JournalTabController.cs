@@ -31,10 +31,16 @@ public class JournalUI_Named : MonoBehaviour
     private EnvironmentSoundHandler _environmentSoundHandler;
     private bool isTutorialActive = false;
 
+    // Cache all Buttons under this journal so we can disable keyboard navigation/submit
+    private Button[] _journalButtons = new Button[0];
+
     void Awake()
     {
         if (!cg) cg = GetComponent<CanvasGroup>();
         allPages = new[] { CharactersPage, EvidencePage, InformationPage, MonstersPage, TutorialsPage };
+
+        // Cache buttons (include inactive so tutorial-close button is covered)
+        _journalButtons = GetComponentsInChildren<Button>(true);
 
         // Initialize journal manager AFTER GameFlags has time to initialize
         if (journalManager != null)
@@ -77,10 +83,20 @@ public class JournalUI_Named : MonoBehaviour
             tutorialCloseButton.onClick.AddListener(CloseTutorial);
             Debug.Log("[JournalUI_Named] Tutorial close button wired up");
         }
+
+        // Disable keyboard navigation/selection for all journal buttons to prevent Space/Submit activation
+        DisableKeyboardNavigationOnButtons();
     }
 
     void OnEnable()
     {
+        // Clear any currently selected UI element so keyboard Submit/Space won't activate it
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
+
+        // Ensure buttons still have navigation disabled (in case they were enabled elsewhere)
+        DisableKeyboardNavigationOnButtons();
+
         // Check if we should show the tutorial when journal is opened
         if (tutorialOverlay != null && !GameFlags.HasFlag(tutorialShownFlagName))
         {
@@ -95,11 +111,34 @@ public class JournalUI_Named : MonoBehaviour
 
     void Update()
     {
-        // REMOVED: The problematic mouse click check that was closing the tutorial immediately
-        // Tutorial should only close via explicit button click or this escape key
-        if (isTutorialActive && Input.GetKeyDown(KeyCode.Escape))
+        // CRITICAL: Completely consume Space key ALWAYS when this component is active
+        // This prevents Space from doing ANYTHING in the journal
+        if (gameObject.activeInHierarchy && Input.GetKeyDown(KeyCode.Space))
         {
-            CloseTutorial();
+            // Clear EventSystem selection
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(null);
+            
+            // Completely consume the input - don't do anything else
+            return;
+        }
+    }
+
+    private void DisableKeyboardNavigationOnButtons()
+    {
+        if (_journalButtons == null) return;
+
+        foreach (var btn in _journalButtons)
+        {
+            if (btn == null) continue;
+
+            try
+            {
+                var nav = btn.navigation;
+                nav.mode = Navigation.Mode.None;
+                btn.navigation = nav;
+            }
+            catch { }
         }
     }
 
@@ -118,6 +157,10 @@ public class JournalUI_Named : MonoBehaviour
         isTutorialActive = true;
         
         // DON'T set the flag here - wait until the player dismisses it
+
+        // Make sure nothing is selected so keyboard won't close it
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
     }
 
     /// <summary>

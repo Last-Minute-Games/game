@@ -105,6 +105,7 @@ public class BlackjackGame : MonoBehaviour
 
     public void OnHit()
     {
+        Debug.Log("Hit pressed");
         if (!playerTurn) return;
         player.Add(deck.Draw());
         UpdateUI(hideDealerHoleCard: true);

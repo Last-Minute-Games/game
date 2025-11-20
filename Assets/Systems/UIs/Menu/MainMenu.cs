@@ -36,6 +36,17 @@ public class Startscreen : MonoBehaviour
     [Header("Settings")]
     public Settings settingsComponent; // Reference to the Settings component
 
+    // --- Music support for Main Menu ---
+    [Header("Music")]
+    [Tooltip("Optional: reference a MusicManager in the scene (preferred). If not set, a local AudioSource will be created.")]
+    public MusicManager musicManager;
+    public AudioClip menuIntro; // optional intro clip
+    public AudioClip menuLoop;  // looped theme for the main menu
+    public AudioSource menuAudioSource; // optional custom audio source
+    public float musicFadeInDuration = 2f;
+
+    private Coroutine _menuMusicCoroutine;
+
     private Vector2 _creditLogoStartPos;
     private Vector2 _creditTextStartPos;
     private bool _creditsPlaying = false; // prevent re-entry and ensure scroll stops
@@ -153,6 +164,120 @@ public class Startscreen : MonoBehaviour
         UIButtonFX.suppressClickInMainMenu = true; // ensure clicks in main menu don't play click sounds
         
         StartCoroutine(LogoStartup());
+
+        // --- Initialize main menu music ---
+        InitializeMainMenuMusic();
+    }
+
+    private void InitializeMainMenuMusic()
+    {
+        // Try to find a MusicManager if one isn't assigned
+        if (musicManager == null)
+        {
+            var go = GameObject.Find("MainMenuMusic");
+            if (go != null)
+                musicManager = go.GetComponent<MusicManager>();
+
+            if (musicManager == null)
+                musicManager = FindObjectOfType<MusicManager>();
+        }
+
+        // If we have a MusicManager, prefer using it
+        if (musicManager != null)
+        {
+            if (menuIntro != null && menuLoop != null)
+            {
+                _menuMusicCoroutine = StartCoroutine(PlayIntroThenLoopWithManager());
+            }
+            else if (menuLoop != null)
+            {
+                musicManager.SetAudioClip(menuLoop, true);
+                musicManager.FadeAndPlay(0.5f, musicFadeInDuration);
+            }
+
+            return;
+        }
+
+        // Fallback to a local AudioSource if no MusicManager
+        if (menuAudioSource == null)
+        {
+            var handler = GameObject.Find("EnvironmentSoundHandler");
+            GameObject audioObj = new GameObject("MainMenuMusicSource");
+            audioObj.transform.SetParent(handler ? handler.transform : transform);
+            audioObj.transform.localPosition = Vector3.zero;
+            menuAudioSource = audioObj.AddComponent<AudioSource>();
+            menuAudioSource.playOnAwake = false;
+            menuAudioSource.spatialBlend = 0f; // 2D
+            menuAudioSource.loop = true;
+        }
+
+        if (menuIntro != null && menuLoop != null)
+        {
+            _menuMusicCoroutine = StartCoroutine(PlayIntroThenLoopLocal());
+        }
+        else if (menuLoop != null)
+        {
+            menuAudioSource.clip = menuLoop;
+            menuAudioSource.loop = true;
+            menuAudioSource.volume = 0f;
+            menuAudioSource.Play();
+            StartCoroutine(FadeInAudio(menuAudioSource, 0.5f, musicFadeInDuration));
+        }
+    }
+
+    private IEnumerator PlayIntroThenLoopWithManager()
+    {
+        if (musicManager == null) yield break;
+
+        musicManager.SetAudioClip(menuIntro, false);
+        musicManager.Play();
+
+        // Wait while intro plays
+        var src = musicManager.GetAudioSource();
+        if (src != null)
+        {
+            yield return new WaitWhile(() => src.isPlaying);
+        }
+        else
+        {
+            // fallback: wait length of clip
+            yield return new WaitForSeconds(menuIntro.length);
+        }
+
+        musicManager.SetAudioClip(menuLoop, true);
+        musicManager.FadeAndPlay(0.5f, musicFadeInDuration);
+    }
+
+    private IEnumerator PlayIntroThenLoopLocal()
+    {
+        if (menuAudioSource == null) yield break;
+
+        menuAudioSource.clip = menuIntro;
+        menuAudioSource.loop = false;
+        menuAudioSource.volume = 0.5f;
+        menuAudioSource.Play();
+
+        yield return new WaitWhile(() => menuAudioSource.isPlaying);
+
+        menuAudioSource.clip = menuLoop;
+        menuAudioSource.loop = true;
+        menuAudioSource.Play();
+
+        StartCoroutine(FadeInAudio(menuAudioSource, 0.5f, musicFadeInDuration));
+    }
+
+    private IEnumerator FadeInAudio(AudioSource src, float targetVolume, float duration)
+    {
+        if (src == null) yield break;
+        float start = src.volume;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            src.volume = Mathf.Lerp(start, targetVolume, Mathf.Clamp01(t / duration));
+            yield return null;
+        }
+        src.volume = targetVolume;
     }
 
     public void ShowCredits()

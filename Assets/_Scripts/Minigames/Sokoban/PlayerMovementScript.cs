@@ -3,13 +3,36 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
+/// <summary>
+/// Handles Sokoban-specific grid-based player movement.
+/// This script is intended to be managed by <see cref="MinigameController"/>.
+/// </summary>
 public class PlayerMovementScript : MonoBehaviour
 {
     // Keeping this simple since the controller manages enable/disable state
     private bool ReadyToMove = true;
+    private MinigameController controller;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource moveAudioSource;
+    [SerializeField] private AudioClip moveClip;
+    [Range(0f, 1f)]
+    [SerializeField] private float moveVolume = 0.85f;
+    [Tooltip("Random pitch variance applied each move for variety.")]
+    [SerializeField] private float pitchVariance = 0.05f;
+
+    void Awake()
+    {
+        controller = MinigameController.Instance ?? FindObjectOfType<MinigameController>();
+    }
 
     void Update()
     {
+        if (!IsSokobanContextActive())
+        {
+            return;
+        }
+
         Vector2 moveinput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         moveinput.Normalize();
 
@@ -49,6 +72,7 @@ public class PlayerMovementScript : MonoBehaviour
             // NEW FIX: Snap the player back to the grid before moving (prevents drift)
             transform.position = new Vector3(Mathf.Round(transform.position.x), Mathf.Round(transform.position.y), transform.position.z);
             transform.Translate(direction);
+            PlayMoveAudio();
             return true;
         }
     }
@@ -93,5 +117,33 @@ public class PlayerMovementScript : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool IsSokobanContextActive()
+    {
+        if (controller == null)
+        {
+            controller = MinigameController.Instance ?? FindObjectOfType<MinigameController>();
+        }
+
+        if (controller == null)
+        {
+            return true; // fail-safe to avoid locking player movement if controller missing
+        }
+
+        return controller.sokobanPlayerScript == this && controller.enabled;
+    }
+
+    private void PlayMoveAudio()
+    {
+        if (moveAudioSource == null || moveClip == null)
+        {
+            return;
+        }
+
+        float originalPitch = moveAudioSource.pitch;
+        moveAudioSource.pitch = 1f + Random.Range(-pitchVariance, pitchVariance);
+        moveAudioSource.PlayOneShot(moveClip, moveVolume);
+        moveAudioSource.pitch = originalPitch;
     }
 }

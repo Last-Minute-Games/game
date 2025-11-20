@@ -8,9 +8,13 @@ using UnityEngine;
 public static class GlobalPause
 {
     public static event Action<bool> OnPausedChanged;
+    public static event Action<bool> OnMinigamePausedChanged;
 
     private static bool _isPaused = false;
     public static bool IsPaused => _isPaused;
+
+    private static bool _isMinigamePaused = false;
+    public static bool IsMinigamePaused => _isMinigamePaused;
 
     /// <summary>
     /// Set global paused state. This will toggle Time.timeScale and try to disable
@@ -53,5 +57,29 @@ public static class GlobalPause
     public static void Toggle()
     {
         SetPaused(!_isPaused);
+    }
+
+    /// <summary>
+    /// Sets minigame pause state. This pauses NPCs and ClockTimer, but does NOT pause
+    /// player input or Time.timeScale. Use this during minigames so player can still interact
+    /// but the overworld is paused.
+    /// </summary>
+    public static void SetMinigamePaused(bool pause)
+    {
+        if (_isMinigamePaused == pause) return;
+        _isMinigamePaused = pause;
+
+        // Pause/resume clock timer
+        var clock = UnityEngine.Object.FindObjectOfType<ClockTimer>(true);
+        if (clock != null)
+        {
+            try { clock.PauseTimer(pause); } catch { }
+        }
+
+        // Note: NPCs will check IsMinigamePaused in their Update() methods
+        // We don't pause Time.timeScale or player input here
+        
+        OnMinigamePausedChanged?.Invoke(pause);
+        Debug.Log($"[GlobalPause] Minigame paused set to {pause} (NPCs and Timer paused, player input still active)");
     }
 }

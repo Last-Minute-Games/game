@@ -132,25 +132,7 @@ public class SimplePauseMenu : MonoBehaviour
     void Pause()
     {
         isPaused = true;
-        Time.timeScale = 0f;
-
-        // Disable player input
-        if (_playerInput != null)
-        {
-            _playerInput.isInputEnabled = false;
-        }
-
-        // Pause clock timer
-        if (_clockTimer != null)
-        {
-            _clockTimer.PauseTimer(true);
-        }
-
-        // Disable journal UI
-        if (_journalUI != null)
-        {
-            _journalUI.SetInputEnabled(false);
-        }
+        GlobalPause.SetPaused(true);
 
         if (pausePanel) pausePanel.SetActive(true);
         ShowBlurEffect(true);
@@ -159,25 +141,7 @@ public class SimplePauseMenu : MonoBehaviour
     void Resume()
     {
         isPaused = false;
-        Time.timeScale = 1f;
-
-        // Re-enable player input
-        if (_playerInput != null)
-        {
-            _playerInput.isInputEnabled = true;
-        }
-
-        // Resume clock timer
-        if (_clockTimer != null)
-        {
-            _clockTimer.PauseTimer(false);
-        }
-
-        // Re-enable journal UI
-        if (_journalUI != null)
-        {
-            _journalUI.SetInputEnabled(true);
-        }
+        GlobalPause.SetPaused(false);
 
         ShowBlurEffect(false);
         if (pausePanel) pausePanel.SetActive(false);
@@ -213,11 +177,11 @@ public class SimplePauseMenu : MonoBehaviour
         if (quitFadeOverlay != null)
         {
             quitFadeOverlay.gameObject.SetActive(true);
-            
+
             // Fade to black
             float elapsed = 0f;
             Color fadeColor = new Color(0, 0, 0, 0);
-            
+
             while (elapsed < quitFadeDuration)
             {
                 elapsed += Time.unscaledDeltaTime;
@@ -226,7 +190,7 @@ public class SimplePauseMenu : MonoBehaviour
                 quitFadeOverlay.color = fadeColor;
                 yield return null;
             }
-            
+
             // Ensure fully black
             fadeColor.a = 1f;
             quitFadeOverlay.color = fadeColor;
@@ -236,12 +200,8 @@ public class SimplePauseMenu : MonoBehaviour
             yield return new WaitForSecondsRealtime(0.5f);
         }
 
-        // Re-enable everything before leaving
-        Time.timeScale = 1f;
-        if (_playerInput != null)
-            _playerInput.isInputEnabled = true;
-        if (_clockTimer != null)
-            _clockTimer.PauseTimer(false);
+        // Re-enable everything before leaving via GlobalPause
+        GlobalPause.SetPaused(false);
 
         SceneManager.LoadScene(mainMenuSceneName);
     }
@@ -279,7 +239,7 @@ public class SimplePauseMenu : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / blurFadeDuration;
             float alpha = Mathf.Lerp(startAlpha, endAlpha, t);
-            
+
             Color color = blurColor;
             color.a = alpha;
             blurOverlay.color = color;
@@ -307,11 +267,7 @@ public class SimplePauseMenu : MonoBehaviour
         }
 
         // Always reset everything when destroyed
-        Time.timeScale = 1f;
-        if (_playerInput != null)
-            _playerInput.isInputEnabled = true;
-        if (_clockTimer != null)
-            _clockTimer.PauseTimer(false);
+        GlobalPause.SetPaused(false);
     }
 
     public bool IsPaused => isPaused;

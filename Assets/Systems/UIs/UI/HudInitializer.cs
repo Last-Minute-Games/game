@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
@@ -28,12 +29,17 @@ public class HudInitializer : MonoBehaviour
     
     [Tooltip("Automatically find all Image and Text components")]
     [SerializeField] private bool autoFindComponents = true;
+
+    [Header("Exclude from Animation")]
+    [Tooltip("GameObject name substrings to exclude from HUD animation (case-insensitive). Useful to exclude the Journal panel, e.g. 'Journal' or 'JournalPanel'.")]
+    [SerializeField] private string[] excludeNames = new string[] { "Journal", "JournalPanel" };
     
     [Header("First Time Animation")]
     [Tooltip("If true, resets the flag on Awake for testing purposes")]
     [SerializeField] private bool resetFlagOnAwake = false;
     
     private CanvasGroup[] allCanvasGroups;
+    private CanvasGroup[] animCanvasGroups; // filtered groups used for animation
     private Graphic[] allGraphics;
     
     private const string HUD_SHOWN_FLAG = "hudshown";
@@ -78,13 +84,19 @@ public class HudInitializer : MonoBehaviour
         {
             allCanvasGroups = targetCanvasGroups;
         }
+
+        // Filter out excluded groups (e.g. Journal)
+        animCanvasGroups = FilterExcluded(allCanvasGroups, excludeNames);
         
-        // Start invisible
-        foreach (var cg in allCanvasGroups)
+        // Start invisible for animated groups only
+        if (animCanvasGroups != null)
         {
-            if (cg != null)
+            foreach (var cg in animCanvasGroups)
             {
-                cg.alpha = 0f;
+                if (cg != null)
+                {
+                    cg.alpha = 0f;
+                }
             }
         }
     }
@@ -101,8 +113,10 @@ public class HudInitializer : MonoBehaviour
         else
         {
             // First time - stay hidden until triggered by cutscene/dialogue
-            Debug.Log("[HudInitializer] First time - HUD staying hidden until triggered");
-            // HUD remains hidden (alpha = 0) until TriggerAnimation() is called
+            // First time - immediately trigger animation automatically
+            Debug.Log("[HudInitializer] First time - triggering HUD intro animation automatically");
+            TriggerAnimation();
+
         }
     }
     
@@ -115,32 +129,41 @@ public class HudInitializer : MonoBehaviour
         for (int i = 0; i < flashCount; i++)
         {
             // Fade in quickly
-            foreach (var cg in allCanvasGroups)
+            if (animCanvasGroups != null)
             {
-                if (cg != null)
+                foreach (var cg in animCanvasGroups)
                 {
-                    cg.DOFade(1f, flashDuration * 0.5f).SetEase(Ease.Linear);
+                    if (cg != null)
+                    {
+                        cg.DOFade(1f, flashDuration * 0.5f).SetEase(Ease.Linear);
+                    }
                 }
             }
             yield return new WaitForSeconds(flashDuration * 0.5f);
             
             // Fade out quickly
-            foreach (var cg in allCanvasGroups)
+            if (animCanvasGroups != null)
             {
-                if (cg != null)
+                foreach (var cg in animCanvasGroups)
                 {
-                    cg.DOFade(0f, flashDuration * 0.5f).SetEase(Ease.Linear);
+                    if (cg != null)
+                    {
+                        cg.DOFade(0f, flashDuration * 0.5f).SetEase(Ease.Linear);
+                    }
                 }
             }
             yield return new WaitForSeconds(flashDuration * 0.5f);
         }
         
         // Final smooth fade in
-        foreach (var cg in allCanvasGroups)
+        if (animCanvasGroups != null)
         {
-            if (cg != null)
+            foreach (var cg in animCanvasGroups)
             {
-                cg.DOFade(1f, finalFadeDuration).SetEase(Ease.OutQuad);
+                if (cg != null)
+                {
+                    cg.DOFade(1f, finalFadeDuration).SetEase(Ease.OutQuad);
+                }
             }
         }
         
@@ -167,12 +190,15 @@ public class HudInitializer : MonoBehaviour
     public void ShowImmediately()
     {
         StopAllCoroutines();
-        foreach (var cg in allCanvasGroups)
+        if (animCanvasGroups != null)
         {
-            if (cg != null)
+            foreach (var cg in animCanvasGroups)
             {
-                cg.DOKill();
-                cg.alpha = 1f;
+                if (cg != null)
+                {
+                    cg.DOKill();
+                    cg.alpha = 1f;
+                }
             }
         }
     }
@@ -183,12 +209,15 @@ public class HudInitializer : MonoBehaviour
     public void HideImmediately()
     {
         StopAllCoroutines();
-        foreach (var cg in allCanvasGroups)
+        if (animCanvasGroups != null)
         {
-            if (cg != null)
+            foreach (var cg in animCanvasGroups)
             {
-                cg.DOKill();
-                cg.alpha = 0f;
+                if (cg != null)
+                {
+                    cg.DOKill();
+                    cg.alpha = 0f;
+                }
             }
         }
     }
@@ -203,5 +232,32 @@ public class HudInitializer : MonoBehaviour
             GameFlags.RemoveFlag(HUD_SHOWN_FLAG);
             Debug.Log("[HudInitializer] HUD shown flag has been reset");
         }
+    }
+
+    private CanvasGroup[] FilterExcluded(CanvasGroup[] groups, string[] exclusions)
+    {
+        if (groups == null || groups.Length == 0) return new CanvasGroup[0];
+        if (exclusions == null || exclusions.Length == 0) return groups;
+
+        List<CanvasGroup> result = new List<CanvasGroup>();
+        foreach (var cg in groups)
+        {
+            if (cg == null) continue;
+            string name = cg.gameObject.name ?? string.Empty;
+            bool exclude = false;
+            foreach (var ex in exclusions)
+            {
+                if (string.IsNullOrEmpty(ex)) continue;
+                if (name.IndexOf(ex, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    exclude = true;
+                    break;
+                }
+            }
+
+            if (!exclude) result.Add(cg);
+        }
+
+        return result.ToArray();
     }
 }
