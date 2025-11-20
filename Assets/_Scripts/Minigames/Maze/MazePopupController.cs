@@ -75,6 +75,8 @@ public class MazePopupController : MonoBehaviour
         isOpen = true;
         mazeGenerated = false;
 
+        //GlobalPause.SetPaused(true);
+
         if (hudGroup != null) //HUD off
             hudGroup.SetActive(false);
        
@@ -166,6 +168,7 @@ public class MazePopupController : MonoBehaviour
         if (!isOpen) return;
         isOpen = false;
 
+        //GlobalPause.SetPaused(false);
         // Hide popup & maze
         if (backdrop) backdrop.SetActive(false);
         if (window) window.SetActive(false);
