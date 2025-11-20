@@ -43,20 +43,57 @@ VERSION_FILE="$BUILD_OUTPUT_DIR/version.txt"
 echo -n "$VERSION" > "$VERSION_FILE"
 echo "✅ Created version.txt"
 
-# 2. Copy updater executable (architecture-specific)
-UPDATER_DIR="$PROJECT_ROOT/Updater/bin/macOS-$ARCH_LABEL"
-UPDATER_EXE="CastleOfTimeUpdater"
-UPDATER_SRC="$UPDATER_DIR/$UPDATER_EXE"
-UPDATER_DST="$BUILD_OUTPUT_DIR/$UPDATER_EXE"
-
-if [ -f "$UPDATER_SRC" ]; then
-    cp "$UPDATER_SRC" "$UPDATER_DST"
-    chmod +x "$UPDATER_DST"
-    echo "✅ Copied updater ($ARCH_LABEL): $UPDATER_EXE"
+# 2. Copy updater executable (architecture-specific or universal)
+if [ "$ARCH_LABEL" = "universal" ]; then
+    # For universal builds, we need both updaters
+    # Create a wrapper script that detects architecture and runs the appropriate updater
+    echo "Creating universal updater wrapper..."
+    
+    # Copy both architectures
+    X64_UPDATER="$PROJECT_ROOT/Updater/bin/macOS-x64/CastleOfTimeUpdater"
+    ARM64_UPDATER="$PROJECT_ROOT/Updater/bin/macOS-ARM64/CastleOfTimeUpdater"
+    
+    if [ -f "$X64_UPDATER" ] && [ -f "$ARM64_UPDATER" ]; then
+        # Create wrapper script
+        cat > "$BUILD_OUTPUT_DIR/CastleOfTimeUpdater" << 'EOF'
+#!/bin/bash
+# Universal updater wrapper - detects architecture and runs appropriate updater
+ARCH=$(uname -m)
+if [ "$ARCH" = "arm64" ]; then
+    exec "$(dirname "$0")/CastleOfTimeUpdater.arm64" "$@"
 else
-    echo "❌ Updater not found at: $UPDATER_SRC"
-    echo "   Run 'Updater/build-updater.sh Release macOS $ARCH_LABEL' first!"
-    exit 1
+    exec "$(dirname "$0")/CastleOfTimeUpdater.x64" "$@"
+fi
+EOF
+        chmod +x "$BUILD_OUTPUT_DIR/CastleOfTimeUpdater"
+        cp "$X64_UPDATER" "$BUILD_OUTPUT_DIR/CastleOfTimeUpdater.x64"
+        cp "$ARM64_UPDATER" "$BUILD_OUTPUT_DIR/CastleOfTimeUpdater.arm64"
+        chmod +x "$BUILD_OUTPUT_DIR/CastleOfTimeUpdater.x64"
+        chmod +x "$BUILD_OUTPUT_DIR/CastleOfTimeUpdater.arm64"
+        echo "✅ Created universal updater wrapper with both architectures"
+    else
+        echo "❌ Updaters not found. Expected:"
+        echo "   $X64_UPDATER"
+        echo "   $ARM64_UPDATER"
+        echo "   Run 'Updater/build-updater.sh Release macOS x64' and 'Updater/build-updater.sh Release macOS ARM64' first!"
+        exit 1
+    fi
+else
+    # For specific architecture builds
+    UPDATER_DIR="$PROJECT_ROOT/Updater/bin/macOS-$ARCH_LABEL"
+    UPDATER_EXE="CastleOfTimeUpdater"
+    UPDATER_SRC="$UPDATER_DIR/$UPDATER_EXE"
+    UPDATER_DST="$BUILD_OUTPUT_DIR/$UPDATER_EXE"
+
+    if [ -f "$UPDATER_SRC" ]; then
+        cp "$UPDATER_SRC" "$UPDATER_DST"
+        chmod +x "$UPDATER_DST"
+        echo "✅ Copied updater ($ARCH_LABEL): $UPDATER_EXE"
+    else
+        echo "❌ Updater not found at: $UPDATER_SRC"
+        echo "   Run 'Updater/build-updater.sh Release macOS $ARCH_LABEL' first!"
+        exit 1
+    fi
 fi
 
 # 3. Clean up cross-platform files
