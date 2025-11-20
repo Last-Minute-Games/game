@@ -15,8 +15,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 962
-    y: 328
+    x: 832.25
+    y: 267
     width: 190
     height: 135
   IsDragging: 1
@@ -25,10 +25,8 @@ MonoBehaviour:
     CharacterName: Adrianne
     Text: I'm afraid I don't know, no one else knows.
     CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
-  ParentNodes:
-  - {fileID: -2186291023301471932}
-  - {fileID: -6489992023795823602}
-  ChildNode: {fileID: 3289080690745976411}
+  ParentNodes: []
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -48,19 +46,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 762
-    y: 780
+    x: 851.25
+    y: 612.5
     width: 190
     height: 115
   IsDragging: 1
   IsSelected: 0
   Answers:
   - Why are we on lockdown?
-  AnswerKeys: []
-  ParentNodes:
-  - {fileID: 3843203973738420518}
-  ChildNodes:
-  - {fileID: -8853524006657271562}
+  AnswerKeys:
+  - 
+  ParentNodes: []
+  ChildNodes: []
 --- !u!114 &-4998552476944925016
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -76,8 +73,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1439
-    y: 344
+    x: 1510.75
+    y: 257.5
     width: 190
     height: 135
   IsDragging: 0
@@ -108,8 +105,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1286
-    y: 830
+    x: 1357.75
+    y: 743.5
     width: 190
     height: 135
   IsDragging: 1
@@ -117,7 +114,9 @@ MonoBehaviour:
   Answers:
   - No one, it was revealead to me in a dream.
   - It's a current rumor
-  AnswerKeys: []
+  AnswerKeys:
+  - 
+  - 
   ParentNodes:
   - {fileID: 3590813629467342575}
   ChildNodes:
@@ -138,21 +137,50 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 593
-    y: 587
+    x: 511.24994
+    y: 506
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - Why are we on lockdown?
-  - Why weren't you here last night?
-  AnswerKeys: []
+  - Yes, he took me in and gave me my position within the castle, for that I am forever
+    grateful.
+  - Where is his body now?
+  AnswerKeys:
+  - 
+  - 
   ParentNodes:
   - {fileID: 5062585804381860848}
   ChildNodes:
-  - {fileID: -8853524006657271562}
   - {fileID: 3843203973738420518}
+--- !u!114 &-58248751293291318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 532.74994
+    y: 192.5
+    width: 190
+    height: 115
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - Seems I should leave her alone.
+  AnswerKeys:
+  - 
+  ParentNodes: []
+  ChildNodes: []
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,7 +206,9 @@ MonoBehaviour:
   - {fileID: -3015308284176560980}
   - {fileID: 1347811200905938415}
   - {fileID: 1458480291181241727}
-  VariablesConfig: {fileID: 0}
+  - {fileID: 5362745953541671061}
+  - {fileID: -58248751293291318}
+  VariablesConfig: {fileID: 11400000, guid: ddd8fa02b66f28546bcc9a98be882d63, type: 2}
   _localizationTableName: 
   _characterNamesLocalizationName: 
   NodeToDrawLineFrom: {fileID: 0}
@@ -199,8 +229,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1080
-    y: 737
+    x: 1111.75
+    y: 676.5
     width: 190
     height: 135
   IsDragging: 1
@@ -231,8 +261,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1571
-    y: 746
+    x: 1642.75
+    y: 659.5
     width: 190
     height: 135
   IsDragging: 1
@@ -263,12 +293,12 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1548
-    y: 977
+    x: 1619.75
+    y: 890.5
     width: 190
     height: 135
   IsDragging: 1
-  IsSelected: 1
+  IsSelected: 0
   _sentence:
     CharacterName: Adrianne
     Text: And nothing more than a rumor, I'm sure the king is alive and well.
@@ -295,8 +325,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1148
-    y: 460
+    x: 1145.75
+    y: 285
     width: 190
     height: 155
   IsDragging: 1
@@ -305,9 +335,11 @@ MonoBehaviour:
   - When will you know anything?
   - The king died.
   - Hmm, anyone you could point me to on who would know?
-  AnswerKeys: []
-  ParentNodes:
-  - {fileID: -8853524006657271562}
+  AnswerKeys:
+  - 
+  - 
+  - 
+  ParentNodes: []
   ChildNodes:
   - {fileID: -4998552476944925016}
   - {fileID: 3590813629467342575}
@@ -327,8 +359,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1346
-    y: 620
+    x: 1417.75
+    y: 533.5
     width: 190
     height: 135
   IsDragging: 1
@@ -359,19 +391,23 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 501
-    y: 891
+    x: 554.74994
+    y: 736.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Adrianne
-    Text: I was attending to my duties.
+    Text: "The high priest has arrived to bless the body as well as prepare the royal
+      funeral rites. He is meant to also try to act as a witness to the investigation
+      and calm political tensions since the neighboring Kingdoms all respect the
+      church. He got here as soon as he could. He\u2019s in the throne room right
+      now. "
     CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
   ParentNodes:
   - {fileID: -2186291023301471932}
-  ChildNode: {fileID: -6489992023795823602}
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -391,18 +427,52 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 476.00012
-    y: 309.6667
+    x: 219.25006
+    y: 464.6667
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Adrianne
-    Text: How may I help you?
-    CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
+    Text: Yes, I was the one who found the body. Beheaded is such a terrible way
+      to go. At least it was an instant death and he did not suffer. Grover was a
+      good man, you know the bounds of his kindness. I cannot imagine why someone
+      would want to enact such violence towards him.
+    CharacterSprite: {fileID: 0}
   ParentNodes: []
   ChildNode: {fileID: -2186291023301471932}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &5362745953541671061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 246.74994
+    y: 228
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Adrianne
+    Text: I am busy right now Nikolaus. This is not the best time.
+    CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
+  ParentNodes: []
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
