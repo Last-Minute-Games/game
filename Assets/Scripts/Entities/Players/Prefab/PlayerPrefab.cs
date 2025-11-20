@@ -130,6 +130,9 @@ namespace Entities.Players.Prefab
             _lastBlock = playerManager.playerData.block;
 
             playerManager.playerData.OnEnergyChanged += HandleEnergyChanged;
+
+            playerManager.playerData.worldPosition = healthbarUI.transform.position;
+            playerManager.playerData.isPlayer = true;
         }
 
         private void HandleEnergyChanged()
@@ -156,6 +159,8 @@ namespace Entities.Players.Prefab
 
             // Update timer UI
             UpdateTimerUI();
+
+            playerManager.playerData.worldPosition = healthbarUI.transform.position;
         }
 
         private void SetupUI()

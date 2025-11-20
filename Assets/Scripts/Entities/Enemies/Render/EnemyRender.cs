@@ -118,12 +118,15 @@ public class EnemyRender : MonoBehaviour
 
             _sprite.sprite = _currentAnimation.frames[_currentFrame];
         }
+        data.worldPosition = transform.position;
     }
 
 
     public void Bind(EnemyData enemyData)
     {
         data = enemyData;
+        data.worldPosition = transform.position;
+        data.isPlayer = false;
 
         // Set default sprite artwork
         if (_sprite != null)
