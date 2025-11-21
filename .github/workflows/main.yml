@@ -156,7 +156,7 @@ jobs:
                 $downloadSuccess = $true
                 break
               } catch {
-                Write-Host "Download failed: ${_}"
+                Write-Host "Download failed:" $_
                 if ($downloadAttempt -lt $maxDownloadAttempts) {
                   Write-Host "Retrying in 10 seconds..."
                   Start-Sleep -Seconds 10
@@ -177,7 +177,7 @@ jobs:
               Remove-Item $butlerZip -Force
               Write-Host "✅ Butler installed to $butlerDir"
             } catch {
-              Write-Host "❌ Failed to extract butler: ${_}"
+              Write-Host "❌ Failed to extract butler:" $_
               if (Test-Path $butlerZip) { Remove-Item $butlerZip -Force }
               exit 1
             }
@@ -191,7 +191,7 @@ jobs:
             & $butlerPath --version | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "Butler version check failed" }
           } catch {
-            Write-Host "❌ Butler verification failed: ${_}"
+            Write-Host "❌ Butler verification failed:" $_
             exit 1
           }
           
@@ -270,7 +270,7 @@ jobs:
               }
             } catch {
               $lastExitCode = 1
-              Write-Host "❌ Upload exception on attempt $attempt: ${_}"
+              Write-Host "❌ Upload exception on attempt $attempt:" $_
             }
           }
           
@@ -443,7 +443,7 @@ jobs:
                 $downloadSuccess = $true
                 break
               } catch {
-                Write-Host "Download failed: ${_}"
+                Write-Host "Download failed:" $_
                 if ($downloadAttempt -lt $maxDownloadAttempts) {
                   Write-Host "Retrying in 10 seconds..."
                   Start-Sleep -Seconds 10
@@ -464,7 +464,7 @@ jobs:
               Remove-Item $butlerZip -Force
               Write-Host "✅ Butler installed to $butlerDir"
             } catch {
-              Write-Host "❌ Failed to extract butler: ${_}"
+              Write-Host "❌ Failed to extract butler:" $_
               if (Test-Path $butlerZip) { Remove-Item $butlerZip -Force }
               exit 1
             }
@@ -478,7 +478,7 @@ jobs:
             & $butlerPath --version | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "Butler version check failed" }
           } catch {
-            Write-Host "❌ Butler verification failed: ${_}"
+            Write-Host "❌ Butler verification failed:" $_
             exit 1
           }
           
@@ -557,7 +557,7 @@ jobs:
               }
             } catch {
               $lastExitCode = 1
-              Write-Host "❌ Upload exception on attempt $attempt: ${_}"
+              Write-Host "❌ Upload exception on attempt $attempt:" $_
             }
           }
           
