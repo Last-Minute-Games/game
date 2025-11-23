@@ -101,15 +101,18 @@ public class CardRender : MonoBehaviour,
         // Description: keep base text; optionally append rolled summary for clarity
         if (descriptionText != null)
         {
-            string baseDesc = Data != null ? Data.description : string.Empty;
+            string baseDesc = string.Empty;
             if (instance != null && instance.rolledEffects != null && instance.rolledEffects.Count > 0)
             {
                 int dmg = instance.GetTotal(OperationType.Damage);
                 int blk = instance.GetTotal(OperationType.AddShield);
+                int heal = instance.GetTotal(OperationType.Heal);
+                
                 string summary = string.Empty;
-                if (dmg != 0) summary += $" +{dmg} Damage";
-                if (blk != 0) summary += (summary.Length > 0 ? "," : "") + $" +{blk} Block";
-                if (!string.IsNullOrEmpty(summary)) baseDesc = $"{baseDesc}\n[{summary.Trim()}]";
+                if (dmg != 0) summary += $"Inflict {dmg} <color=#FA5053>Damage</color>.";
+                if (blk != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Gain {blk} <color=#57B9FF>Block</color>.";
+                if (heal != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Heal {heal} <color=#50C878>Health</color>.";
+                if (!string.IsNullOrEmpty(summary)) baseDesc = summary.Trim();
             }
             descriptionText.text = baseDesc;
         }

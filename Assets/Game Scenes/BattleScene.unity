@@ -422,6 +422,7 @@ MonoBehaviour:
   playerTurn: 1
   battleActive: 0
   endScreenUI: {fileID: 811839048}
+  roundTransitionUI: {fileID: 0}
   turnTimeLimit: 15
   currentTurnTime: 0
   handViewer: {fileID: 998311090}
@@ -991,6 +992,9 @@ MonoBehaviour:
   canvasGroup: {fileID: 811839049}
   resultText: {fileID: 1618090708}
   fadeDuration: 1
+  roundTransitionFadeInTime: 0.5
+  roundTransitionHoldTime: 1
+  roundTransitionFadeOutTime: 0.5
 --- !u!225 &811839049
 CanvasGroup:
   m_ObjectHideFlags: 0

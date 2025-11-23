@@ -139,7 +139,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -170,7 +170,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0.9866841, y: 0.07589841, z: 1.0815573, w: -1.0910447}
+  m_margin: {x: 0.9866841, y: 0.1927334, z: 1.0815573, w: -1.0910447}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
@@ -206,7 +206,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.19, y: 2.606, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5410682219868471743}
@@ -258,7 +258,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 99
-  m_Sprite: {fileID: 8928576263349182094, guid: c8bb689e6c6436bc9a3d713cab3fabeb, type: 3}
+  m_Sprite: {fileID: -1948493957703550831, guid: 307e650d27bb57c48a92ff7376986102, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -681,6 +681,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardAnimationHelper
   arrowHelper: {fileID: 462765082267403525}
   hoverScale: 1.1
+  hoverYOffset: 0.5
   selectScale: 1.15
   dragScale: 1.12
   returnDuration: 0.25
