@@ -73,6 +73,9 @@ public class BattleManager : MonoBehaviour
             deckViewer.SetSource(DeckViewer.Source.Hand);
             deckViewer.Rebuild();
         }
+        
+        // 5️⃣ Start camera bobbing for combat feel
+        CameraShake.StartBobbing(bobSpeed: 2f, bobAmount: 0.1f);
     }
     
     [Header("Legacy - Enemy Database (Fallback)")]
