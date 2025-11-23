@@ -9,6 +9,9 @@ public struct EnemyAction
 {
     public EnemyIntent intent;
     public int value;
+    
+    [Tooltip("Optional custom name for this action (e.g., 'Crushing Blow' instead of 'Attack'). Leave empty to use default.")]
+    public string customName;
 }
 
 public enum EnemyIntent
@@ -60,6 +63,7 @@ public class EnemyData : EntityData
 
     [Header("Intent System")]
     public EnemyIntent currentIntent; // What the enemy plans to do this turn
+    public EnemyAction currentAction; // The full action being performed (includes custom name)
     public IntentIconMapping intentIcons; // Sprite icons for each intent type
     public string intentText;         // Text like "Attack" or "Buff Self"
     public int intentValue;           // How much damage or block that intent will do
@@ -123,6 +127,7 @@ public class EnemyData : EntityData
         {
             // Default: simple attack
             currentIntent = EnemyIntent.Attack;
+            currentAction = new EnemyAction { intent = EnemyIntent.Attack, value = attackPower, customName = "" };
             intentValue = attackPower;
             intentText = "Attack";
             return;
@@ -131,6 +136,7 @@ public class EnemyData : EntityData
         // Use intelligent AI to decide best move based on current situation
         EnemyAction chosenAction = ChooseStrategicAction();
         currentIntent = chosenAction.intent;
+        currentAction = chosenAction; // Store the full action (includes custom name)
         intentValue = chosenAction.value;
         intentText = chosenAction.intent.ToString();
     }

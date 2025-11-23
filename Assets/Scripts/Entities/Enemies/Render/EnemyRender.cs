@@ -311,7 +311,31 @@ public class EnemyRender : MonoBehaviour
     }
 
     /// <summary>
-    /// Gets the move name based on the current intent.
+    /// Gets the move name for the given action.
+    /// Returns custom name if set, otherwise returns default name based on intent.
+    /// </summary>
+    public string GetMoveNameForAction(EnemyAction action)
+    {
+        // Check if custom name is set
+        if (!string.IsNullOrEmpty(action.customName))
+        {
+            return action.customName;
+        }
+        
+        // Return default name based on intent
+        return action.intent switch
+        {
+            EnemyIntent.Attack => "Attack",
+            EnemyIntent.Block => "Defend",
+            EnemyIntent.Heal => "Heal",
+            EnemyIntent.Buff => "Buff",
+            _ => "???"
+        };
+    }
+    
+    /// <summary>
+    /// Gets the move name based on the current intent (legacy method).
+    /// Use GetMoveNameForAction() for custom name support.
     /// </summary>
     public string GetMoveNameForIntent(EnemyIntent intent)
     {

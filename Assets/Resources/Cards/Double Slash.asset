@@ -12,18 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d25d76a890fff1ddb4d8fba905828ff, type: 3}
   m_Name: Double Slash
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  itemName: Slash
+  itemName: Double Slash
   description: 'bark
 
 '
-  artwork: {fileID: -68835398901110454, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
+  artwork: {fileID: -2178536489825592074, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
   icon: {fileID: 8928576263349182094, guid: 99c1f1743219056a8a85a286b39b3ecf, type: 3}
   effects:
   - targetRule: 2
-    minMultiplier: 0.7
+    minMultiplier: 0.9
     maxMultiplier: 1.5
     operationType: 1
-    baseValue: 7
+    baseValue: 15
     duration: 0
     durationUnit: 0
     delay: 0
@@ -33,10 +33,10 @@ MonoBehaviour:
   uniqueID: 0
   intentionText: xxx
   soundCue: {fileID: 0}
-  energyCost: 1
+  energyCost: 2
   sourceAnim: 1
   targetAnim: 2
-  isVariableCard: 1
+  isVariableCard: 0
   poorArtwork: {fileID: 6393125008886508775, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   potentArtwork: {fileID: 7418950461046361184, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   maxMultiplierThreshold: 1

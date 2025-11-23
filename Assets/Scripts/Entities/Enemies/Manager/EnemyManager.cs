@@ -191,7 +191,8 @@ namespace Entities.Enemies.Manager
                 // Show move name popup BEFORE executing the move
                 if (r != null)
                 {
-                    string moveName = r.GetMoveNameForIntent(enemy.currentIntent);
+                    // Use GetMoveNameForAction to support custom names
+                    string moveName = r.GetMoveNameForAction(enemy.currentAction);
                     
                     // Show popup and wait for it to be visible
                     r.ShowMoveNamePopup(moveName);
