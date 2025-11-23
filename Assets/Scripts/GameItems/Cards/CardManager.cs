@@ -117,11 +117,11 @@ namespace GameItems.Cards
             }
 
             int sum = 0;
-            if (data != null && data.effectData != null)
+            if (data != null && data.effects != null)
             {
-                foreach (var e in data.effectData)
+                foreach (var e in data.effects)
                 {
-                    if (e != null && e.operationType == op)
+                    if (e.operationType == op)
                         sum += e.baseValue;
                 }
             }

@@ -11,7 +11,12 @@ public class RoundManager : MonoBehaviour
     public bool playerTurn = true;
     public bool battleActive = false;
 
-    [Header("End Screen UI")] public ScreenFadeUI endScreenUI;
+    [Header("End Screen UI")] 
+    public ScreenFadeUI endScreenUI;
+    
+    [Header("Round Transition UI")]
+    [Tooltip("Optional: UI for showing round transitions (e.g., 'ROUND 1'). Can be the same as endScreenUI.")]
+    public ScreenFadeUI roundTransitionUI;
 
     [Header("Timer Settings")] [Tooltip("Time in seconds for each player turn")]
     public float turnTimeLimit = 15f;
@@ -29,6 +34,12 @@ public class RoundManager : MonoBehaviour
 
     [Tooltip("Optional: Deck viewer that shows the discard pile.")]
     public GameItems.DeckViewer discardPileViewer;
+
+    // -------------------------------------------------------
+    // Wave System
+    // -------------------------------------------------------
+    [System.NonSerialized]
+    public System.Action onWaveComplete; // Callback when all enemies in current wave are defeated
 
     // -------------------------------------------------------
     // Initialization
@@ -86,6 +97,58 @@ public class RoundManager : MonoBehaviour
         battleActive = true;
 
         Debug.Log($"--- Round {roundNumber} Start ---");
+        
+        // Show round transition UI
+        StartCoroutine(StartRoundWithTransition());
+    }
+    
+    private IEnumerator StartRoundWithTransition()
+    {
+        // Show "ROUND 1" transition
+        if (roundTransitionUI != null)
+        {
+            yield return StartCoroutine(roundTransitionUI.ShowRoundTransition(roundNumber, isNewWave: false));
+        }
+        
+        // Enemies roll their next intents so the player can see them before acting
+        enemyManager.RollNextIntents();
+        player.StartTurn();
+
+        RefreshDeckViewers();
+
+        // Start turn timer
+        StartTurnTimer();
+    }
+
+    // -------------------------------------------------------
+    // Start a new wave (called by BattleManager)
+    // -------------------------------------------------------
+    public void StartNewWave()
+    {
+        if (player == null || enemyManager == null)
+        {
+            Debug.LogError("RoundManager: Missing managers!");
+            return;
+        }
+
+        // Don't reset round number - continue incrementing through waves
+        playerTurn = true;
+        battleActive = true;
+
+        Debug.Log($"--- New Wave - Round {roundNumber} Start ---");
+        
+        // Show wave transition UI
+        StartCoroutine(StartWaveWithTransition());
+    }
+    
+    private IEnumerator StartWaveWithTransition()
+    {
+        // Show "WAVE X" transition
+        if (roundTransitionUI != null)
+        {
+            yield return StartCoroutine(roundTransitionUI.ShowRoundTransition(roundNumber, isNewWave: true));
+        }
+        
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
         player.StartTurn();
@@ -151,6 +214,19 @@ public class RoundManager : MonoBehaviour
         playerTurn = true;
 
         Debug.Log($"--- Round {roundNumber} Start ---");
+        
+        // Show round transition UI before starting the round
+        StartCoroutine(NextRoundWithTransition());
+    }
+    
+    private IEnumerator NextRoundWithTransition()
+    {
+        // Show "ROUND X" transition
+        if (roundTransitionUI != null)
+        {
+            yield return StartCoroutine(roundTransitionUI.ShowRoundTransition(roundNumber, isNewWave: false));
+        }
+        
         // Roll intents for the upcoming enemy turn so the player can plan accordingly
         enemyManager.RollNextIntents();
         player.StartTurn();
@@ -222,12 +298,23 @@ public class RoundManager : MonoBehaviour
             return;
         }
 
-        // All enemies dead
+        // All enemies dead - could be wave complete or battle complete
         if (enemyManager.AllEnemiesDefeated())
         {
-            Debug.Log("🎉 All enemies defeated — immediate victory!");
-            battleActive = false;
-            HandlePlayerWin();
+            Debug.Log("🎉 All enemies defeated in current wave!");
+            
+            // Notify BattleManager that wave is complete
+            // BattleManager will decide if there are more waves or if battle is won
+            if (onWaveComplete != null)
+            {
+                onWaveComplete.Invoke();
+            }
+            else
+            {
+                // Fallback: if no wave system, just win immediately
+                battleActive = false;
+                HandlePlayerWin();
+            }
             return;
         }
     }

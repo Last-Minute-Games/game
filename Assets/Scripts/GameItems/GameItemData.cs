@@ -19,7 +19,7 @@ public abstract class GameItemData : ScriptableObject
 
     [Header("Item Effects")]
     [Tooltip("List of effects this item applies (e.g., stat changes, damage, healing).")]
-    public List<EffectData> effectData = new List<EffectData>();
+    public List<Effect> effects = new List<Effect>();
 
     [Header("Metadata")]
     [Tooltip("Unique identifier for this item.")]
@@ -31,7 +31,7 @@ public abstract class GameItemData : ScriptableObject
     /// </summary>
     public TargetRule GetDominatingTargetRule()
     {
-        if (effectData == null || effectData.Count == 0)
+        if (effects == null || effects.Count == 0)
         {
             Debug.LogWarning($"[GameItemData] '{itemName}' has no effects to determine TargetRule hierarchy. Defaulting to None.", this);
             return TargetRule.None;
@@ -39,11 +39,8 @@ public abstract class GameItemData : ScriptableObject
 
         TargetRule highestRule = TargetRule.None;
 
-        foreach (var effect in effectData)
+        foreach (var effect in effects)
         {
-            if (effect == null)
-                continue;
-
             if ((int)effect.targetRule > (int)highestRule)
                 highestRule = effect.targetRule;
         }
@@ -59,8 +56,8 @@ public abstract class GameItemData : ScriptableObject
         if (uniqueID <= 0)
             Debug.LogWarning($"[GameItemData] {name} has no valid Unique ID assigned!", this);
 
-        if (effectData == null || effectData.Count == 0)
-            Debug.LogWarning($"[GameItemData] {name} has no EffectData assigned!", this);
+        if (effects == null || effects.Count == 0)
+            Debug.LogWarning($"[GameItemData] {name} has no Effects assigned!", this);
     }
 }
 

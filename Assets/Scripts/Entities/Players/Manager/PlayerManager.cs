@@ -131,9 +131,9 @@ public class PlayerManager : MonoBehaviour
     private void ApplyCardEffects(CardData cardData, CardInstance cardInstance, EnemyRender targetEnemy)
     {
         // Use rolled effects from instance if available, otherwise use base effects
-        List<EffectData> effectsToApply = cardInstance != null && cardInstance.rolledEffects != null && cardInstance.rolledEffects.Count > 0
+        List<Effect> effectsToApply = cardInstance != null && cardInstance.rolledEffects != null && cardInstance.rolledEffects.Count > 0
             ? cardInstance.rolledEffects
-            : cardData.effectData;
+            : cardData.effects;
 
         if (effectsToApply == null || effectsToApply.Count == 0)
         {
@@ -143,7 +143,6 @@ public class PlayerManager : MonoBehaviour
 
         foreach (var effect in effectsToApply)
         {
-            if (effect == null) continue;
 
             // Get the actual value to apply (rolled value if from instance, base value otherwise)
             int value = (cardInstance != null && cardInstance.rolledEffects != null && cardInstance.rolledEffects.Contains(effect))

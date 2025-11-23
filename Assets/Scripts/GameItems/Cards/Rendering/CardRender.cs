@@ -114,9 +114,24 @@ public class CardRender : MonoBehaviour,
             descriptionText.text = baseDesc;
         }
 
-        // Sprites from data
-        cardBackground.sprite = Data != null ? Data.artwork : null;
-        cardIcon.sprite = Data != null ? Data.icon : null;
+        // Sprites from data - use tier-specific artwork if available
+        if (Data != null)
+        {
+            if (instance != null && instance.tier.HasValue)
+            {
+                cardBackground.sprite = Data.GetArtworkForTier(instance.tier.Value);
+            }
+            else
+            {
+                cardBackground.sprite = Data.artwork;
+            }
+            cardIcon.sprite = Data.icon;
+        }
+        else
+        {
+            cardBackground.sprite = null;
+            cardIcon.sprite = null;
+        }
 
         // Energy from CardData
         int energyVal = energy ?? (Data != null ? Data.energyCost : defaultEnergyCost);
