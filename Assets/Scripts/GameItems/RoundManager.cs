@@ -171,13 +171,12 @@ public class RoundManager : MonoBehaviour
         {
             Debug.Log("[RoundManager] Clearing hand for new wave");
             player.cardManager.DiscardCardPile(); // Move current hand to discard pile
-            // DON'T clear discard pile - it's needed for reshuffling if draw pile is empty!
-            player.cardManager.DrawStartingHand(); // Draw fresh hand (will reshuffle from discard if needed)
+            // Don't call DrawStartingHand() here - player.StartTurn() will draw cards!
         }
         
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
-        player.StartTurn();
+        player.StartTurn(); // This already draws cards!
 
         RefreshDeckViewers();
 
