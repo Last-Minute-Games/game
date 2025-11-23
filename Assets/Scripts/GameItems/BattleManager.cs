@@ -106,7 +106,11 @@ public class BattleManager : MonoBehaviour
         else
         {
             Debug.Log("All waves complete! Player wins!");
-            // Victory is handled by RoundManager
+            // Trigger victory through RoundManager
+            if (roundManager != null)
+            {
+                roundManager.TriggerVictory();
+            }
         }
     }
 

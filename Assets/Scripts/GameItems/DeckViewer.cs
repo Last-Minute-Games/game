@@ -379,6 +379,84 @@ namespace GameItems
         public IReadOnlyList<CardRender> GetRenders() => _renders;
 
         /// <summary>
+        /// Animates currently visible cards to discard without touching the data.
+        /// This allows the animation to play independently even if the card data gets cleared.
+        /// Perfect for end-of-round animations where data is wiped but visuals should persist.
+        /// </summary>
+        /// <param name="discardTargetWorldPos">World position where cards fly to</param>
+        /// <param name="duration">Time for each card to fly</param>
+        /// <param name="staggerDelay">Delay between each card starting</param>
+        /// <param name="onComplete">Callback when all cards finish animating</param>
+        public void AnimateDiscardAllVisuals(Vector3 discardTargetWorldPos, float duration = 0.4f, float staggerDelay = 0.05f, System.Action onComplete = null)
+        {
+            if (_renders.Count == 0)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            Debug.Log($"[DeckViewer] Animating {_renders.Count} card visuals to discard pile");
+
+            // Capture the current renders into a separate list so they won't be affected by data changes
+            List<CardRender> cardsToAnimate = new List<CardRender>(_renders);
+            int totalCards = cardsToAnimate.Count;
+            int completedCards = 0;
+
+            // Clear the _renders list immediately so rebuilds won't interfere
+            _renders.Clear();
+
+            // Disable card interactions during animation
+            CardFXHelper.CardInteraction.Locked = true;
+
+            for (int i = 0; i < cardsToAnimate.Count; i++)
+            {
+                var card = cardsToAnimate[i];
+                if (card == null) continue;
+
+                // Detach from parent so it won't be destroyed when content is cleared
+                card.transform.SetParent(null, worldPositionStays: true);
+
+                float delay = i * staggerDelay;
+
+                // Create the animation sequence
+                Sequence cardSequence = DOTween.Sequence();
+                
+                // Delay based on position in hand
+                if (delay > 0)
+                    cardSequence.AppendInterval(delay);
+
+                // Tween to discard position with arc motion
+                cardSequence.Append(card.transform
+                    .DOMove(discardTargetWorldPos, duration)
+                    .SetEase(Ease.InQuad));
+
+                // Rotate and scale down while flying
+                cardSequence.Join(card.transform
+                    .DORotate(new Vector3(0, 0, Random.Range(-15f, 15f)), duration)
+                    .SetEase(Ease.InOutQuad));
+
+                cardSequence.Join(card.transform
+                    .DOScale(0.3f, duration)
+                    .SetEase(Ease.InQuad));
+
+                // Destroy after animation completes
+                cardSequence.OnComplete(() =>
+                {
+                    if (card != null)
+                        Destroy(card.gameObject);
+
+                    completedCards++;
+                    if (completedCards >= totalCards)
+                    {
+                        CardFXHelper.CardInteraction.Locked = false;
+                        Debug.Log("[DeckViewer] All card visuals discarded and destroyed");
+                        onComplete?.Invoke();
+                    }
+                });
+            }
+        }
+
+        /// <summary>
         /// Animates all cards flying to a discard position with a stagger effect, then clears them.
         /// Call this when the round ends for a smooth card game feel.
         /// </summary>
@@ -447,6 +525,7 @@ namespace GameItems
         /// <summary>
         /// Smooth clear - animates cards out before clearing.
         /// Use this instead of Clear() for end-of-turn visual polish.
+        /// Uses visual-independent animation so it works even if card data gets cleared.
         /// </summary>
         public void ClearSmooth(Vector3? discardTarget = null, System.Action onComplete = null)
         {
@@ -459,7 +538,8 @@ namespace GameItems
             // Default discard target: down and to the right
             Vector3 target = discardTarget ?? (transform.position + new Vector3(2f, -3f, 0));
             
-            AnimateDiscardAll(target, duration: 0.4f, staggerDelay: 0.05f, onComplete);
+            // Use visual-independent animation so it works even if data gets cleared during animation
+            AnimateDiscardAllVisuals(target, duration: 0.4f, staggerDelay: 0.05f, onComplete);
         }
     }
 }

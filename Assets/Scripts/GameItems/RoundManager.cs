@@ -42,6 +42,16 @@ public class RoundManager : MonoBehaviour
     public System.Action onWaveComplete; // Callback when all enemies in current wave are defeated
 
     // -------------------------------------------------------
+    // Public method to trigger victory (called by BattleManager)
+    // -------------------------------------------------------
+    public void TriggerVictory()
+    {
+        if (!battleActive) return;
+        battleActive = false;
+        HandlePlayerWin();
+    }
+
+    // -------------------------------------------------------
     // Initialization
     // -------------------------------------------------------
     public void Initialize(PlayerManager playerManager, EnemyManager enemyMgr)
@@ -171,11 +181,27 @@ public class RoundManager : MonoBehaviour
 
         Debug.Log("Player turn ended.");
 
-        player.EndTurn();
-        RefreshDeckViewers();
-        playerTurn = false;
-
-        StartCoroutine(EnemyPhase());
+        // Animate cards discarding BEFORE clearing data
+        if (handViewer != null && handViewer.GetRenders().Count > 0)
+        {
+            handViewer.ClearSmooth(onComplete: () =>
+            {
+                // After animation completes, clear the data and continue
+                player.EndTurn();
+                // Refresh other viewers but not hand (already cleared with animation)
+                RefreshDeckViewers(skipHand: true);
+                playerTurn = false;
+                StartCoroutine(EnemyPhase());
+            });
+        }
+        else
+        {
+            // No cards to animate, proceed normally
+            player.EndTurn();
+            RefreshDeckViewers();
+            playerTurn = false;
+            StartCoroutine(EnemyPhase());
+        }
     }
 
     // -------------------------------------------------------
@@ -260,9 +286,9 @@ public class RoundManager : MonoBehaviour
         CheckImmediateEndConditions();
     }
 
-    private void RefreshDeckViewers()
+    private void RefreshDeckViewers(bool skipHand = false)
     {
-        if (handViewer != null)
+        if (handViewer != null && !skipHand)
         {
             handViewer.SetPlayer(player);
             handViewer.SetSource(GameItems.DeckViewer.Source.Hand, rebuild: true);

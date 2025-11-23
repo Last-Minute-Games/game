@@ -27,6 +27,13 @@ public class EnemyConfig : ScriptableObject
     [Tooltip("Death sprite animation for this enemy (optional).")]
     public SpriteAnimation deathAnim;
 
+    [Header("Visual Adjustments")]
+    [Tooltip("Position offset to adjust where the enemy sprite appears in the scene.")]
+    public Vector3 positionOffset = Vector3.zero;
+    
+    [Tooltip("Scale multiplier to adjust the size of the enemy sprite (1 = normal size).")]
+    public Vector3 scaleOffset = Vector3.one;
+
     [Header("Enemy variability multiplier to be applied to enemy stats.")]
     [Tooltip("Minimum possible multiplier applied to enemy stats.")]
     [Range(0f, 2f)] public float minMultiplier = 1f;
@@ -52,6 +59,9 @@ public class EnemyConfig : ScriptableObject
         data.attackAnim = attackAnim;
         data.hurtAnim = hurtAnim;
         data.deathAnim = deathAnim;
+        // Propagate visual adjustments
+        data.positionOffset = positionOffset;
+        data.scaleOffset = scaleOffset;
         return data;
     }
 

@@ -95,6 +95,10 @@ public class EnemyData : EntityData
     public SpriteAnimation hurtAnim;
     public SpriteAnimation deathAnim;
 
+    [Header("Visual Adjustments")]
+    public Vector3 positionOffset = Vector3.zero;
+    public Vector3 scaleOffset = Vector3.one;
+
     // -------------------------------------------------------
     // Initialization
     // -------------------------------------------------------

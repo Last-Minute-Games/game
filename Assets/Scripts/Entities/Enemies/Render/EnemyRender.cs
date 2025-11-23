@@ -135,6 +135,16 @@ public class EnemyRender : MonoBehaviour
             _sprite.enabled = _sprite.sprite != null;
         }
 
+        // Apply visual adjustments from EnemyData
+        if (data != null)
+        {
+            // Apply position offset
+            transform.localPosition += data.positionOffset;
+            
+            // Apply scale offset
+            transform.localScale = Vector3.Scale(transform.localScale, data.scaleOffset);
+        }
+
         _health = GetComponentInChildren<EnemyHealth>();
 
         _hitboxCollider.offset = new Vector2(0f, 0.05f);
