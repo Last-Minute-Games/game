@@ -30,6 +30,18 @@ namespace Entities.Players.Prefab
         public TextMeshProUGUI shieldText;
         public Image healthbarUI;
 
+        [Header("Low Health Visual")]
+        [Tooltip("Gradient screen image that becomes visible at low health")]
+        public Image gradientScreen;
+        
+        [Tooltip("HP percentage threshold to start showing gradient (0.3 = 30%)")]
+        [Range(0f, 1f)]
+        public float lowHealthThreshold = 0.3f;
+        
+        [Tooltip("Maximum opacity of gradient at 0 HP (0-1)")]
+        [Range(0f, 1f)]
+        public float maxGradientOpacity = 0.7f;
+
         [Header("Timer UI (from TimerPanel)")]
         [Tooltip("TimerText component from TimerPanel")]
         public TextMeshProUGUI timerText;
@@ -250,6 +262,38 @@ namespace Entities.Players.Prefab
             }
 
             _lastBlock = block;
+
+            // Update gradient screen based on health
+            UpdateGradientScreen(data);
+        }
+
+        /// <summary>
+        /// Updates the gradient screen opacity based on current health percentage
+        /// </summary>
+        private void UpdateGradientScreen(Entities.Players.Data.PlayerData data)
+        {
+            if (gradientScreen == null || data.maxHealth <= 0)
+                return;
+
+            // Calculate health percentage
+            float healthPercent = data.currentHealth / (float)data.maxHealth;
+
+            // Calculate opacity based on health
+            float opacity = 0f;
+            
+            if (healthPercent <= lowHealthThreshold)
+            {
+                // Map health percentage (0 to lowHealthThreshold) to opacity (maxOpacity to 0)
+                // When HP is 0%, opacity is maxGradientOpacity
+                // When HP is at threshold, opacity is 0
+                float normalizedHealth = healthPercent / lowHealthThreshold; // 0 to 1
+                opacity = maxGradientOpacity * (1f - normalizedHealth); // Inverted so low health = high opacity
+            }
+
+            // Apply opacity to gradient screen
+            Color currentColor = gradientScreen.color;
+            currentColor.a = opacity;
+            gradientScreen.color = currentColor;
         }
 
         /// <summary>

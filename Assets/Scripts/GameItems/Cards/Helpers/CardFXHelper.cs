@@ -45,7 +45,7 @@ namespace GameItems.Cards.Helpers
                 return;
             }
             
-            Debug.Log("On Hover");
+            // Debug.Log("On Hover");
 
             animHelper?.HoverVisuals(card);
             sfxHelper?.PlayHover();

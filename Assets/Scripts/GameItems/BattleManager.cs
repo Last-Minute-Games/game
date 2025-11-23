@@ -87,18 +87,23 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     private void OnWaveComplete()
     {
-        _currentWaveIndex++;
+        Debug.Log($"Wave {_currentWaveIndex + 1} complete! ({_currentWaveIndex + 1}/{_battleWaves.Count})");
         
-        // Check if there are more waves
-        if (_currentWaveIndex < _battleWaves.Count)
+        // Check if there are more waves BEFORE incrementing
+        int nextWaveIndex = _currentWaveIndex + 1;
+        
+        if (nextWaveIndex < _battleWaves.Count)
         {
-            Debug.Log($"Wave {_currentWaveIndex} complete! Starting next wave...");
+            Debug.Log($"Starting wave {nextWaveIndex + 1}...");
             
             // Apply difficulty scaling
             if (waveConfig != null && waveConfig.useRandomWaves)
             {
                 _waveMultiplier += waveConfig.difficultyScaling;
             }
+            
+            // Increment to next wave
+            _currentWaveIndex = nextWaveIndex;
             
             // Start next wave after a delay
             StartCoroutine(StartWaveDelayed(_currentWaveIndex, 2f));
