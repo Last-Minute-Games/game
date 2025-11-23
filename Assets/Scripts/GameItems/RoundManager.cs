@@ -10,6 +10,9 @@ public class RoundManager : MonoBehaviour
     [Header("State")] public int roundNumber = 1;
     public bool playerTurn = true;
     public bool battleActive = false;
+    
+    // Prevents checking end conditions during wave transitions
+    private bool _isTransitioningWaves = false;
 
     [Header("End Screen UI")] 
     public ScreenFadeUI endScreenUI;
@@ -48,6 +51,7 @@ public class RoundManager : MonoBehaviour
     {
         if (!battleActive) return;
         battleActive = false;
+        _isTransitioningWaves = false; // Clear flag
         HandlePlayerWin();
     }
 
@@ -140,6 +144,9 @@ public class RoundManager : MonoBehaviour
             Debug.LogError("RoundManager: Missing managers!");
             return;
         }
+
+        // Clear transition flag - we're ready to check end conditions again
+        _isTransitioningWaves = false;
 
         // Don't reset round number - continue incrementing through waves
         playerTurn = true;
@@ -314,6 +321,9 @@ public class RoundManager : MonoBehaviour
     public void CheckImmediateEndConditions()
     {
         if (!battleActive) return;
+        
+        // Don't check end conditions during wave transitions
+        if (_isTransitioningWaves) return;
 
         // Player dead
         if (player.playerData.currentHealth <= 0)
@@ -328,6 +338,9 @@ public class RoundManager : MonoBehaviour
         if (enemyManager.AllEnemiesDefeated())
         {
             Debug.Log("🎉 All enemies defeated in current wave!");
+            
+            // Set transition flag to prevent repeated calls
+            _isTransitioningWaves = true;
             
             // Notify BattleManager that wave is complete
             // BattleManager will decide if there are more waves or if battle is won

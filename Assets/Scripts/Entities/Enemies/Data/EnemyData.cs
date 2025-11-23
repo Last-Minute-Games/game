@@ -115,7 +115,7 @@ public class EnemyData : EntityData
     }
 
     // -------------------------------------------------------
-    // Enemy chooses what to do next
+    // Enemy chooses what to do next - Intelligent AI System
     // -------------------------------------------------------
     public void DecideNextIntent()
     {
@@ -128,12 +128,170 @@ public class EnemyData : EntityData
             return;
         }
 
-        // Randomly select an action from the pattern (Slay the Spire-like)
-        int idx = UnityEngine.Random.Range(0, actionPattern.Count);
-        var nextAction = actionPattern[idx];
-        currentIntent = nextAction.intent;
-        intentValue = nextAction.value;
-        intentText = nextAction.intent.ToString();
+        // Use intelligent AI to decide best move based on current situation
+        EnemyAction chosenAction = ChooseStrategicAction();
+        currentIntent = chosenAction.intent;
+        intentValue = chosenAction.value;
+        intentText = chosenAction.intent.ToString();
+    }
+
+    /// <summary>
+    /// Intelligent AI system that chooses the best action based on enemy's current stats and situation.
+    /// </summary>
+    private EnemyAction ChooseStrategicAction()
+    {
+        // Calculate health percentage
+        float healthPercent = currentHealth / (float)maxHealth;
+        
+        // Separate actions by type for strategic selection
+        List<EnemyAction> attackActions = new List<EnemyAction>();
+        List<EnemyAction> blockActions = new List<EnemyAction>();
+        List<EnemyAction> healActions = new List<EnemyAction>();
+        List<EnemyAction> buffActions = new List<EnemyAction>();
+        
+        foreach (var action in actionPattern)
+        {
+            switch (action.intent)
+            {
+                case EnemyIntent.Attack:
+                    attackActions.Add(action);
+                    break;
+                case EnemyIntent.Block:
+                    blockActions.Add(action);
+                    break;
+                case EnemyIntent.Heal:
+                    healActions.Add(action);
+                    break;
+                case EnemyIntent.Buff:
+                    buffActions.Add(action);
+                    break;
+            }
+        }
+
+        // Calculate average block value to set "low block" threshold
+        int averageBlockValue = 0;
+        if (blockActions.Count > 0)
+        {
+            int totalBlockValue = 0;
+            foreach (var blockAction in blockActions)
+            {
+                totalBlockValue += blockAction.value;
+            }
+            averageBlockValue = totalBlockValue / blockActions.Count;
+        }
+        
+        // Define block thresholds based on available block actions
+        int lowBlockThreshold = averageBlockValue / 2; // Half of average block is "low"
+        int criticalBlockThreshold = Mathf.Max(3, averageBlockValue / 4); // Very low block
+        bool hasLowBlock = block > 0 && block <= lowBlockThreshold;
+        bool hasCriticalBlock = block > 0 && block <= criticalBlockThreshold;
+        bool hasNoBlock = block == 0;
+        bool hasGoodBlock = block > lowBlockThreshold;
+
+        // AI Decision Tree based on stats and situation
+        
+        // CRITICAL HEALTH (< 20%) - Prioritize survival
+        if (healthPercent < 0.2f)
+        {
+            // First priority: Heal if available
+            if (healActions.Count > 0)
+            {
+                Debug.Log($"[AI] {enemyName} is critical ({healthPercent:P0}) - choosing HEAL");
+                return GetRandomAction(healActions);
+            }
+            // Second priority: Block to survive (even if we have some block)
+            if (blockActions.Count > 0 && (hasNoBlock || hasCriticalBlock))
+            {
+                Debug.Log($"[AI] {enemyName} is critical ({healthPercent:P0}) with low/no block ({block}) - choosing BLOCK");
+                return GetRandomAction(blockActions);
+            }
+        }
+        
+        // LOW HEALTH (20% - 50%) - Defensive play
+        if (healthPercent < 0.5f)
+        {
+            // High priority: Heal if available (70% chance)
+            if (healActions.Count > 0 && UnityEngine.Random.value < 0.7f)
+            {
+                Debug.Log($"[AI] {enemyName} is low health ({healthPercent:P0}) - choosing HEAL");
+                return GetRandomAction(healActions);
+            }
+            
+            // Maintain block coverage - refresh if low or none
+            if (blockActions.Count > 0 && (hasNoBlock || hasLowBlock))
+            {
+                // 70% chance to refresh block when vulnerable at low health
+                if (UnityEngine.Random.value < 0.7f)
+                {
+                    Debug.Log($"[AI] {enemyName} is low health ({healthPercent:P0}) with low block ({block}) - refreshing BLOCK");
+                    return GetRandomAction(blockActions);
+                }
+            }
+        }
+        
+        // BLOCK MAINTENANCE (any health) - Keep defensive coverage
+        if (hasNoBlock && blockActions.Count > 0)
+        {
+            // 50% chance to block when completely unprotected
+            if (UnityEngine.Random.value < 0.5f)
+            {
+                Debug.Log($"[AI] {enemyName} has no block - choosing BLOCK for protection");
+                return GetRandomAction(blockActions);
+            }
+        }
+        else if (hasCriticalBlock && blockActions.Count > 0)
+        {
+            // 40% chance to refresh when block is critically low
+            if (UnityEngine.Random.value < 0.4f)
+            {
+                Debug.Log($"[AI] {enemyName} has critically low block ({block}) - refreshing BLOCK");
+                return GetRandomAction(blockActions);
+            }
+        }
+        else if (hasLowBlock && blockActions.Count > 0)
+        {
+            // 25% chance to maintain when block is just low
+            if (UnityEngine.Random.value < 0.25f)
+            {
+                Debug.Log($"[AI] {enemyName} has low block ({block}) - maintaining BLOCK");
+                return GetRandomAction(blockActions);
+            }
+        }
+        
+        // FULL HEALTH with GOOD BLOCK - Can afford to buff
+        if (healthPercent > 0.8f && hasGoodBlock && buffActions.Count > 0)
+        {
+            // 30% chance to buff when safe
+            if (UnityEngine.Random.value < 0.3f)
+            {
+                Debug.Log($"[AI] {enemyName} is healthy ({healthPercent:P0}) with good block ({block}) - choosing BUFF");
+                return GetRandomAction(buffActions);
+            }
+        }
+        
+        // DEFAULT - Attack (aggressive AI)
+        if (attackActions.Count > 0)
+        {
+            Debug.Log($"[AI] {enemyName} choosing ATTACK (HP: {healthPercent:P0}, Block: {block})");
+            return GetRandomAction(attackActions);
+        }
+        
+        // FALLBACK - Return any random action if attack not available
+        Debug.LogWarning($"[AI] {enemyName} has no attack actions - picking random");
+        return actionPattern[UnityEngine.Random.Range(0, actionPattern.Count)];
+    }
+
+    /// <summary>
+    /// Helper method to get a random action from a list
+    /// </summary>
+    private EnemyAction GetRandomAction(List<EnemyAction> actions)
+    {
+        if (actions == null || actions.Count == 0)
+        {
+            Debug.LogError("[AI] GetRandomAction called with empty list!");
+            return actionPattern[0]; // Fallback
+        }
+        return actions[UnityEngine.Random.Range(0, actions.Count)];
     }
 
     // -------------------------------------------------------
