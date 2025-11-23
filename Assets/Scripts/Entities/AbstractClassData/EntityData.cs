@@ -63,7 +63,12 @@ public class EntityData
             );
         }
         if (isPlayer)
-            CameraShake.Shake(0.15f, (0.5f * ((float)amount/(float)maxHealth)));
+        {
+            // Shake when taking damage - subtle but noticeable
+            float shakeDuration = 0.15f + (amount * 0.01f); // Short shake, slightly longer for more damage
+            float shakeMagnitude = 0.1f + (amount * 0.02f); // Subtle shake, scales with damage
+            CameraShake.Shake(shakeDuration, shakeMagnitude);
+        }
     }
 
     public virtual void GainBlock(int amount)
