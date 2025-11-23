@@ -195,6 +195,20 @@ public class PlayerManager : MonoBehaviour
                     }
                     break;
 
+                case OperationType.EndTurn:
+                    Debug.Log($"[PlayerManager] Card effect triggered: End Turn immediately");
+                    // Find RoundManager and call EndPlayerTurn
+                    var roundManager = FindFirstObjectByType<RoundManager>();
+                    if (roundManager != null)
+                    {
+                        roundManager.EndPlayerTurn();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[PlayerManager] Cannot end turn - RoundManager not found");
+                    }
+                    break;
+
                 default:
                     Debug.LogWarning($"[PlayerManager] OperationType {effect.operationType} not yet implemented");
                     break;

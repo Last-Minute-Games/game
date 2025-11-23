@@ -166,7 +166,14 @@ public class RoundManager : MonoBehaviour
             yield return StartCoroutine(roundTransitionUI.ShowRoundTransition(roundNumber, isNewWave: true));
         }
         
-        // DON'T reset enemy block here - new wave enemies start with 0 block anyway
+        // Clear player's hand and discard pile for fresh start in new wave
+        if (player != null && player.cardManager != null)
+        {
+            Debug.Log("[RoundManager] Clearing hand and discard pile for new wave");
+            player.cardManager.DiscardCardPile(); // Move hand to discard
+            player.cardManager.ClearDiscardPile(); // Clear discard pile
+            player.cardManager.DrawStartingHand(); // Draw fresh hand
+        }
         
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();

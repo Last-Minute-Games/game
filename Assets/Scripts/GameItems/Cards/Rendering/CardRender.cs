@@ -108,10 +108,22 @@ public class CardRender : MonoBehaviour,
                 int blk = instance.GetTotal(OperationType.AddShield);
                 int heal = instance.GetTotal(OperationType.Heal);
                 
+                // Check if EndTurn operation exists
+                bool hasEndTurn = false;
+                foreach (var effect in instance.rolledEffects)
+                {
+                    if (effect.operationType == OperationType.EndTurn)
+                    {
+                        hasEndTurn = true;
+                        break;
+                    }
+                }
+                
                 string summary = string.Empty;
                 if (dmg != 0) summary += $"Inflict {dmg} <color=#FA5053>Damage</color>.";
                 if (blk != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Gain {blk} <color=#57B9FF>Block</color>.";
                 if (heal != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Heal {heal} <color=#50C878>Health</color>.";
+                if (hasEndTurn) summary += (summary.Length > 0 ? "\n" : "") + $"<color=#FFD700>End Turn</color>.";
                 if (!string.IsNullOrEmpty(summary)) baseDesc = summary.Trim();
             }
             descriptionText.text = baseDesc;
@@ -233,9 +245,15 @@ public class CardRender : MonoBehaviour,
                         validTarget = false;
                     else
                     {
-                        var roundManager = FindFirstObjectByType<RoundManager>();
-                        if (roundManager != null && roundManager.handViewer != null)
-                            roundManager.handViewer.RebuildSmart();
+                        // Check if card has EndTurn effect - if so, don't rebuild as EndPlayerTurn handles it
+                        bool cardHasEndTurn = CheckForEndTurnEffect();
+                        
+                        if (!cardHasEndTurn)
+                        {
+                            var roundManager = FindFirstObjectByType<RoundManager>();
+                            if (roundManager != null && roundManager.handViewer != null)
+                                roundManager.handViewer.RebuildSmart();
+                        }
                     }
                 }
                 else
@@ -246,10 +264,14 @@ public class CardRender : MonoBehaviour,
 
             _fxHelper.OnCardRelease(this, validTarget);
 
-            // ALWAYS FIX LAYOUT AFTER DRAG
-            var handViewer = FindFirstObjectByType<DeckViewer>();
-            if (handViewer != null)
-                handViewer.RebuildSmart();
+            // ALWAYS FIX LAYOUT AFTER DRAG - unless EndTurn was triggered
+            bool hasEndTurn = CheckForEndTurnEffect();
+            if (!hasEndTurn)
+            {
+                var handViewer = FindFirstObjectByType<DeckViewer>();
+                if (handViewer != null)
+                    handViewer.RebuildSmart();
+            }
         }
     }
 
@@ -291,6 +313,36 @@ public class CardRender : MonoBehaviour,
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Checks if this card has an EndTurn effect
+    /// </summary>
+    private bool CheckForEndTurnEffect()
+    {
+        if (Data == null) return false;
+        
+        // Check in CardData effects
+        if (Data.effects != null)
+        {
+            foreach (var effect in Data.effects)
+            {
+                if (effect.operationType == OperationType.EndTurn)
+                    return true;
+            }
+        }
+        
+        // Also check instance rolled effects if available
+        if (Instance != null && Instance.rolledEffects != null)
+        {
+            foreach (var effect in Instance.rolledEffects)
+            {
+                if (effect.operationType == OperationType.EndTurn)
+                    return true;
+            }
+        }
+        
+        return false;
     }
 
     // Optional support for non-UI hover via physics raycast (if collider present)

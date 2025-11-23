@@ -138,6 +138,27 @@ namespace GameItems.Cards
             handInstances.Clear();
         }
 
+        // -----------------------------------------------------------
+        // Clear discard pile (e.g., for new wave/battle)
+        // -----------------------------------------------------------
+        public void ClearDiscardPile()
+        {
+            discardPile.Clear();
+            Debug.Log("[CardManager] Discard pile cleared");
+        }
+
+        // -----------------------------------------------------------
+        // Draw a starting hand (typically 5 cards)
+        // -----------------------------------------------------------
+        public void DrawStartingHand(int count = 5)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                DrawCard();
+            }
+            Debug.Log($"[CardManager] Drew starting hand of {count} cards");
+        }
+
         private void ReshuffleDiscardIntoDraw()
         {
             drawPile.AddRange(discardPile);
