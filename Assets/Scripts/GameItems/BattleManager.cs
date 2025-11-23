@@ -75,7 +75,7 @@ public class BattleManager : MonoBehaviour
         }
         
         // 5️⃣ Start camera bobbing for combat feel
-        CameraShake.StartBobbing(bobSpeed: 2f, bobAmount: 0.1f);
+        CameraShake.StartBobbing(bobSpeed: 0.5f, bobAmount: 0.05f);
     }
     
     [Header("Legacy - Enemy Database (Fallback)")]

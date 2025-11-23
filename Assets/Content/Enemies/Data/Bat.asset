@@ -10,22 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5624a485d2ae413db15be89954eda8f8, type: 3}
-  m_Name: Eyeball
+  m_Name: Bat
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDataSO
-  enemyName: Eyeball
-  maxHealth: 30
+  enemyName: Bat
+  maxHealth: 25
   attackPower: 10
   defensePower: 6
-  artwork: {fileID: 8658351832292309105, guid: 3e586d66359f7b248afc8a29083042d5, type: 3}
+  artwork: {fileID: -697763020151794088, guid: 0bece81d2e79bd44c849e7bf23aa328f, type: 3}
   actionPattern:
   - intent: 0
     value: 9
-  - intent: 1
-    value: 7
+  - intent: 2
+    value: 12
   animatorController: {fileID: 9100000, guid: 681fab083306c8942a3eec79ae9b2441, type: 2}
-  idleAnim: {fileID: 11400000, guid: 56abeb48810e5264595cdd64835bc8fb, type: 2}
-  attackAnim: {fileID: 11400000, guid: c5e8990e1d4cea94aa10bb317a9e6885, type: 2}
-  hurtAnim: {fileID: 11400000, guid: 4b54277d6d790ac4ca8565d051f44d70, type: 2}
-  deathAnim: {fileID: 11400000, guid: 5dfeaf940ebcf0a40a31c3d6dca3d496, type: 2}
+  idleAnim: {fileID: 11400000, guid: 9392c00411cac2d4d9086da9fb81a186, type: 2}
+  attackAnim: {fileID: 11400000, guid: 27212de400a94c44eb6b86d87b795613, type: 2}
+  hurtAnim: {fileID: 11400000, guid: 4596dff6134e3d140889d27ce0ccbe08, type: 2}
+  deathAnim: {fileID: 11400000, guid: b08a3993eae8ba144a222848ca2acafa, type: 2}
   minMultiplier: 0.911
   maxMultiplier: 1.33

@@ -52,7 +52,7 @@ public class CameraShake : MonoBehaviour
         UpdateCameraPosition();
     }
 
-    public static void StartBobbing(float bobSpeed = 2f, float bobAmount = 0.1f)
+    public static void StartBobbing(float bobSpeed = 0.1f, float bobAmount = 0.05f)
     {
         if (instance == null)
         {

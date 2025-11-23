@@ -20,8 +20,8 @@ MonoBehaviour:
   icon: {fileID: 8928576263349182094, guid: 99c1f1743219056a8a85a286b39b3ecf, type: 3}
   effects:
   - targetRule: 2
-    minMultiplier: 0.9
-    maxMultiplier: 1.1
+    minMultiplier: 0.7
+    maxMultiplier: 1.5
     operationType: 1
     baseValue: 7
     duration: 0
@@ -39,8 +39,8 @@ MonoBehaviour:
   isVariableCard: 1
   poorArtwork: {fileID: 6393125008886508775, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   potentArtwork: {fileID: 7418950461046361184, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
-  maxMultiplierThreshold: 0.633
-  minMultiplierThreshold: 0.33
+  maxMultiplierThreshold: 1
+  minMultiplierThreshold: 0.527
   weakPrefix: Poor
   strongPrefix: Potent
   weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
