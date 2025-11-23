@@ -166,6 +166,8 @@ public class RoundManager : MonoBehaviour
             yield return StartCoroutine(roundTransitionUI.ShowRoundTransition(roundNumber, isNewWave: true));
         }
         
+        // DON'T reset enemy block here - new wave enemies start with 0 block anyway
+        
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
         player.StartTurn();
@@ -220,13 +222,18 @@ public class RoundManager : MonoBehaviour
 
         yield return new WaitForSeconds(.5f);
 
-        // Reset block is now handled inside ExecuteEnemyTurnSequence
-        // enemyManager.ResetAllEnemyBlock();
-
         // Enemies execute their actions with delayed sequence
         yield return StartCoroutine(enemyManager.ExecuteEnemyTurnSequence(player.playerData));
 
         yield return new WaitForSeconds(.5f);
+        
+        // Reset enemy block AFTER their turn completes
+        // This means block gained this turn will protect through the NEXT full round
+        if (enemyManager != null)
+        {
+            enemyManager.ResetAllEnemyBlock();
+            Debug.Log("Enemy block reset after enemy turn completes");
+        }
 
         if (player.playerData.isAlive && !enemyManager.AllEnemiesDefeated())
         {
@@ -259,6 +266,9 @@ public class RoundManager : MonoBehaviour
         {
             yield return StartCoroutine(roundTransitionUI.ShowRoundTransition(roundNumber, isNewWave: false));
         }
+        
+        // DON'T reset enemy block here - let it persist through this round
+        // Block will be reset AFTER the enemy turn executes
         
         // Roll intents for the upcoming enemy turn so the player can plan accordingly
         enemyManager.RollNextIntents();

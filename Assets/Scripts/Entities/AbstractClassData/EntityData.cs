@@ -17,6 +17,7 @@ public class EntityData
     public int maxHealth;
     public int currentHealth;
     public int block;
+    public int blockAge; // Tracks how many enemy turns this block has persisted
     public bool isAlive;
 
     public Vector3 worldPosition;  // Assigned by PlayerPrefab / EnemyRender
@@ -28,6 +29,7 @@ public class EntityData
         this.maxHealth = maxHealth;
         currentHealth = maxHealth;
         block = 0;
+        blockAge = 0;
         isAlive = true;
     }
 
@@ -74,6 +76,7 @@ public class EntityData
     public virtual void GainBlock(int amount)
     {
         block += amount;
+        blockAge = 0; // Reset age when gaining new block
 
         TooltipManager.SpawnTooltip(
             worldPosition,
