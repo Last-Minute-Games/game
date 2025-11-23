@@ -206,6 +206,16 @@ namespace Entities.Enemies.Manager
                 // Get the render for animation
                 var r = GetRenderFor(enemy);
 
+                // Show move name popup BEFORE executing the move
+                if (r != null)
+                {
+                    string moveName = r.GetMoveNameForIntent(enemy.currentIntent);
+                    
+                    // Show popup and wait for it to be visible
+                    r.ShowMoveNamePopup(moveName);
+                    yield return new WaitForSeconds(0.3f); // Brief pause to let player see the move name
+                }
+
                 // Play intent animation based on type
                 if (enemy.currentIntent == EnemyIntent.Attack)
                 {
