@@ -75,9 +75,14 @@ public class PlayerManager : MonoBehaviour
     {
         if (playerData == null) return;
 
+        // Reduce strength by 1 each turn
+        if (playerData.strength > 0)
+        {
+            playerData.LoseStrength(1);
+        }
+
         // Reset energy and block
         playerData.ResetEnergy();
-        playerData.block = 0;
         playerData.block = 0;
 
         // Draw hand
