@@ -37,25 +37,25 @@ public class ScreenFadeUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Shows a round transition (e.g., "ROUND 1", "WAVE 2") with fade in/out effect
+    /// Shows a wave transition (e.g., "WAVE 1", "WAVE 2") with fade in/out effect
     /// </summary>
-    public IEnumerator ShowRoundTransition(int roundNumber, bool isNewWave = false)
+    public IEnumerator ShowRoundTransition(int waveNumber, bool isNewWave = false)
     {
-        string message = isNewWave ? $"WAVE {roundNumber}" : $"ROUND {roundNumber}";
-        Color color = isNewWave ? new Color(1f, 0.5f, 0f) : new Color(0.3f, 0.8f, 1f); // Orange for waves, blue for rounds
+        string message = $"WAVE {waveNumber}";
+        Color color = new Color(1f, 0.5f, 0f); // Orange for waves
         
         resultText.text = message;
         resultText.color = color;
 
-        // Fade in
+        // Fade in immediately (no delay)
         canvasGroup.alpha = 0f;
         canvasGroup.DOFade(1f, roundTransitionFadeInTime);
         yield return new WaitForSeconds(roundTransitionFadeInTime);
 
-        // Hold
+        // Hold briefly
         yield return new WaitForSeconds(roundTransitionHoldTime);
 
-        // Fade out
+        // Fade out as the wave loads
         canvasGroup.DOFade(0f, roundTransitionFadeOutTime);
         yield return new WaitForSeconds(roundTransitionFadeOutTime);
     }

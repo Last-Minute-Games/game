@@ -209,7 +209,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
   enemies: []
-  globalIntentIcons: {fileID: 11400000, guid: 505573758614f574c963c58b754c950c, type: 2}
+  iconLibrary: {fileID: 11400000, guid: ced01a6d52cf1dd4bbb4c663d91b1e43, type: 2}
   uiContainer: {fileID: 865282854}
   healthBarPrefab: {fileID: 5117226532624305066, guid: 366991c0e52b02e4c86f88e6719d6be3, type: 3}
   horizontalSpacing: 3.5
@@ -419,10 +419,11 @@ MonoBehaviour:
   player: {fileID: 963561599}
   enemyManager: {fileID: 121033906}
   roundNumber: 1
+  waveNumber: 1
   playerTurn: 1
   battleActive: 0
   endScreenUI: {fileID: 811839048}
-  roundTransitionUI: {fileID: 0}
+  roundTransitionUI: {fileID: 811839048}
   turnTimeLimit: 15
   currentTurnTime: 0
   handViewer: {fileID: 998311090}

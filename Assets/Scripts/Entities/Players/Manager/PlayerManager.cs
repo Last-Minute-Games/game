@@ -161,6 +161,8 @@ public class PlayerManager : MonoBehaviour
                 ? effect.postCopyValue
                 : effect.baseValue;
 
+            var roundManager = FindFirstObjectByType<RoundManager>();
+            
             switch (effect.operationType)
             {
                 case OperationType.Damage:
@@ -224,6 +226,12 @@ public class PlayerManager : MonoBehaviour
                             cardManager.DrawCard();
                         }
                         Debug.Log($"[PlayerManager] Player drew {value} cards.");
+                        
+                        // Update hand viewer to show newly drawn cards
+                        if (roundManager != null && roundManager.handViewer != null)
+                        {
+                            roundManager.handViewer.RebuildSmart();
+                        }
                     }
                     break;
 
@@ -238,7 +246,6 @@ public class PlayerManager : MonoBehaviour
                 case OperationType.EndTurn:
                     Debug.Log($"[PlayerManager] Card effect triggered: End Turn immediately");
                     // Find RoundManager and call EndPlayerTurn
-                    var roundManager = FindFirstObjectByType<RoundManager>();
                     if (roundManager != null)
                     {
                         roundManager.EndPlayerTurn();

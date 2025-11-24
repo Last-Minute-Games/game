@@ -206,7 +206,10 @@ namespace GameItems
                     var go = Instantiate(cardPrefab);
                     var sortingGroup = go.GetComponent<SortingGroup>();
                     if (sortingGroup != null)
-                        sortingGroup.sortingOrder = i + 100;
+                    {
+                        // Use the final position in _renders list for sorting order
+                        sortingGroup.sortingOrder = _renders.Count + 100;
+                    }
 
                     if (content != null)
                         go.transform.SetParent(content, false);
@@ -216,6 +219,13 @@ namespace GameItems
 
                     render.Bind(inst);
                     _renders.Add(render);
+                    
+                    // Trigger draw FX (animation + sound)
+                    var fxHelper = render.GetComponent<CardFXHelper>();
+                    if (fxHelper != null)
+                    {
+                        fxHelper.OnCardDrawn(render);
+                    }
                 }
             }
             else
@@ -231,7 +241,10 @@ namespace GameItems
                     var go = Instantiate(cardPrefab);
                     var sortingGroup = go.GetComponent<SortingGroup>();
                     if (sortingGroup != null)
-                        sortingGroup.sortingOrder = i + 100;
+                    {
+                        // Use the final position in _renders list for sorting order
+                        sortingGroup.sortingOrder = _renders.Count + 100;
+                    }
 
                     if (content != null)
                         go.transform.SetParent(content, false);
