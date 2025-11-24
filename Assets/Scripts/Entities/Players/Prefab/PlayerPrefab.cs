@@ -270,7 +270,7 @@ namespace Entities.Players.Prefab
         /// <summary>
         /// Updates the gradient screen opacity based on current health percentage
         /// </summary>
-        private void UpdateGradientScreen(Entities.Players.Data.PlayerData data)
+        private void UpdateGradientScreen(Data.PlayerData data)
         {
             if (gradientScreen == null || data.maxHealth <= 0)
                 return;

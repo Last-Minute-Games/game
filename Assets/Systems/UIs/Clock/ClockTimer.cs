@@ -57,7 +57,7 @@ public class ClockTimer : MonoBehaviour
         {
             endMessageText.alpha = 0f;
             endMessageText.text = "YOU DIED!";
-            endMessageText.alignment = TMPro.TextAlignmentOptions.Center;
+            endMessageText.alignment = TextAlignmentOptions.Center;
             endMessageText.fontSize = 72; // Large dramatic text
             endMessageText.color = Color.red; // Red for dramatic effect
             
@@ -243,7 +243,7 @@ public class ClockTimer : MonoBehaviour
             endMessageText.text = "YOU DIED!";
             endMessageText.color = Color.red;
             endMessageText.fontSize = 72;
-            endMessageText.alignment = TMPro.TextAlignmentOptions.Center;
+            endMessageText.alignment = TextAlignmentOptions.Center;
             
             // Bring to front (set high sorting order)
             Canvas textCanvas = endMessageText.GetComponent<Canvas>();
@@ -254,9 +254,9 @@ public class ClockTimer : MonoBehaviour
                 textCanvas.sortingOrder = 1000; // Very high to be on top
                 
                 // Add GraphicRaycaster if needed
-                if (endMessageText.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+                if (endMessageText.GetComponent<GraphicRaycaster>() == null)
                 {
-                    endMessageText.gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+                    endMessageText.gameObject.AddComponent<GraphicRaycaster>();
                 }
             }
             else

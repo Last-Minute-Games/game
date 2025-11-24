@@ -313,7 +313,7 @@ namespace Systems.Overworld.Intro
             }
 
             // Check if we should play the cutscene
-            int playFlag = UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
+            int playFlag = PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
             Debug.Log($"[OverworldWakeUpCutscene] Flag value: {playFlag}");
 
             if (playFlag != 1)
@@ -324,8 +324,8 @@ namespace Systems.Overworld.Intro
             }
 
             // Clear the flag
-            UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 0);
-            UnityEngine.PlayerPrefs.Save();
+            PlayerPrefs.SetInt("PlayWakeUpCutscene", 0);
+            PlayerPrefs.Save();
             
             Debug.Log("[OverworldWakeUpCutscene] Setting up cutscene...");
             
@@ -424,9 +424,9 @@ namespace Systems.Overworld.Intro
                 Debug.Log("[OverworldWakeUpCutscene] Cleared 'journal.tutorial.shown' flag for Overworld");
             }
             
-            UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
-            UnityEngine.PlayerPrefs.Save();
-            Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene")}" +
+            PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
+            PlayerPrefs.Save();
+            Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {PlayerPrefs.GetInt("PlayWakeUpCutscene")}" +
                       $" [next scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + 1}]");
         }
     }

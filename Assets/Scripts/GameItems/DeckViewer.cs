@@ -3,11 +3,11 @@ namespace GameItems
     using System.Collections;
     using System.Collections.Generic;
     using DG.Tweening;
-    using GameItems.Cards;
+    using Cards;
     using UnityEngine;
     using UnityEngine.Rendering;
     using UnityEngine.Splines;
-    using GameItems.Cards.Helpers;
+    using Cards.Helpers;
 
     public class DeckViewer : MonoBehaviour
     {

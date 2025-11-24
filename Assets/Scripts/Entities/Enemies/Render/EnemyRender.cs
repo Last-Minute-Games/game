@@ -285,16 +285,16 @@ public class EnemyRender : MonoBehaviour
         _moveNameText.alpha = 1f;
 
         // Kill any existing tweens on this object
-        DG.Tweening.DOTween.Kill(_moveNameObject.transform);
-        DG.Tweening.DOTween.Kill(_moveNameText);
+        DOTween.Kill(_moveNameObject.transform);
+        DOTween.Kill(_moveNameText);
 
         // Create animation sequence
-        DG.Tweening.Sequence moveSequence = DG.Tweening.DOTween.Sequence();
+        Sequence moveSequence = DOTween.Sequence();
 
         // Float up
         moveSequence.Append(_moveNameObject.transform
             .DOLocalMoveY(moveNameOffset.y + moveNameFloatDistance, moveNameDuration)
-            .SetEase(DG.Tweening.Ease.OutCubic));
+            .SetEase(Ease.OutCubic));
 
         // Fade out in the last half of the animation
         moveSequence.Join(_moveNameText

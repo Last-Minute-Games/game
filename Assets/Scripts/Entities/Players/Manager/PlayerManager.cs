@@ -113,6 +113,12 @@ public class PlayerManager : MonoBehaviour
         // Apply card effects
         ApplyCardEffects(cardData, cardInstance, targetEnemy);
 
+        // Play card sound effect if assigned
+        if (cardData.soundCue != null)
+        {
+            SFXManager.Instance?.Play(cardData.soundCue);
+        }
+
         // Move card from hand to discard pile and remove its instance
         if (cardManager != null)
         {

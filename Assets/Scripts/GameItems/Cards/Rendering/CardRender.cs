@@ -44,7 +44,7 @@ public class CardRender : MonoBehaviour,
     public CardData Data;
     public CardInstance Instance;
     
-    private GameItems.Cards.Helpers.CardFXHelper _fxHelper;
+    private CardFXHelper _fxHelper;
     private bool _isDragging;
 
     private void Awake()
@@ -56,8 +56,35 @@ public class CardRender : MonoBehaviour,
         if (cardName == null) cardName = FindChildByName<TMP_Text>("CardName");
         if (descriptionText == null) descriptionText = FindChildByName<TMP_Text>("DescriptionText");
         
-        _fxHelper = GetComponent<GameItems.Cards.Helpers.CardFXHelper>();
-        if (_fxHelper == null) _fxHelper = gameObject.AddComponent<GameItems.Cards.Helpers.CardFXHelper>();
+        // Setup CardFXHelper and its sub-helpers
+        _fxHelper = GetComponent<CardFXHelper>();
+        if (_fxHelper == null)
+        {
+            _fxHelper = gameObject.AddComponent<CardFXHelper>();
+        }
+        
+        // Ensure sub-helpers are assigned
+        if (_fxHelper.sfxHelper == null)
+        {
+            _fxHelper.sfxHelper = GetComponent<CardSFXHelper>();
+            if (_fxHelper.sfxHelper == null)
+                _fxHelper.sfxHelper = gameObject.AddComponent<CardSFXHelper>();
+        }
+        
+        if (_fxHelper.animHelper == null)
+        {
+            _fxHelper.animHelper = GetComponent<CardAnimationHelper>();
+            if (_fxHelper.animHelper == null)
+                _fxHelper.animHelper = gameObject.AddComponent<CardAnimationHelper>();
+        }
+        
+        // Setup arrow helper for animation helper
+        if (_fxHelper.animHelper != null && _fxHelper.animHelper.arrowHelper == null)
+        {
+            _fxHelper.animHelper.arrowHelper = GetComponent<CardArrowHelper>();
+            if (_fxHelper.animHelper.arrowHelper == null)
+                _fxHelper.animHelper.arrowHelper = gameObject.AddComponent<CardArrowHelper>();
+        }
     }
 
     public void Bind(CardData data)
@@ -85,7 +112,7 @@ public class CardRender : MonoBehaviour,
         Data = instance != null ? instance.data : null;
 
         // Name with variability tier prefix if present
-        if (cardName != null)
+        if (cardName)
         {
             if (instance != null && instance.tier.HasValue && Data != null)
             {

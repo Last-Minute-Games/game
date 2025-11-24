@@ -32,14 +32,14 @@ namespace Systems
         private float _fadeTime = 0.3f;
         private float _fadeDuration = 0.2f;
         
-        private Systems.Overworld.Intro.TutorialScene _tutorialScene;
+        private Overworld.Intro.TutorialScene _tutorialScene;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
             _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
             _fadeCanvasGroup.blocksRaycasts = false;
-            _tutorialScene = FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>();
+            _tutorialScene = FindFirstObjectByType<Overworld.Intro.TutorialScene>();
 
             
             _tptCollider = transform.gameObject.GetComponent<BoxCollider2D>();

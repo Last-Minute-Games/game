@@ -286,7 +286,7 @@ public class BlackjackGame : MonoBehaviour
             Destroy(t.GetChild(i).gameObject);
     }
 
-    void RenderHandSprites(Transform area, List<Blackjack.Card> cards, bool revealAll, bool hideHoleCard)
+    void RenderHandSprites(Transform area, List<Card> cards, bool revealAll, bool hideHoleCard)
     {
         ClearArea(area);
         for (int i = 0; i < cards.Count; i++)
