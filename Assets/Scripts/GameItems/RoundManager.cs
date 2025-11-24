@@ -93,6 +93,15 @@ public class RoundManager : MonoBehaviour
             EndPlayerTurn();
             return;
         }
+
+        // Check if player has no cards left
+        if (player != null && player.cardManager != null && player.cardManager.hand.Count == 0)
+        {
+            Debug.Log("🃏 Player has no cards left! Ending turn early.");
+            timerActive = false;
+            EndPlayerTurn();
+            return;
+        }
     }
 
     // -------------------------------------------------------

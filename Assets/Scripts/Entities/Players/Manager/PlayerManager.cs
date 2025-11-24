@@ -78,6 +78,7 @@ public class PlayerManager : MonoBehaviour
         // Reset energy and block
         playerData.ResetEnergy();
         playerData.block = 0;
+        playerData.block = 0;
 
         // Draw hand
         int handSize = playerConfig != null && playerConfig.config != null 
@@ -103,7 +104,7 @@ public class PlayerManager : MonoBehaviour
         }
 
         // Check energy cost
-        int energyCost = cardData.energyCost > 0 ? cardData.energyCost : 1;
+        int energyCost = cardData.energyCost;
         if (!playerData.SpendEnergy(energyCost))
         {
             Debug.LogWarning($"[PlayerManager] Not enough energy to play {cardData.name}. Need {energyCost}, have {playerData.currentEnergy}");

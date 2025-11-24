@@ -37,6 +37,8 @@ namespace Entities.Players.Data
 
         public void GainEnergy(int amount)
         {
+            if (amount <= 0) return;
+
             currentEnergy += amount;
             OnEnergyChanged?.Invoke();
         }
