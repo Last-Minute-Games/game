@@ -177,24 +177,6 @@ namespace Entities.Enemies.Manager
         // Enemies execute their previously decided intents with delays (turn-based feel)
         public System.Collections.IEnumerator ExecuteEnemyTurnSequence(PlayerData player)
         {
-            // Reset all enemies' block at the START of the enemy turn
-            // (After the player has had their turn to attack shielded enemies)
-            for (int i = 0; i < enemies.Count; i++)
-            {
-                var enemy = enemies[i];
-                if (enemy.isAlive)
-                {
-                    // enemy.block = 0;
-                    var r = GetRenderFor(enemy);
-                    if (r != null)
-                    {
-                        // r.UpdateHealth(); // Show shields disappearing
-                    }
-                }
-            }
-
-            // Small visual delay to show shields disappearing
-            yield return new WaitForSeconds(0.3f);
 
             for (int i = 0; i < enemies.Count; i++)
             {
@@ -205,6 +187,17 @@ namespace Entities.Enemies.Manager
 
                 // Get the render for animation
                 var r = GetRenderFor(enemy);
+
+                // Show move name popup BEFORE executing the move
+                if (r != null)
+                {
+                    // Use GetMoveNameForAction to support custom names
+                    string moveName = r.GetMoveNameForAction(enemy.currentAction);
+                    
+                    // Show popup and wait for it to be visible
+                    r.ShowMoveNamePopup(moveName);
+                    yield return new WaitForSeconds(0.3f); // Brief pause to let player see the move name
+                }
 
                 // Play intent animation based on type
                 if (enemy.currentIntent == EnemyIntent.Attack)
@@ -291,18 +284,35 @@ namespace Entities.Enemies.Manager
             FindFirstObjectByType<RoundManager>()?.CheckImmediateEndConditions();
         }
 
-        // for the start of player rounds, reset all enemy block helper
+        // Age enemy block and reset old block (1+ turns old)
+        // This allows block gained THIS turn to persist through the next round
         public void ResetAllEnemyBlock()
         {
             foreach (var enemy in enemies)
             {
                 if (!enemy.isAlive) continue;
 
-                enemy.block = 0;
-
-                var r = GetRenderFor(enemy);
-                if (r != null)
-                    r.UpdateHealth();
+                // Increment block age
+                if (enemy.block > 0)
+                {
+                    enemy.blockAge++;
+                    
+                    // Only reset block that's 1 or more turns old
+                    if (enemy.blockAge >= 2)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} block expired (age {enemy.blockAge}): {enemy.block} → 0");
+                        enemy.block = 0;
+                        enemy.blockAge = 0;
+                        
+                        var r = GetRenderFor(enemy);
+                        if (r != null)
+                            r.UpdateHealth();
+                    }
+                    else
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} block persists (age {enemy.blockAge}): {enemy.block} block");
+                    }
+                }
             }
         }
 

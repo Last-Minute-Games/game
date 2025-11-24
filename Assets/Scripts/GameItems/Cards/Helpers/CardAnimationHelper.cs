@@ -16,6 +16,10 @@ namespace GameItems.Cards.Helpers
         public float drawDuration = 0.35f;
         public float discardDuration = 0.35f;
 
+        [Header("Return to Hand Settings")]
+        [Tooltip("Maximum distance (in world units) from original position to automatically return card to hand")]
+        public float returnToHandThreshold = 2.0f;
+
         [Header("Input Settings")]
         [SerializeField] private Camera dragCamera;
 
@@ -235,6 +239,27 @@ namespace GameItems.Cards.Helpers
         private Camera ResolveCamera()
         {
             return dragCamera != null ? dragCamera : Camera.main;
+        }
+
+        /// <summary>
+        /// Checks if the card is close enough to its original position to be returned to hand.
+        /// </summary>
+        public bool IsNearOriginalPosition(CardRender card)
+        {
+            if (card == null) return false;
+
+            Vector3 currentPos = card.transform.localPosition;
+            float distance = Vector3.Distance(currentPos, _originalPosition);
+
+            return distance <= returnToHandThreshold;
+        }
+
+        /// <summary>
+        /// Gets the original position where the card was picked up from.
+        /// </summary>
+        public Vector3 GetOriginalPosition()
+        {
+            return _originalPosition;
         }
     }
 }

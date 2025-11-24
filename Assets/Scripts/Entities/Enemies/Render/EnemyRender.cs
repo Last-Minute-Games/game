@@ -1,6 +1,7 @@
 using Entities.Enemies.Helpers;
 using UnityEngine;
 using TMPro;
+using DG.Tweening;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(SpriteRenderer))]
@@ -27,6 +28,18 @@ public class EnemyRender : MonoBehaviour
     [Tooltip("Color for intent value text")]
     public Color intentValueColor = Color.white;
 
+    [Header("Move Name Popup")]
+    [Tooltip("Offset from enemy position where move name appears")]
+    public Vector3 moveNameOffset = new Vector3(0f, -0.11f, 0f);
+    [Tooltip("Font size for move name")]
+    public float moveNameFontSize = 2f;
+    [Tooltip("Color for move name text")]
+    public Color moveNameColor = Color.yellow;
+    [Tooltip("Duration of move name popup animation")]
+    public float moveNameDuration = 1.5f;
+    [Tooltip("How far the text moves up during animation")]
+    public float moveNameFloatDistance = -0.04f;
+
     [Header("Animator States (Controller-driven)")]
     public string idleState = "Idle";
 
@@ -43,6 +56,9 @@ public class EnemyRender : MonoBehaviour
     private GameObject _intentValueObject;
     private EnemyHealth _health;
     private BoxCollider2D _hitboxCollider;
+    
+    private TMP_Text _moveNameText;
+    private GameObject _moveNameObject;
 
     // Manual sprite animation state
     private SpriteAnimation _currentAnimation;
@@ -86,6 +102,28 @@ public class EnemyRender : MonoBehaviour
         {
             textRenderer.sortingLayerID = _intentIconSprite.sortingLayerID;
             textRenderer.sortingOrder = _intentIconSprite.sortingOrder + 1;
+        }
+        
+        // Create move name popup text as child
+        _moveNameObject = new GameObject("MoveNameText");
+        _moveNameObject.transform.SetParent(transform);
+        _moveNameObject.transform.localPosition = moveNameOffset;
+        _moveNameObject.transform.localScale = Vector3.one * 0.2f;
+        
+        // Add TextMeshPro for move name display
+        _moveNameText = _moveNameObject.AddComponent<TextMeshPro>();
+        _moveNameText.fontSize = moveNameFontSize;
+        _moveNameText.color = moveNameColor;
+        _moveNameText.alignment = TextAlignmentOptions.Center;
+        _moveNameText.fontStyle = FontStyles.Bold;
+        _moveNameText.enabled = false; // Hidden by default
+        
+        // Set sorting for move name text
+        var moveNameRenderer = _moveNameText.GetComponent<MeshRenderer>();
+        if (moveNameRenderer != null)
+        {
+            moveNameRenderer.sortingLayerName = intentIconSortingLayer;
+            moveNameRenderer.sortingOrder = _sprite.sortingOrder + 20; // Above everything else
         }
     }
 
@@ -133,6 +171,16 @@ public class EnemyRender : MonoBehaviour
         {
             _sprite.sprite = data != null ? data.artwork : null;
             _sprite.enabled = _sprite.sprite != null;
+        }
+
+        // Apply visual adjustments from EnemyData
+        if (data != null)
+        {
+            // Apply position offset
+            transform.localPosition += data.positionOffset;
+            
+            // Apply scale offset
+            transform.localScale = Vector3.Scale(transform.localScale, data.scaleOffset);
         }
 
         _health = GetComponentInChildren<EnemyHealth>();
@@ -212,6 +260,93 @@ public class EnemyRender : MonoBehaviour
             _intentIconSprite.sprite = icon;
             _intentIconSprite.enabled = true;
         }
+    }
+
+    /// <summary>
+    /// Shows a popup text with the move name that floats up and fades out.
+    /// Call this immediately before the enemy executes their action.
+    /// </summary>
+    /// <param name="moveName">The name of the move to display</param>
+    /// <param name="onComplete">Optional callback when animation completes</param>
+    public void ShowMoveNamePopup(string moveName, System.Action onComplete = null)
+    {
+        if (_moveNameText == null || string.IsNullOrEmpty(moveName))
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        // Set the move name text
+        _moveNameText.text = moveName.ToUpper();
+        _moveNameText.enabled = true;
+
+        // Reset position and alpha
+        _moveNameObject.transform.localPosition = moveNameOffset;
+        _moveNameText.alpha = 1f;
+
+        // Kill any existing tweens on this object
+        DOTween.Kill(_moveNameObject.transform);
+        DOTween.Kill(_moveNameText);
+
+        // Create animation sequence
+        Sequence moveSequence = DOTween.Sequence();
+
+        // Float up
+        moveSequence.Append(_moveNameObject.transform
+            .DOLocalMoveY(moveNameOffset.y + moveNameFloatDistance, moveNameDuration)
+            .SetEase(Ease.OutCubic));
+
+        // Fade out in the last half of the animation
+        moveSequence.Join(_moveNameText
+            .DOFade(0f, moveNameDuration * 0.5f)
+            .SetDelay(moveNameDuration * 0.5f));
+
+        // Hide and callback when complete
+        moveSequence.OnComplete(() =>
+        {
+            if (_moveNameText != null)
+                _moveNameText.enabled = false;
+            onComplete?.Invoke();
+        });
+    }
+
+    /// <summary>
+    /// Gets the move name for the given action.
+    /// Returns custom name if set, otherwise returns default name based on intent.
+    /// </summary>
+    public string GetMoveNameForAction(EnemyAction action)
+    {
+        // Check if custom name is set
+        if (!string.IsNullOrEmpty(action.customName))
+        {
+            return action.customName;
+        }
+        
+        // Return default name based on intent
+        return action.intent switch
+        {
+            EnemyIntent.Attack => "Attack",
+            EnemyIntent.Block => "Defend",
+            EnemyIntent.Heal => "Heal",
+            EnemyIntent.Buff => "Buff",
+            _ => "???"
+        };
+    }
+    
+    /// <summary>
+    /// Gets the move name based on the current intent (legacy method).
+    /// Use GetMoveNameForAction() for custom name support.
+    /// </summary>
+    public string GetMoveNameForIntent(EnemyIntent intent)
+    {
+        return intent switch
+        {
+            EnemyIntent.Attack => "Attack",
+            EnemyIntent.Block => "Defend",
+            EnemyIntent.Heal => "Heal",
+            EnemyIntent.Buff => "Buff",
+            _ => "???"
+        };
     }
 
     public void UpdateHealth()

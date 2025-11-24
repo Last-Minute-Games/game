@@ -5,14 +5,14 @@ namespace GameItems.Cards
 
     /// <summary>
     /// Runtime instance of a CardData with its rolled effect values.
-    /// Keeps the original CardData reference but stores cloned EffectData
+    /// Keeps the original CardData reference but stores cloned Effects
     /// with postCopyValue set at draw time.
     /// </summary>
     [System.Serializable]
     public class CardInstance
     {
         public CardData data;
-        public List<EffectData> rolledEffects = new();
+        public List<Effect> rolledEffects = new();
 
         // Optional: variability tier for UI hints if applicable (only when a single effect exists)
         public CardVariationTier? tier;
@@ -29,11 +29,10 @@ namespace GameItems.Cards
 
             // Clone each effect with multiplier if variability is on for this card
             bool apply = applyVariability && source.isVariableCard;
-            if (source.effectData != null)
+            if (source.effects != null)
             {
-                foreach (var eff in source.effectData)
+                foreach (var eff in source.effects)
                 {
-                    if (eff == null) continue;
                     var clone = eff.Clone(apply);
                     inst.rolledEffects.Add(clone);
                 }
@@ -56,7 +55,7 @@ namespace GameItems.Cards
             int sum = 0;
             foreach (var e in rolledEffects)
             {
-                if (e != null && e.operationType == operation)
+                if (e.operationType == operation)
                 {
                     sum += e.postCopyValue;
                 }

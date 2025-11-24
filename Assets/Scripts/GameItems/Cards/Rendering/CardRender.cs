@@ -44,7 +44,7 @@ public class CardRender : MonoBehaviour,
     public CardData Data;
     public CardInstance Instance;
     
-    private GameItems.Cards.Helpers.CardFXHelper _fxHelper;
+    private CardFXHelper _fxHelper;
     private bool _isDragging;
 
     private void Awake()
@@ -56,8 +56,35 @@ public class CardRender : MonoBehaviour,
         if (cardName == null) cardName = FindChildByName<TMP_Text>("CardName");
         if (descriptionText == null) descriptionText = FindChildByName<TMP_Text>("DescriptionText");
         
-        _fxHelper = GetComponent<GameItems.Cards.Helpers.CardFXHelper>();
-        if (_fxHelper == null) _fxHelper = gameObject.AddComponent<GameItems.Cards.Helpers.CardFXHelper>();
+        // Setup CardFXHelper and its sub-helpers
+        _fxHelper = GetComponent<CardFXHelper>();
+        if (_fxHelper == null)
+        {
+            _fxHelper = gameObject.AddComponent<CardFXHelper>();
+        }
+        
+        // Ensure sub-helpers are assigned
+        if (_fxHelper.sfxHelper == null)
+        {
+            _fxHelper.sfxHelper = GetComponent<CardSFXHelper>();
+            if (_fxHelper.sfxHelper == null)
+                _fxHelper.sfxHelper = gameObject.AddComponent<CardSFXHelper>();
+        }
+        
+        if (_fxHelper.animHelper == null)
+        {
+            _fxHelper.animHelper = GetComponent<CardAnimationHelper>();
+            if (_fxHelper.animHelper == null)
+                _fxHelper.animHelper = gameObject.AddComponent<CardAnimationHelper>();
+        }
+        
+        // Setup arrow helper for animation helper
+        if (_fxHelper.animHelper != null && _fxHelper.animHelper.arrowHelper == null)
+        {
+            _fxHelper.animHelper.arrowHelper = GetComponent<CardArrowHelper>();
+            if (_fxHelper.animHelper.arrowHelper == null)
+                _fxHelper.animHelper.arrowHelper = gameObject.AddComponent<CardArrowHelper>();
+        }
     }
 
     public void Bind(CardData data)
@@ -75,7 +102,7 @@ public class CardRender : MonoBehaviour,
         int energyVal = data.energyCost;
         if (energyCost != null)
         {
-            energyCost.text = energyVal > 0 ? energyVal.ToString() : string.Empty;
+            energyCost.text = energyVal.ToString();
         }
     }
 
@@ -85,7 +112,7 @@ public class CardRender : MonoBehaviour,
         Data = instance != null ? instance.data : null;
 
         // Name with variability tier prefix if present
-        if (cardName != null)
+        if (cardName)
         {
             if (instance != null && instance.tier.HasValue && Data != null)
             {
@@ -101,22 +128,54 @@ public class CardRender : MonoBehaviour,
         // Description: keep base text; optionally append rolled summary for clarity
         if (descriptionText != null)
         {
-            string baseDesc = Data != null ? Data.description : string.Empty;
+            string baseDesc = string.Empty;
             if (instance != null && instance.rolledEffects != null && instance.rolledEffects.Count > 0)
             {
                 int dmg = instance.GetTotal(OperationType.Damage);
                 int blk = instance.GetTotal(OperationType.AddShield);
+                int heal = instance.GetTotal(OperationType.Heal);
+                int addEnergy = instance.GetTotal(OperationType.AddEnergy);
+                
+                // Check if EndTurn operation exists
+                bool hasEndTurn = false;
+                foreach (var effect in instance.rolledEffects)
+                {
+                    if (effect.operationType == OperationType.EndTurn)
+                    {
+                        hasEndTurn = true;
+                        break;
+                    }
+                }
+                
                 string summary = string.Empty;
-                if (dmg != 0) summary += $" +{dmg} Damage";
-                if (blk != 0) summary += (summary.Length > 0 ? "," : "") + $" +{blk} Block";
-                if (!string.IsNullOrEmpty(summary)) baseDesc = $"{baseDesc}\n[{summary.Trim()}]";
+                if (dmg != 0) summary += $"Inflict {dmg} <color=#FA5053>Damage</color>.";
+                if (blk != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Gain {blk} <color=#57B9FF>Block</color>.";
+                if (heal != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Heal {heal} <color=#50C878>Health</color>.";
+                if (addEnergy != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Gain {addEnergy} <color=#FFD700>Energy</color>.";
+                if (hasEndTurn) summary += (summary.Length > 0 ? "\n" : "") + $"<color=#FFD700>End Turn</color>.";
+                if (!string.IsNullOrEmpty(summary)) baseDesc = summary.Trim();
             }
             descriptionText.text = baseDesc;
         }
 
-        // Sprites from data
-        cardBackground.sprite = Data != null ? Data.artwork : null;
-        cardIcon.sprite = Data != null ? Data.icon : null;
+        // Sprites from data - use tier-specific artwork if available
+        if (Data != null)
+        {
+            if (instance != null && instance.tier.HasValue)
+            {
+                cardBackground.sprite = Data.GetArtworkForTier(instance.tier.Value);
+            }
+            else
+            {
+                cardBackground.sprite = Data.artwork;
+            }
+            cardIcon.sprite = Data.icon;
+        }
+        else
+        {
+            cardBackground.sprite = null;
+            cardIcon.sprite = null;
+        }
 
         // Energy from CardData
         int energyVal = energy ?? (Data != null ? Data.energyCost : defaultEnergyCost);
@@ -187,6 +246,20 @@ public class CardRender : MonoBehaviour,
 
         if (_fxHelper != null)
         {
+            // First check if card is near its original position - if so, return it to hand
+            if (_fxHelper.animHelper != null && _fxHelper.animHelper.IsNearOriginalPosition(this))
+            {
+                Debug.Log("[CardRender] Card released near original position - returning to hand");
+                _fxHelper.OnCardRelease(this, validTarget: false);
+                
+                // Fix layout
+                var handViewer = FindFirstObjectByType<DeckViewer>();
+                if (handViewer != null)
+                    handViewer.RebuildSmart();
+                
+                return;
+            }
+
             bool validTarget = false;
             TargetRule rule = Data.GetDominatingTargetRule();
 
@@ -215,9 +288,15 @@ public class CardRender : MonoBehaviour,
                         validTarget = false;
                     else
                     {
-                        var roundManager = FindFirstObjectByType<RoundManager>();
-                        if (roundManager != null && roundManager.handViewer != null)
-                            roundManager.handViewer.RebuildSmart();
+                        // Check if card has EndTurn effect - if so, don't rebuild as EndPlayerTurn handles it
+                        bool cardHasEndTurn = CheckForEndTurnEffect();
+                        
+                        if (!cardHasEndTurn)
+                        {
+                            var roundManager = FindFirstObjectByType<RoundManager>();
+                            if (roundManager != null && roundManager.handViewer != null)
+                                roundManager.handViewer.RebuildSmart();
+                        }
                     }
                 }
                 else
@@ -228,10 +307,14 @@ public class CardRender : MonoBehaviour,
 
             _fxHelper.OnCardRelease(this, validTarget);
 
-            // ALWAYS FIX LAYOUT AFTER DRAG
-            var handViewer = FindFirstObjectByType<DeckViewer>();
-            if (handViewer != null)
-                handViewer.RebuildSmart();
+            // ALWAYS FIX LAYOUT AFTER DRAG - unless EndTurn was triggered
+            bool hasEndTurn = CheckForEndTurnEffect();
+            if (!hasEndTurn)
+            {
+                var handViewer = FindFirstObjectByType<DeckViewer>();
+                if (handViewer != null)
+                    handViewer.RebuildSmart();
+            }
         }
     }
 
@@ -273,6 +356,36 @@ public class CardRender : MonoBehaviour,
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Checks if this card has an EndTurn effect
+    /// </summary>
+    private bool CheckForEndTurnEffect()
+    {
+        if (Data == null) return false;
+        
+        // Check in CardData effects
+        if (Data.effects != null)
+        {
+            foreach (var effect in Data.effects)
+            {
+                if (effect.operationType == OperationType.EndTurn)
+                    return true;
+            }
+        }
+        
+        // Also check instance rolled effects if available
+        if (Instance != null && Instance.rolledEffects != null)
+        {
+            foreach (var effect in Instance.rolledEffects)
+            {
+                if (effect.operationType == OperationType.EndTurn)
+                    return true;
+            }
+        }
+        
+        return false;
     }
 
     // Optional support for non-UI hover via physics raycast (if collider present)
