@@ -79,7 +79,8 @@ public class MazePopupController : MonoBehaviour
         isOpen = true;
         mazeGenerated = false;
 
-        //GlobalPause.SetPaused(true);
+        // Pause NPCs and ClockTimer (but NOT player input - minigame pause)
+        GlobalPause.SetMinigamePaused(true);
 
         if (hudGroup != null) //HUD off
             hudGroup.SetActive(false);
@@ -252,7 +253,8 @@ public class MazePopupController : MonoBehaviour
         if (!isOpen) return;
         isOpen = false;
 
-        //GlobalPause.SetPaused(false);
+        // Resume NPCs and ClockTimer (using minigame pause)
+        GlobalPause.SetMinigamePaused(false);
         // Hide popup & maze
         if (backdrop) backdrop.SetActive(false);
         if (window) window.SetActive(false);

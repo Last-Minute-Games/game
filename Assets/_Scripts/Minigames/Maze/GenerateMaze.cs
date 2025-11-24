@@ -29,6 +29,34 @@ public class GenerateMaze : MonoBehaviour
 
     private bool roomsBuilt = false;
 
+    private void Awake()
+    {
+        // Force Unity to include the prefab and its dependencies in the build
+        // by accessing its components during Awake
+        if (roomPrefab != null)
+        {
+            // Access all renderers and their materials to ensure they're included in build
+            SpriteRenderer[] spriteRenderers = roomPrefab.GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (SpriteRenderer sr in spriteRenderers)
+            {
+                if (sr != null && sr.sharedMaterial != null)
+                {
+                    // Access the material to ensure it's included
+                    Material mat = sr.sharedMaterial;
+                    if (mat != null && mat.shader != null)
+                    {
+                        // Access shader name to ensure shader is included
+                        string shaderName = mat.shader.name;
+                    }
+                }
+                if (sr != null && sr.sprite != null)
+                {
+                    // Access the sprite to ensure it's included
+                    Sprite sprite = sr.sprite;
+                }
+            }
+        }
+    }
 
     private void GetRoomSize() {
         SpriteRenderer[] spriteRenderers = roomPrefab.GetComponentsInChildren<SpriteRenderer>();
