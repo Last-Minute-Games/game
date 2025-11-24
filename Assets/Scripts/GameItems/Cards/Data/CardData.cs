@@ -1,3 +1,4 @@
+using GameItems.Cards;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Cards/Card Data", fileName = "NewCardData")]

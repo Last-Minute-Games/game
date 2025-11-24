@@ -2,6 +2,7 @@ using Entities.Enemies.Helpers;
 using UnityEngine;
 using TMPro;
 using DG.Tweening;
+using GameItems.Cards;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(SpriteRenderer))]
@@ -14,7 +15,7 @@ public class EnemyRender : MonoBehaviour
     [Tooltip("Offset from enemy position where intent icon appears")]
     public Vector3 intentIconOffset = new Vector3(0f, 0.23f, 0f);
     [Tooltip("Size of the intent icon sprite")]
-    public float intentIconSize = 0.04f;
+    public float intentIconSize = 0.2f;
     [Tooltip("Sorting layer for intent icon")]
     public string intentIconSortingLayer = "Default";
     [Tooltip("Sorting order offset from enemy sprite")]
@@ -22,15 +23,15 @@ public class EnemyRender : MonoBehaviour
     
     [Header("Intent Value Text")]
     [Tooltip("Offset from icon where value text appears")]
-    public Vector3 intentValueOffset = new Vector3(0.5f, -0.3f, 0f);
+    public Vector3 intentValueOffset = new(0.15f, -0.12f, 0f);
     [Tooltip("Font size for intent value")]
-    public float intentValueFontSize = 10f;
+    public float intentValueFontSize = 2f;
     [Tooltip("Color for intent value text")]
     public Color intentValueColor = Color.white;
 
     [Header("Move Name Popup")]
     [Tooltip("Offset from enemy position where move name appears")]
-    public Vector3 moveNameOffset = new Vector3(0f, -0.11f, 0f);
+    public Vector3 moveNameOffset = new(0f, -0.11f, 0f);
     [Tooltip("Font size for move name")]
     public float moveNameFontSize = 2f;
     [Tooltip("Color for move name text")]
@@ -201,7 +202,7 @@ public class EnemyRender : MonoBehaviour
     /// Updates the intent icon based on the current enemy data intent.
     /// Call this after rolling intents or when intent changes.
     /// </summary>
-    public void UpdateIntentIcon()
+    public void UpdateIntentIcon(GameItems.Cards.CardIconLibrary iconLibrary = null)
     {
         if (data == null || _intentIconSprite == null)
         {
@@ -209,7 +210,20 @@ public class EnemyRender : MonoBehaviour
             return;
         }
 
-        Sprite intentSprite = data.GetCurrentIntentIcon();
+        // If no icon library provided, try to load default one
+        if (iconLibrary == null)
+        {
+            iconLibrary = UnityEngine.Resources.Load<GameItems.Cards.CardIconLibrary>("Nether/StatusIcons/DefaultCardIconLibrary");
+        }
+
+        if (iconLibrary == null)
+        {
+            Debug.LogWarning($"[EnemyRender] No icon library available for {data.enemyName}");
+            HideIntentIcon();
+            return;
+        }
+
+        Sprite intentSprite = iconLibrary.GetIconForIntent(data.currentIntent);
         
         if (intentSprite != null)
         {

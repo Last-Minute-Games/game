@@ -154,6 +154,12 @@ public class RoundManager : MonoBehaviour
             return;
         }
 
+        // Reduce strength at the start of a new wave
+        if (player != null && player.playerData != null)
+        {
+            player.playerData.LoseStrength(1);
+        }
+
         // Clear transition flag - we're ready to check end conditions again
         _isTransitioningWaves = false;
 

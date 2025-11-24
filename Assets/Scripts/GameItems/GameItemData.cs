@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using GameItems.Cards;
 
 public abstract class GameItemData : ScriptableObject
 {
@@ -14,8 +15,8 @@ public abstract class GameItemData : ScriptableObject
     [Tooltip("Main artwork displayed for this item.")]
     public Sprite artwork;
 
-    [Tooltip("Small icon used for UI or quick reference.")]
-    public Sprite icon;
+    [Tooltip("Defines the icon category for this card.")]
+    public CardCategory iconCategory;
 
     [Header("Item Effects")]
     [Tooltip("List of effects this item applies (e.g., stat changes, damage, healing).")]

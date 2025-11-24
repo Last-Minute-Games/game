@@ -18,7 +18,9 @@ public enum OperationType // player and enemy manager must define handling all o
     EndTurn,
     ShuffleDeck,
     MultiplyPowerScale,
-    AddEnergy
+    AddEnergy,
+    DrawCards,
+    AddStrength
 }
 
 public enum TimeUnit

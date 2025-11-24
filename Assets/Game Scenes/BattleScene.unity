@@ -498,8 +498,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScreenFader
   fadePanel: {fileID: 874898182}
   fadeDuration: 2
-  topPanel: {fileID: 0}
-  bottomPanel: {fileID: 0}
   splitPanelDuration: 1.5
   shouldOpenEyesOnSceneLoad: 0
 --- !u!114 &275369699
@@ -1286,6 +1284,7 @@ MonoBehaviour:
     isPlayer: 0
     baseEnergy: 0
     maxEnergy: 0
+    strength: 0
     usableCards: []
     currentEnergy: 0
   cardManager:
@@ -2499,6 +2498,10 @@ PrefabInstance:
       propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6768271494013188658, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: bb632b23359c84611aaa4ef90f501307, type: 3}
     - target: {fileID: 8641809211206078901, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.4817187

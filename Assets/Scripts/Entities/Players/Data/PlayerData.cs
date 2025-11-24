@@ -11,22 +11,40 @@ namespace Entities.Players.Data
         public int baseEnergy;
         public int maxEnergy;
 
+        [Header("Combat Stats")]
+        public int strength;
+
         [Header("Collections")]
         public List<CardData> usableCards = new List<CardData>();
-
         public event Action OnEnergyChanged;
+        public event Action OnStatsChanged;
 
         // Current energy (runtime state)
         public int currentEnergy;
 
-        public void Initialize(string playerName, int maxHealth, int energy, int maxEnergyLimit)
+        public void Initialize(string playerName, int maxHp, int energy, int maxEnergyLimit)
         {
             // Call base entity initialization
-            base.Initialize(playerName, maxHealth);
+            base.Initialize(playerName, maxHp);
 
             baseEnergy = energy;
             maxEnergy = maxEnergyLimit;
             currentEnergy = baseEnergy;
+            strength = 0; // Initialize strength
+        }
+
+        public void AddStrength(int amount)
+        {
+            if (amount == 0) return;
+            strength += amount;
+            OnStatsChanged?.Invoke();
+        }
+
+        public void LoseStrength(int amount)
+        {
+            if (amount == 0) return;
+            strength = Mathf.Max(0, strength - amount);
+            OnStatsChanged?.Invoke();
         }
 
         public void ResetEnergy()

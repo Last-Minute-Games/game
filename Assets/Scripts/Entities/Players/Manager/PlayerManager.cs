@@ -161,8 +161,9 @@ public class PlayerManager : MonoBehaviour
                 case OperationType.Damage:
                     if (targetEnemy != null && targetEnemy.data != null)
                     {
-                        targetEnemy.data.TakeDamage(value);
-                        Debug.Log($"[PlayerManager] Dealt {value} damage to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
+                        int totalDamage = value + (playerData != null ? playerData.strength : 0);
+                        targetEnemy.data.TakeDamage(totalDamage);
+                        Debug.Log($"[PlayerManager] Dealt {totalDamage} damage ({value} base + {playerData?.strength} strength) to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
 
                         // Update enemy health display
                         var enemyManager = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
@@ -207,6 +208,25 @@ public class PlayerManager : MonoBehaviour
                     {
                         playerData.GainEnergy(value);
                         Debug.Log($"[PlayerManager] Player gained {value} energy. Current energy: {playerData.currentEnergy}/{playerData.maxEnergy}");
+                    }
+                    break;
+
+                case OperationType.DrawCards:
+                    if (cardManager != null)
+                    {
+                        for (int i = 0; i < value; i++)
+                        {
+                            cardManager.DrawCard();
+                        }
+                        Debug.Log($"[PlayerManager] Player drew {value} cards.");
+                    }
+                    break;
+
+                case OperationType.AddStrength:
+                    if (playerData != null)
+                    {
+                        playerData.AddStrength(value);
+                        Debug.Log($"[PlayerManager] Player gained {value} strength. Total strength: {playerData.strength}");
                     }
                     break;
 
