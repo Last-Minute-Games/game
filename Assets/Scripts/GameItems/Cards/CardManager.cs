@@ -117,11 +117,11 @@ namespace GameItems.Cards
             }
 
             int sum = 0;
-            if (data != null && data.effectData != null)
+            if (data != null && data.effects != null)
             {
-                foreach (var e in data.effectData)
+                foreach (var e in data.effects)
                 {
-                    if (e != null && e.operationType == op)
+                    if (e.operationType == op)
                         sum += e.baseValue;
                 }
             }
@@ -136,6 +136,27 @@ namespace GameItems.Cards
             discardPile.AddRange(hand);
             hand.Clear();
             handInstances.Clear();
+        }
+
+        // -----------------------------------------------------------
+        // Clear discard pile (e.g., for new wave/battle)
+        // -----------------------------------------------------------
+        public void ClearDiscardPile()
+        {
+            discardPile.Clear();
+            Debug.Log("[CardManager] Discard pile cleared");
+        }
+
+        // -----------------------------------------------------------
+        // Draw a starting hand (typically 5 cards)
+        // -----------------------------------------------------------
+        public void DrawStartingHand(int count = 5)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                DrawCard();
+            }
+            Debug.Log($"[CardManager] Drew starting hand of {count} cards");
         }
 
         private void ReshuffleDiscardIntoDraw()

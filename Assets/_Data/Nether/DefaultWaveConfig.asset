@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63d177f799cd435387d4a5b7788a9aaf, type: 3}
+  m_Name: DefaultWaveConfig
+  m_EditorClassIdentifier: Assembly-CSharp::GameItems.WaveConfig
+  waves:
+  - waveName: Wave 1
+    enemies:
+    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    delayBeforeWave: 0
+    waveMessage: Wave 1 begins!
+  - waveName: Wave 2
+    enemies:
+    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
+    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
+    delayBeforeWave: 0
+    waveMessage: Wave 2 begins!
+  useRandomWaves: 0
+  numberOfRandomWaves: 3
+  enemyPool: []
+  minEnemiesPerWave: 1
+  maxEnemiesPerWave: 3
+  difficultyScaling: 0.2

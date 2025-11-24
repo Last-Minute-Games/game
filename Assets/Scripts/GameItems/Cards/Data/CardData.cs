@@ -69,11 +69,11 @@ public class CardData : GameItemData
     // checks if card variability is valid
     public bool IsCardVariabilityValid()
     {
-        return isVariableCard && effectData != null && effectData.Count == 1;
+        return isVariableCard && effects != null && effects.Count == 1;
     }
 
     // postcopy rolled effect
-    public CardVariationTier GetVariationTier(EffectData rolledEffect)
+    public CardVariationTier GetVariationTier(Effect rolledEffect)
     {
         float min = rolledEffect.minMultiplier;
         float max = rolledEffect.maxMultiplier;
@@ -109,6 +109,20 @@ public class CardData : GameItemData
             CardVariationTier.StrongModifier =>
                 $"<color=#{GetStrongPrefixColorTag()}>{strongPrefix}</color>",
             _ => string.Empty
+        };
+    }
+
+    /// <summary>
+    /// Gets the appropriate artwork sprite based on the variation tier.
+    /// Returns poorArtwork for weak tier, potentArtwork for strong tier, or default artwork otherwise.
+    /// </summary>
+    public Sprite GetArtworkForTier(CardVariationTier tier)
+    {
+        return tier switch
+        {
+            CardVariationTier.WeakModifier => poorArtwork != null ? poorArtwork : artwork,
+            CardVariationTier.StrongModifier => potentArtwork != null ? potentArtwork : artwork,
+            _ => artwork
         };
     }
 

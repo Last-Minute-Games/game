@@ -15,10 +15,20 @@ MonoBehaviour:
   itemName: Block
   description: Defend
   artwork: {fileID: -1526429089148878959, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
-  icon: {fileID: -1948493957703550831, guid: 8c78d79fd5fcdbcc3b86f33f91020dcf, type: 3}
-  effectData:
-  - {fileID: 11400000, guid: 0f999d46db230894bae14c1f6f9844fb, type: 2}
-  uniqueID: 0
+  icon: {fileID: -1948493957703550831, guid: 307e650d27bb57c48a92ff7376986102, type: 3}
+  effects:
+  - targetRule: 1
+    minMultiplier: 0.5
+    maxMultiplier: 1.5
+    operationType: 2
+    baseValue: 6
+    duration: 0
+    durationUnit: 0
+    delay: 0
+    delayUnit: 0
+    variableColor: {r: 0.24056602, g: 0.5325512, b: 1, a: 0}
+    postCopyValue: 0
+  uniqueID: 1
   intentionText: 
   soundCue: {fileID: 0}
   energyCost: 1
@@ -28,7 +38,7 @@ MonoBehaviour:
   poorArtwork: {fileID: 6358022096593553520, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   potentArtwork: {fileID: 3580847615617075277, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   maxMultiplierThreshold: 0.52
-  minMultiplierThreshold: 0.335
+  minMultiplierThreshold: 0.228
   weakPrefix: Poor
   strongPrefix: Potent
   weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
