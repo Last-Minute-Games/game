@@ -181,7 +181,7 @@ public class CardRender : MonoBehaviour,
         int energyVal = energy ?? (Data != null ? Data.energyCost : defaultEnergyCost);
         if (energyCost != null)
         {
-            energyCost.text = energyVal > 0 ? energyVal.ToString() : string.Empty;
+            energyCost.text = energyVal.ToString();
         }
     }
 
