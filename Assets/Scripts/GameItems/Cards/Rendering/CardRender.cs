@@ -134,6 +134,7 @@ public class CardRender : MonoBehaviour,
                 int dmg = instance.GetTotal(OperationType.Damage);
                 int blk = instance.GetTotal(OperationType.AddShield);
                 int heal = instance.GetTotal(OperationType.Heal);
+                int addEnergy = instance.GetTotal(OperationType.AddEnergy);
                 
                 // Check if EndTurn operation exists
                 bool hasEndTurn = false;
@@ -150,6 +151,7 @@ public class CardRender : MonoBehaviour,
                 if (dmg != 0) summary += $"Inflict {dmg} <color=#FA5053>Damage</color>.";
                 if (blk != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Gain {blk} <color=#57B9FF>Block</color>.";
                 if (heal != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Heal {heal} <color=#50C878>Health</color>.";
+                if (addEnergy != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Gain {addEnergy} <color=#FFD700>Energy</color>.";
                 if (hasEndTurn) summary += (summary.Length > 0 ? "\n" : "") + $"<color=#FFD700>End Turn</color>.";
                 if (!string.IsNullOrEmpty(summary)) baseDesc = summary.Trim();
             }
@@ -244,6 +246,20 @@ public class CardRender : MonoBehaviour,
 
         if (_fxHelper != null)
         {
+            // First check if card is near its original position - if so, return it to hand
+            if (_fxHelper.animHelper != null && _fxHelper.animHelper.IsNearOriginalPosition(this))
+            {
+                Debug.Log("[CardRender] Card released near original position - returning to hand");
+                _fxHelper.OnCardRelease(this, validTarget: false);
+                
+                // Fix layout
+                var handViewer = FindFirstObjectByType<DeckViewer>();
+                if (handViewer != null)
+                    handViewer.RebuildSmart();
+                
+                return;
+            }
+
             bool validTarget = false;
             TargetRule rule = Data.GetDominatingTargetRule();
 

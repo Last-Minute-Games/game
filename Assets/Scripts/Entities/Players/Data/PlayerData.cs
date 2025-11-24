@@ -37,7 +37,7 @@ namespace Entities.Players.Data
 
         public void GainEnergy(int amount)
         {
-            currentEnergy = Mathf.Min(currentEnergy + amount, maxEnergy);
+            currentEnergy += amount;
             OnEnergyChanged?.Invoke();
         }
 

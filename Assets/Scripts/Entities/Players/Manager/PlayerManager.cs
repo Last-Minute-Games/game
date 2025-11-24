@@ -201,6 +201,14 @@ public class PlayerManager : MonoBehaviour
                     }
                     break;
 
+                case OperationType.AddEnergy:
+                    if (playerData != null)
+                    {
+                        playerData.GainEnergy(value);
+                        Debug.Log($"[PlayerManager] Player gained {value} energy. Current energy: {playerData.currentEnergy}/{playerData.maxEnergy}");
+                    }
+                    break;
+
                 case OperationType.EndTurn:
                     Debug.Log($"[PlayerManager] Card effect triggered: End Turn immediately");
                     // Find RoundManager and call EndPlayerTurn
