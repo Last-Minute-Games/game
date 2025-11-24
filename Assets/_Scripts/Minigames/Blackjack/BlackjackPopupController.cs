@@ -41,18 +41,18 @@ public class BlackjackPopupController : MonoBehaviour
         if (window) window.SetActive(true);
         gameObject.SetActive(true);
 
-        // Pause player
+        // Pause player input (still using player control scripts disable)
         foreach (var b in playerControlScripts)
             if (b) b.enabled = false;
+
+        // Pause NPCs and ClockTimer (but NOT player input - minigame pause)
+        GlobalPause.SetMinigamePaused(true);
 
         // Cursor for mouse-only minigame
         priorLockState = Cursor.lockState;
         wasCursorVisible = Cursor.visible;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-
-        // Optionally pause the game world:
-        // Time.timeScale = 0f;  // if your overworld has moving NPCs and you want them to pause
     }
 
     public void Hide()
@@ -64,22 +64,21 @@ public class BlackjackPopupController : MonoBehaviour
         if (hudGroup != null)
             hudGroup.SetActive(true);    // show HUD again
 
-        FindObjectOfType<ClockTimer>()?.PauseTimer(false);
+        // Resume NPCs and ClockTimer (using minigame pause)
+        GlobalPause.SetMinigamePaused(false);
+
         GameFlags.SetFlag("minigame.blackjack.finish");
         Debug.Log("[Blackjack] Flag set: minigame.blackjack.finish");
 
         // If BlackjackGame needs to do cleanup, you can call a public method on it here.
 
-        // Unpause player
+        // Unpause player input
         foreach (var b in playerControlScripts)
             if (b) b.enabled = true;
 
         // Restore cursor
         Cursor.lockState = priorLockState;
         Cursor.visible = wasCursorVisible;
-
-        // Resume time if you paused it
-        // Time.timeScale = 1f;
 
         // Hide UI
         HideImmediate();
