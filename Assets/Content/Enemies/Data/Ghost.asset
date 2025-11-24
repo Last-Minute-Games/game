@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5624a485d2ae413db15be89954eda8f8, type: 3}
+  m_Name: Ghost
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyDataSO
+  enemyName: Ghost
+  maxHealth: 25
+  attackPower: 10
+  defensePower: 6
+  artwork: {fileID: 4930606676764459096, guid: 27956d19a3c8c40e2b523901f8daab00, type: 3}
+  actionPattern:
+  - intent: 1
+    value: 15
+    customName: Cloak
+  - intent: 0
+    value: 10
+    customName: Ectoplasma
+  - intent: 2
+    value: 5
+    customName: Soul Call
+  animatorController: {fileID: 9100000, guid: 681fab083306c8942a3eec79ae9b2441, type: 2}
+  idleAnim: {fileID: 11400000, guid: d7420f1d171cfff40b95c62c770bf1cf, type: 2}
+  attackAnim: {fileID: 11400000, guid: 9d4ae8b107b7b6a4b8a558a2101b3fb0, type: 2}
+  hurtAnim: {fileID: 11400000, guid: d33f388680dd42a4faba94324678fd50, type: 2}
+  deathAnim: {fileID: 11400000, guid: e672e67d3cded5f428a78b5532b41124, type: 2}
+  positionOffset: {x: 0, y: -0.15, z: 0}
+  scaleOffset: {x: 0.9, y: 0.9, z: 0.9}
+  minMultiplier: 0.911
+  maxMultiplier: 1.33

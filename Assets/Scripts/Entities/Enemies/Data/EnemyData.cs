@@ -64,22 +64,9 @@ public class EnemyData : EntityData
     [Header("Intent System")]
     public EnemyIntent currentIntent; // What the enemy plans to do this turn
     public EnemyAction currentAction; // The full action being performed (includes custom name)
-    public IntentIconMapping intentIcons; // Sprite icons for each intent type
     public string intentText;         // Text like "Attack" or "Buff Self"
     public int intentValue;           // How much damage or block that intent will do
 
-    /// <summary>
-    /// Gets the sprite icon for the current intent.
-    /// </summary>
-    public Sprite GetCurrentIntentIcon()
-    {
-        if (intentIcons == null)
-        {
-            Debug.LogWarning($"[EnemyData] {enemyName} has no intent icons assigned!");
-            return null;
-        }
-        return intentIcons.GetIconForIntent(currentIntent);
-    }
 
     [Header("Behavior")]
     public List<EnemyAction> actionPattern; // Optional list of possible actions

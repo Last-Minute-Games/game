@@ -27,42 +27,54 @@ public class CardRender : MonoBehaviour,
     IDragHandler,
     IEndDragHandler
 {
-    [Header("UI References")] 
-    [SerializeField] private SpriteRenderer cardBackground;
+    [Header("UI References")] [SerializeField]
+    private SpriteRenderer cardBackground;
+
     [SerializeField] private SpriteRenderer cardIcon;
     [SerializeField] private TMP_Text energyCost;
     [SerializeField] private TMP_Text cardName;
     [SerializeField] private TMP_Text descriptionText;
 
-    [Header("Defaults")] 
-    [Tooltip("Shown when CardData does not specify an artwork.")]
-    [SerializeField] private Sprite fallbackIcon;
-    [Tooltip("Used if no energy value is provided when binding.")]
-    [SerializeField] private int defaultEnergyCost = 1;
+    [Header("Icon Library")] private CardIconLibrary _iconLibrary;
 
-    [Header("Runtime")] 
-    public CardData Data;
+    [Header("Defaults")] [Tooltip("Shown when CardData does not specify an artwork.")] [SerializeField]
+    private Sprite fallbackIcon;
+
+    [Tooltip("Used if no energy value is provided when binding.")] [SerializeField]
+    private int defaultEnergyCost = 1;
+
+    [Header("Runtime")] public CardData Data;
     public CardInstance Instance;
-    
+
     private CardFXHelper _fxHelper;
     private bool _isDragging;
+    private PlayerManager _playerManager;
 
     private void Awake()
     {
+        // Find PlayerManager in the scene
+        _playerManager = FindFirstObjectByType<PlayerManager>();
+        if (_playerManager != null && _playerManager.playerData != null)
+        {
+            _playerManager.playerData.OnStatsChanged += UpdateVisuals;
+        }
+
         // Auto-wire references if not assigned
         if (cardBackground == null) cardBackground = FindChildByName<SpriteRenderer>("CardBackground");
         if (cardIcon == null) cardIcon = FindChildByName<SpriteRenderer>("CardIcon");
         if (energyCost == null) energyCost = FindChildByName<TMP_Text>("EnergyCost");
         if (cardName == null) cardName = FindChildByName<TMP_Text>("CardName");
         if (descriptionText == null) descriptionText = FindChildByName<TMP_Text>("DescriptionText");
-        
+
+        _iconLibrary = Resources.Load<CardIconLibrary>("Nether/StatusIcons/DefaultCardIconLibrary");
+
         // Setup CardFXHelper and its sub-helpers
         _fxHelper = GetComponent<CardFXHelper>();
         if (_fxHelper == null)
         {
             _fxHelper = gameObject.AddComponent<CardFXHelper>();
         }
-        
+
         // Ensure sub-helpers are assigned
         if (_fxHelper.sfxHelper == null)
         {
@@ -70,20 +82,36 @@ public class CardRender : MonoBehaviour,
             if (_fxHelper.sfxHelper == null)
                 _fxHelper.sfxHelper = gameObject.AddComponent<CardSFXHelper>();
         }
-        
+
         if (_fxHelper.animHelper == null)
         {
             _fxHelper.animHelper = GetComponent<CardAnimationHelper>();
             if (_fxHelper.animHelper == null)
                 _fxHelper.animHelper = gameObject.AddComponent<CardAnimationHelper>();
         }
-        
+
         // Setup arrow helper for animation helper
         if (_fxHelper.animHelper != null && _fxHelper.animHelper.arrowHelper == null)
         {
             _fxHelper.animHelper.arrowHelper = GetComponent<CardArrowHelper>();
             if (_fxHelper.animHelper.arrowHelper == null)
                 _fxHelper.animHelper.arrowHelper = gameObject.AddComponent<CardArrowHelper>();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_playerManager != null && _playerManager.playerData != null)
+        {
+            _playerManager.playerData.OnStatsChanged -= UpdateVisuals;
+        }
+    }
+
+    public void UpdateVisuals()
+    {
+        if (Instance != null)
+        {
+            Bind(Instance);
         }
     }
 
@@ -96,8 +124,13 @@ public class CardRender : MonoBehaviour,
         if (descriptionText != null) descriptionText.text = data != null ? data.description : string.Empty;
 
         cardBackground.sprite = data != null ? data.artwork : null;
-        cardIcon.sprite = data != null ? data.icon : null;
-        
+
+        // Set icon from library
+        if (_iconLibrary != null && data != null)
+        {
+            cardIcon.sprite = _iconLibrary.GetIcon(data.iconCategory);
+        }
+
         // Energy
         int energyVal = data.energyCost;
         if (energyCost != null)
@@ -131,30 +164,54 @@ public class CardRender : MonoBehaviour,
             string baseDesc = string.Empty;
             if (instance != null && instance.rolledEffects != null && instance.rolledEffects.Count > 0)
             {
-                int dmg = instance.GetTotal(OperationType.Damage);
-                int blk = instance.GetTotal(OperationType.AddShield);
-                int heal = instance.GetTotal(OperationType.Heal);
-                int addEnergy = instance.GetTotal(OperationType.AddEnergy);
-                
-                // Check if EndTurn operation exists
-                bool hasEndTurn = false;
+                var summaryParts = new List<string>();
+                var processedOps = new HashSet<OperationType>();
+
                 foreach (var effect in instance.rolledEffects)
                 {
-                    if (effect.operationType == OperationType.EndTurn)
+                    if (processedOps.Contains(effect.operationType)) continue;
+
+                    int total = instance.GetTotal(effect.operationType);
+                    if (total == 0 && effect.operationType != OperationType.EndTurn) continue;
+
+                    switch (effect.operationType)
                     {
-                        hasEndTurn = true;
-                        break;
+                        case OperationType.Damage:
+                            int strengthBonus = _playerManager != null ? _playerManager.playerData.strength : 0;
+                            int finalDamage = total + strengthBonus;
+                            string damageColor = strengthBonus > 0 ? "#50C878" : "#FA5053"; // Green if buffed, else red
+
+                            if (effect.targetRule == TargetRule.Self)
+                                summaryParts.Add($"Lose {finalDamage} <color=#E51B1B>Health</color>.");
+                            else
+                                summaryParts.Add($"Inflict <color={damageColor}>{finalDamage}</color> Damage.");
+                            break;
+                        case OperationType.AddShield:
+                            summaryParts.Add($"Gain {total} <color=#57B9FF>Block</color>.");
+                            break;
+                        case OperationType.Heal:
+                            summaryParts.Add($"Heal {total} <color=#50C878>Health</color>.");
+                            break;
+                        case OperationType.AddEnergy:
+                            summaryParts.Add($"Gain {total} <color=#FFD700>Energy</color>.");
+                            break;
+                        case OperationType.DrawCards:
+                            summaryParts.Add($"Draw {total} <color=#4682B4>Cards</color>.");
+                            break;
+                        case OperationType.AddStrength:
+                            summaryParts.Add($"Gain {total} <color=#FF7F50>Strength</color>.");
+                            break;
+                        case OperationType.EndTurn:
+                            summaryParts.Add($"<color=#FFD700>End Turn</color>.");
+                            break;
                     }
+
+                    processedOps.Add(effect.operationType);
                 }
-                
-                string summary = string.Empty;
-                if (dmg != 0) summary += $"Inflict {dmg} <color=#FA5053>Damage</color>.";
-                if (blk != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Gain {blk} <color=#57B9FF>Block</color>.";
-                if (heal != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Heal {heal} <color=#50C878>Health</color>.";
-                if (addEnergy != 0) summary += (summary.Length > 0 ? "\n" : "") + $"Gain {addEnergy} <color=#FFD700>Energy</color>.";
-                if (hasEndTurn) summary += (summary.Length > 0 ? "\n" : "") + $"<color=#FFD700>End Turn</color>.";
-                if (!string.IsNullOrEmpty(summary)) baseDesc = summary.Trim();
+
+                baseDesc = string.Join("\n", summaryParts);
             }
+
             descriptionText.text = baseDesc;
         }
 
@@ -169,7 +226,12 @@ public class CardRender : MonoBehaviour,
             {
                 cardBackground.sprite = Data.artwork;
             }
-            cardIcon.sprite = Data.icon;
+
+            // Set icon from library
+            if (_iconLibrary != null)
+            {
+                cardIcon.sprite = _iconLibrary.GetIcon(Data.iconCategory);
+            }
         }
         else
         {
@@ -181,7 +243,7 @@ public class CardRender : MonoBehaviour,
         int energyVal = energy ?? (Data != null ? Data.energyCost : defaultEnergyCost);
         if (energyCost != null)
         {
-            energyCost.text = energyVal > 0 ? energyVal.ToString() : string.Empty;
+            energyCost.text = energyVal.ToString();
         }
     }
 
@@ -251,12 +313,12 @@ public class CardRender : MonoBehaviour,
             {
                 Debug.Log("[CardRender] Card released near original position - returning to hand");
                 _fxHelper.OnCardRelease(this, validTarget: false);
-                
+
                 // Fix layout
                 var handViewer = FindFirstObjectByType<DeckViewer>();
                 if (handViewer != null)
                     handViewer.RebuildSmart();
-                
+
                 return;
             }
 
@@ -290,7 +352,7 @@ public class CardRender : MonoBehaviour,
                     {
                         // Check if card has EndTurn effect - if so, don't rebuild as EndPlayerTurn handles it
                         bool cardHasEndTurn = CheckForEndTurnEffect();
-                        
+
                         if (!cardHasEndTurn)
                         {
                             var roundManager = FindFirstObjectByType<RoundManager>();
@@ -329,23 +391,23 @@ public class CardRender : MonoBehaviour,
         }
 
         Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, cam.nearClipPlane));
-        
+
         // Raycast at the drop position to check for enemy colliders, ignoring the card itself
         RaycastHit2D[] hits = new RaycastHit2D[10];
         ContactFilter2D filter = new ContactFilter2D();
-        
+
         Physics2D.Raycast(worldPos, Vector2.zero, filter, hits);
-        
+
         foreach (var hit in hits)
         {
             if (hit.collider == null) continue;
-            
+
             // Skip if it's this card's collider
             if (hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform))
                 continue;
-            
+
             Debug.Log($"Hit: {hit.collider.name}");
-            
+
             // Check if the hit object has an EnemyRender component
             EnemyRender enemyRender = hit.collider.GetComponent<EnemyRender>();
             if (enemyRender != null && enemyRender.data is { isAlive: true })
@@ -364,7 +426,7 @@ public class CardRender : MonoBehaviour,
     private bool CheckForEndTurnEffect()
     {
         if (Data == null) return false;
-        
+
         // Check in CardData effects
         if (Data.effects != null)
         {
@@ -374,7 +436,7 @@ public class CardRender : MonoBehaviour,
                     return true;
             }
         }
-        
+
         // Also check instance rolled effects if available
         if (Instance != null && Instance.rolledEffects != null)
         {
@@ -384,7 +446,7 @@ public class CardRender : MonoBehaviour,
                     return true;
             }
         }
-        
+
         return false;
     }
 
@@ -430,6 +492,7 @@ public class CardRender : MonoBehaviour,
             if (c.name.ToLowerInvariant().Contains(containsName))
                 return c;
         }
+
         return null;
     }
 }

@@ -10,36 +10,38 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8d25d76a890fff1ddb4d8fba905828ff, type: 3}
-  m_Name: Heal Potion
+  m_Name: Workout
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  itemName: Heal Potion
-  description: Defend
-  artwork: {fileID: -4243800429209383466, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
-  iconCategory: 2
+  itemName: Workout
+  description: '
+
+'
+  artwork: {fileID: 1814722034707933068, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
+  iconCategory: 4
   effects:
   - targetRule: 1
-    minMultiplier: 0.5
-    maxMultiplier: 1.5
-    operationType: 3
-    baseValue: 4
+    minMultiplier: 1
+    maxMultiplier: 1
+    operationType: 9
+    baseValue: 2
     duration: 0
     durationUnit: 0
     delay: 0
     delayUnit: 0
-    variableColor: {r: 0.23921567, g: 1, b: 0.45888448, a: 0}
+    variableColor: {r: 1, g: 0.9013662, b: 0, a: 0}
     postCopyValue: 0
-  uniqueID: 6
-  intentionText: 
+  uniqueID: 10
+  intentionText: xxx
   soundCue: {fileID: 0}
   energyCost: 1
-  sourceAnim: 0
-  targetAnim: 0
-  isVariableCard: 1
-  poorArtwork: {fileID: -2395728777999617030, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
-  potentArtwork: {fileID: -7979601486892111750, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
+  sourceAnim: 1
+  targetAnim: 2
+  isVariableCard: 0
+  poorArtwork: {fileID: 6393125008886508775, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
+  potentArtwork: {fileID: 7418950461046361184, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   maxMultiplierThreshold: 1
-  minMultiplierThreshold: 0.446
-  weakPrefix: Low
-  strongPrefix: Full
+  minMultiplierThreshold: 0.527
+  weakPrefix: Poor
+  strongPrefix: Potent
   weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   strongPrefixColor: {r: 1, g: 0.4, b: 0.4, a: 1}

@@ -10,28 +10,41 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8d25d76a890fff1ddb4d8fba905828ff, type: 3}
-  m_Name: Recharge
+  m_Name: Exchange
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  itemName: Recharge
-  description: 
-  artwork: {fileID: 5006561751768449717, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
-  iconCategory: 2
+  itemName: Exchange
+  description: 'bark
+
+'
+  artwork: {fileID: -2644645080646993927, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
+  iconCategory: 3
   effects:
   - targetRule: 1
     minMultiplier: 1
     maxMultiplier: 1
-    operationType: 7
-    baseValue: 1
+    operationType: 1
+    baseValue: 3
     duration: 0
     durationUnit: 0
     delay: 0
     delayUnit: 0
-    variableColor: {r: 0.9622642, g: 0.84667873, b: 0.20425421, a: 0}
+    variableColor: {r: 1, g: 0, b: 0, a: 0}
     postCopyValue: 0
-  uniqueID: 7
+  - targetRule: 1
+    minMultiplier: 0.7
+    maxMultiplier: 1.5
+    operationType: 8
+    baseValue: 3
+    duration: 0
+    durationUnit: 0
+    delay: 0
+    delayUnit: 0
+    variableColor: {r: 1, g: 0.76034176, b: 0, a: 0}
+    postCopyValue: 0
+  uniqueID: 4
   intentionText: xxx
   soundCue: {fileID: 0}
-  energyCost: 0
+  energyCost: 1
   sourceAnim: 1
   targetAnim: 2
   isVariableCard: 0

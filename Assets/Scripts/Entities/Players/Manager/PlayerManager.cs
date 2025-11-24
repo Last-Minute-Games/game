@@ -75,6 +75,12 @@ public class PlayerManager : MonoBehaviour
     {
         if (playerData == null) return;
 
+        // Reduce strength by 1 each turn
+        if (playerData.strength > 0)
+        {
+            playerData.LoseStrength(1);
+        }
+
         // Reset energy and block
         playerData.ResetEnergy();
         playerData.block = 0;
@@ -103,7 +109,7 @@ public class PlayerManager : MonoBehaviour
         }
 
         // Check energy cost
-        int energyCost = cardData.energyCost > 0 ? cardData.energyCost : 1;
+        int energyCost = cardData.energyCost;
         if (!playerData.SpendEnergy(energyCost))
         {
             Debug.LogWarning($"[PlayerManager] Not enough energy to play {cardData.name}. Need {energyCost}, have {playerData.currentEnergy}");
@@ -155,13 +161,16 @@ public class PlayerManager : MonoBehaviour
                 ? effect.postCopyValue
                 : effect.baseValue;
 
+            var roundManager = FindFirstObjectByType<RoundManager>();
+            
             switch (effect.operationType)
             {
                 case OperationType.Damage:
                     if (targetEnemy != null && targetEnemy.data != null)
                     {
-                        targetEnemy.data.TakeDamage(value);
-                        Debug.Log($"[PlayerManager] Dealt {value} damage to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
+                        int totalDamage = value + (playerData != null ? playerData.strength : 0);
+                        targetEnemy.data.TakeDamage(totalDamage);
+                        Debug.Log($"[PlayerManager] Dealt {totalDamage} damage ({value} base + {playerData?.strength} strength) to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
 
                         // Update enemy health display
                         var enemyManager = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
@@ -209,10 +218,34 @@ public class PlayerManager : MonoBehaviour
                     }
                     break;
 
+                case OperationType.DrawCards:
+                    if (cardManager != null)
+                    {
+                        for (int i = 0; i < value; i++)
+                        {
+                            cardManager.DrawCard();
+                        }
+                        Debug.Log($"[PlayerManager] Player drew {value} cards.");
+                        
+                        // Update hand viewer to show newly drawn cards
+                        if (roundManager != null && roundManager.handViewer != null)
+                        {
+                            roundManager.handViewer.RebuildSmart();
+                        }
+                    }
+                    break;
+
+                case OperationType.AddStrength:
+                    if (playerData != null)
+                    {
+                        playerData.AddStrength(value);
+                        Debug.Log($"[PlayerManager] Player gained {value} strength. Total strength: {playerData.strength}");
+                    }
+                    break;
+
                 case OperationType.EndTurn:
                     Debug.Log($"[PlayerManager] Card effect triggered: End Turn immediately");
                     // Find RoundManager and call EndPlayerTurn
-                    var roundManager = FindFirstObjectByType<RoundManager>();
                     if (roundManager != null)
                     {
                         roundManager.EndPlayerTurn();

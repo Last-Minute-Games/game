@@ -1,7 +1,6 @@
 using Entities.Enemies.Helpers;
-using Entities.Enemies.Data;
 using Entities.Players.Data;
-using GameItems;
+using GameItems.Cards;
 
 namespace Entities.Enemies.Manager
 {
@@ -14,8 +13,8 @@ namespace Entities.Enemies.Manager
         public List<EnemyData> enemies = new();
 
         [Header("Intent Icons")]
-        [Tooltip("Optional: Global intent icon config. If set, all enemies without their own icons will use this.")]
-        public IntentIconConfig globalIntentIcons;
+        [Tooltip("Reference to the global card icon library for enemy intents.")]
+        public CardIconLibrary iconLibrary;
 
         [Header("Rendering")]
         [Tooltip("Parent container where enemy GameObjects (SpriteRenderer + Animator) will be spawned in world space.")]
@@ -136,12 +135,6 @@ namespace Entities.Enemies.Manager
                 if (!enemy.isAlive) continue;
 
                 // DON'T reset block here - let it persist through the player's turn
-
-                // Auto-assign global intent icons if enemy doesn't have its own
-                if (enemy.intentIcons == null && globalIntentIcons != null)
-                {
-                    enemy.intentIcons = globalIntentIcons.ToMapping();
-                }
 
                 enemy.DecideNextIntent();
 

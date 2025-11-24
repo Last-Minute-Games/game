@@ -7,7 +7,9 @@ public class RoundManager : MonoBehaviour
     [Header("Managers")] public PlayerManager player;
     public EnemyManager enemyManager;
 
-    [Header("State")] public int roundNumber = 1;
+    [Header("State")] 
+    public int roundNumber = 1;
+    public int waveNumber = 1;
     public bool playerTurn = true;
     public bool battleActive = false;
     
@@ -93,6 +95,15 @@ public class RoundManager : MonoBehaviour
             EndPlayerTurn();
             return;
         }
+
+        // Check if player has no cards left
+        if (player != null && player.cardManager != null && player.cardManager.hand.Count == 0)
+        {
+            Debug.Log("🃏 Player has no cards left! Ending turn early.");
+            timerActive = false;
+            EndPlayerTurn();
+            return;
+        }
     }
 
     // -------------------------------------------------------
@@ -107,31 +118,39 @@ public class RoundManager : MonoBehaviour
         }
 
         roundNumber = 1;
+        waveNumber = 1;
         playerTurn = true;
         battleActive = true;
 
-        Debug.Log($"--- Round {roundNumber} Start ---");
+        Debug.Log($"--- Wave {waveNumber} - Round {roundNumber} Start ---");
         
-        // Show round transition UI
-        StartCoroutine(StartRoundWithTransition());
+        // Show wave 1 transition
+        StartCoroutine(StartFirstWaveWithTransition());
     }
     
-    private IEnumerator StartRoundWithTransition()
+    private IEnumerator StartFirstWaveWithTransition()
     {
-        // Show "ROUND 1" transition
+        // Show "WAVE 1" transition immediately
         if (roundTransitionUI != null)
         {
-            yield return StartCoroutine(roundTransitionUI.ShowRoundTransition(roundNumber, isNewWave: false));
+            // Start fade in immediately
+            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber, isNewWave: true));
         }
         
+        // While the transition is showing, prepare the wave
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
+        
+        // Draw starting hand - this happens while transition is still showing/fading out
         player.StartTurn();
 
         RefreshDeckViewers();
 
         // Start turn timer
         StartTurnTimer();
+        
+        // Small delay to ensure everything is visible before proceeding
+        yield return new WaitForSeconds(0.1f);
     }
 
     // -------------------------------------------------------
@@ -145,14 +164,22 @@ public class RoundManager : MonoBehaviour
             return;
         }
 
+        // Reduce strength at the start of a new wave
+        if (player != null && player.playerData != null)
+        {
+            player.playerData.LoseStrength(1);
+        }
+
         // Clear transition flag - we're ready to check end conditions again
         _isTransitioningWaves = false;
 
-        // Don't reset round number - continue incrementing through waves
+        // Increment wave number and reset round counter for the new wave
+        waveNumber++;
+        roundNumber = 1;
         playerTurn = true;
         battleActive = true;
 
-        Debug.Log($"--- New Wave - Round {roundNumber} Start ---");
+        Debug.Log($"--- Wave {waveNumber} - Round {roundNumber} Start ---");
         
         // Show wave transition UI
         StartCoroutine(StartWaveWithTransition());
@@ -160,28 +187,34 @@ public class RoundManager : MonoBehaviour
     
     private IEnumerator StartWaveWithTransition()
     {
-        // Show "WAVE X" transition
+        // Show "WAVE X" transition immediately
         if (roundTransitionUI != null)
         {
-            yield return StartCoroutine(roundTransitionUI.ShowRoundTransition(roundNumber, isNewWave: true));
+            // Start fade in immediately
+            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber, isNewWave: true));
         }
         
+        // While the transition is fading in/holding, prepare the next wave
         // Clear player's hand for fresh start in new wave
         if (player != null && player.cardManager != null)
         {
             Debug.Log("[RoundManager] Clearing hand for new wave");
             player.cardManager.DiscardCardPile(); // Move current hand to discard pile
-            // Don't call DrawStartingHand() here - player.StartTurn() will draw cards!
         }
         
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
+        
+        // Draw new hand - this happens while transition is still showing/fading out
         player.StartTurn(); // This already draws cards!
 
         RefreshDeckViewers();
 
         // Start turn timer
         StartTurnTimer();
+        
+        // Small delay to ensure everything is visible before proceeding
+        yield return new WaitForSeconds(0.1f);
     }
 
     // -------------------------------------------------------
@@ -261,18 +294,7 @@ public class RoundManager : MonoBehaviour
 
         Debug.Log($"--- Round {roundNumber} Start ---");
         
-        // Show round transition UI before starting the round
-        StartCoroutine(NextRoundWithTransition());
-    }
-    
-    private IEnumerator NextRoundWithTransition()
-    {
-        // Show "ROUND X" transition
-        if (roundTransitionUI != null)
-        {
-            yield return StartCoroutine(roundTransitionUI.ShowRoundTransition(roundNumber, isNewWave: false));
-        }
-        
+
         // DON'T reset enemy block here - let it persist through this round
         // Block will be reset AFTER the enemy turn executes
         
