@@ -133,6 +133,8 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
+          $ErrorActionPreference = "Stop"
+          
           # Install butler if not present
           $butlerPath = "$env:LOCALAPPDATA\Butler\butler.exe"
           if (-not (Test-Path $butlerPath)) {
@@ -140,16 +142,78 @@ jobs:
             $butlerZip = "$env:TEMP\butler.zip"
             $butlerDir = "$env:LOCALAPPDATA\Butler"
             
-            # Download butler (allows HTTP redirect)
-            Invoke-WebRequest -Uri "https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default" -OutFile $butlerZip -UseBasicParsing
+            # Download butler with retry
+            $maxDownloadAttempts = 3
+            $downloadAttempt = 0
+            $downloadSuccess = $false
+            
+            while ($downloadAttempt -lt $maxDownloadAttempts) {
+              $downloadAttempt++
+              Write-Host "Downloading butler (attempt $downloadAttempt/$maxDownloadAttempts)..."
+              try {
+                Invoke-WebRequest -Uri "https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default" `
+                  -OutFile $butlerZip -UseBasicParsing -RetryCount 3 -RetryIntervalSec 5
+                $downloadSuccess = $true
+                break
+              } catch {
+                Write-Host "Download failed" $_
+                if ($downloadAttempt -lt $maxDownloadAttempts) {
+                  Write-Host "Retrying in 10 seconds..."
+                  Start-Sleep -Seconds 10
+                }
+              }
+            }
+            
+            if (-not $downloadSuccess) {
+              Write-Host "❌ Failed to download butler after $maxDownloadAttempts attempts"
+              exit 1
+            }
             
             # Extract
-            New-Item -ItemType Directory -Force -Path $butlerDir | Out-Null
-            Expand-Archive -Path $butlerZip -DestinationPath $butlerDir -Force
-            Remove-Item $butlerZip
-            
-            Write-Host "Butler installed to $butlerDir"
+            Write-Host "Extracting butler..."
+            try {
+              New-Item -ItemType Directory -Force -Path $butlerDir | Out-Null
+              Expand-Archive -Path $butlerZip -DestinationPath $butlerDir -Force
+              Remove-Item $butlerZip -Force
+              Write-Host "✅ Butler installed to $butlerDir"
+            } catch {
+              Write-Host "❌ Failed to extract butler" $_
+              if (Test-Path $butlerZip) { Remove-Item $butlerZip -Force }
+              exit 1
+            }
+          } else {
+            Write-Host "Butler already installed at $butlerPath"
           }
+          
+          # Verify butler is working
+          Write-Host "Verifying butler installation..."
+          try {
+            & $butlerPath --version | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "Butler version check failed" }
+          } catch {
+            Write-Host "❌ Butler verification failed" $_
+            exit 1
+          }
+          
+          # Verify BUTLER_API_KEY is set
+          if ([string]::IsNullOrEmpty($env:BUTLER_API_KEY)) {
+            Write-Host "❌ BUTLER_API_KEY is not set"
+            exit 1
+          }
+          
+          # Verify build directory exists
+          if (-not (Test-Path $env:OUT_DIR -PathType Container)) {
+            Write-Host "❌ Build directory does not exist: $env:OUT_DIR"
+            exit 1
+          }
+          
+          # Calculate build size for logging
+          $buildSize = (Get-ChildItem -Path $env:OUT_DIR -Recurse -File | Measure-Object -Property Length -Sum).Sum
+          $buildSizeMB = [math]::Round($buildSize / 1MB, 2)
+          $fileCount = (Get-ChildItem -Path $env:OUT_DIR -Recurse -File).Count
+          Write-Host "Build info:"
+          Write-Host "  Size: $buildSizeMB MB"
+          Write-Host "  Files: $fileCount"
           
           # Upload to itch.io - push the build folder directly (not zip)
           $channel = "windows"
@@ -159,14 +223,67 @@ jobs:
           Write-Host "  Build folder: $env:OUT_DIR"
           Write-Host "  Version: $env:VERSION"
           
-          & $butlerPath push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION"
+          # Retry logic with exponential backoff
+          $maxAttempts = 3
+          $attempt = 0
+          $uploadSuccess = $false
+          $lastExitCode = 0
+          $butlerOutputFile = "$env:TEMP\butler-output.log"
           
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "Butler upload failed with exit code: $LASTEXITCODE"
-            exit $LASTEXITCODE
+          while ($attempt -lt $maxAttempts) {
+            $attempt++
+            Write-Host ""
+            Write-Host "=== Upload attempt $attempt of $maxAttempts ==="
+            
+            # Calculate backoff delay (0s, 30s, 60s)
+            if ($attempt -gt 1) {
+              $backoff = 30 * ($attempt - 1)
+              Write-Host "Waiting ${backoff}s before retry..."
+              Start-Sleep -Seconds $backoff
+            }
+            
+            # Run butler and capture output
+            try {
+              & $butlerPath push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION" --verbose *> $butlerOutputFile
+              $lastExitCode = $LASTEXITCODE
+              
+              if ($lastExitCode -eq 0) {
+                $uploadSuccess = $true
+                Write-Host "✅ Upload succeeded on attempt $attempt"
+                break
+              } else {
+                Write-Host "❌ Upload failed on attempt $attempt with exit code $lastExitCode"
+                
+                # Check for specific error patterns
+                $output = Get-Content $butlerOutputFile -Raw -ErrorAction SilentlyContinue
+                if ($output -match "Use of idled network connection") {
+                  Write-Host "  Error: Network connection timeout/idle"
+                } elseif ($output -match "timeout") {
+                  Write-Host "  Error: Request timeout"
+                } elseif ($output -match "connection") {
+                  Write-Host "  Error: Network connection issue"
+                }
+                
+                # Show last 50 lines of output for debugging
+                Write-Host "Last 50 lines of butler output:"
+                Get-Content $butlerOutputFile -Tail 50 -ErrorAction SilentlyContinue
+              }
+            } catch {
+              $lastExitCode = 1
+              Write-Host "❌ Upload exception on attempt $attempt" $_
+            }
           }
           
-          Write-Host "Successfully uploaded to itch.io!"
+          if (-not $uploadSuccess) {
+            Write-Host ""
+            Write-Host "❌ All upload attempts failed. Last exit code: $lastExitCode"
+            Write-Host "Full butler output:"
+            Get-Content $butlerOutputFile -ErrorAction SilentlyContinue
+            exit 1
+          }
+          
+          Write-Host ""
+          Write-Host "✅ Successfully uploaded to itch.io!"
 
       - name: Collect logs
         if: always()
@@ -303,6 +420,8 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
+          $ErrorActionPreference = "Stop"
+          
           # Install butler if not present
           $butlerPath = "$env:LOCALAPPDATA\Butler\butler.exe"
           if (-not (Test-Path $butlerPath)) {
@@ -310,16 +429,78 @@ jobs:
             $butlerZip = "$env:TEMP\butler.zip"
             $butlerDir = "$env:LOCALAPPDATA\Butler"
             
-            # Download butler (allows HTTP redirect)
-            Invoke-WebRequest -Uri "https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default" -OutFile $butlerZip -UseBasicParsing
+            # Download butler with retry
+            $maxDownloadAttempts = 3
+            $downloadAttempt = 0
+            $downloadSuccess = $false
+            
+            while ($downloadAttempt -lt $maxDownloadAttempts) {
+              $downloadAttempt++
+              Write-Host "Downloading butler (attempt $downloadAttempt/$maxDownloadAttempts)..."
+              try {
+                Invoke-WebRequest -Uri "https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default" `
+                  -OutFile $butlerZip -UseBasicParsing -RetryCount 3 -RetryIntervalSec 5
+                $downloadSuccess = $true
+                break
+              } catch {
+                Write-Host "Download failed" $_
+                if ($downloadAttempt -lt $maxDownloadAttempts) {
+                  Write-Host "Retrying in 10 seconds..."
+                  Start-Sleep -Seconds 10
+                }
+              }
+            }
+            
+            if (-not $downloadSuccess) {
+              Write-Host "❌ Failed to download butler after $maxDownloadAttempts attempts"
+              exit 1
+            }
             
             # Extract
-            New-Item -ItemType Directory -Force -Path $butlerDir | Out-Null
-            Expand-Archive -Path $butlerZip -DestinationPath $butlerDir -Force
-            Remove-Item $butlerZip
-            
-            Write-Host "Butler installed to $butlerDir"
+            Write-Host "Extracting butler..."
+            try {
+              New-Item -ItemType Directory -Force -Path $butlerDir | Out-Null
+              Expand-Archive -Path $butlerZip -DestinationPath $butlerDir -Force
+              Remove-Item $butlerZip -Force
+              Write-Host "✅ Butler installed to $butlerDir"
+            } catch {
+              Write-Host "❌ Failed to extract butler" $_
+              if (Test-Path $butlerZip) { Remove-Item $butlerZip -Force }
+              exit 1
+            }
+          } else {
+            Write-Host "Butler already installed at $butlerPath"
           }
+          
+          # Verify butler is working
+          Write-Host "Verifying butler installation..."
+          try {
+            & $butlerPath --version | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "Butler version check failed" }
+          } catch {
+            Write-Host "❌ Butler verification failed" $_
+            exit 1
+          }
+          
+          # Verify BUTLER_API_KEY is set
+          if ([string]::IsNullOrEmpty($env:BUTLER_API_KEY)) {
+            Write-Host "❌ BUTLER_API_KEY is not set"
+            exit 1
+          }
+          
+          # Verify build directory exists
+          if (-not (Test-Path $env:OUT_DIR -PathType Container)) {
+            Write-Host "❌ Build directory does not exist: $env:OUT_DIR"
+            exit 1
+          }
+          
+          # Calculate build size for logging
+          $buildSize = (Get-ChildItem -Path $env:OUT_DIR -Recurse -File | Measure-Object -Property Length -Sum).Sum
+          $buildSizeMB = [math]::Round($buildSize / 1MB, 2)
+          $fileCount = (Get-ChildItem -Path $env:OUT_DIR -Recurse -File).Count
+          Write-Host "Build info:"
+          Write-Host "  Size: $buildSizeMB MB"
+          Write-Host "  Files: $fileCount"
           
           # Upload to itch.io - push the build folder directly (not zip)
           $channel = "linux"
@@ -329,15 +510,67 @@ jobs:
           Write-Host "  Build folder: $env:OUT_DIR"
           Write-Host "  Version: $env:VERSION"
           
-          # Use --fix-permissions for Linux to preserve executable bits
-          & $butlerPath push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION" --fix-permissions
+          # Retry logic with exponential backoff
+          $maxAttempts = 3
+          $attempt = 0
+          $uploadSuccess = $false
+          $lastExitCode = 0
+          $butlerOutputFile = "$env:TEMP\butler-output.log"
           
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "Butler upload failed with exit code: $LASTEXITCODE"
-            exit $LASTEXITCODE
+          while ($attempt -lt $maxAttempts) {
+            $attempt++
+            Write-Host ""
+            Write-Host "=== Upload attempt $attempt of $maxAttempts ==="
+            
+            # Calculate backoff delay (0s, 30s, 60s)
+            if ($attempt -gt 1) {
+              $backoff = 30 * ($attempt - 1)
+              Write-Host "Waiting ${backoff}s before retry..."
+              Start-Sleep -Seconds $backoff
+            }
+            
+            # Run butler with --fix-permissions for Linux and capture output
+            try {
+              & $butlerPath push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION" --fix-permissions --verbose *> $butlerOutputFile
+              $lastExitCode = $LASTEXITCODE
+              
+              if ($lastExitCode -eq 0) {
+                $uploadSuccess = $true
+                Write-Host "✅ Upload succeeded on attempt $attempt"
+                break
+              } else {
+                Write-Host "❌ Upload failed on attempt $attempt with exit code $lastExitCode"
+                
+                # Check for specific error patterns
+                $output = Get-Content $butlerOutputFile -Raw -ErrorAction SilentlyContinue
+                if ($output -match "Use of idled network connection") {
+                  Write-Host "  Error: Network connection timeout/idle"
+                } elseif ($output -match "timeout") {
+                  Write-Host "  Error: Request timeout"
+                } elseif ($output -match "connection") {
+                  Write-Host "  Error: Network connection issue"
+                }
+                
+                # Show last 50 lines of output for debugging
+                Write-Host "Last 50 lines of butler output:"
+                Get-Content $butlerOutputFile -Tail 50 -ErrorAction SilentlyContinue
+              }
+            } catch {
+              $lastExitCode = 1
+              Write-Host "❌ Upload exception on attempt $attempt" $_
+            }
           }
           
-          Write-Host "Successfully uploaded to itch.io!"
+          if (-not $uploadSuccess) {
+            Write-Host ""
+            Write-Host "❌ All upload attempts failed. Last exit code: $lastExitCode"
+            Write-Host "Full butler output:"
+            Get-Content $butlerOutputFile -ErrorAction SilentlyContinue
+            exit 1
+          }
+          
+          Write-Host ""
+          Write-Host "✅ Successfully uploaded to itch.io!"
 
       - name: Collect logs
         if: always()
@@ -534,6 +767,8 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
+          set -e
+          
           # Install butler if not present
           butlerPath="$HOME/.local/share/itch/butler"
           if [ ! -f "$butlerPath" ]; then
@@ -543,18 +778,77 @@ jobs:
             
             mkdir -p "$butlerDir"
             
-            # Download butler (macOS)
-            curl -L "https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default" -o "$butlerZip"
+            # Download butler (macOS) with retry
+            max_download_attempts=3
+            download_attempt=0
+            download_success=false
+            
+            while [ $download_attempt -lt $max_download_attempts ]; do
+              download_attempt=$((download_attempt + 1))
+              echo "Downloading butler (attempt $download_attempt/$max_download_attempts)..."
+              if curl -L --fail --retry 3 --retry-delay 5 "https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default" -o "$butlerZip"; then
+                download_success=true
+                break
+              else
+                if [ $download_attempt -lt $max_download_attempts ]; then
+                  echo "Download failed, retrying in 10 seconds..."
+                  sleep 10
+                fi
+              fi
+            done
+            
+            if [ "$download_success" = false ]; then
+              echo "❌ Failed to download butler after $max_download_attempts attempts"
+              exit 1
+            fi
             
             # Extract
-            unzip -q "$butlerZip" -d "$butlerDir"
+            echo "Extracting butler..."
+            if ! unzip -q "$butlerZip" -d "$butlerDir"; then
+              echo "❌ Failed to extract butler"
+              rm -f "$butlerZip"
+              exit 1
+            fi
             rm -f "$butlerZip"
             
             # Make executable
             chmod +x "$butlerPath"
             
-            echo "Butler installed to $butlerDir"
+            echo "✅ Butler installed to $butlerDir"
+          else
+            echo "Butler already installed at $butlerPath"
           fi
+          
+          # Verify butler is executable and working
+          if [ ! -x "$butlerPath" ]; then
+            echo "❌ Butler is not executable: $butlerPath"
+            exit 1
+          fi
+          
+          echo "Verifying butler installation..."
+          if ! "$butlerPath" --version; then
+            echo "❌ Butler verification failed"
+            exit 1
+          fi
+          
+          # Verify BUTLER_API_KEY is set
+          if [ -z "$BUTLER_API_KEY" ]; then
+            echo "❌ BUTLER_API_KEY is not set"
+            exit 1
+          fi
+          
+          # Verify build directory exists
+          if [ ! -d "$OUT_DIR" ]; then
+            echo "❌ Build directory does not exist: $OUT_DIR"
+            exit 1
+          fi
+          
+          # Calculate build size for logging
+          build_size=$(du -sh "$OUT_DIR" | cut -f1)
+          file_count=$(find "$OUT_DIR" -type f | wc -l | tr -d ' ')
+          echo "Build info:"
+          echo "  Size: $build_size"
+          echo "  Files: $file_count"
           
           # Upload to itch.io - push the build folder directly (not zip)
           channel="macos"
@@ -565,14 +859,68 @@ jobs:
           echo "  Version: $VERSION"
           echo "  Architecture: Universal (Intel 64-bit + Apple Silicon)"
           
-          "$butlerPath" push "$OUT_DIR" "$itchTarget" --userversion "$VERSION" --fix-permissions
+          # Retry logic with exponential backoff
+          # Disable exit on error for the retry loop
+          set +e
+          max_attempts=3
+          attempt=0
+          upload_success=false
+          last_exit_code=0
           
-          if [ $? -ne 0 ]; then
-            echo "Butler upload failed"
+          while [ $attempt -lt $max_attempts ]; do
+            attempt=$((attempt + 1))
+            echo ""
+            echo "=== Upload attempt $attempt of $max_attempts ==="
+            
+            # Calculate backoff delay (0s, 30s, 60s)
+            if [ $attempt -gt 1 ]; then
+              backoff=$((30 * (attempt - 1)))
+              echo "Waiting ${backoff}s before retry..."
+              sleep $backoff
+            fi
+            
+            # Run butler and capture output
+            "$butlerPath" push "$OUT_DIR" "$itchTarget" \
+              --userversion "$VERSION" \
+              --fix-permissions \
+              --verbose 2>&1 | tee /tmp/butler-output.log
+            last_exit_code=${PIPESTATUS[0]}
+            
+            if [ $last_exit_code -eq 0 ]; then
+              upload_success=true
+              echo "✅ Upload succeeded on attempt $attempt"
+              break
+            else
+              echo "❌ Upload failed on attempt $attempt with exit code $last_exit_code"
+              
+              # Check for specific error patterns
+              if grep -q "Use of idled network connection" /tmp/butler-output.log 2>/dev/null; then
+                echo "  Error: Network connection timeout/idle"
+              elif grep -q "timeout" /tmp/butler-output.log 2>/dev/null; then
+                echo "  Error: Request timeout"
+              elif grep -q "connection" /tmp/butler-output.log 2>/dev/null; then
+                echo "  Error: Network connection issue"
+              fi
+              
+              # Show last 50 lines of output for debugging
+              echo "Last 50 lines of butler output:"
+              tail -n 50 /tmp/butler-output.log || true
+            fi
+          done
+          
+          # Re-enable exit on error
+          set -e
+          
+          if [ "$upload_success" = false ]; then
+            echo ""
+            echo "❌ All upload attempts failed. Last exit code: $last_exit_code"
+            echo "Full butler output:"
+            cat /tmp/butler-output.log || true
             exit 1
           fi
           
-          echo "Successfully uploaded to itch.io!"
+          echo ""
+          echo "✅ Successfully uploaded to itch.io!"
 
       - name: Collect logs
         if: always()
