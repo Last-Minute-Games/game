@@ -27,7 +27,7 @@ namespace Systems
         private BoxCollider2D _newCollider;
         
         private bool _isPlayerNear;
-        private const float InteractionRange = 2f; // Distance from player to trigger
+        private const float InteractionRange = 0.25f; // Distance from player to trigger
         
         private float _fadeTime = 0.3f;
         private float _fadeDuration = 0.2f;
@@ -162,8 +162,11 @@ namespace Systems
             // prevent interaction during teleport or dialogue
             if (_characterController2D.IsTeleporting || _characterController2D.IsDialogueActive) return;
             
-            if (_player != null && _tptCollider != null)
-                _isPlayerNear = Vector3.Distance(_tptCollider.transform.position, _player.transform.position) < InteractionRange;
+            if (_player != null && _tptCollider != null && _characterCollider2D != null)
+            {
+                var dist = _tptCollider.Distance(_characterCollider2D);
+                _isPlayerNear = dist.isOverlapped || dist.distance < InteractionRange;
+            }
             
             if (!_isPlayerNear) return;
             
