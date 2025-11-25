@@ -9,31 +9,24 @@ namespace GameItems.Editor
     public class WaveConfigCreator : EditorWindow
     {
         private WaveConfig _targetConfig;
-        private string _newWaveName = "New Wave";
-
-        private List<EnemyConfig> _newGuaranteedEnemies = new();
-        private List<EnemyConfig> _newRandomPool = new();
-        private int _newMinEnemies = 1;
-        private int _newMaxEnemies = 3;
-        private float _newStatIncrease = 0f;
-        private string _newMessage = "";
-        private float _newDelay = 0f;
 
         private Vector2 _scrollPos;
+
+        // Temporary data used for creating new waves
+        private WaveData _tempWave = new WaveData();
 
         [MenuItem("Tools/Battle/Wave Config Creator")]
         public static void ShowWindow()
         {
             var window = GetWindow<WaveConfigCreator>("Wave Config Creator");
-            window.minSize = new Vector2(500, 550);
+            window.minSize = new Vector2(550, 600);
         }
 
         private void OnGUI()
         {
-            EditorGUILayout.LabelField("Wave Configuration Tool", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Day-Based Wave Configuration", EditorStyles.boldLabel);
             EditorGUILayout.Space();
 
-            // Select WaveConfig asset
             _targetConfig = (WaveConfig)EditorGUILayout.ObjectField(
                 "Wave Config",
                 _targetConfig,
@@ -56,66 +49,76 @@ namespace GameItems.Editor
                 return;
             }
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Current Waves", EditorStyles.boldLabel);
-
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
-            if (_targetConfig.waves != null && _targetConfig.waves.Count > 0)
-            {
-                for (int i = 0; i < _targetConfig.waves.Count; i++)
-                {
-                    DrawWaveInfo(i);
-                }
-            }
-            else
-            {
-                EditorGUILayout.HelpBox("No waves configured yet.", MessageType.Warning);
-            }
+            DrawDaySection("DAY 1 WAVES", _targetConfig.day1Waves);
+            DrawDaySection("DAY 2 WAVES", _targetConfig.day2Waves);
+            DrawDaySection("DAY 3 WAVES", _targetConfig.day3Waves);
+            DrawDaySection("DAY 4 WAVES", _targetConfig.day4Waves);
+            DrawDaySection("DAY 5 WAVES", _targetConfig.day5Waves);
 
             EditorGUILayout.EndScrollView();
-            EditorGUILayout.Space();
+
+            EditorGUIUtility.labelWidth = 110;
+            EditorGUILayout.Space(10);
             DrawAddWaveSection();
         }
 
-        private void DrawWaveInfo(int index)
+        // ---------------------------
+        // DRAW DAY WAVE LIST
+        // ---------------------------
+        private void DrawDaySection(string label, List<WaveData> dayList)
         {
-            var wave = _targetConfig.waves[index];
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+
+            if (dayList == null || dayList.Count == 0)
+            {
+                EditorGUILayout.HelpBox("No waves for this day yet.", MessageType.Info);
+            }
+            else
+            {
+                for (int i = 0; i < dayList.Count; i++)
+                {
+                    DrawWaveEditor(dayList, i);
+                }
+            }
+        }
+
+        // ---------------------------
+        // DRAW WAVE EDITOR
+        // ---------------------------
+        private void DrawWaveEditor(List<WaveData> list, int index)
+        {
+            var wave = list[index];
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUI.indentLevel++;
 
-            // Wave header
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField($"Wave {index + 1}: {wave.waveName}", EditorStyles.boldLabel);
-
             if (GUILayout.Button("Remove", GUILayout.Width(70)))
             {
-                RemoveWave(index);
-                EditorGUILayout.EndHorizontal();
+                Undo.RecordObject(_targetConfig, "Remove Wave");
+                list.RemoveAt(index);
+                EditorUtility.SetDirty(_targetConfig);
                 EditorGUI.indentLevel--;
                 EditorGUILayout.EndVertical();
                 return;
             }
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.Space(4);
-
-            // Wave identity
             wave.waveName = EditorGUILayout.TextField("Name", wave.waveName);
-            wave.waveMessage = EditorGUILayout.TextField("Wave Message", wave.waveMessage);
+            wave.waveMessage = EditorGUILayout.TextField("Message", wave.waveMessage);
             wave.delayBeforeWave = EditorGUILayout.FloatField("Delay Before Wave", wave.delayBeforeWave);
 
-            EditorGUILayout.Space(5);
-
-            // Guaranteed enemies
+            EditorGUILayout.Space(6);
             EditorGUILayout.LabelField("Guaranteed Enemies", EditorStyles.boldLabel);
 
             for (int i = 0; i < wave.guaranteedEnemies.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
                 wave.guaranteedEnemies[i] = (EnemyConfig)EditorGUILayout.ObjectField(wave.guaranteedEnemies[i], typeof(EnemyConfig), false);
-
                 if (GUILayout.Button("X", GUILayout.Width(20)))
                 {
                     wave.guaranteedEnemies.RemoveAt(i);
@@ -127,16 +130,13 @@ namespace GameItems.Editor
             if (GUILayout.Button("+ Add Guaranteed Enemy"))
                 wave.guaranteedEnemies.Add(null);
 
-            EditorGUILayout.Space(8);
-
-            // Random enemy pool
+            EditorGUILayout.Space(6);
             EditorGUILayout.LabelField("Random Enemy Pool", EditorStyles.boldLabel);
 
             for (int i = 0; i < wave.randomEnemyPool.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
                 wave.randomEnemyPool[i] = (EnemyConfig)EditorGUILayout.ObjectField(wave.randomEnemyPool[i], typeof(EnemyConfig), false);
-
                 if (GUILayout.Button("X", GUILayout.Width(20)))
                 {
                     wave.randomEnemyPool.RemoveAt(i);
@@ -145,125 +145,122 @@ namespace GameItems.Editor
                 EditorGUILayout.EndHorizontal();
             }
 
-            if (GUILayout.Button("+ Add Random Pool Enemy"))
+            if (GUILayout.Button("+ Add Random Enemy"))
                 wave.randomEnemyPool.Add(null);
 
-            EditorGUILayout.Space(8);
-
-            // Random settings
-            wave.minEnemiesPerWave = EditorGUILayout.IntField("Min Random Enemies", wave.minEnemiesPerWave);
-            wave.maxEnemiesPerWave = EditorGUILayout.IntField("Max Random Enemies", wave.maxEnemiesPerWave);
+            EditorGUILayout.Space(6);
+            wave.minEnemiesPerWave = EditorGUILayout.IntField("Min Random", wave.minEnemiesPerWave);
+            wave.maxEnemiesPerWave = EditorGUILayout.IntField("Max Random", wave.maxEnemiesPerWave);
 
             if (wave.maxEnemiesPerWave < wave.minEnemiesPerWave)
                 wave.maxEnemiesPerWave = wave.minEnemiesPerWave;
 
-            EditorGUILayout.Space(8);
-
-            // Scaling
-            wave.statMultiplierIncrease = EditorGUILayout.FloatField("Stat Multiplier Increase", wave.statMultiplierIncrease);
+            wave.statMultiplierIncrease = EditorGUILayout.FloatField("Stat Increase", wave.statMultiplierIncrease);
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndVertical();
-            EditorGUILayout.Space(5);
 
             EditorUtility.SetDirty(_targetConfig);
         }
 
+        // ---------------------------
+        // ADD NEW WAVE SECTION
+        // ---------------------------
         private void DrawAddWaveSection()
         {
-            EditorGUILayout.LabelField("Add New Wave", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Create New Wave", EditorStyles.boldLabel);
 
-            _newWaveName = EditorGUILayout.TextField("Wave Name", _newWaveName);
-            _newMessage = EditorGUILayout.TextField("Wave Message", _newMessage);
-            _newDelay = EditorGUILayout.FloatField("Delay Before Wave", _newDelay);
+            _tempWave.waveName = EditorGUILayout.TextField("Wave Name", _tempWave.waveName);
+            _tempWave.waveMessage = EditorGUILayout.TextField("Message", _tempWave.waveMessage);
+            _tempWave.delayBeforeWave = EditorGUILayout.FloatField("Delay Before Wave", _tempWave.delayBeforeWave);
 
-            EditorGUILayout.Space(5);
+            EditorGUILayout.Space(4);
             EditorGUILayout.LabelField("Guaranteed Enemies", EditorStyles.boldLabel);
 
-            for (int i = 0; i < _newGuaranteedEnemies.Count; i++)
+            if (_tempWave.guaranteedEnemies == null)
+                _tempWave.guaranteedEnemies = new List<EnemyConfig>();
+
+            for (int i = 0; i < _tempWave.guaranteedEnemies.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                _newGuaranteedEnemies[i] = (EnemyConfig)EditorGUILayout.ObjectField(_newGuaranteedEnemies[i], typeof(EnemyConfig), false);
-
+                _tempWave.guaranteedEnemies[i] = (EnemyConfig)EditorGUILayout.ObjectField(_tempWave.guaranteedEnemies[i], typeof(EnemyConfig), false);
                 if (GUILayout.Button("X", GUILayout.Width(20)))
                 {
-                    _newGuaranteedEnemies.RemoveAt(i);
+                    _tempWave.guaranteedEnemies.RemoveAt(i);
                     break;
                 }
                 EditorGUILayout.EndHorizontal();
             }
+
             if (GUILayout.Button("+ Add Guaranteed Enemy"))
-                _newGuaranteedEnemies.Add(null);
+                _tempWave.guaranteedEnemies.Add(null);
 
-            EditorGUILayout.Space(5);
-            EditorGUILayout.LabelField("Random Enemy Pool", EditorStyles.boldLabel);
+            EditorGUILayout.Space(4);
+            EditorGUILayout.LabelField("Random Pool", EditorStyles.boldLabel);
 
-            for (int i = 0; i < _newRandomPool.Count; i++)
+            if (_tempWave.randomEnemyPool == null)
+                _tempWave.randomEnemyPool = new List<EnemyConfig>();
+
+            for (int i = 0; i < _tempWave.randomEnemyPool.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                _newRandomPool[i] = (EnemyConfig)EditorGUILayout.ObjectField(_newRandomPool[i], typeof(EnemyConfig), false);
-
+                _tempWave.randomEnemyPool[i] = (EnemyConfig)EditorGUILayout.ObjectField(_tempWave.randomEnemyPool[i], typeof(EnemyConfig), false);
                 if (GUILayout.Button("X", GUILayout.Width(20)))
                 {
-                    _newRandomPool.RemoveAt(i);
+                    _tempWave.randomEnemyPool.RemoveAt(i);
                     break;
                 }
                 EditorGUILayout.EndHorizontal();
             }
-            if (GUILayout.Button("+ Add Random Pool Enemy"))
-                _newRandomPool.Add(null);
 
-            EditorGUILayout.Space(5);
+            if (GUILayout.Button("+ Add Random Enemy"))
+                _tempWave.randomEnemyPool.Add(null);
 
-            _newMinEnemies = EditorGUILayout.IntField("Min Random Enemies", _newMinEnemies);
-            _newMaxEnemies = EditorGUILayout.IntField("Max Random Enemies", _newMaxEnemies);
+            _tempWave.minEnemiesPerWave = EditorGUILayout.IntField("Min Random", _tempWave.minEnemiesPerWave);
+            _tempWave.maxEnemiesPerWave = EditorGUILayout.IntField("Max Random", _tempWave.maxEnemiesPerWave);
 
-            if (_newMaxEnemies < _newMinEnemies)
-                _newMaxEnemies = _newMinEnemies;
+            if (_tempWave.maxEnemiesPerWave < _tempWave.minEnemiesPerWave)
+                _tempWave.maxEnemiesPerWave = _tempWave.minEnemiesPerWave;
 
-            EditorGUILayout.Space(5);
-            _newStatIncrease = EditorGUILayout.FloatField("Stat Multiplier Increase", _newStatIncrease);
+            _tempWave.statMultiplierIncrease = EditorGUILayout.FloatField("Stat Increase", _tempWave.statMultiplierIncrease);
 
-            EditorGUILayout.Space(10);
+            EditorGUILayout.Space(8);
 
-            if (GUILayout.Button("Add Wave To Config", GUILayout.Height(30)))
-                AddWave();
+            EditorGUILayout.LabelField("Add Wave To:", EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Day 1")) AddWaveToDay(_targetConfig.day1Waves);
+            if (GUILayout.Button("Day 2")) AddWaveToDay(_targetConfig.day2Waves);
+            if (GUILayout.Button("Day 3")) AddWaveToDay(_targetConfig.day3Waves);
+            if (GUILayout.Button("Day 4")) AddWaveToDay(_targetConfig.day4Waves);
+            if (GUILayout.Button("Day 5")) AddWaveToDay(_targetConfig.day5Waves);
+
+            EditorGUILayout.EndHorizontal();
         }
 
-        private void AddWave()
+        private void AddWaveToDay(List<WaveData> list)
         {
-            if (_targetConfig == null) return;
-
-            var wave = new WaveData
-            {
-                waveName = _newWaveName,
-                waveMessage = _newMessage,
-                delayBeforeWave = _newDelay,
-                guaranteedEnemies = new List<EnemyConfig>(_newGuaranteedEnemies),
-                randomEnemyPool = new List<EnemyConfig>(_newRandomPool),
-                minEnemiesPerWave = _newMinEnemies,
-                maxEnemiesPerWave = _newMaxEnemies,
-                statMultiplierIncrease = _newStatIncrease
-            };
-
             Undo.RecordObject(_targetConfig, "Add Wave");
-            _targetConfig.waves.Add(wave);
+
+            list.Add(CloneWave(_tempWave));
             EditorUtility.SetDirty(_targetConfig);
 
-            // Reset
-            _newWaveName = $"Wave {_targetConfig.waves.Count + 1}";
-            _newGuaranteedEnemies.Clear();
-            _newRandomPool.Clear();
-            _newMessage = "";
-            _newDelay = 0f;
-            _newStatIncrease = 0f;
+            _tempWave = new WaveData(); // reset
         }
 
-        private void RemoveWave(int index)
+        private WaveData CloneWave(WaveData original)
         {
-            Undo.RecordObject(_targetConfig, "Remove Wave");
-            _targetConfig.waves.RemoveAt(index);
-            EditorUtility.SetDirty(_targetConfig);
+            return new WaveData
+            {
+                waveName = original.waveName,
+                waveMessage = original.waveMessage,
+                delayBeforeWave = original.delayBeforeWave,
+                guaranteedEnemies = new List<EnemyConfig>(original.guaranteedEnemies),
+                randomEnemyPool = new List<EnemyConfig>(original.randomEnemyPool),
+                minEnemiesPerWave = original.minEnemiesPerWave,
+                maxEnemiesPerWave = original.maxEnemiesPerWave,
+                statMultiplierIncrease = original.statMultiplierIncrease
+            };
         }
 
         private void CreateNewWaveConfig()
@@ -278,8 +275,6 @@ namespace GameItems.Editor
             if (!string.IsNullOrEmpty(path))
             {
                 var config = CreateInstance<WaveConfig>();
-                config.waves = new List<WaveData>();
-
                 AssetDatabase.CreateAsset(config, path);
                 AssetDatabase.SaveAssets();
 

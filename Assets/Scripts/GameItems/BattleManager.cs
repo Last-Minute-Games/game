@@ -44,7 +44,7 @@ public class BattleManager : MonoBehaviour
         // 2️⃣ Initialize Wave System
         if (waveConfig != null)
         {
-            _battleWaves = waveConfig.GetWaves();
+            _battleWaves = waveConfig.GetWavesForCurrentDay();
             Debug.Log($"BattleManager: Initialized with {_battleWaves.Count} waves");
         }
         else
