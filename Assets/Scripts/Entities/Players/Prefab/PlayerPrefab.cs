@@ -11,9 +11,6 @@ namespace Entities.Players.Prefab
         [Tooltip("Reference to the PlayerManager that holds the runtime PlayerData")]
         public PlayerManager playerManager;
 
-        [Tooltip("Reference to PlayerEnergyUIHelper that deals with Energy UI changes")]
-        public PlayerEnergyUIHelper energyUI;
-
         [Tooltip("Reference to the RoundManager for timer updates")]
         public RoundManager roundManager;
 
@@ -67,6 +64,22 @@ namespace Entities.Players.Prefab
 
         [Tooltip("Time threshold for critical color (seconds)")]
         public float criticalThreshold = 3f;
+
+        // ---------------- ENERGY UI ----------------
+
+        [Header("Energy UI Settings")]
+        public float energyPulseScale = 1.3f;
+        public float energyPulseDuration = 0.2f;
+
+        public Color energyNormalColor = Color.white;
+        public Color energyZeroColor = Color.gray;
+        public Color energyOverflowColor = new Color(1f, 0.9f, 0.3f);   // soft yellow
+
+        private Tween _energyPulseTween;
+        private Tween _energyGlowTween;
+        private Vector3 _energyOriginalScale;
+
+        //
 
         [Header("Tween Settings")]
         [Tooltip("Base duration for health bar animation")]
@@ -135,30 +148,16 @@ namespace Entities.Players.Prefab
             if (animationHelper != null && healthbarUI != null)
                 animationHelper.SetShieldedBarImage(healthbarUI);
 
+            BindEnergyEvents();
+
             // Cache normal sprite AFTER UI is set
             _cachedNormalSprite = healthbarUI.sprite;
 
             // Cache initial block
             _lastBlock = playerManager.playerData.block;
 
-            playerManager.playerData.OnEnergyChanged += HandleEnergyChanged;
-
             playerManager.playerData.worldPosition = healthbarUI.transform.position;
             playerManager.playerData.isPlayer = true;
-        }
-
-        private void HandleEnergyChanged()
-        {
-            // Update text ONLY
-            energyText.text = $"{playerManager.playerData.currentEnergy}/{playerManager.playerData.maxEnergy}";
-
-            // If you want gray-out at 0, add this line:
-            energyIcon.color = (playerManager.playerData.currentEnergy > 0)
-                ? Color.white
-                : new Color(0.5f, 0.5f, 0.5f);
-
-            // If you want pop animation:
-            energyText.transform.DOPunchScale(Vector3.one * 0.2f, 0.2f);
         }
 
         private void Update()
@@ -265,6 +264,95 @@ namespace Entities.Players.Prefab
 
             // Update gradient screen based on health
             UpdateGradientScreen(data);
+        }
+
+        /// <summary>
+        /// Called from InitializeAfterFrame() after data is ready
+        /// </summary>
+        private void BindEnergyEvents()
+        {
+            _energyOriginalScale = energyText.transform.localScale;
+
+            playerManager.playerData.OnEnergyChanged += () =>
+            {
+                UpdateEnergyUI(
+                    playerManager.playerData.currentEnergy,
+                    playerManager.playerData.maxEnergy
+                );
+            };
+        }
+
+        private void UpdateEnergyUI(int current, int max)
+        {
+            // -------------------------
+            // Update the numbers
+            // -------------------------
+            energyText.text = $"{current}/{max}";
+
+            // -------------------------
+            // CASE 1: Zero energy
+            // -------------------------
+            if (current <= 0)
+            {
+                StopGlow();
+                energyIcon.color = energyZeroColor;
+                RunPulse();
+                return;
+            }
+
+            // -------------------------
+            // CASE 2: Normal energy (1 → max)
+            // -------------------------
+            if (current <= max)
+            {
+                StopGlow();
+                energyIcon.color = energyNormalColor;
+                RunPulse();
+                return;
+            }
+
+            // -------------------------
+            // CASE 3: Overflow
+            // -------------------------
+            energyIcon.color = energyOverflowColor;
+            RunGlow();
+            RunPulse();
+        }
+
+        private void RunPulse()
+        {
+            _energyPulseTween?.Kill();
+            energyText.transform.localScale = _energyOriginalScale;
+
+            _energyPulseTween = energyText.transform
+                .DOScale(_energyOriginalScale * energyPulseScale, energyPulseDuration)
+                .SetLoops(2, LoopType.Yoyo)
+                .SetEase(Ease.OutBack);
+        }
+
+        private void RunGlow()
+        {
+            if (_energyGlowTween != null && _energyGlowTween.IsActive())
+                return;
+
+            // Ping-pong alpha (glow)
+            _energyGlowTween = energyIcon.DOFade(0.4f, 0.7f)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetEase(Ease.InOutSine);
+        }
+
+        private void StopGlow()
+        {
+            if (_energyGlowTween != null)
+            {
+                _energyGlowTween.Kill();
+                _energyGlowTween = null;
+
+                // Reset alpha
+                var c = energyIcon.color;
+                c.a = 1f;
+                energyIcon.color = c;
+            }
         }
 
         /// <summary>
