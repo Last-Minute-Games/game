@@ -29,6 +29,7 @@ jobs:
   build-windows:
     needs: [tag]
     if: always()
+    name: Build Windows
     runs-on: [self-hosted, Windows, X64]
     environment: main
     defaults:
@@ -957,13 +958,13 @@ jobs:
   # Create GitHub Release with manifest.json for custom auto-updater
   # Note: Release must run on Windows because butler (itch.io upload tool) doesn't support ARM64
   release:
-    runs-on: [self-hosted, Windows, X64]
+    runs-on: [self-hosted, Linux, ARM64]
     needs: [tag, build-windows, build-linux, build-macos]
     if: ${{ needs.tag.result == 'success' && needs.build-windows.result == 'success' && needs.build-linux.result == 'success' && needs.build-macos.result == 'success' && github.ref == 'refs/heads/main' }}
     environment: main
     defaults:
       run:
-        shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
+        shell: bash
     
     env:
       BUILDS_ROOT: "C:\\Builds"
@@ -981,9 +982,9 @@ jobs:
           
       - name: Compute version from tag
         run: |
-          $v = "v1.0.${{ github.run_number }}"
-          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          Write-Host "VERSION = $v"
+          v="v1.0.${{ github.run_number }}"
+          echo "VERSION=$v" >> "$GITHUB_ENV"
+          echo "VERSION = $v"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
