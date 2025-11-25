@@ -1,7 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using cherrydev;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UI;
 using Unity.Cinemachine;
 
 namespace Systems.Overworld.Intro
@@ -15,6 +16,7 @@ namespace Systems.Overworld.Intro
         private PlayerInput2D playerInput;
         private Camera mainCamera;
         private CinemachineBrain cinemachineBrain;
+        private ClockTimer clockTimer;
         
         [Header("GameObjects")]
         [SerializeField] private GameObject sleepingMain;
@@ -27,6 +29,10 @@ namespace Systems.Overworld.Intro
         [SerializeField] private DialogBehaviour dialogBehaviour;
         [SerializeField] private DialogNodeGraph wakeUpDialogGraph;
         
+        [Header("HUD")]
+        [SerializeField] private HudInitializer hudInitializer;
+        [SerializeField] private bool autoFindHudInitializer = true;
+        
         private bool hasPlayed = false;
         
         private IEnumerator BeginWakeUpSequence()
@@ -35,6 +41,32 @@ namespace Systems.Overworld.Intro
             
             if (hasPlayed) yield break;
             hasPlayed = true;
+            
+            // Find HUD initializer if needed
+            if (hudInitializer == null && autoFindHudInitializer)
+            {
+                hudInitializer = FindObjectOfType<HudInitializer>();
+                if (hudInitializer != null)
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Found HudInitializer");
+                }
+            }
+            
+            // Find and pause ClockTimer
+            if (clockTimer == null)
+            {
+                clockTimer = FindObjectOfType<ClockTimer>();
+            }
+            
+            if (clockTimer != null)
+            {
+                clockTimer.PauseTimer(true);
+                Debug.Log("[OverworldWakeUpCutscene] Clock timer paused");
+            }
+            else
+            {
+                Debug.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found in scene");
+            }
             
             // Enable SleepingMain sprite renderer
             if (sleepingMainSpriteRenderer != null)
@@ -188,7 +220,28 @@ namespace Systems.Overworld.Intro
                 }
             });
             
-            yield return new WaitForSeconds(2f); // Just wait for fade to complete
+            yield return new WaitForSeconds(0.5f); // Wait for fade to complete
+            
+            // TRIGGER HUD INITIALIZATION ANIMATION
+            // This happens after the player is out of bed and can see the game world
+            if (hudInitializer != null)
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Triggering HUD initialization");
+                hudInitializer.TriggerAnimation();
+            }
+            else
+            {
+                Debug.LogWarning("[OverworldWakeUpCutscene] HudInitializer not found, cannot trigger HUD animation");
+            }
+            
+            // Resume ClockTimer at the same time as HUD animation
+            if (clockTimer != null)
+            {
+                clockTimer.PauseTimer(false);
+                Debug.Log("[OverworldWakeUpCutscene] Clock timer resumed");
+            }
+            
+            yield return new WaitForSeconds(2f); // Wait for HUD animation to play
             
             Debug.Log("[OverworldWakeUpCutscene] Complete");
             yield return null;
@@ -260,7 +313,7 @@ namespace Systems.Overworld.Intro
             }
 
             // Check if we should play the cutscene
-            int playFlag = UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
+            int playFlag = PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
             Debug.Log($"[OverworldWakeUpCutscene] Flag value: {playFlag}");
 
             if (playFlag != 1)
@@ -271,36 +324,55 @@ namespace Systems.Overworld.Intro
             }
 
             // Clear the flag
-            UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 0);
-            UnityEngine.PlayerPrefs.Save();
+            PlayerPrefs.SetInt("PlayWakeUpCutscene", 0);
+            PlayerPrefs.Save();
             
             Debug.Log("[OverworldWakeUpCutscene] Setting up cutscene...");
             
-            // Set up ScreenFader with eyes closed at start
+            // Set up ScreenFader with eyes ALREADY closed at start (player is waking up)
             ScreenFader screenFader = FindFirstObjectByType<ScreenFader>();
-            if (screenFader != null && screenFader.topPanel != null && screenFader.bottomPanel != null)
+            if (screenFader != null)
             {
-                Debug.Log("[OverworldWakeUpCutscene] Setting up eyes closed position");
-                // Position the panels to cover the screen (eyes closed)
-                screenFader.topPanel.anchoredPosition = Vector2.zero;
-                screenFader.bottomPanel.anchoredPosition = Vector2.zero;
-                // Make sure fade canvas is hidden
-                if (fadeCanvasGroup != null)
-                {
-                    fadeCanvasGroup.alpha = 0f;
-                }
+                Debug.Log("[OverworldWakeUpCutscene] Setting up eyes closed position (player waking up)");
+                StartCoroutine(SetupEyesAlreadyClosedState(screenFader));
             }
             else
             {
-                // Fallback: use fade canvas if ScreenFader panels not available
+                // Fallback: use fade canvas if ScreenFader not available
                 if (fadeCanvasGroup != null)
                 {
                     fadeCanvasGroup.alpha = 1f; // Start opaque (black screen)
                     Debug.Log("[OverworldWakeUpCutscene] Fade canvas set to black (fallback)");
                 }
+                
+                Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
+                StartCoroutine(BeginWakeUpSequence());
+            }
+        }
+        
+        private IEnumerator SetupEyesAlreadyClosedState(ScreenFader screenFader)
+        {
+            // Create the panels manually and position them in closed state (covering screen)
+            // WITHOUT animating them - they should already be closed
+            
+            // We need to trigger the eyes closing effect to create the panels,
+            // but we'll do it instantly (duration 0) so they appear closed immediately
+            float originalDuration = screenFader.splitPanelDuration;
+            screenFader.splitPanelDuration = 0f; // Instant
+            
+            yield return StartCoroutine(screenFader.EyesClosingEffect());
+            
+            // Restore original duration for the opening effect
+            screenFader.splitPanelDuration = originalDuration;
+            
+            // Make sure fade canvas is hidden
+            if (fadeCanvasGroup != null)
+            {
+                fadeCanvasGroup.alpha = 0f;
             }
             
-            Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
+            Debug.Log("[OverworldWakeUpCutscene] Eyes already closed state set up, starting cutscene");
+            yield return null; // Wait one frame for everything to be set up
             StartCoroutine(BeginWakeUpSequence());
         }
         
@@ -318,9 +390,10 @@ namespace Systems.Overworld.Intro
                 Debug.Log("[OverworldWakeUpCutscene] Cleared 'journal.tutorial.shown' flag for Overworld");
             }
             
-            UnityEngine.PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
-            UnityEngine.PlayerPrefs.Save();
-            Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {UnityEngine.PlayerPrefs.GetInt("PlayWakeUpCutscene")}");
+            PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
+            PlayerPrefs.Save();
+            Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {PlayerPrefs.GetInt("PlayWakeUpCutscene")}" +
+                      $" [next scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + 1}]");
         }
     }
 }

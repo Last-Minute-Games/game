@@ -403,6 +403,9 @@ namespace Systems.Overworld.Intro
 
             _mysteriousManIntro = GameObject.Find("MysteriousManNPC").GetComponent<MysteriousManIntro>();
 
+            // Configure dialogue to only accept left mouse click (no keyboard keys)
+            dialogBehaviour.SetNextSentenceKeyCodes(new List<KeyCode> { KeyCode.Mouse0 });
+
             // iterate buttons
             foreach (Transform page in _journalPages.transform)
             {
@@ -454,7 +457,8 @@ namespace Systems.Overworld.Intro
             yield return new WaitForSeconds(0.2f);
 
             _plrInput.isInputEnabled = true;
-            _environmentSoundHandler.PlayJournalSound(false);
+            // DON'T play journal sound here - let the button click handle it if needed
+            // _environmentSoundHandler.PlayJournalSound(false);
 
             yield return null;
         }
@@ -700,11 +704,6 @@ namespace Systems.Overworld.Intro
             // Optionally wait until load is done (it's already black)
             while (!op.isDone)
                 yield return null;
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
         }
     }
 }

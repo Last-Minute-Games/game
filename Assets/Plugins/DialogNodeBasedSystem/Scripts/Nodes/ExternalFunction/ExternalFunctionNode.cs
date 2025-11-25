@@ -11,7 +11,7 @@ namespace cherrydev
         [SerializeField] private string _functionName;
         [SerializeField] private string _description;
 
-        [Space(10)] 
+        [Space(10)]
         public List<Node> ParentNodes = new();
         public Node ChildNode;
 
@@ -42,7 +42,7 @@ namespace cherrydev
 
             Rect.size = new Vector2(NodeWidth, NodeHeight);
             ParentNodes.RemoveAll(item => item == null);
-            
+
             GUILayout.BeginArea(Rect, nodeStyle);
             EditorGUILayout.LabelField("External Function", labelStyle);
             DrawFunctionNameField();
@@ -56,9 +56,9 @@ namespace cherrydev
         {
             foreach (Node parent in ParentNodes.ToList())
                 parent.RemoveChildConnection(this);
-            
+
             ParentNodes.Clear();
-    
+
             if (ChildNode != null)
             {
                 ChildNode.RemoveFromParentConnectedNode(this);
@@ -66,7 +66,7 @@ namespace cherrydev
             }
         }
 
-        public override bool RemoveFromParentConnectedNode(Node nodeToRemove) => 
+        public override bool RemoveFromParentConnectedNode(Node nodeToRemove) =>
             ParentNodes.Remove(nodeToRemove);
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace cherrydev
             if (nodeToAdd.GetType() == typeof(ExternalFunctionNode))
             {
                 ExternalFunctionNode externalFunctionNodeToAdd = (ExternalFunctionNode)nodeToAdd;
-                
+
                 if (externalFunctionNodeToAdd.ChildNode == this)
                 {
                     Debug.LogWarning("Circular parenting not allowed");
@@ -105,7 +105,7 @@ namespace cherrydev
                 ChildNode.RemoveFromParentConnectedNode(this);
 
             ChildNode = nodeToAdd;
-    
+
             return true;
         }
 
@@ -120,7 +120,7 @@ namespace cherrydev
             {
                 if (ParentNodes.Contains(nodeToAdd))
                     return false;
-                    
+
                 ParentNodes.Add(nodeToAdd);
                 return true;
             }
@@ -132,19 +132,19 @@ namespace cherrydev
 
                 if (ParentNodes.Contains(nodeToAdd))
                     return false;
-                    
+
                 ParentNodes.Add(nodeToAdd);
                 return true;
             }
 
-            if (nodeToAdd.GetType() == typeof(ModifyVariableNode) || 
+            if (nodeToAdd.GetType() == typeof(ModifyVariableNode) ||
                 nodeToAdd.GetType() == typeof(VariableConditionNode) ||
                 nodeToAdd.GetType().Name == "GameFlagConditionNode" ||
                 nodeToAdd.GetType().Name == "SetGameFlagNode")
             {
                 if (ParentNodes.Contains(nodeToAdd))
                     return false;
-                    
+
                 ParentNodes.Add(nodeToAdd);
                 return true;
             }
@@ -156,7 +156,7 @@ namespace cherrydev
 
                 if (ParentNodes.Contains(nodeToAdd))
                     return false;
-                    
+
                 ParentNodes.Add(nodeToAdd);
                 return true;
             }

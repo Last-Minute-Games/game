@@ -44,7 +44,7 @@ public class NpcBrain2D : MonoBehaviour
 
     void Update()
     {
-        if (_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded)
+        if (_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded || GlobalPause.IsMinigamePaused)
         {
             _motor.SetMoveInput(Vector2.zero);
             return;

@@ -32,14 +32,14 @@ namespace Systems
         private float _fadeTime = 0.3f;
         private float _fadeDuration = 0.2f;
         
-        private Systems.Overworld.Intro.TutorialScene _tutorialScene;
+        private Overworld.Intro.TutorialScene _tutorialScene;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
             _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
             _fadeCanvasGroup.blocksRaycasts = false;
-            _tutorialScene = FindFirstObjectByType<Systems.Overworld.Intro.TutorialScene>();
+            _tutorialScene = FindFirstObjectByType<Overworld.Intro.TutorialScene>();
 
             
             _tptCollider = transform.gameObject.GetComponent<BoxCollider2D>();
@@ -154,13 +154,16 @@ namespace Systems
         {
             if (!tptTo) return;
             
+            if (!EnsureTeleportReferencesAreValid())
+            {
+                return;
+            }
+            
             // prevent interaction during teleport or dialogue
             if (_characterController2D.IsTeleporting || _characterController2D.IsDialogueActive) return;
             
-            if (_player)
+            if (_player != null && _tptCollider != null)
                 _isPlayerNear = Vector3.Distance(_tptCollider.transform.position, _player.transform.position) < InteractionRange;
-            
-            // Debug.Log(Vector3.Distance(_tptCollider.transform.position, _player.transform.position));
             
             if (!_isPlayerNear) return;
             
@@ -180,6 +183,40 @@ namespace Systems
             {
                 OnEnter();
             }
+        }
+
+        private bool EnsureTeleportReferencesAreValid()
+        {
+            if (_tptCollider == null)
+            {
+                _tptCollider = GetComponent<BoxCollider2D>();
+                if (_tptCollider != null)
+                    _tptCollider.isTrigger = true;
+            }
+
+            if (_newCollider == null && _tptCollider != null)
+            {
+                _newCollider = gameObject.AddComponent<BoxCollider2D>();
+                _newCollider.isTrigger = false;
+                _newCollider.offset = _tptCollider.offset;
+                _newCollider.size = _tptCollider.size * 0.99f;
+            }
+
+            if (_player == null || _characterController2D == null || _characterCollider2D == null)
+            {
+                _player = GameObject.FindGameObjectWithTag("Player");
+                if (_player != null)
+                {
+                    _characterController2D = _player.GetComponent<CharacterMotor2D>();
+                    _characterCollider2D = _player.GetComponent<BoxCollider2D>();
+                }
+            }
+
+            return _player != null &&
+                   _characterController2D != null &&
+                   _characterCollider2D != null &&
+                   _tptCollider != null &&
+                   _newCollider != null;
         }
     }
 }
