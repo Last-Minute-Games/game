@@ -42,6 +42,28 @@ namespace Entities.Enemies.Manager
         {
             enemies = enemyList;
             BuildEnemyUI();
+
+            foreach (var e in enemies)
+            {
+                // track the enemy encounter in list
+                TrackEnemyEncounter(e.sourceConfig);
+            }
+        }
+
+        private void TrackEnemyEncounter(EnemyConfig config)
+        {
+            if (config == null) return;
+
+            string flagName = $"monster.{config.enemyName.ToLower()}";
+
+            if (!GameFlags.HasFlag(flagName))
+            {
+                GameFlags.SetFlag(flagName);
+                Debug.Log($"[Flags] First encounter with {config.enemyName}. Set flag: {flagName}");
+            }
+
+            // If you prefer using unique IDs instead:
+            // string flagName = $"monster.{config.uniqueID}";
         }
 
         private void BuildEnemyUI()

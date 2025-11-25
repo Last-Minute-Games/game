@@ -76,6 +76,7 @@ public class EnemyData : EntityData
     public string enemyName;
     public Sprite artwork;                  // Optional portrait or sprite
     public AudioClip attackSFX;             // Optional sound for attack
+    public EnemyConfig sourceConfig;
 
     [Header("Animator (Optional)")]
     public RuntimeAnimatorController animatorController; // If set, animator-driven states are used
