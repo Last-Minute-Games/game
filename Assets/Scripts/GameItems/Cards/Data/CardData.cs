@@ -68,7 +68,7 @@ public class CardData : GameItemData
     [Tooltip("Flag name required to unlock this card. Automatically assigned.")]
     public string unlockFlag;
 
-    [Tooltip("Unlock the card by default")]
+    [Tooltip("Unlock the card by default")] // fallback, incase GameFlags doesn't work
     public bool unlockedByDefault;
 
     // --------------------------------------------------

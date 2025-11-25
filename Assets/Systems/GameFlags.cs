@@ -66,6 +66,15 @@ public class GameFlags : PersistentSingleton<GameFlags>
         _activeFlags.Add("character.sebastian");
         _activeFlags.Add("character.elias");
 
+        // nether flags
+        _activeFlags.Add("day.one");
+        
+        // these three also have a metadata flag called unlockedByDefault as fallback
+        _activeFlags.Add("card.slash");
+        _activeFlags.Add("card.block")
+        _activeFlags.Add("card.heal_potion")
+
+
         Debug.Log($"[GameFlags] Default flags initialized ({_activeFlags.Count} total flags)");
     }
 

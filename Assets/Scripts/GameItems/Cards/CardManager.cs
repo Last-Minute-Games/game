@@ -215,6 +215,7 @@ namespace GameItems.Cards
             if (card == null) return false;
 
             // Always unlocked if card is marked default
+            // also as a fallback for the three main default cards
             if (card.unlockedByDefault)
                 return true;
 
