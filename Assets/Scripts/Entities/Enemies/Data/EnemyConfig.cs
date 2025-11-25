@@ -41,6 +41,10 @@ public class EnemyConfig : ScriptableObject
     [Tooltip("Maximum possible multiplier applied to enemy stats.")]
     [Range(0f, 2f)] public float maxMultiplier = 1f;
 
+    [Header("Identity")]
+    [Tooltip("Automatically assigned unique ID for flag tracking.")]
+    public string uniqueID;
+
     public EnemyData CreateRuntimeInstance()
     {
         var data = new EnemyData();
