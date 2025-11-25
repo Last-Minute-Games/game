@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Entities.Enemies.Helpers;
 
@@ -41,9 +42,14 @@ public class EnemyConfig : ScriptableObject
     [Tooltip("Maximum possible multiplier applied to enemy stats.")]
     [Range(0f, 2f)] public float maxMultiplier = 1f;
 
+    [Header("Identity")]
+    [Tooltip("Automatically assigned unique ID for flag tracking.")]
+    public string uniqueID;
+
     public EnemyData CreateRuntimeInstance()
     {
         var data = new EnemyData();
+        data.sourceConfig = this; // this = EnemyConfig
         float enemyStatMultiplier = GetMiddleBiasedMultiplier();
         Debug.Log($"{enemyStatMultiplier} enemy multiplier applied");
 
@@ -68,8 +74,8 @@ public class EnemyConfig : ScriptableObject
     public float GetMiddleBiasedMultiplier()
     {
         // generates two uniform random values, averages them → triangle distribution
-        float a = Random.Range(minMultiplier, maxMultiplier);
-        float b = Random.Range(minMultiplier, maxMultiplier);
+        float a = UnityEngine.Random.Range(minMultiplier, maxMultiplier);
+        float b = UnityEngine.Random.Range(minMultiplier, maxMultiplier);
 
         return (a + b) * 0.5f;
     }
@@ -83,5 +89,8 @@ public class EnemyConfig : ScriptableObject
         // clamp
         minMultiplier = Mathf.Max(0f, minMultiplier);
         maxMultiplier = Mathf.Max(minMultiplier, maxMultiplier);
+
+        if (string.IsNullOrWhiteSpace(uniqueID))
+            uniqueID = Guid.NewGuid().ToString();
     }
 }

@@ -44,7 +44,7 @@ public class BattleManager : MonoBehaviour
         // 2️⃣ Initialize Wave System
         if (waveConfig != null)
         {
-            _battleWaves = waveConfig.GetWaves();
+            _battleWaves = waveConfig.GetWavesForCurrentDay();
             Debug.Log($"BattleManager: Initialized with {_battleWaves.Count} waves");
         }
         else
@@ -55,7 +55,10 @@ public class BattleManager : MonoBehaviour
                 new WaveData
                 {
                     waveName = "Single Wave",
-                    enemies = new List<EnemyConfig>(enemyDatabase)
+                    waveMessage = "All enemies at once!",
+                    guaranteedEnemies = enemyDatabase != null 
+                        ? new List<EnemyConfig>(enemyDatabase)
+                        : new List<EnemyConfig>()
                 }
             };
         }
@@ -89,29 +92,18 @@ public class BattleManager : MonoBehaviour
     {
         Debug.Log($"Wave {_currentWaveIndex + 1} complete! ({_currentWaveIndex + 1}/{_battleWaves.Count})");
         
-        // Check if there are more waves BEFORE incrementing
         int nextWaveIndex = _currentWaveIndex + 1;
         
         if (nextWaveIndex < _battleWaves.Count)
         {
             Debug.Log($"Starting wave {nextWaveIndex + 1}...");
             
-            // Apply difficulty scaling
-            if (waveConfig != null && waveConfig.useRandomWaves)
-            {
-                _waveMultiplier += waveConfig.difficultyScaling;
-            }
-            
-            // Increment to next wave
             _currentWaveIndex = nextWaveIndex;
-            
-            // Start next wave after a delay
             StartCoroutine(StartWaveDelayed(_currentWaveIndex, 2f));
         }
         else
         {
             Debug.Log("All waves complete! Player wins!");
-            // Trigger victory through RoundManager
             if (roundManager != null)
             {
                 roundManager.TriggerVictory();
@@ -140,53 +132,56 @@ public class BattleManager : MonoBehaviour
         }
 
         WaveData wave = _battleWaves[waveIndex];
-        
-        // Display wave message if available
+
+        // Optional message
         if (!string.IsNullOrEmpty(wave.waveMessage))
-        {
             Debug.Log($">>> {wave.waveMessage} <<<");
-            // TODO: Show wave message in UI
+
+        // 1️⃣ Build final enemy list from this wave's rules
+        List<EnemyConfig> waveEnemyConfigs = wave.GenerateEnemiesForWave();
+
+        if (waveEnemyConfigs == null || waveEnemyConfigs.Count == 0)
+        {
+            Debug.LogWarning($"BattleManager: Wave {waveIndex} produced NO enemies!");
+            return;
         }
 
-        // Generate enemies for this wave
-        List<EnemyData> enemies = new();
-        foreach (var enemyConfig in wave.enemies)
+        // 2️⃣ Apply this wave's scaling increment once
+        if (wave.statMultiplierIncrease != 0f)
         {
-            if (enemyConfig != null)
-            {
-                EnemyData enemy = enemyConfig.CreateRuntimeInstance();
-                
-                // Apply wave difficulty multiplier
-                if (_waveMultiplier != 1f)
-                {
-                    enemy.maxHealth = Mathf.RoundToInt(enemy.maxHealth * _waveMultiplier);
-                    enemy.currentHealth = enemy.maxHealth;
-                    enemy.attackPower = Mathf.RoundToInt(enemy.attackPower * _waveMultiplier);
-                    enemy.defensePower = Mathf.RoundToInt(enemy.defensePower * _waveMultiplier);
-                }
-                
-                enemies.Add(enemy);
-            }
+            _waveMultiplier += wave.statMultiplierIncrease;
+        }
+
+        List<EnemyData> enemies = new();
+        foreach (var config in waveEnemyConfigs)
+        {
+            if (config == null) continue;
+
+            EnemyData enemy = config.CreateRuntimeInstance();
+
+            // Always scaled by the current _waveMultiplier
+            enemy.maxHealth = Mathf.RoundToInt(enemy.maxHealth * _waveMultiplier);
+            enemy.currentHealth = enemy.maxHealth;
+            enemy.attackPower = Mathf.RoundToInt(enemy.attackPower * _waveMultiplier);
+            enemy.defensePower = Mathf.RoundToInt(enemy.defensePower * _waveMultiplier);
+
+            enemies.Add(enemy);
         }
 
         if (enemies.Count == 0)
         {
-            Debug.LogWarning($"BattleManager: Wave {waveIndex} has no enemies!");
+            Debug.LogWarning($"BattleManager: Wave {waveIndex} produced NO valid enemies after generation!");
             return;
         }
 
-        // Initialize enemies
+        // 3️⃣ Spawn enemies
         enemyManager.InitializeEnemies(enemies);
-        
-        // Start/resume the round system
+
+        // 4️⃣ Start Round System
         if (waveIndex == 0)
-        {
             roundManager.StartRound();
-        }
         else
-        {
             roundManager.StartNewWave();
-        }
     }
 
     private List<EnemyData> GenerateEnemyWave()
