@@ -71,8 +71,8 @@ public class GameFlags : PersistentSingleton<GameFlags>
         
         // these three also have a metadata flag called unlockedByDefault as fallback
         _activeFlags.Add("card.slash");
-        _activeFlags.Add("card.block")
-        _activeFlags.Add("card.heal_potion")
+        _activeFlags.Add("card.block");
+        _activeFlags.Add("card.heal_potion");
 
 
         Debug.Log($"[GameFlags] Default flags initialized ({_activeFlags.Count} total flags)");
