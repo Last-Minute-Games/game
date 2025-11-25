@@ -75,7 +75,7 @@ public class MazePopupController : MonoBehaviour
     {
         // Hook quit button to use transitions
         if (quitButton != null)
-            quitButton.onClick.AddListener(EndMaze);
+            quitButton.onClick.AddListener(() => EndMaze(false)); // false = quit, not solved
 
 
         if (overworldPlayer == null)
