@@ -15,49 +15,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 762
-    y: 364
+    x: 136
+    y: 463
     width: 190
     height: 115
   IsDragging: 0
-  IsSelected: 1
+  IsSelected: 0
   Answers:
   - Hello
   AnswerKeys: []
   ParentNodes:
   - {fileID: 5062585804381860848}
   ChildNodes: []
---- !u!114 &-1107033290181785068
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1103
-    y: 433
-    width: 190
-    height: 135
-  IsDragging: 0
-  IsSelected: 0
-  _sentence:
-    CharacterName: 
-    Text: 
-    CharacterSprite: {fileID: 0}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73,7 +42,6 @@ MonoBehaviour:
   NodesList:
   - {fileID: 5062585804381860848}
   - {fileID: -7144179488142644347}
-  - {fileID: -1107033290181785068}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -95,8 +63,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 179.50006
-    y: 171.66675
+    x: -446.49994
+    y: 270.66675
     width: 190
     height: 135
   IsDragging: 1

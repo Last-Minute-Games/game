@@ -1,5 +1,39 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8662176446772619085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1615
+    y: 790
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Sebastian
+    Text: You know what. I will tell you, provided you can entertain me a bit. I
+      grow bored at my post. How about a coin flip game? If you beat me I will give
+      you important information.
+    CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
+  ParentNodes:
+  - {fileID: 1319802799837363103}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &-8124305437185708701
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15,8 +49,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 794.5
-    y: 216.5
+    x: 1365.5
+    y: 226.5
     width: 190
     height: 135
   IsDragging: 1
@@ -27,8 +61,9 @@ MonoBehaviour:
       to befall the Kingdom and if you want to come out of them unscathed I suggest
       you keep your nose out of this and let the Church decide what is best.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
+  ParentNodes:
+  - {fileID: -2265861453493556102}
+  ChildNode: {fileID: -8108868356237645619}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -48,8 +83,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1071.5
-    y: 127.5
+    x: 1691.5
+    y: 269.5
     width: 190
     height: 135
   IsDragging: 1
@@ -58,8 +93,45 @@ MonoBehaviour:
     CharacterName: Nikolaus
     Text: Maybe I should leave him alone. He does not seem to be in the best mood.
     CharacterSprite: {fileID: 0}
+  ParentNodes:
+  - {fileID: 2774847016155110891}
+  - {fileID: -8124305437185708701}
+  - {fileID: -6269941809162059320}
+  ChildNode: {fileID: 3427114357737076240}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-7885906385303265709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 2074
+    y: 630
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Nikolaus
+    Text: I beat Sebastian, hopefully now he will be willing to speak to me about
+      the King's murder. At the very least I want to know where he was to see if
+      I should suspect him.I beat Sebastian, hopefully now he will be willing to
+      speak to me about the King's murder.
+    CharacterSprite: {fileID: 0}
   ParentNodes: []
-  ChildNode: {fileID: 0}
+  ChildNode: {fileID: 3427114357737076240}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -79,8 +151,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -132
-    y: 416
+    x: 1337
+    y: 711
     width: 190
     height: 135
   IsDragging: 1
@@ -93,7 +165,37 @@ MonoBehaviour:
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
   ParentNodes:
   - {fileID: 1098637340302900949}
-  - {fileID: -2265861453493556102}
+  ChildNode: {fileID: -8108868356237645619}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-4489242929632964236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 2073
+    y: 962
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Sebastian
+    Text: Better luck next time lad, Now let me be.
+    CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
+  ParentNodes: []
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -114,8 +216,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 348.5
-    y: 22.5
+    x: 746.5
+    y: 88.5
     width: 190
     height: 135
   IsDragging: 1
@@ -146,14 +248,14 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 478.5
-    y: 208.5
+    x: 1074.5
+    y: 248.5
     width: 190
     height: 155
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - Your family has served the King for generations right?
+  - As head knight do you know anything?
   - Is there anything suspicious you have seen?
   - I don't see any point in talking to such a senseless hunk of meat.
   AnswerKeys: []
@@ -161,8 +263,74 @@ MonoBehaviour:
   - {fileID: -3499695429941945222}
   - {fileID: 5866557691406776101}
   ChildNodes:
-  - {fileID: -6269941809162059320}
+  - {fileID: 2774847016155110891}
+  - {fileID: -8124305437185708701}
   - {fileID: 1985154962997009171}
+--- !u!114 &-1584494736714723176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 2318
+    y: 75
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Sebastian
+    Text: It is no secret that we are an easy target. No heir has been named. We
+      were hoping the King had more years left in him and would eventually name someone
+      he wanted to pass the throne down to. Now with him gone and no clear heir named,
+      anyone will try to claim the throne or worst yet conquer us.
+    CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
+  ParentNodes: []
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-612797590614259977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 880
+    y: 909
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Sebastian
+    Text: Again? Quit wasting my time with trivial chatter.
+    CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
+  ParentNodes: []
+  ChildNode: {fileID: 1319802799837363103}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -186,8 +354,14 @@ MonoBehaviour:
   - {fileID: 1985154962997009171}
   - {fileID: 2774847016155110891}
   - {fileID: 3427114357737076240}
-  - {fileID: 2353874952250523618}
   - {fileID: -8108868356237645619}
+  - {fileID: -612797590614259977}
+  - {fileID: 1319802799837363103}
+  - {fileID: -8662176446772619085}
+  - {fileID: -7885906385303265709}
+  - {fileID: -4489242929632964236}
+  - {fileID: 2588002077630232101}
+  - {fileID: -1584494736714723176}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -209,8 +383,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -140.5
-    y: 197.5
+    x: 437.5
+    y: 261.5
     width: 190
     height: 155
   IsDragging: 1
@@ -226,6 +400,36 @@ MonoBehaviour:
   - {fileID: -3499695429941945222}
   - {fileID: 5866557691406776101}
   - {fileID: -6269941809162059320}
+--- !u!114 &1319802799837363103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1176
+    y: 908
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - Please Sebastian, if you know anything at all tell me.s head knight do you know
+    anything?
+  - I know as someone who closely guarded the King, you must know something.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -612797590614259977}
+  ChildNodes:
+  - {fileID: -8662176446772619085}
 --- !u!114 &1985154962997009171
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -241,8 +445,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 660
-    y: 532
+    x: 1369
+    y: 446
     width: 190
     height: 135
   IsDragging: 1
@@ -258,7 +462,7 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &2353874952250523618
+--- !u!114 &2588002077630232101
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -273,15 +477,15 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 262.5
-    y: 642
+    x: 2390
+    y: 972
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Sebastian
-    Text: And curiousity has killed the cat. Enough wasting my time.
+    Text: Back for a rematch? Very well.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
   ParentNodes: []
   ChildNode: {fileID: 0}
@@ -304,20 +508,20 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 209
-    y: 440.5
+    x: 1371
+    y: 43.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Sebastian
-    Text: Are you implying I had something to do with this? While I do find the King
-      a coward and think he ruined my family. I can assure you my loyalty lies with
-      the crown.
+    Text: No there is not, and if there was I fail to see why I should share it with
+      King's Chronicler, for all I know, you are the murderer.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
+  ParentNodes:
+  - {fileID: -2265861453493556102}
+  ChildNode: {fileID: -8108868356237645619}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -337,8 +541,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 951
-    y: 520
+    x: 2034
+    y: 84
     width: 190
     height: 135
   IsDragging: 1
@@ -347,7 +551,9 @@ MonoBehaviour:
   - Could you tell me more?
   - "I feel like I am just bothering you. I\u2019ll be taking my leave now Sebastian."
   AnswerKeys: []
-  ParentNodes: []
+  ParentNodes:
+  - {fileID: -8108868356237645619}
+  - {fileID: -7885906385303265709}
   ChildNodes: []
 --- !u!114 &5062585804381860848
 MonoBehaviour:
@@ -364,8 +570,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -420.16663
-    y: 206.66675
+    x: 157.8335
+    y: 270.66675
     width: 190
     height: 135
   IsDragging: 1
@@ -395,8 +601,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 183.5
-    y: 214
+    x: 744.5
+    y: 257
     width: 190
     height: 135
   IsDragging: 1

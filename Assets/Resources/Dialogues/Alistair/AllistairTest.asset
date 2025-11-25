@@ -15,19 +15,19 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1129
-    y: 314.5
+    x: 555
+    y: 462.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
+    CharacterName: Allistair
     Text: Perhaps, Nikolaus. I wish you luck
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
   ParentNodes:
   - {fileID: 7387929112239024511}
-  ChildNode: {fileID: 0}
+  ChildNode: {fileID: -1142266781156241925}
   _isExternalFunc: 0
   _externalFunctionName: trolling
   CharacterNameKey: 
@@ -47,24 +47,23 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 615
-    y: 517.5
+    x: 281
+    y: 969.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
+    CharacterName: Allistair
     Text: Hiding? No. Guarding, perhaps. You've much to learn about loyalty, boy.
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
-  ParentNodes:
-  - {fileID: 2347555716767132795}
-  ChildNode: {fileID: -6712983748595911214}
+  ParentNodes: []
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-6712983748595911214
+--- !u!114 &-6738811964418778074
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -73,27 +72,94 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
-  m_Name: Answer Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 861
-    y: 525.5
+    x: -298
+    y: 10
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
-  Answers:
-  - Then teach me.
-  - You're lying.
-  AnswerKeys: []
+  _sentence:
+    CharacterName: Allistair
+    Text: 'Once word of his majesty''s death gets out if no plan is in place we risk
+      a civil war '
+    CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
   ParentNodes:
-  - {fileID: -8498868180935942755}
-  ChildNodes:
-  - {fileID: 7673923630226858753}
-  - {fileID: 5554319796215429557}
+  - {fileID: 6993239648183675222}
+  ChildNode: {fileID: -1142266781156241925}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-4294971421660567081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1702
+    y: 504
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Allistair
+    Text: Such a terrible tragedy, the kingdom is now in shambles, surely you understand
+      the implications?
+    CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
+  ParentNodes:
+  - {fileID: 2347555716767132795}
+  ChildNode: {fileID: 8863425396721837752}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-3355683526336351338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -2227
+    y: 613
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Nikolaus
+    Text: "I should talk to Allistair seeing as he is the King\u2019s trusted advisor."
+    CharacterSprite: {fileID: 0}
+  ParentNodes: []
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &-2965790446454491211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,19 +175,52 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1487
-    y: -98
+    x: -104
+    y: 251
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
-    Text: Yes. Perhaps anything could be left behind
+    CharacterName: Allistair
+    Text: Now I am not accusing anyone, I am just saying they both know more than
+      what it seems like.
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
   ParentNodes:
   - {fileID: 2758465482652717036}
-  ChildNode: {fileID: 0}
+  ChildNode: {fileID: 7387929112239024511}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-2560244004575188957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1031
+    y: 285
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Allistair
+    Text: There is no heir or successor for the throne declared.
+    CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
+  ParentNodes:
+  - {fileID: 8863425396721837752}
+  ChildNode: {fileID: 5618782884628976477}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -141,14 +240,14 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1484
-    y: 80
+    x: -124
+    y: 430
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
+    CharacterName: Allistair
     Text: I fear for my life. The new king would find me incompetent if the assassin
       is not found.
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
@@ -174,20 +273,86 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 588.5
-    y: 321.5
+    x: 555.5
+    y: 659.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
+    CharacterName: Allistair
     Text: Answers? They're buried beneath centuries of secrets. Look to the archives,
       perhaps the pages remember what men forget.
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
   ParentNodes:
+  - {fileID: 7387929112239024511}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-1249074817133113391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1696
+    y: 781
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Allistair
+    Text: As well as you can imagine. Do forgive me if I am a bit off, I am still
+      reeling from it all.
+    CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
+  ParentNodes:
   - {fileID: 2347555716767132795}
-  ChildNode: {fileID: 7387929112239024511}
+  ChildNode: {fileID: 3642215355345326345}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-1142266781156241925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 173
+    y: -35
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Allistair
+    Text: How about a game of cards to ease the tension?
+    CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
+  ParentNodes:
+  - {fileID: -8789782959919357560}
+  - {fileID: -6738811964418778074}
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -207,20 +372,29 @@ MonoBehaviour:
   NodesList:
   - {fileID: 5062585804381860848}
   - {fileID: 2347555716767132795}
-  - {fileID: 4561958520796626145}
   - {fileID: 459307045033769313}
   - {fileID: 6258832375303374024}
   - {fileID: 2758465482652717036}
   - {fileID: 6390628600808855655}
   - {fileID: -1630624813876204355}
   - {fileID: -8498868180935942755}
-  - {fileID: -6712983748595911214}
   - {fileID: 7387929112239024511}
   - {fileID: -8789782959919357560}
   - {fileID: -2965790446454491211}
   - {fileID: -2520559218209064770}
-  - {fileID: 7673923630226858753}
-  - {fileID: 5554319796215429557}
+  - {fileID: -3355683526336351338}
+  - {fileID: -1249074817133113391}
+  - {fileID: -4294971421660567081}
+  - {fileID: 8863425396721837752}
+  - {fileID: -2560244004575188957}
+  - {fileID: 3642215355345326345}
+  - {fileID: 3633843899810380816}
+  - {fileID: 1237282023399335915}
+  - {fileID: 6643502491342239574}
+  - {fileID: 5618782884628976477}
+  - {fileID: 6993239648183675222}
+  - {fileID: -6738811964418778074}
+  - {fileID: -1142266781156241925}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -242,21 +416,53 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 797
-    y: 85.5
+    x: -1384
+    y: 1015.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - Then tell me where to begin.
-  - You speak as if you knew it would happen
+  - Then tell me what you know.
+  - You speak as if you knew the muder would happen.
   AnswerKeys: []
   ParentNodes:
-  - {fileID: 4561958520796626145}
+  - {fileID: 1237282023399335915}
   ChildNodes:
   - {fileID: 6258832375303374024}
   - {fileID: 6390628600808855655}
+--- !u!114 &1237282023399335915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1729
+    y: 1024
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Allistair
+    Text: Why do you accuse me of hiding something?
+    CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
+  ParentNodes:
+  - {fileID: 2347555716767132795}
+  ChildNode: {fileID: 459307045033769313}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &2347555716767132795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -272,23 +478,23 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 310
-    y: 295
+    x: -1998
+    y: 769
     width: 190
     height: 155
   IsDragging: 1
   IsSelected: 0
   Answers:
   - You've heard about the king's death?
-  - Do you know where I might find answers?
+  - How are you holding up?
   - What are you hiding, Chancellor?
   AnswerKeys: []
   ParentNodes:
   - {fileID: 5062585804381860848}
   ChildNodes:
-  - {fileID: 4561958520796626145}
-  - {fileID: -1630624813876204355}
-  - {fileID: -8498868180935942755}
+  - {fileID: -4294971421660567081}
+  - {fileID: -1249074817133113391}
+  - {fileID: 1237282023399335915}
 --- !u!114 &2758465482652717036
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -304,14 +510,14 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1256
-    y: 7.5
+    x: -522
+    y: 433.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - You're telling me to search the throne room?!
+  - You're telling me to question them or do you find them suspiscious?
   - Why help me?
   AnswerKeys: []
   ParentNodes:
@@ -319,7 +525,7 @@ MonoBehaviour:
   ChildNodes:
   - {fileID: -2965790446454491211}
   - {fileID: -2520559218209064770}
---- !u!114 &4561958520796626145
+--- !u!114 &3633843899810380816
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -334,24 +540,52 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 573
-    y: 87.5
+    x: -1195
+    y: 773
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
-    Text: A tragedy indeed though not unexpected. Power breeds plots in the dark.
-      But tread carefully, truth cuts deeper.
+    CharacterName: Allistair
+    Text: Yes as the King's most trusted advisor,  I served under him very closely.
+      We were often together and I was privy to top klngdom secrets.
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
   ParentNodes:
-  - {fileID: 2347555716767132795}
-  ChildNode: {fileID: 459307045033769313}
+  - {fileID: 3642215355345326345}
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &3642215355345326345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1459
+    y: 786
+    width: 190
+    height: 115
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - You and King Grover were close?
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -1249074817133113391}
+  ChildNodes:
+  - {fileID: 3633843899810380816}
 --- !u!114 &5062585804381860848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -367,14 +601,14 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 8
-    y: 298.667
+    x: -2226
+    y: 781.667
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
+    CharacterName: Allistair
     Text: Good day Nikolaus. You looked troubled. The people whisper louder than
       ever today.
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
@@ -384,7 +618,7 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &5554319796215429557
+--- !u!114 &5618782884628976477
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -399,19 +633,22 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1131
-    y: 605.5
+    x: -734
+    y: 153
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
-    Text: Good luck on your journey, boy.
+    CharacterName: Allistair
+    Text: The castle has been on lockdown. No one gets in and no one gets out. The
+      head priest arrived last night to try to control the situation and best guide
+      us on what to do.
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
   ParentNodes:
-  - {fileID: -6712983748595911214}
-  ChildNode: {fileID: 0}
+  - {fileID: 6643502491342239574}
+  - {fileID: -2560244004575188957}
+  ChildNode: {fileID: 6993239648183675222}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -431,16 +668,15 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1004
-    y: 12.5
+    x: -923
+    y: 947.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
-    Text: If I were you, I'd start in the throne room. The king's signet ring never
-      left his side unless someone forced it away.
+    CharacterName: Allistair
+    Text: If I were you, I'd start by questioning Marco or Sebastian.
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
   ParentNodes:
   - {fileID: 459307045033769313}
@@ -464,20 +700,86 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1009.5
-    y: 176.5
+    x: -929.5
+    y: 1146.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Alistair
+    CharacterName: Allistair
     Text: You forget your place Nikolaus. I serve the throne, not gossip. Be sure
       your tongue doesn't make you the next ghost.
     CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
   ParentNodes:
   - {fileID: 459307045033769313}
   ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &6643502491342239574
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1032
+    y: 93
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Allistair
+    Text: Whatever you have heard, it is even worse than that.
+    CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
+  ParentNodes:
+  - {fileID: 8863425396721837752}
+  ChildNode: {fileID: 5618782884628976477}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &6993239648183675222
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -504
+    y: 151
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Allistair
+    Text: In situations like this it seems while it is preferred to keep the throne
+      within the family, an emergency meeting will likely be held with all the other
+      nobles in surrounding Kingdoms. From there we will decide what will happen.
+    CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
+  ParentNodes:
+  - {fileID: 5618782884628976477}
+  ChildNode: {fileID: -6738811964418778074}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -497,20 +799,22 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 878.5
-    y: 325.5
+    x: 225.5
+    y: 508.5
     width: 190
-    height: 115
+    height: 135
   IsDragging: 1
   IsSelected: 0
   Answers:
   - Are you telling the truth?
+  - I do not need you to be criptic. I need straightforward answers.
   AnswerKeys: []
   ParentNodes:
-  - {fileID: -1630624813876204355}
+  - {fileID: -2965790446454491211}
   ChildNodes:
   - {fileID: -8789782959919357560}
---- !u!114 &7673923630226858753
+  - {fileID: -1630624813876204355}
+--- !u!114 &8863425396721837752
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -519,26 +823,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1127
-    y: 452.5
+    x: -1447
+    y: 286
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
-  _sentence:
-    CharacterName: Alistair
-    Text: You're illegitimate. I should NOT be helping a bastard child.
-    CharacterSprite: {fileID: -576682515621079745, guid: a8f3de5593ac3994dbfcc6ac3125b589, type: 3}
+  Answers:
+  - I have heard yes.
+  - Could you explain to me?
+  AnswerKeys: []
   ParentNodes:
-  - {fileID: -6712983748595911214}
-  ChildNode: {fileID: 0}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
+  - {fileID: -4294971421660567081}
+  ChildNodes:
+  - {fileID: 6643502491342239574}
+  - {fileID: -2560244004575188957}
