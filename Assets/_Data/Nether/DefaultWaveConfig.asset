@@ -14,29 +14,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameItems.WaveConfig
   waves:
   - waveName: Wave 1
-    enemies:
-    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
-    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
-    delayBeforeWave: 0
     waveMessage: Wave 1 begins!
-  - waveName: Wave 2
-    enemies:
+    delayBeforeWave: 0
+    guaranteedEnemies:
     - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
+    randomEnemyPool:
     - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
-    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
-    delayBeforeWave: 0
+    minEnemiesPerWave: 1
+    maxEnemiesPerWave: 3
+    statMultiplierIncrease: 0.2
+  - waveName: Wave 2
     waveMessage: Wave 2 begins!
-  - waveName: Wave 3
-    enemies:
-    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
-    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
-    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
-    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
     delayBeforeWave: 0
+    guaranteedEnemies:
+    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
+    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
+    randomEnemyPool:
+    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    minEnemiesPerWave: 3
+    maxEnemiesPerWave: 4
+    statMultiplierIncrease: 0.2
+  - waveName: Wave 3
     waveMessage: Wave 3 begins!
-  useRandomWaves: 0
-  numberOfRandomWaves: 3
-  enemyPool: []
-  minEnemiesPerWave: 1
-  maxEnemiesPerWave: 3
-  difficultyScaling: 0.2
+    delayBeforeWave: 0
+    guaranteedEnemies:
+    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
+    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
+    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
+    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
+    randomEnemyPool:
+    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    minEnemiesPerWave: 1
+    maxEnemiesPerWave: 4
+    statMultiplierIncrease: 0.2
