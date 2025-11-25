@@ -87,5 +87,8 @@ public class EnemyConfig : ScriptableObject
         // clamp
         minMultiplier = Mathf.Max(0f, minMultiplier);
         maxMultiplier = Mathf.Max(minMultiplier, maxMultiplier);
+
+        if (string.IsNullOrWhiteSpace(uniqueID))
+            uniqueID = Guid.NewGuid().ToString();
     }
 }
