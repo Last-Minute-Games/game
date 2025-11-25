@@ -403,6 +403,8 @@ public class RoundManager : MonoBehaviour
     {
         Debug.Log("🏆 Player Victory!");
 
+        AdvanceDayFlag();
+
         // Fade screen + show text
         if (endScreenUI != null)
             endScreenUI.ShowMessage("YOU WIN", new Color(1f, 0.84f, 0.0f)); // gold
@@ -421,6 +423,8 @@ public class RoundManager : MonoBehaviour
     {
         Debug.Log("❌ Player Defeat!");
 
+        AdvanceDayFlag();
+
         if (endScreenUI != null)
             endScreenUI.ShowMessage("YOU LOSE", Color.red);
 
@@ -436,5 +440,32 @@ public class RoundManager : MonoBehaviour
         yield return new WaitForSeconds(3f);
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
+    }
+
+    // handle advancing day flags
+    private void AdvanceDayFlag()
+    {
+        if (GameFlags.HasFlag("day.one"))
+        {
+            GameFlags.SetFlag("day.two");
+            return;
+        }
+        if (GameFlags.HasFlag("day.two"))
+        {
+            GameFlags.SetFlag("day.three");
+            return;
+        }
+        if (GameFlags.HasFlag("day.three"))
+        {
+            GameFlags.SetFlag("day.four");
+            return;
+        }
+        if (GameFlags.HasFlag("day.four"))
+        {
+            GameFlags.SetFlag("day.five");
+            return;
+        }
+
+        // Already maxed → do nothing
     }
 }
