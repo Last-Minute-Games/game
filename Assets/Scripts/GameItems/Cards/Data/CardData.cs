@@ -63,6 +63,14 @@ public class CardData : GameItemData
     [Tooltip("Color for strong prefix text.")]
     public Color strongPrefixColor = new Color(1f, 0.4f, 0.4f);
 
+    // Card flag unlocker
+    [Header("Unlocking")]
+    [Tooltip("Flag name required to unlock this card. Automatically assigned.")]
+    public string unlockFlag;
+
+    [Tooltip("Unlock the card by default")] // fallback, incase GameFlags doesn't work
+    public bool unlockedByDefault;
+
     // --------------------------------------------------
     // VALIDATION HELPERS
     // --------------------------------------------------
@@ -143,5 +151,11 @@ public class CardData : GameItemData
         // Optional: clamp inside 0–1 range (even though Range attribute does this in inspector)
         minMultiplierThreshold = Mathf.Clamp01(minMultiplierThreshold);
         maxMultiplierThreshold = Mathf.Clamp01(maxMultiplierThreshold);
+
+        // automatically add custom unlockFlag name using name
+        if (string.IsNullOrWhiteSpace(unlockFlag))
+        {
+            unlockFlag = $"card.{name.ToLower().Replace(" ", "_")}";
+        }
     }
 }

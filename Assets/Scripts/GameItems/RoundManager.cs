@@ -133,8 +133,8 @@ public class RoundManager : MonoBehaviour
         // Show "WAVE 1" transition immediately
         if (roundTransitionUI != null)
         {
-            // Start fade in immediately
-            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber, isNewWave: true));
+            // FIRST WAVE → starts fully dark, only fades out
+            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber, isFirstWave: true));
         }
         
         // While the transition is showing, prepare the wave
@@ -190,8 +190,8 @@ public class RoundManager : MonoBehaviour
         // Show "WAVE X" transition immediately
         if (roundTransitionUI != null)
         {
-            // Start fade in immediately
-            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber, isNewWave: true));
+            // LATER WAVES → fade in & out
+            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber, isFirstWave: false));
         }
         
         // While the transition is fading in/holding, prepare the next wave
