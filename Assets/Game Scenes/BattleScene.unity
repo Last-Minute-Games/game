@@ -172,13 +172,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cf7f8f7f92dbecdfb690953ff7adcdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerEnergyUIHelper
-  energyText: {fileID: 657777360}
-  energyIcon: {fileID: 1500702690}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  zeroEnergyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  overflowColor: {r: 1, g: 0.9, b: 0.3, a: 1}
-  pulseScale: 1.4
-  pulseDuration: 0.2
 --- !u!1 &121033905
 GameObject:
   m_ObjectHideFlags: 0
@@ -782,17 +775,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1309454556844864374, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
   m_PrefabInstance: {fileID: 3644149388225263061}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &657777360 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7266842905039772513, guid: 72215a747b7dc6c24ba2dff95e91ae8a, type: 3}
-  m_PrefabInstance: {fileID: 3644149388225263061}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &744174827
 GameObject:
   m_ObjectHideFlags: 0
@@ -1239,6 +1221,58 @@ RectTransform:
   m_AnchoredPosition: {x: -202.7, y: 62.2}
   m_SizeDelta: {x: 2347.6646, y: 1683.0454}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &923018114
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 923018115}
+  - component: {fileID: 923018116}
+  m_Layer: 0
+  m_Name: ArrowEmitter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &923018115
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 923018114}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2094887444}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &923018116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 923018114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 978a8fe39a707624b81eff4c774df856, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  ArrowHeadPrefab: {fileID: 3815801001548701079, guid: e86b24ec47409194aa4079c13b2ca8be, type: 3}
+  ArrowNodePrefab: {fileID: 2703370796993116777, guid: 6a15b15f8b4998c44acf3d69ff4a214b, type: 3}
+  arrowNodeNum: 10
+  scaleFactor: 0.01
 --- !u!4 &947236644 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6823311542963491544, guid: 1e3e03f85c82fca4f8bd34a68926ff5c, type: 3}
@@ -2356,6 +2390,7 @@ RectTransform:
   - {fileID: 562699292}
   - {fileID: 133247665}
   - {fileID: 811839047}
+  - {fileID: 923018115}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
