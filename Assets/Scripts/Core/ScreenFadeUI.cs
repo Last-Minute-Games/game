@@ -37,9 +37,10 @@ public class ScreenFadeUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Shows a wave transition (e.g., "WAVE 1", "WAVE 2") with fade in/out effect
+    /// Shows a wave transition (e.g., "WAVE 1", "WAVE 2") with fade in/out effect.
+    /// If isFirstWave is true, it starts fully dark (no fade in), then only fades out.
     /// </summary>
-    public IEnumerator ShowRoundTransition(int waveNumber, bool isNewWave = false)
+    public IEnumerator ShowRoundTransition(int waveNumber, bool isFirstWave = false)
     {
         string message = $"WAVE {waveNumber}";
         Color color = new Color(1f, 0.5f, 0f); // Orange for waves
@@ -47,16 +48,31 @@ public class ScreenFadeUI : MonoBehaviour
         resultText.text = message;
         resultText.color = color;
 
-        // Fade in immediately (no delay)
-        canvasGroup.alpha = 0f;
-        canvasGroup.DOFade(1f, roundTransitionFadeInTime);
-        yield return new WaitForSeconds(roundTransitionFadeInTime);
+        if (isFirstWave)
+        {
+            // 🔴 FIRST WAVE: start fully dark, no fade in
+            canvasGroup.alpha = 1f; // fully dark already
 
-        // Hold briefly
-        yield return new WaitForSeconds(roundTransitionHoldTime);
+            // Hold while fully dark
+            yield return new WaitForSeconds(roundTransitionHoldTime);
 
-        // Fade out as the wave loads
-        canvasGroup.DOFade(0f, roundTransitionFadeOutTime);
-        yield return new WaitForSeconds(roundTransitionFadeOutTime);
+            // Fade out to reveal the scene
+            canvasGroup.DOFade(0f, roundTransitionFadeOutTime);
+            yield return new WaitForSeconds(roundTransitionFadeOutTime);
+        }
+        else
+        {
+            // 🔁 NORMAL WAVES: fade in → hold → fade out
+            canvasGroup.alpha = 0f;
+            canvasGroup.DOFade(1f, roundTransitionFadeInTime);
+            yield return new WaitForSeconds(roundTransitionFadeInTime);
+
+            // Hold briefly while dark
+            yield return new WaitForSeconds(roundTransitionHoldTime);
+
+            // Fade out as the wave starts
+            canvasGroup.DOFade(0f, roundTransitionFadeOutTime);
+            yield return new WaitForSeconds(roundTransitionFadeOutTime);
+        }
     }
 }

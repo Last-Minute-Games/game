@@ -22,20 +22,20 @@ namespace GameItems.Cards
         // -----------------------------------------------------------
         public List<CardData> GenerateRandomCards(int number)
         {
-            List<CardData> result = new();
-            if (allCardPool.Count == 0)
+            List<CardData> unlockedPool = allCardPool.FindAll(c => IsCardUnlocked(c)); // filter unlocked cards
+
+            if (unlockedPool.Count == 0)
             {
-                Debug.LogWarning("CardManager: No cards available in allCardPool.");
-                return result;
+                Debug.LogWarning("No unlocked cards available!");
+                return new();
             }
 
+            List<CardData> result = new();
             for (int i = 0; i < number; i++)
             {
-                var card = allCardPool[_rng.Next(allCardPool.Count)];
+                var card = unlockedPool[_rng.Next(unlockedPool.Count)];
                 result.Add(card);
             }
-            
-            Debug.Log($"CardManager: Generated {number} random cards.");
 
             return result;
         }
@@ -207,6 +207,24 @@ namespace GameItems.Cards
 
             Debug.Log($"[CardManager] Played card '{data.name}'. Hand: {hand.Count}, Discard: {discardPile.Count}, Instances: {handInstances.Count}");
             return removed;
+        }
+
+        // Valid card pull checker depending on flag
+        private bool IsCardUnlocked(CardData card)
+        {
+            if (card == null) return false;
+
+            // Always unlocked if card is marked default
+            // also as a fallback for the three main default cards
+            if (card.unlockedByDefault)
+                return true;
+
+            // No unlock flag? Treat as unlocked
+            if (string.IsNullOrEmpty(card.unlockFlag))
+                return true;
+
+            // Otherwise check the flag system
+            return GameFlags.HasFlag(card.unlockFlag);
         }
 
         // // -----------------------------------------------------------
