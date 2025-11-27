@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 
 namespace GameItems.Cards.Helpers
 {
@@ -84,7 +84,8 @@ namespace GameItems.Cards.Helpers
         /// </summary>
         /// <param name="cardWorldPosition">World position of the card</param>
         /// <param name="cursorScreenPosition">Screen position of the cursor</param>
-        public void UpdateArrow(Vector3 cardWorldPosition, Vector2 cursorScreenPosition)
+        /// <param name="isHoveringValidTarget">Whether the cursor is hovering over a valid target</param>
+        public void UpdateArrow(Vector3 cardWorldPosition, Vector2 cursorScreenPosition, bool isHoveringValidTarget = false)
         {
             if (bezierArrow == null || !_isDrawing || _mainCamera == null)
                 return;
@@ -93,8 +94,8 @@ namespace GameItems.Cards.Helpers
             Vector3 arrowStartWorld = cardWorldPosition + arrowAnchorOffset;
             Vector2 arrowStartScreen = _mainCamera.WorldToScreenPoint(arrowStartWorld);
 
-            // Update bezier arrow
-            bezierArrow.ShowArrow(arrowStartScreen, cursorScreenPosition);
+            // Update bezier arrow with hover state
+            bezierArrow.ShowArrow(arrowStartScreen, cursorScreenPosition, isHoveringValidTarget);
         }
 
         /// <summary>

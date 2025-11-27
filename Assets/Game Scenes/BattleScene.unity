@@ -1272,8 +1272,11 @@ MonoBehaviour:
   arrowHeadPrefab: {fileID: 3815801001548701079, guid: e86b24ec47409194aa4079c13b2ca8be, type: 3}
   arrowNodePrefab: {fileID: 2703370796993116777, guid: 6a15b15f8b4998c44acf3d69ff4a214b, type: 3}
   arrowNodeNum: 10
-  scaleFactor: 0.6
+  scaleFactor: 0.5
   arrowHeadTipOffset: 0.5
+  invalidTargetColor: {r: 0.8039216, g: 0.10980392, b: 0.09411765, a: 1}
+  validTargetColor: {r: 0.3137255, g: 0.78431374, b: 0.47058824, a: 1}
+  colorTweenDuration: 0.2
 --- !u!4 &947236644 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6823311542963491544, guid: 1e3e03f85c82fca4f8bd34a68926ff5c, type: 3}

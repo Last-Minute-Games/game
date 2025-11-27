@@ -238,8 +238,41 @@ namespace GameItems.Cards.Helpers
             // Get the card's world position (use transform.position for world space)
             Vector3 cardWorldPos = card.transform.position;
             
+            // Check if cursor is hovering over an enemy
+            bool isHoveringEnemy = IsHoveringOverEnemy(cursorPos);
+            
             // Update the arrow with card's world position and cursor screen position
-            arrowHelper.UpdateArrow(cardWorldPos, cursorPos);
+            arrowHelper.UpdateArrow(cardWorldPos, cursorPos, isHoveringEnemy);
+        }
+        
+        /// <summary>
+        /// Checks if the cursor is hovering over a valid enemy target.
+        /// </summary>
+        private bool IsHoveringOverEnemy(Vector2 screenPosition)
+        {
+            Camera cam = ResolveCamera();
+            if (cam == null)
+                return false;
+
+            // Convert screen position to world position
+            Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(cam.transform.position.z)));
+            
+            // Use OverlapPoint to check what's at the cursor position
+            Collider2D[] colliders = Physics2D.OverlapPointAll(new Vector2(worldPos.x, worldPos.y));
+            
+            foreach (var collider in colliders)
+            {
+                if (collider == null) continue;
+
+                // Check if the hit object has an EnemyRender component
+                var enemyRender = collider.GetComponent<EnemyRender>();
+                if (enemyRender != null && enemyRender.data != null && enemyRender.data.isAlive)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // Called when player lets go but target is invalid
