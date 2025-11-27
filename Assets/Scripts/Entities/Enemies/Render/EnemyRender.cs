@@ -159,6 +159,7 @@ namespace Entities.Enemies.Render
         _hoverSprite = _hoverSpriteObject.AddComponent<SpriteRenderer>();
         _hoverSprite.sortingLayerName = hoverSpriteSortingLayer;
         _hoverSprite.sortingOrder = _sprite.sortingOrder + hoverSpriteSortingOrderOffset;
+        _hoverSprite.color = new Color32(251,236,93, 150);
         _hoverSprite.enabled = false; // Hidden by default
     }
 
