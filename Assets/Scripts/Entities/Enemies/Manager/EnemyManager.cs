@@ -1,4 +1,5 @@
 using Entities.Enemies.Helpers;
+using Entities.Enemies.Render;
 using Entities.Players.Data;
 using GameItems.Cards;
 
@@ -35,6 +36,22 @@ namespace Entities.Enemies.Manager
         [Header("Health Bar Settings")]
         [Tooltip("Local position offset for health bar relative to enemy.")]
         [SerializeField] private Vector3 healthBarOffset = new Vector3(0f, 0.17f, 0f);
+
+        [Header("Enemy Render Settings")]
+        [Tooltip("Sprite to show when any enemy is hovered over by the player.")]
+        public Sprite hoverSprite;
+        
+        [Tooltip("Y offset for hover sprite position relative to enemy.")]
+        public float hoverSpriteYOffset;
+        
+        [Tooltip("Offset from enemy position where intent icon appears.")]
+        public Vector3 intentIconOffset = new Vector3(0f, 0.23f, 0f);
+        
+        [Tooltip("Size of the intent icon sprite.")]
+        public float intentIconSize = 0.2f;
+        
+        [Tooltip("Sorting order offset for hover sprite from enemy sprite.")]
+        public int hoverSpriteSortingOrderOffset = 5;
         
         private readonly List<EnemyRender> _activeRenders = new();
 
@@ -122,7 +139,7 @@ namespace Entities.Enemies.Manager
                 }
 
                 var render = go.GetComponent<EnemyRender>();
-                render.Bind(enemy);
+                render.Bind(enemy, hoverSprite, hoverSpriteYOffset, intentIconOffset, intentIconSize, hoverSpriteSortingOrderOffset);
 
                 _activeRenders.Add(render);
             }

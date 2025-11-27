@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Entities.Enemies.Manager;
+using GameItems.Cards.Helpers;
 
 public class RoundManager : MonoBehaviour
 {
@@ -229,6 +230,9 @@ public class RoundManager : MonoBehaviour
 
         Debug.Log("Player turn ended.");
 
+        // Hide all arrows from any cards that might be mid-drag
+        HideAllCardArrows();
+
         // Animate cards discarding BEFORE clearing data
         if (handViewer != null && handViewer.GetRenders().Count > 0)
         {
@@ -336,7 +340,8 @@ public class RoundManager : MonoBehaviour
         if (handViewer != null && !skipHand)
         {
             handViewer.SetPlayer(player);
-            handViewer.SetSource(GameItems.DeckViewer.Source.Hand, rebuild: true);
+            handViewer.SetSource(GameItems.DeckViewer.Source.Hand, rebuild: false);
+            handViewer.RebuildSmart(); // Use smart rebuild to smoothly add new cards
         }
 
         if (drawPileViewer != null)
@@ -350,6 +355,38 @@ public class RoundManager : MonoBehaviour
             discardPileViewer.SetPlayer(player);
             discardPileViewer.SetSource(GameItems.DeckViewer.Source.DiscardPile, rebuild: true);
         }
+    }
+
+    /// <summary>
+    /// Hides all bezier arrows from all cards in hand.
+    /// Called when turn ends or cards are being cleared.
+    /// </summary>
+    private void HideAllCardArrows()
+    {
+        if (handViewer == null) return;
+
+        var cardRenders = handViewer.GetRenders();
+        
+        foreach (var cardRender in cardRenders)
+        {
+            if (cardRender == null) continue;
+
+            // Try to get the BezierCardArrowHelper and hide it
+            var arrowHelper = cardRender.GetComponent<GameItems.Cards.Helpers.BezierCardArrowHelper>();
+            if (arrowHelper != null)
+            {
+                arrowHelper.StopDrawing();
+            }
+            
+            // Clear enemy hover sprites from each card's animation helper
+            var animHelper = cardRender.GetComponent<GameItems.Cards.Helpers.CardAnimationHelper>();
+            if (animHelper != null)
+            {
+                animHelper.ClearEnemyHoverSprites();
+            }
+        }
+
+        Debug.Log($"[RoundManager] Hid arrows for {cardRenders.Count} cards");
     }
 
     // -------------------------------------------------------

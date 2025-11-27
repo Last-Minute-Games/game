@@ -91,16 +91,24 @@ namespace GameItems.Cards.Helpers
                 return;
             }
 
-            // Decide between dragging card vs showing arrow
-            // if (card.targetRule == TargetRule.Enemy)
-            // {
-            //     animHelper?.DragFollowMouseWithArrow(card, cursorPos);
-            // }
-            // else
-            // {
-            //     animHelper?.DragFollowMouseWithCard(card, cursorPos);
-            // }
-            animHelper?.DragFollowMouseWithArrow(card, cursorPos);
+            // Decide between dragging card vs showing arrow based on target rule
+            if (card.Data != null)
+            {
+                TargetRule targetRule = card.Data.GetDominatingTargetRule();
+                if (targetRule == TargetRule.Enemy)
+                {
+                    animHelper?.DragFollowMouseWithArrow(card, cursorPos);
+                }
+                else
+                {
+                    animHelper?.DragFollowMouseWithCard(card, cursorPos);
+                }
+            }
+            else
+            {
+                // Default to no arrow if no data
+                animHelper?.DragFollowMouseWithCard(card, cursorPos);
+            }
 
             // Play drag sound only once per drag session
             if (!dragSoundPlayed)
@@ -159,6 +167,9 @@ namespace GameItems.Cards.Helpers
             }
 
             animHelper?.HoverExit(card);
+            
+            // Clear enemy hover sprites in case the card had arrow showing
+            animHelper?.ClearEnemyHoverSprites();
         }
     }
 }

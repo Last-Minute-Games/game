@@ -4,11 +4,13 @@ using TMPro;
 using DG.Tweening;
 using GameItems.Cards;
 
-[RequireComponent(typeof(Animator))]
-[RequireComponent(typeof(SpriteRenderer))]
-[RequireComponent(typeof(BoxCollider2D))]
-public class EnemyRender : MonoBehaviour
+namespace Entities.Enemies.Render
 {
+    [RequireComponent(typeof(Animator))]
+    [RequireComponent(typeof(SpriteRenderer))]
+    [RequireComponent(typeof(BoxCollider2D))]
+    public class EnemyRender : MonoBehaviour
+    {
     [Header("Runtime")] public EnemyData data;
 
     [Header("Intent Icon")]
@@ -41,6 +43,22 @@ public class EnemyRender : MonoBehaviour
     [Tooltip("How far the text moves up during animation")]
     public float moveNameFloatDistance = -0.04f;
 
+    [Header("Hover Sprite")]
+    [Tooltip("Sprite to show when enemy is hovered over")]
+    public Sprite hoverSprite;
+    [Tooltip("Y offset for hover sprite position")]
+    public float hoverSpriteYOffset;
+    [Tooltip("Sorting layer for hover sprite")]
+    public string hoverSpriteSortingLayer = "Default";
+    [Tooltip("Sorting order offset from enemy sprite")]
+    public int hoverSpriteSortingOrderOffset = 5;
+    
+    [Header("Hover Sprite Animation")]
+    [Tooltip("Maximum scale multiplier when hover sprite expands")]
+    public float hoverSpriteMaxScale = 1.1f;
+    [Tooltip("Duration of one pulse cycle (expand + contract)")]
+    public float hoverSpritePulseDuration = 1f;
+
     [Header("Animator States (Controller-driven)")]
     public string idleState = "Idle";
 
@@ -60,6 +78,10 @@ public class EnemyRender : MonoBehaviour
     
     private TMP_Text _moveNameText;
     private GameObject _moveNameObject;
+    
+    private SpriteRenderer _hoverSprite;
+    private GameObject _hoverSpriteObject;
+    private Tween _hoverSpritePulseTween; // Tracks the pulse animation
 
     // Manual sprite animation state
     private SpriteAnimation _currentAnimation;
@@ -126,6 +148,19 @@ public class EnemyRender : MonoBehaviour
             moveNameRenderer.sortingLayerName = intentIconSortingLayer;
             moveNameRenderer.sortingOrder = _sprite.sortingOrder + 20; // Above everything else
         }
+        
+        // Create hover sprite GameObject as child
+        _hoverSpriteObject = new GameObject("HoverSprite");
+        _hoverSpriteObject.transform.SetParent(transform);
+        _hoverSpriteObject.transform.localPosition = new Vector3(0f, hoverSpriteYOffset, 0f);
+        _hoverSpriteObject.transform.localScale = Vector3.one;
+        
+        // Add SpriteRenderer for hover sprite
+        _hoverSprite = _hoverSpriteObject.AddComponent<SpriteRenderer>();
+        _hoverSprite.sortingLayerName = hoverSpriteSortingLayer;
+        _hoverSprite.sortingOrder = _sprite.sortingOrder + hoverSpriteSortingOrderOffset;
+        _hoverSprite.color = new Color32(251,236,93, 150);
+        _hoverSprite.enabled = false; // Hidden by default
     }
 
     private void Update()
@@ -161,7 +196,7 @@ public class EnemyRender : MonoBehaviour
     }
 
 
-    public void Bind(EnemyData enemyData)
+    public void Bind(EnemyData enemyData, Sprite hoverSpriteOverride = null, float? hoverSpriteYOffsetOverride = null, Vector3? intentIconOffsetOverride = null, float? intentIconSizeOverride = null, int? hoverSpriteSortingOrderOffsetOverride = null)
     {
         data = enemyData;
         data.worldPosition = transform.position;
@@ -182,6 +217,56 @@ public class EnemyRender : MonoBehaviour
             
             // Apply scale offset
             transform.localScale = Vector3.Scale(transform.localScale, data.scaleOffset);
+        }
+        
+        // Apply render settings from EnemyManager (passed as parameters)
+        if (hoverSpriteOverride != null)
+        {
+            hoverSprite = hoverSpriteOverride;
+        }
+        
+        if (hoverSpriteYOffsetOverride.HasValue)
+        {
+            hoverSpriteYOffset = hoverSpriteYOffsetOverride.Value;
+            
+            // Update hover sprite position with new Y offset
+            if (_hoverSpriteObject != null)
+            {
+                _hoverSpriteObject.transform.localPosition = new Vector3(0f, hoverSpriteYOffset, 0f);
+            }
+        }
+        
+        if (intentIconOffsetOverride.HasValue)
+        {
+            intentIconOffset = intentIconOffsetOverride.Value;
+            
+            // Update intent icon object with new settings
+            if (_intentIconObject != null)
+            {
+                _intentIconObject.transform.localPosition = intentIconOffset;
+            }
+        }
+        
+        if (intentIconSizeOverride.HasValue)
+        {
+            intentIconSize = intentIconSizeOverride.Value;
+            
+            // Update intent icon object with new settings
+            if (_intentIconObject != null)
+            {
+                _intentIconObject.transform.localScale = Vector3.one * intentIconSize;
+            }
+        }
+        
+        if (hoverSpriteSortingOrderOffsetOverride.HasValue)
+        {
+            hoverSpriteSortingOrderOffset = hoverSpriteSortingOrderOffsetOverride.Value;
+            
+            // Update hover sprite sorting order
+            if (_hoverSprite != null)
+            {
+                _hoverSprite.sortingOrder = _sprite.sortingOrder + hoverSpriteSortingOrderOffset;
+            }
         }
 
         _health = GetComponentInChildren<EnemyHealth>();
@@ -450,4 +535,94 @@ public class EnemyRender : MonoBehaviour
 
     // Remove all the old Playables and Animator-related methods
     // ... (CrossFadeState, HasState, PlayClip, ReturnToIdleAfterClip, EnsureGraph, StopGraph)
+
+
+    /// <summary>
+    /// Shows the hover sprite overlay on the enemy.
+    /// </summary>
+    public void ShowHoverSprite()
+    {
+        if (_hoverSprite != null && hoverSprite != null)
+        {
+            // Only start animation if sprite wasn't already visible
+            bool wasAlreadyVisible = _hoverSprite.enabled;
+            
+            _hoverSprite.sprite = hoverSprite;
+            _hoverSprite.enabled = true;
+            
+            // Start pulse animation only if this is a new show (not already visible)
+            if (!wasAlreadyVisible)
+            {
+                StartHoverSpritePulseAnimation();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Hides the hover sprite overlay from the enemy.
+    /// </summary>
+    public void HideHoverSprite()
+    {
+        if (_hoverSprite != null)
+        {
+            _hoverSprite.enabled = false;
+        }
+        
+        // Stop pulse animation
+        StopHoverSpritePulseAnimation();
+    }
+
+    /// <summary>
+    /// Starts the looping pulse animation for the hover sprite.
+    /// </summary>
+    private void StartHoverSpritePulseAnimation()
+    {
+        if (_hoverSpriteObject == null)
+            return;
+        
+        // Stop any existing pulse tween
+        StopHoverSpritePulseAnimation();
+        
+        // Create a looping sequence that expands then contracts
+        Sequence pulseSequence = DOTween.Sequence();
+        
+        // Expand to max scale (first half of pulse)
+        pulseSequence.Append(
+            _hoverSpriteObject.transform
+                .DOScale(Vector3.one * hoverSpriteMaxScale, hoverSpritePulseDuration * 0.5f)
+                .SetEase(Ease.InOutSine)
+        );
+        
+        // Contract back to normal scale (second half of pulse)
+        pulseSequence.Append(
+            _hoverSpriteObject.transform
+                .DOScale(Vector3.one, hoverSpritePulseDuration * 0.5f)
+                .SetEase(Ease.InOutSine)
+        );
+        
+        // Loop forever
+        pulseSequence.SetLoops(-1, LoopType.Restart);
+        
+        // Store reference so we can kill it later
+        _hoverSpritePulseTween = pulseSequence;
+    }
+
+    /// <summary>
+    /// Stops the hover sprite pulse animation.
+    /// </summary>
+    private void StopHoverSpritePulseAnimation()
+    {
+        if (_hoverSpritePulseTween != null)
+        {
+            _hoverSpritePulseTween.Kill();
+            _hoverSpritePulseTween = null;
+        }
+        
+        // Reset scale to normal
+        if (_hoverSpriteObject != null)
+        {
+            _hoverSpriteObject.transform.localScale = Vector3.one;
+        }
+    }
+    }
 }

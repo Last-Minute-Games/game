@@ -415,6 +415,35 @@ namespace GameItems
             int totalCards = cardsToAnimate.Count;
             int completedCards = 0;
 
+            // Hide all arrows and reset card states before animating discard
+            foreach (var card in cardsToAnimate)
+            {
+                if (card == null) continue;
+                
+                var arrowHelper = card.GetComponent<BezierCardArrowHelper>();
+                if (arrowHelper != null)
+                {
+                    arrowHelper.StopDrawing();
+                }
+                
+                // Clear enemy hover sprites
+                var animHelper = card.GetComponent<CardAnimationHelper>();
+                if (animHelper != null)
+                {
+                    animHelper.ClearEnemyHoverSprites();
+                }
+                
+                // Exit hover state and reset scale to prevent exponential size during discard
+                var fxHelper = card.GetComponent<CardFXHelper>();
+                if (fxHelper != null)
+                {
+                    fxHelper.OnCardExit(card);
+                }
+                
+                // Kill any existing tweens on this card to prevent conflicts
+                card.transform.DOKill();
+            }
+
             // Clear the _renders list immediately so rebuilds won't interfere
             _renders.Clear();
 
