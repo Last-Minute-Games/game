@@ -438,8 +438,12 @@ public class RoundManager : MonoBehaviour
     // -------------------------------------------------------
     private void HandlePlayerWin()
     {
-        Debug.Log("🏆 Player Victory!");
+        Debug.Log("[RoundManager] ============================================");
+        Debug.Log("[RoundManager] 🏆 PLAYER VICTORY!");
+        Debug.Log("[RoundManager] ============================================");
 
+        // Advance day flag (this will trigger auto-save)
+        Debug.Log("[RoundManager] Calling AdvanceDayFlag() after victory...");
         AdvanceDayFlag();
 
         // Fade screen + show text
@@ -449,15 +453,19 @@ public class RoundManager : MonoBehaviour
         // TODO: update timer shit
         var clock = FindObjectOfType<ClockTimer>();
         if (clock != null)
+        {
             clock.AddTime(10f); // TODO: adjust reward amount
+            Debug.Log("[RoundManager] Added 10 seconds to clock timer as reward");
+        }
         
         // Check if we need to play day five cutscene
         if (GameFlags.HasFlag("day.five") && !DayFiveCutsceneManager.ShouldPlayCutscene())
         {
-            Debug.Log("[RoundManager] Day five completed - marking cutscene to play");
+            Debug.Log("[RoundManager] 🎬 Day five completed - marking cutscene to play");
             DayFiveCutsceneManager.TriggerDayFiveCutscene();
         }
         
+        Debug.Log("[RoundManager] Starting return to overworld sequence...");
         StartCoroutine(ReturnToOverworldDelayed());
     }
 
@@ -466,8 +474,12 @@ public class RoundManager : MonoBehaviour
     // -------------------------------------------------------
     private void HandlePlayerLose()
     {
-        Debug.Log("❌ Player Defeat!");
+        Debug.Log("[RoundManager] ============================================");
+        Debug.Log("[RoundManager] ❌ PLAYER DEFEAT!");
+        Debug.Log("[RoundManager] ============================================");
 
+        // Advance day flag (this will trigger auto-save)
+        Debug.Log("[RoundManager] Calling AdvanceDayFlag() after defeat...");
         AdvanceDayFlag();
 
         if (endScreenUI != null)
@@ -476,15 +488,19 @@ public class RoundManager : MonoBehaviour
         // TODO: wrong todo just ummm timer change flag shit
         var clock = FindObjectOfType<ClockTimer>();
         if (clock != null)
+        {
             clock.RemoveTime(100f); // TODO: adjust penalty amount
+            Debug.Log("[RoundManager] Removed 100 seconds from clock timer as penalty");
+        }
         
         // Check if we need to play day five cutscene (even on loss)
         if (GameFlags.HasFlag("day.five") && !DayFiveCutsceneManager.ShouldPlayCutscene())
         {
-            Debug.Log("[RoundManager] Day five completed (loss) - marking cutscene to play");
+            Debug.Log("[RoundManager] 🎬 Day five completed (loss) - marking cutscene to play");
             DayFiveCutsceneManager.TriggerDayFiveCutscene();
         }
         
+        Debug.Log("[RoundManager] Starting return to overworld sequence...");
         StartCoroutine(ReturnToOverworldDelayed());
     }
 
@@ -522,34 +538,53 @@ public class RoundManager : MonoBehaviour
     // Day flags now auto-save when set (implemented in GameFlags.SetFlag)
     private void AdvanceDayFlag()
     {
-        Debug.Log("[RoundManager] Advancing day flag");
+        Debug.Log("[RoundManager] ============================================");
+        Debug.Log("[RoundManager] AdvanceDayFlag() called - Checking day progression");
+        
+        // Log current day state
+        Debug.Log($"[RoundManager] Current day flags: " +
+                  $"day.one={GameFlags.HasFlag("day.one")}, " +
+                  $"day.two={GameFlags.HasFlag("day.two")}, " +
+                  $"day.three={GameFlags.HasFlag("day.three")}, " +
+                  $"day.four={GameFlags.HasFlag("day.four")}, " +
+                  $"day.five={GameFlags.HasFlag("day.five")}");
         
         if (GameFlags.HasFlag("day.one") && !GameFlags.HasFlag("day.two"))
         {
+            Debug.Log("[RoundManager] 📅 DAY PROGRESSION: day.one → day.two");
             GameFlags.SetFlag("day.two");
-            Debug.Log("[RoundManager] Advanced to day.two (auto-saved)");
+            Debug.Log("[RoundManager] ✅ Successfully advanced to day.two (auto-saved)");
+            Debug.Log("[RoundManager] ============================================");
             return;
         }
         if (GameFlags.HasFlag("day.two") && !GameFlags.HasFlag("day.three"))
         {
+            Debug.Log("[RoundManager] 📅 DAY PROGRESSION: day.two → day.three");
             GameFlags.SetFlag("day.three");
-            Debug.Log("[RoundManager] Advanced to day.three (auto-saved)");
+            Debug.Log("[RoundManager] ✅ Successfully advanced to day.three (auto-saved)");
+            Debug.Log("[RoundManager] ============================================");
             return;
         }
         if (GameFlags.HasFlag("day.three") && !GameFlags.HasFlag("day.four"))
         {
+            Debug.Log("[RoundManager] 📅 DAY PROGRESSION: day.three → day.four");
             GameFlags.SetFlag("day.four");
-            Debug.Log("[RoundManager] Advanced to day.four (auto-saved)");
+            Debug.Log("[RoundManager] ✅ Successfully advanced to day.four (auto-saved)");
+            Debug.Log("[RoundManager] ============================================");
             return;
         }
         if (GameFlags.HasFlag("day.four") && !GameFlags.HasFlag("day.five"))
         {
+            Debug.Log("[RoundManager] 📅 DAY PROGRESSION: day.four → day.five ⭐ FINAL DAY!");
             GameFlags.SetFlag("day.five");
-            Debug.Log("[RoundManager] Advanced to day.five (auto-saved) - FINAL DAY!");
+            Debug.Log("[RoundManager] ✅ Successfully advanced to day.five (auto-saved)");
+            Debug.Log("[RoundManager] 🎉 FINAL DAY REACHED - Special cutscene will trigger!");
+            Debug.Log("[RoundManager] ============================================");
             return;
         }
 
         // Already at day five - no more progression
-        Debug.Log("[RoundManager] Already at maximum day (day.five)");
+        Debug.Log("[RoundManager] ⚠️ Already at maximum day (day.five) - no progression");
+        Debug.Log("[RoundManager] ============================================");
     }
 }
