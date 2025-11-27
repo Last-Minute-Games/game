@@ -1,6 +1,7 @@
 namespace GameItems.Cards.Helpers
 {
     using DG.Tweening;
+    using Entities.Enemies.Render;
     using UnityEngine;
 
     public class CardAnimationHelper : MonoBehaviour

@@ -1,14 +1,17 @@
 using Entities.Enemies.Helpers;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using TMPro;
 using DG.Tweening;
 using GameItems.Cards;
 
-[RequireComponent(typeof(Animator))]
-[RequireComponent(typeof(SpriteRenderer))]
-[RequireComponent(typeof(BoxCollider2D))]
-public class EnemyRender : MonoBehaviour
+namespace Entities.Enemies.Render
 {
+    [RequireComponent(typeof(Animator))]
+    [RequireComponent(typeof(SpriteRenderer))]
+    [RequireComponent(typeof(BoxCollider2D))]
+    public class EnemyRender : MonoBehaviour
+    {
     [Header("Runtime")] public EnemyData data;
 
     [Header("Intent Icon")]
@@ -41,6 +44,14 @@ public class EnemyRender : MonoBehaviour
     [Tooltip("How far the text moves up during animation")]
     public float moveNameFloatDistance = -0.04f;
 
+    [Header("Hover Sprite")]
+    [Tooltip("Sprite to show when enemy is hovered over")]
+    public Sprite hoverSprite;
+    [Tooltip("Sorting layer for hover sprite")]
+    public string hoverSpriteSortingLayer = "Default";
+    [Tooltip("Sorting order offset from enemy sprite")]
+    public int hoverSpriteSortingOrderOffset = 5;
+
     [Header("Animator States (Controller-driven)")]
     public string idleState = "Idle";
 
@@ -60,6 +71,9 @@ public class EnemyRender : MonoBehaviour
     
     private TMP_Text _moveNameText;
     private GameObject _moveNameObject;
+    
+    private SpriteRenderer _hoverSprite;
+    private GameObject _hoverSpriteObject;
 
     // Manual sprite animation state
     private SpriteAnimation _currentAnimation;
@@ -126,6 +140,33 @@ public class EnemyRender : MonoBehaviour
             moveNameRenderer.sortingLayerName = intentIconSortingLayer;
             moveNameRenderer.sortingOrder = _sprite.sortingOrder + 20; // Above everything else
         }
+        
+        // Create hover sprite GameObject as child
+        _hoverSpriteObject = new GameObject("HoverSprite");
+        _hoverSpriteObject.transform.SetParent(transform);
+        _hoverSpriteObject.transform.localPosition = Vector3.zero;
+        _hoverSpriteObject.transform.localScale = Vector3.one;
+        
+        // Add SpriteRenderer for hover sprite
+        _hoverSprite = _hoverSpriteObject.AddComponent<SpriteRenderer>();
+        _hoverSprite.sortingLayerName = hoverSpriteSortingLayer;
+        _hoverSprite.sortingOrder = _sprite.sortingOrder + hoverSpriteSortingOrderOffset;
+        _hoverSprite.enabled = false; // Hidden by default
+        
+        // Add EventTrigger to handle mouse events
+        var eventTrigger = gameObject.AddComponent<EventTrigger>();
+        
+        // Handle mouse enter
+        var enterEntry = new EventTrigger.Entry();
+        enterEntry.eventID = EventTriggerType.PointerEnter;
+        enterEntry.callback.AddListener((_) => OnMouseEnter());
+        eventTrigger.triggers.Add(enterEntry);
+        
+        // Handle mouse exit
+        var exitEntry = new EventTrigger.Entry();
+        exitEntry.eventID = EventTriggerType.PointerExit;
+        exitEntry.callback.AddListener((_) => OnMouseExit());
+        eventTrigger.triggers.Add(exitEntry);
     }
 
     private void Update()
@@ -450,4 +491,44 @@ public class EnemyRender : MonoBehaviour
 
     // Remove all the old Playables and Animator-related methods
     // ... (CrossFadeState, HasState, PlayClip, ReturnToIdleAfterClip, EnsureGraph, StopGraph)
+
+    /// <summary>
+    /// Called when the mouse enters the enemy's collider.
+    /// </summary>
+    private void OnMouseEnter()
+    {
+        ShowHoverSprite();
+    }
+
+    /// <summary>
+    /// Called when the mouse exits the enemy's collider.
+    /// </summary>
+    private void OnMouseExit()
+    {
+        HideHoverSprite();
+    }
+
+    /// <summary>
+    /// Shows the hover sprite overlay on the enemy.
+    /// </summary>
+    public void ShowHoverSprite()
+    {
+        if (_hoverSprite != null && hoverSprite != null)
+        {
+            _hoverSprite.sprite = hoverSprite;
+            _hoverSprite.enabled = true;
+        }
+    }
+
+    /// <summary>
+    /// Hides the hover sprite overlay from the enemy.
+    /// </summary>
+    public void HideHoverSprite()
+    {
+        if (_hoverSprite != null)
+        {
+            _hoverSprite.enabled = false;
+        }
+    }
+    }
 }
