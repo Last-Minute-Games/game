@@ -450,6 +450,14 @@ public class RoundManager : MonoBehaviour
         var clock = FindObjectOfType<ClockTimer>();
         if (clock != null)
             clock.AddTime(10f); // TODO: adjust reward amount
+        
+        // Check if we need to play day five cutscene
+        if (GameFlags.HasFlag("day.five") && !DayFiveCutsceneManager.ShouldPlayCutscene())
+        {
+            Debug.Log("[RoundManager] Day five completed - marking cutscene to play");
+            DayFiveCutsceneManager.TriggerDayFiveCutscene();
+        }
+        
         StartCoroutine(ReturnToOverworldDelayed());
     }
 
@@ -469,6 +477,14 @@ public class RoundManager : MonoBehaviour
         var clock = FindObjectOfType<ClockTimer>();
         if (clock != null)
             clock.RemoveTime(100f); // TODO: adjust penalty amount
+        
+        // Check if we need to play day five cutscene (even on loss)
+        if (GameFlags.HasFlag("day.five") && !DayFiveCutsceneManager.ShouldPlayCutscene())
+        {
+            Debug.Log("[RoundManager] Day five completed (loss) - marking cutscene to play");
+            DayFiveCutsceneManager.TriggerDayFiveCutscene();
+        }
+        
         StartCoroutine(ReturnToOverworldDelayed());
     }
 
@@ -476,33 +492,64 @@ public class RoundManager : MonoBehaviour
     {
         yield return new WaitForSeconds(3f);
 
+        // Check if day five cutscene should play
+        if (DayFiveCutsceneManager.ShouldPlayCutscene())
+        {
+            Debug.Log("[RoundManager] Day five cutscene pending - finding manager to play it");
+            
+            // Try to find the cutscene manager in the scene
+            DayFiveCutsceneManager cutsceneManager = FindObjectOfType<DayFiveCutsceneManager>();
+            
+            if (cutsceneManager != null)
+            {
+                Debug.Log("[RoundManager] Playing day five cutscene before returning to overworld");
+                yield return StartCoroutine(cutsceneManager.PlayCutscene());
+                yield break; // Cutscene will handle scene transition
+            }
+            else
+            {
+                Debug.LogWarning("[RoundManager] DayFiveCutsceneManager not found in scene - skipping cutscene");
+                DayFiveCutsceneManager.ResetCutsceneFlag(); // Clear flag if manager missing
+            }
+        }
+
+        // Normal return to overworld
+        Debug.Log("[RoundManager] Returning to Overworld");
         UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
     }
 
     // handle advancing day flags
+    // Day flags now auto-save when set (implemented in GameFlags.SetFlag)
     private void AdvanceDayFlag()
     {
-        if (GameFlags.HasFlag("day.one"))
+        Debug.Log("[RoundManager] Advancing day flag");
+        
+        if (GameFlags.HasFlag("day.one") && !GameFlags.HasFlag("day.two"))
         {
             GameFlags.SetFlag("day.two");
+            Debug.Log("[RoundManager] Advanced to day.two (auto-saved)");
             return;
         }
-        if (GameFlags.HasFlag("day.two"))
+        if (GameFlags.HasFlag("day.two") && !GameFlags.HasFlag("day.three"))
         {
             GameFlags.SetFlag("day.three");
+            Debug.Log("[RoundManager] Advanced to day.three (auto-saved)");
             return;
         }
-        if (GameFlags.HasFlag("day.three"))
+        if (GameFlags.HasFlag("day.three") && !GameFlags.HasFlag("day.four"))
         {
             GameFlags.SetFlag("day.four");
+            Debug.Log("[RoundManager] Advanced to day.four (auto-saved)");
             return;
         }
-        if (GameFlags.HasFlag("day.four"))
+        if (GameFlags.HasFlag("day.four") && !GameFlags.HasFlag("day.five"))
         {
             GameFlags.SetFlag("day.five");
+            Debug.Log("[RoundManager] Advanced to day.five (auto-saved) - FINAL DAY!");
             return;
         }
 
-        // Already maxed → do nothing
+        // Already at day five - no more progression
+        Debug.Log("[RoundManager] Already at maximum day (day.five)");
     }
 }

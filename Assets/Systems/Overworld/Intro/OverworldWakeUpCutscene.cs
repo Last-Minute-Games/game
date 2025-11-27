@@ -243,6 +243,14 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(2f); // Wait for HUD animation to play
             
+            // SET DAY.ONE FLAG - This is the start of the game's day progression
+            // This will automatically trigger a save because day flags auto-save
+            if (!GameFlags.HasFlag("day.one"))
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Setting day.one flag (game start)");
+                GameFlags.SetFlag("day.one");
+            }
+            
             Debug.Log("[OverworldWakeUpCutscene] Complete");
             yield return null;
         }
