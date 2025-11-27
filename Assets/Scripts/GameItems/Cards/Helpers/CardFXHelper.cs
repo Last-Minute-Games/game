@@ -24,6 +24,7 @@ namespace GameItems.Cards.Helpers
         // Draw card onto player hand
         public void OnCardDrawn(CardRender card)
         {
+            Debug.Log($"[CardFXHelper] OnCardDrawn called. Locked: {CardInteraction.Locked}");
             if (CardInteraction.Locked) return;
             if (card == null)
             {
@@ -31,8 +32,19 @@ namespace GameItems.Cards.Helpers
                 return;
             }
 
+            Debug.Log($"[CardFXHelper] OnCardDrawn for '{card.Data?.name ?? "unknown"}'. animHelper: {animHelper != null}, sfxHelper: {sfxHelper != null}");
+            
             animHelper?.AnimateDraw(card);
-            sfxHelper?.PlayDraw();
+            
+            if (sfxHelper != null)
+            {
+                Debug.Log("[CardFXHelper] Calling sfxHelper.PlayDraw()");
+                sfxHelper.PlayDraw();
+            }
+            else
+            {
+                Debug.LogWarning("[CardFXHelper] sfxHelper is NULL! Cannot play draw sound.");
+            }
         }
 
         // When hovering over a card

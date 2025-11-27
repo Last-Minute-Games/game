@@ -73,15 +73,32 @@ public class CardRender : MonoBehaviour,
         _fxHelper = GetComponent<CardFXHelper>();
         if (_fxHelper == null)
         {
+            Debug.LogWarning("[CardRender] CardFXHelper not found on prefab, adding dynamically");
             _fxHelper = gameObject.AddComponent<CardFXHelper>();
+        }
+        else
+        {
+            Debug.Log($"[CardRender] CardFXHelper found on prefab. sfxHelper: {_fxHelper.sfxHelper != null}");
         }
 
         // Ensure sub-helpers are assigned
         if (_fxHelper.sfxHelper == null)
         {
+            Debug.LogWarning("[CardRender] CardSFXHelper is null on CardFXHelper, attempting to find it");
             _fxHelper.sfxHelper = GetComponent<CardSFXHelper>();
             if (_fxHelper.sfxHelper == null)
+            {
+                Debug.LogWarning("[CardRender] CardSFXHelper not found on GameObject, adding new one (drawCue will be missing!)");
                 _fxHelper.sfxHelper = gameObject.AddComponent<CardSFXHelper>();
+            }
+            else
+            {
+                Debug.Log($"[CardRender] Found CardSFXHelper. drawCue assigned: {_fxHelper.sfxHelper.drawCue != null}");
+            }
+        }
+        else
+        {
+            Debug.Log($"[CardRender] CardSFXHelper already assigned. drawCue assigned: {_fxHelper.sfxHelper.drawCue != null}");
         }
 
         if (_fxHelper.animHelper == null)
