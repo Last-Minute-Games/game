@@ -1247,14 +1247,14 @@ RectTransform:
   m_GameObject: {fileID: 923018114}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.24625, y: 1.24625, z: 1.24625}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2094887444}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 400, y: 225.07523}
+  m_AnchoredPosition: {x: -79.03711, y: -44.473236}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &923018116
@@ -1273,6 +1273,7 @@ MonoBehaviour:
   arrowNodePrefab: {fileID: 2703370796993116777, guid: 6a15b15f8b4998c44acf3d69ff4a214b, type: 3}
   arrowNodeNum: 10
   scaleFactor: 0.6
+  arrowHeadTipOffset: 0.5
 --- !u!4 &947236644 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6823311542963491544, guid: 1e3e03f85c82fca4f8bd34a68926ff5c, type: 3}
@@ -2385,6 +2386,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 923018115}
   - {fileID: 1743407015}
   - {fileID: 570844079}
   - {fileID: 562699292}
@@ -2580,4 +2582,3 @@ SceneRoots:
   - {fileID: 998311089}
   - {fileID: 222919206}
   - {fileID: 2094887444}
-  - {fileID: 923018115}
