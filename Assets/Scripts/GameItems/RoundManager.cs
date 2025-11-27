@@ -47,6 +47,14 @@ public class RoundManager : MonoBehaviour
     [System.NonSerialized]
     public System.Action onWaveComplete; // Callback when all enemies in current wave are defeated
 
+    public void ShowWaveStartUI(int waveNumber)
+    {
+        if (roundTransitionUI != null)
+        {
+            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber));
+        }
+    }
+
     // -------------------------------------------------------
     // Public method to trigger victory (called by BattleManager)
     // -------------------------------------------------------
@@ -182,20 +190,12 @@ public class RoundManager : MonoBehaviour
 
         Debug.Log($"--- Wave {waveNumber} - Round {roundNumber} Start ---");
         
-        // Show wave transition UI
-        StartCoroutine(StartWaveWithTransition());
+        // Start the wave setup (without showing transition UI - already shown)
+        StartCoroutine(StartWaveSetup());
     }
     
-    private IEnumerator StartWaveWithTransition()
+    private IEnumerator StartWaveSetup()
     {
-        // Show "WAVE X" transition immediately
-        if (roundTransitionUI != null)
-        {
-            // LATER WAVES → fade in & out
-            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber, isFirstWave: false));
-        }
-        
-        // While the transition is fading in/holding, prepare the next wave
         // Clear player's hand for fresh start in new wave
         if (player != null && player.cardManager != null)
         {
@@ -206,8 +206,8 @@ public class RoundManager : MonoBehaviour
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
         
-        // Draw new hand - this happens while transition is still showing/fading out
-        player.StartTurn(); // This already draws cards!
+        // Draw new hand
+        player.StartTurn();
 
         RefreshDeckViewers();
 
