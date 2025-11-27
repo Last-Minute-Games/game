@@ -424,6 +424,13 @@ namespace GameItems
                 {
                     arrowHelper.StopDrawing();
                 }
+                
+                // Clear enemy hover sprites
+                var animHelper = card.GetComponent<CardAnimationHelper>();
+                if (animHelper != null)
+                {
+                    animHelper.ClearEnemyHoverSprites();
+                }
             }
 
             // Clear the _renders list immediately so rebuilds won't interfere

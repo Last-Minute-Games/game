@@ -167,6 +167,9 @@ namespace GameItems.Cards.Helpers
             }
 
             animHelper?.HoverExit(card);
+            
+            // Clear enemy hover sprites in case the card had arrow showing
+            animHelper?.ClearEnemyHoverSprites();
         }
     }
 }

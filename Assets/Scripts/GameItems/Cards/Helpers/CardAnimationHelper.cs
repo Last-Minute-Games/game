@@ -29,6 +29,7 @@ namespace GameItems.Cards.Helpers
         private Vector3 _originalPosition;
         private bool _isHovering;
         private bool _isInitialized;
+        private EnemyRender _currentHoveredEnemy; // Track currently hovered enemy for hover sprite
 
         private void Start()
         {
@@ -239,21 +240,25 @@ namespace GameItems.Cards.Helpers
             // Get the card's world position (use transform.position for world space)
             Vector3 cardWorldPos = card.transform.position;
             
-            // Check if cursor is hovering over an enemy
-            bool isHoveringEnemy = IsHoveringOverEnemy(cursorPos);
+            // Check which enemy is being hovered (if any)
+            EnemyRender hoveredEnemy = GetHoveredEnemy(cursorPos);
+            bool isHoveringEnemy = hoveredEnemy != null;
+            
+            // Update hover sprite visibility
+            UpdateEnemyHoverSprite(hoveredEnemy);
             
             // Update the arrow with card's world position and cursor screen position
             arrowHelper.UpdateArrow(cardWorldPos, cursorPos, isHoveringEnemy);
         }
         
         /// <summary>
-        /// Checks if the cursor is hovering over a valid enemy target.
+        /// Gets the enemy currently under the cursor, if any.
         /// </summary>
-        private bool IsHoveringOverEnemy(Vector2 screenPosition)
+        private EnemyRender GetHoveredEnemy(Vector2 screenPosition)
         {
             Camera cam = ResolveCamera();
             if (cam == null)
-                return false;
+                return null;
 
             // Convert screen position to world position
             Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(cam.transform.position.z)));
@@ -269,11 +274,44 @@ namespace GameItems.Cards.Helpers
                 var enemyRender = collider.GetComponent<EnemyRender>();
                 if (enemyRender != null && enemyRender.data != null && enemyRender.data.isAlive)
                 {
-                    return true;
+                    return enemyRender;
                 }
             }
 
-            return false;
+            return null;
+        }
+        
+        /// <summary>
+        /// Updates which enemy should show the hover sprite.
+        /// </summary>
+        private void UpdateEnemyHoverSprite(EnemyRender newHoveredEnemy)
+        {
+            // If we switched to a different enemy, hide the previous one's hover sprite
+            if (_currentHoveredEnemy != null && _currentHoveredEnemy != newHoveredEnemy)
+            {
+                _currentHoveredEnemy.HideHoverSprite();
+            }
+            
+            // Show hover sprite on the new enemy (if any)
+            if (newHoveredEnemy != null)
+            {
+                newHoveredEnemy.ShowHoverSprite();
+            }
+            
+            // Update tracked enemy
+            _currentHoveredEnemy = newHoveredEnemy;
+        }
+        
+        /// <summary>
+        /// Clears all enemy hover sprites (call when arrow is hidden).
+        /// </summary>
+        public void ClearEnemyHoverSprites()
+        {
+            if (_currentHoveredEnemy != null)
+            {
+                _currentHoveredEnemy.HideHoverSprite();
+                _currentHoveredEnemy = null;
+            }
         }
 
         // Called when player lets go but target is invalid
@@ -283,6 +321,9 @@ namespace GameItems.Cards.Helpers
 
             // clear arrow
             arrowHelper?.StopDrawing();
+            
+            // clear enemy hover sprites
+            ClearEnemyHoverSprites();
 
             // Return to base scale and original position
             cardTransform.DOScale(_baseScale, 0.15f);
@@ -295,6 +336,9 @@ namespace GameItems.Cards.Helpers
             var cardTransform = card.transform;
 
             arrowHelper?.StopDrawing();
+            
+            // clear enemy hover sprites
+            ClearEnemyHoverSprites();
 
             cardTransform
                 .DOScale(0f, 0.2f)

@@ -404,6 +404,13 @@ public class CardRender : MonoBehaviour,
                     else
                     {
                         Debug.Log("[CardRender] Card successfully played");
+                        
+                        // Clear enemy hover sprites immediately when card is successfully played
+                        if (_fxHelper != null && _fxHelper.animHelper != null)
+                        {
+                            _fxHelper.animHelper.ClearEnemyHoverSprites();
+                        }
+                        
                         // Check if card has EndTurn effect - if so, don't rebuild as EndPlayerTurn handles it
                         bool cardHasEndTurn = CheckForEndTurnEffect();
 

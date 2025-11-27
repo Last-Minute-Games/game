@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Entities.Enemies.Manager;
+using GameItems.Cards.Helpers;
 
 public class RoundManager : MonoBehaviour
 {
@@ -339,7 +340,8 @@ public class RoundManager : MonoBehaviour
         if (handViewer != null && !skipHand)
         {
             handViewer.SetPlayer(player);
-            handViewer.SetSource(GameItems.DeckViewer.Source.Hand, rebuild: true);
+            handViewer.SetSource(GameItems.DeckViewer.Source.Hand, rebuild: false);
+            handViewer.RebuildSmart(); // Use smart rebuild to smoothly add new cards
         }
 
         if (drawPileViewer != null)
@@ -364,6 +366,7 @@ public class RoundManager : MonoBehaviour
         if (handViewer == null) return;
 
         var cardRenders = handViewer.GetRenders();
+        
         foreach (var cardRender in cardRenders)
         {
             if (cardRender == null) continue;
@@ -373,6 +376,13 @@ public class RoundManager : MonoBehaviour
             if (arrowHelper != null)
             {
                 arrowHelper.StopDrawing();
+            }
+            
+            // Clear enemy hover sprites from each card's animation helper
+            var animHelper = cardRender.GetComponent<GameItems.Cards.Helpers.CardAnimationHelper>();
+            if (animHelper != null)
+            {
+                animHelper.ClearEnemyHoverSprites();
             }
         }
 
