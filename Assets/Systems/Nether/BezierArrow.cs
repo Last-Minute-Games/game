@@ -22,6 +22,9 @@ public class BezierArrow : MonoBehaviour
     [Tooltip("The scale multiplier for arrow nodes")]
     public float scaleFactor = 1f;
     
+    [Tooltip("Offset for arrow head tip (distance from center to tip in world units)")]
+    public float arrowHeadTipOffset = 0.5f;
+    
     #endregion
     
     #region Private Fields
@@ -77,23 +80,31 @@ public class BezierArrow : MonoBehaviour
         }
     }
     
+    #endregion
+    
+    #region Public Methods
+    
     /// <summary>
-    /// Executes every frame.
+    /// Shows the arrow and updates it to point from start position to end position (screen space).
     /// </summary>
-    /// @Unity Message | 0 references
-    private void Update()
+    /// <param name="startScreenPos">Start position in screen coordinates</param>
+    /// <param name="endScreenPos">End position in screen coordinates (usually mouse/cursor)</param>
+    public void ShowArrow(Vector2 startScreenPos, Vector2 endScreenPos)
     {
-        // P0 is at the arrow emitter point.
-        this._controlPoints[0] = new Vector2(this._origin.position.x, this._origin.position.y);
+        // P0 is at the arrow start point.
+        this._controlPoints[0] = startScreenPos;
         
-        // P3 is at the mouse position.
-        this._controlPoints[3] = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+        // P3 is at the end point (cursor).
+        this._controlPoints[3] = endScreenPos;
         
         // P1, P2 determines by P0 and P3.
         // P1 = P0 + (P3 - P0) * Vector2(-0.3f, 0.8f)
         // P2 = P0 + (P3 - P0) * Vector2(0.1f, 1.4f)
         this._controlPoints[1] = this._controlPoints[0] + (this._controlPoints[3] - this._controlPoints[0]) * this._controlPointFactors[0];
         this._controlPoints[2] = this._controlPoints[0] + (this._controlPoints[3] - this._controlPoints[0]) * this._controlPointFactors[1];
+        
+        // First pass: Calculate all node positions
+        Vector2[] positions = new Vector2[this._arrowNodes.Count];
         
         for (int i = 0; i < this._arrowNodes.Count; ++i)
         {
@@ -102,16 +113,33 @@ public class BezierArrow : MonoBehaviour
             
             // Cubic Bezier curve
             // B(t) = (1-t)^3 * P0 + 3 * (1-t)^2 * t * P1 + 3 * (1-t) * t^2 * P2 + t^3 * P3
-            this._arrowNodes[i].position =
+            positions[i] =
                 Mathf.Pow(1 - t, 3) * this._controlPoints[0] +
                 3 * (1 - t) * (1 - t) * t * this._controlPoints[1] +
                 3 * (1 - t) * Mathf.Pow(t, 2) * this._controlPoints[2] +
                 Mathf.Pow(t, 3) * this._controlPoints[3];
+        }
+        
+        // For the arrow head (last node), offset it so the tip points at the cursor
+        if (this._arrowNodes.Count > 1)
+        {
+            int lastIndex = this._arrowNodes.Count - 1;
+            // Calculate direction from second-to-last node to last node
+            Vector2 direction = (positions[lastIndex] - positions[lastIndex - 1]).normalized;
+            
+            // Offset the arrow head backward by the tip offset distance
+            positions[lastIndex] -= direction * arrowHeadTipOffset * scaleFactor;
+        }
+        
+        // Second pass: Apply positions, rotations, and scales
+        for (int i = 0; i < this._arrowNodes.Count; ++i)
+        {
+            this._arrowNodes[i].position = positions[i];
             
             // Calculates rotations for each arrow node.
             if (i > 0)
             {
-                var euler = new Vector3(0, 0, Vector2.SignedAngle(Vector2.up, this._arrowNodes[i].position - this._arrowNodes[i - 1].position));
+                var euler = new Vector3(0, 0, Vector2.SignedAngle(Vector2.up, positions[i] - positions[i - 1]));
                 this._arrowNodes[i].rotation = Quaternion.Euler(euler);
             }
             
@@ -122,6 +150,14 @@ public class BezierArrow : MonoBehaviour
         
         // The first arrow node's rotation.
         this._arrowNodes[0].transform.rotation = this._arrowNodes[1].transform.rotation;
+    }
+    
+    /// <summary>
+    /// Hides the arrow by moving all nodes offscreen.
+    /// </summary>
+    public void HideArrow()
+    {
+        this._arrowNodes.ForEach(n => n.position = new Vector2(-1000, -1000));
     }
     
     #endregion

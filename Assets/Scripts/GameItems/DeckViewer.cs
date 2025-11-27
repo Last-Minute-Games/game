@@ -415,6 +415,17 @@ namespace GameItems
             int totalCards = cardsToAnimate.Count;
             int completedCards = 0;
 
+            // Hide all arrows before animating discard
+            foreach (var card in cardsToAnimate)
+            {
+                if (card == null) continue;
+                var arrowHelper = card.GetComponent<BezierCardArrowHelper>();
+                if (arrowHelper != null)
+                {
+                    arrowHelper.StopDrawing();
+                }
+            }
+
             // Clear the _renders list immediately so rebuilds won't interfere
             _renders.Clear();
 

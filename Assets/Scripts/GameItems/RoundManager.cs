@@ -229,6 +229,9 @@ public class RoundManager : MonoBehaviour
 
         Debug.Log("Player turn ended.");
 
+        // Hide all arrows from any cards that might be mid-drag
+        HideAllCardArrows();
+
         // Animate cards discarding BEFORE clearing data
         if (handViewer != null && handViewer.GetRenders().Count > 0)
         {
@@ -350,6 +353,30 @@ public class RoundManager : MonoBehaviour
             discardPileViewer.SetPlayer(player);
             discardPileViewer.SetSource(GameItems.DeckViewer.Source.DiscardPile, rebuild: true);
         }
+    }
+
+    /// <summary>
+    /// Hides all bezier arrows from all cards in hand.
+    /// Called when turn ends or cards are being cleared.
+    /// </summary>
+    private void HideAllCardArrows()
+    {
+        if (handViewer == null) return;
+
+        var cardRenders = handViewer.GetRenders();
+        foreach (var cardRender in cardRenders)
+        {
+            if (cardRender == null) continue;
+
+            // Try to get the BezierCardArrowHelper and hide it
+            var arrowHelper = cardRender.GetComponent<GameItems.Cards.Helpers.BezierCardArrowHelper>();
+            if (arrowHelper != null)
+            {
+                arrowHelper.StopDrawing();
+            }
+        }
+
+        Debug.Log($"[RoundManager] Hid arrows for {cardRenders.Count} cards");
     }
 
     // -------------------------------------------------------

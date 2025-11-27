@@ -1232,7 +1232,7 @@ GameObject:
   - component: {fileID: 923018115}
   - component: {fileID: 923018116}
   m_Layer: 0
-  m_Name: ArrowEmitter
+  m_Name: GlobalBezierArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1245,16 +1245,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 923018114}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.24625, y: 1.24625, z: 1.24625}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2094887444}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 400, y: 225.07523}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &923018116
@@ -1269,10 +1269,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 978a8fe39a707624b81eff4c774df856, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  ArrowHeadPrefab: {fileID: 3815801001548701079, guid: e86b24ec47409194aa4079c13b2ca8be, type: 3}
-  ArrowNodePrefab: {fileID: 2703370796993116777, guid: 6a15b15f8b4998c44acf3d69ff4a214b, type: 3}
+  arrowHeadPrefab: {fileID: 3815801001548701079, guid: e86b24ec47409194aa4079c13b2ca8be, type: 3}
+  arrowNodePrefab: {fileID: 2703370796993116777, guid: 6a15b15f8b4998c44acf3d69ff4a214b, type: 3}
   arrowNodeNum: 10
-  scaleFactor: 0.01
+  scaleFactor: 0.6
 --- !u!4 &947236644 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6823311542963491544, guid: 1e3e03f85c82fca4f8bd34a68926ff5c, type: 3}
@@ -2390,7 +2390,6 @@ RectTransform:
   - {fileID: 562699292}
   - {fileID: 133247665}
   - {fileID: 811839047}
-  - {fileID: 923018115}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2581,3 +2580,4 @@ SceneRoots:
   - {fileID: 998311089}
   - {fileID: 222919206}
   - {fileID: 2094887444}
+  - {fileID: 923018115}

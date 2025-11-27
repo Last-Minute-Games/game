@@ -5,7 +5,7 @@ namespace GameItems.Cards.Helpers
 
     public class CardAnimationHelper : MonoBehaviour
     {
-        [Header("Arrow Helper")] public CardArrowHelper arrowHelper;
+        [Header("Arrow Helper")] public BezierCardArrowHelper arrowHelper;
 
         [Header("Visual Settings")] 
         public float hoverScale = 1.1f;
@@ -83,6 +83,9 @@ namespace GameItems.Cards.Helpers
                 _isHovering = true;
             }
 
+            // Ensure arrow is hidden during hover (only show during drag)
+            arrowHelper?.StopDrawing();
+
             // Scale up and move up (always relative to base scale)
             cardTransform.DOScale(_baseScale * hoverScale, 0.15f).SetEase(Ease.OutQuad);
             cardTransform.DOLocalMove(_originalPosition + new Vector3(0, hoverYOffset, 0), 0.15f).SetEase(Ease.OutQuad);
@@ -96,12 +99,14 @@ namespace GameItems.Cards.Helpers
             var cardTransform = card.transform;
             _isHovering = false;
 
+            // Hide arrow if it's showing
+            arrowHelper?.StopDrawing();
+
             // Return to base scale and original position
             cardTransform.DOScale(_baseScale, 0.15f).SetEase(Ease.OutQuad);
             cardTransform.DOLocalMove(_originalPosition, 0.15f).SetEase(Ease.OutQuad);
         }
 
-        // Called by FXHelper.OnCardSelect()
         // Called by FXHelper.OnCardSelect()
         public void SelectVisuals(CardRender card, bool updatePosition = true)
         {
@@ -147,6 +152,35 @@ namespace GameItems.Cards.Helpers
 
             // Scale to select size (always relative to base scale)
             cardTransform.DOScale(_baseScale * selectScale, 0.15f);
+            
+            // Check if this is an enemy-targeting card
+            bool isEnemyTargeting = false;
+            if (card.Data != null)
+            {
+                TargetRule targetRule = card.Data.GetDominatingTargetRule();
+                isEnemyTargeting = targetRule == TargetRule.Enemy;
+            }
+            
+            // For enemy-targeting cards, keep them in the elevated hover position
+            if (isEnemyTargeting)
+            {
+                // Move to hover position (slightly elevated)
+                cardTransform.DOLocalMove(_originalPosition + new Vector3(0, hoverYOffset, 0), 0.15f).SetEase(Ease.OutQuad);
+                
+                // Start arrow drawing
+                if (arrowHelper != null)
+                {
+                    arrowHelper.StartDrawing();
+                }
+            }
+            else
+            {
+                // For non-enemy cards, ensure arrow is hidden
+                if (arrowHelper != null)
+                {
+                    arrowHelper.StopDrawing();
+                }
+            }
         }
 
         // Basic drag following cursor (NO ARROW)
@@ -191,23 +225,21 @@ namespace GameItems.Cards.Helpers
             cardTransform.localScale = Vector3.Lerp(cardTransform.localScale, _baseScale * dragScale, 0.25f);
         }
 
-        // Drag following cursor WITH ARROW (Enemy targeting)
+        // Drag with arrow (Enemy targeting) - card stays in place, only arrow moves
         public void DragFollowMouseWithArrow(CardRender card, Vector2 cursorPos)
         {
-            DragFollowMouseWithCard(card, cursorPos);
-
+            // Card stays in place - don't move it
+            // Only update the bezier arrow
             if (arrowHelper == null)
             {
                 return;
             }
 
-            var cam = ResolveCamera();
-            Vector3 screenPos = cam != null
-                ? cam.WorldToScreenPoint(card.transform.position)
-                : card.transform.position;
-            Vector2 startScreen = new(screenPos.x, screenPos.y);
-
-            arrowHelper.UpdateArrow(startScreen, cursorPos);
+            // Get the card's world position (use transform.position for world space)
+            Vector3 cardWorldPos = card.transform.position;
+            
+            // Update the arrow with card's world position and cursor screen position
+            arrowHelper.UpdateArrow(cardWorldPos, cursorPos);
         }
 
         // Called when player lets go but target is invalid
