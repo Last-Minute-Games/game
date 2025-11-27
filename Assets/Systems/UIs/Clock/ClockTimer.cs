@@ -146,6 +146,22 @@ public class ClockTimer : MonoBehaviour
             grandfatherAudioSource.spatialBlend = 0f;
         }
 
+        // CHECK IF WE SHOULD SKIP CLOCK RE-ANIMATE (wake-up cutscene is active)
+        int skipReanimate = PlayerPrefs.GetInt("SkipClockReanimate", 0);
+        if (skipReanimate == 1)
+        {
+            Debug.Log("[ClockTimer] SkipClockReanimate flag detected - skipping clock reconstruction animation");
+            
+            // Clear the flag so next time it plays normally
+            PlayerPrefs.SetInt("SkipClockReanimate", 0);
+            PlayerPrefs.Save();
+            
+            // Just start the timer normally without reconstruction
+            StartTimer(totalTime);
+            StartCoroutine(InitialFadeIn()); // fade in at game start
+            return; // Exit early, skip all HUD flag checks and reconstruction
+        }
+
         // Determine if HUD has been shown before (HudInitializer sets a per-scene flag)
         string hudFlag = GetCurrentSceneHudFlagName();
         // Backwards-compat: HudInitializer currently sets a global "hudshown" flag.
