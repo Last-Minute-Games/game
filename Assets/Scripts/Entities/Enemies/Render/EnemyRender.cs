@@ -45,6 +45,12 @@ namespace Entities.Enemies.Render
         [Tooltip("Sound effect to play when move name appears")]
         public SFXCueData moveNameSoundCue;
 
+        [Header("Enemy Action Sounds")]
+        [Tooltip("Sound effect to play when enemy attacks")]
+        public SFXCueData enemyAttackSoundCue;
+        [Tooltip("Sound effect to play when enemy gains block/defends")]
+        public SFXCueData enemyDefenseSoundCue;
+
         [Header("Hover Sprite")]
         [Tooltip("Sprite to show when enemy is hovered over")]
         public Sprite hoverSprite;
@@ -452,6 +458,44 @@ namespace Entities.Enemies.Render
                 EnemyIntent.Buff => "Buff",
                 _ => "???"
             };
+        }
+
+        /// <summary>
+        /// Plays the enemy attack sound effect.
+        /// Call this when the enemy is about to execute an attack action.
+        /// </summary>
+        public void PlayEnemyAttackSound()
+        {
+            Debug.Log($"[EnemyRender] PlayEnemyAttackSound called for {data?.enemyName ?? "unknown"}. AttackCue assigned: {enemyAttackSoundCue != null}, SFXManager: {SFXManager.Instance != null}");
+            
+            if (enemyAttackSoundCue != null && SFXManager.Instance != null)
+            {
+                Debug.Log($"[EnemyRender] Playing enemy attack sound: {enemyAttackSoundCue.cueName}");
+                SFXManager.Instance.Play(enemyAttackSoundCue);
+            }
+            else if (enemyAttackSoundCue == null)
+            {
+                Debug.LogWarning($"[EnemyRender] Enemy attack sound cue not assigned for {data?.enemyName ?? "unknown"}");
+            }
+        }
+
+        /// <summary>
+        /// Plays the enemy defense sound effect.
+        /// Call this when the enemy is about to execute a block/defense action.
+        /// </summary>
+        public void PlayEnemyDefenseSound()
+        {
+            Debug.Log($"[EnemyRender] PlayEnemyDefenseSound called for {data?.enemyName ?? "unknown"}. DefenseCue assigned: {enemyDefenseSoundCue != null}, SFXManager: {SFXManager.Instance != null}");
+            
+            if (enemyDefenseSoundCue != null && SFXManager.Instance != null)
+            {
+                Debug.Log($"[EnemyRender] Playing enemy defense sound: {enemyDefenseSoundCue.cueName}");
+                SFXManager.Instance.Play(enemyDefenseSoundCue);
+            }
+            else if (enemyDefenseSoundCue == null)
+            {
+                Debug.LogWarning($"[EnemyRender] Enemy defense sound cue not assigned for {data?.enemyName ?? "unknown"}");
+            }
         }
 
         public void UpdateHealth()

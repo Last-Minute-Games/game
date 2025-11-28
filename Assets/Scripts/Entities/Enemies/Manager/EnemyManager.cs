@@ -248,15 +248,44 @@ namespace Entities.Enemies.Manager
                 // Play intent animation based on type
                 if (enemy.currentIntent == EnemyIntent.Attack)
                 {
-                    if (r != null) r.PlayAttack();
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} executing Attack. Playing attack animation.");
+                        r.PlayAttack();
+                    }
                     
-                    // Wait for attack animation to play out
-                    yield return new WaitForSeconds(0.5f);
+                    // Wait a bit for animation to start showing the attack
+                    yield return new WaitForSeconds(0.2f);
+                    
+                    // Now play the attack sound while animation is mid-swing
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} - Playing attack sound now.");
+                        r.PlayEnemyAttackSound();
+                    }
+                    
+                    // Wait for rest of attack animation to play out
+                    yield return new WaitForSeconds(0.4f);
                 }
                 else if (enemy.currentIntent == EnemyIntent.Block)
                 {
-                    if (r != null) r.PlayIdle(); // Or a defend animation if you have one
-                    yield return new WaitForSeconds(0.3f);
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} executing Block. Playing idle animation.");
+                        r.PlayIdle(); // Or a defend animation if you have one
+                    }
+                    
+                    // Wait a bit for visual setup
+                    yield return new WaitForSeconds(0.15f);
+                    
+                    // Play defense sound as block/shield effect happens
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} - Playing defense sound now.");
+                        r.PlayEnemyDefenseSound();
+                    }
+                    
+                    yield return new WaitForSeconds(0.2f);
                 }
                 else
                 {
