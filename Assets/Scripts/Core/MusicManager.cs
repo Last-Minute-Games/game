@@ -12,6 +12,8 @@ public class MusicManager : MonoBehaviour
     public AudioClip defaultIntro;
     public AudioClip defaultLoop;
     
+    public float defaultVolume = 0.5f;
+    
     private AudioSource source;
 
     void Awake()
@@ -20,7 +22,7 @@ public class MusicManager : MonoBehaviour
         source.clip = dreamIntro;
         source.loop = true;
         source.playOnAwake = false;
-        source.volume = 0.5f;
+        source.volume = defaultVolume;
         
         if (defaultLoop != null)
         {

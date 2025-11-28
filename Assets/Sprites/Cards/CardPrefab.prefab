@@ -660,13 +660,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 759aa836c80f8eaf4ac90083c7f9128e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardSFXHelper
-  drawCue: {fileID: 11400000, guid: 70b199037c63f4f4b9deb22f486e9a8f, type: 2}
+  drawCue: {fileID: 0}
   hoverCue: {fileID: 0}
-  selectCue: {fileID: 0}
+  selectCue: {fileID: 11400000, guid: 70b199037c63f4f4b9deb22f486e9a8f, type: 2}
   dragCue: {fileID: 0}
-  confirmCue: {fileID: 0}
+  confirmCue: {fileID: 11400000, guid: b259ba10200510143bac03dd5253719f, type: 2}
   cancelCue: {fileID: 0}
   discardCue: {fileID: 0}
+  attackCue: {fileID: 11400000, guid: 68b37093ac31c9c4091055ef7abbb716, type: 2}
+  healCue: {fileID: 0}
+  blockCue: {fileID: 11400000, guid: ad7ebc7a0e8154743a566665cfd798cf, type: 2}
 --- !u!114 &4169964949755314617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -679,7 +682,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1911a02489142f4b4988437dbb4ab932, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardAnimationHelper
-  arrowHelper: {fileID: 462765082267403525}
+  arrowHelper: {fileID: 0}
   hoverScale: 1.1
   hoverYOffset: 0.5
   selectScale: 1.15
@@ -687,6 +690,7 @@ MonoBehaviour:
   returnDuration: 0.25
   drawDuration: 0.35
   discardDuration: 0.35
+  returnToHandThreshold: 2
   dragCamera: {fileID: 0}
 --- !u!114 &462765082267403525
 MonoBehaviour:

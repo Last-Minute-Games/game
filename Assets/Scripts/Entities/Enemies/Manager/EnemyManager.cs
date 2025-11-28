@@ -2,6 +2,7 @@ using Entities.Enemies.Helpers;
 using Entities.Enemies.Render;
 using Entities.Players.Data;
 using GameItems.Cards;
+using TMPro;
 
 namespace Entities.Enemies.Manager
 {
@@ -22,6 +23,8 @@ namespace Entities.Enemies.Manager
         public Transform uiContainer; // now a Transform, not a RectTransform
         [Tooltip("Prefab for the enemy health bar UI (must have EnemyHealth component).")]
         [SerializeField] private GameObject healthBarPrefab;
+        [Tooltip("Prefab for the enemy rendering (must have EnemyRender component with child UI elements).")]
+        [SerializeField] private EnemyRender enemyPrefab;
 
         [Header("Layout (Line-up)")]
         [Tooltip("Horizontal spacing between enemies in world units.")]
@@ -98,6 +101,12 @@ namespace Entities.Enemies.Manager
                 return;
             }
 
+            if (enemyPrefab == null)
+            {
+                Debug.LogWarning("EnemyManager: enemyPrefab not set. Cannot spawn enemies.");
+                return;
+            }
+
             if (healthBarPrefab == null)
             {
                 Debug.LogWarning("EnemyManager: healthBarPrefab not set. Health bars will not be created.");
@@ -106,21 +115,26 @@ namespace Entities.Enemies.Manager
             for (int i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
-                var go = new GameObject(string.IsNullOrEmpty(enemy.enemyName) ? $"Enemy_{i}" : enemy.enemyName,
-                    typeof(Animator), typeof(SpriteRenderer), typeof(EnemyRender));
-
-                // Parent under the provided container
-                var t = go.transform;
-                t.SetParent(uiContainer, false);
+                
+                // Instantiate from prefab
+                var instance = Instantiate(enemyPrefab, uiContainer);
+                var go = instance.gameObject;
+                
+                // Rename for clarity
+                go.name = string.IsNullOrEmpty(enemy.enemyName) ? $"Enemy_{i}" : enemy.enemyName;
 
                 // World-space transform defaults
+                var t = go.transform;
                 t.localPosition = Vector3.zero;
                 t.localScale = Vector3.one * 10f;
                 t.localRotation = Quaternion.identity;
 
                 var sr = go.GetComponent<SpriteRenderer>();
-                sr.sprite = enemy.artwork;
-                sr.sortingOrder = i; // order by spawn index (front-to-back or vice versa as needed)
+                if (sr != null)
+                {
+                    sr.sprite = enemy.artwork;
+                    sr.sortingOrder = i; // order by spawn index (front-to-back or vice versa as needed)
+                }
 
                 // Add health bar if prefab is available
                 if (healthBarPrefab != null)
@@ -138,10 +152,10 @@ namespace Entities.Enemies.Manager
                     }
                 }
 
-                var render = go.GetComponent<EnemyRender>();
-                render.Bind(enemy, hoverSprite, hoverSpriteYOffset, intentIconOffset, intentIconSize, hoverSpriteSortingOrderOffset);
+                // Bind the enemy data to the render component
+                instance.Bind(enemy, hoverSprite, hoverSpriteYOffset, intentIconOffset, intentIconSize, hoverSpriteSortingOrderOffset);
 
-                _activeRenders.Add(render);
+                _activeRenders.Add(instance);
             }
 
             if (autoLayoutOnBuild)
@@ -362,6 +376,104 @@ namespace Entities.Enemies.Manager
             foreach (var e in enemies)
                 if (e.isAlive) return false;
             return true;
+        }
+
+        /// <summary>
+        /// Creates a new EnemyPrefab with all necessary child objects and components.
+        /// Call this from the Editor or at runtime to generate the prefab structure.
+        /// </summary>
+        /// <param name="parentTransform">Optional: parent transform for the prefab. If null, creates at root.</param>
+        /// <returns>The EnemyRender component of the created prefab.</returns>
+        public static EnemyRender CreateEnemyPrefab(Transform parentTransform = null)
+        {
+            // Create root GameObject
+            var rootGo = new GameObject("EnemyPrefab");
+            rootGo.transform.SetParent(parentTransform, false);
+
+            // Add required components to root
+            var spriteRenderer = rootGo.AddComponent<SpriteRenderer>();
+            spriteRenderer.sprite = null; // Will be set per enemy
+            spriteRenderer.sortingOrder = 0;
+
+            var boxCollider = rootGo.AddComponent<BoxCollider2D>();
+            boxCollider.offset = new Vector2(0f, 0.05f);
+            boxCollider.size = new Vector2(0.3f, 0.3f);
+
+            rootGo.AddComponent<Animator>();
+            // Note: Animator Controller will need to be assigned in Editor if needed
+
+            var enemyRender = rootGo.AddComponent<EnemyRender>();
+
+            // ========== Create IntentIcon child ==========
+            var intentIconGo = new GameObject("IntentIcon");
+            intentIconGo.transform.SetParent(rootGo.transform, false);
+            intentIconGo.transform.localPosition = Vector3.zero;
+            intentIconGo.transform.localScale = Vector3.one;
+
+            var intentIconSr = intentIconGo.AddComponent<SpriteRenderer>();
+            intentIconSr.sprite = null; // Will be set by UpdateIntentIcon
+            intentIconSr.sortingOrder = 10;
+            intentIconSr.enabled = false;
+
+            // Create IntentValueText as child of IntentIcon
+            var intentValueGo = new GameObject("IntentValueText");
+            intentValueGo.transform.SetParent(intentIconGo.transform, false);
+            intentValueGo.transform.localPosition = new Vector3(0.15f, -0.12f, 0f);
+
+            var intentValueText = intentValueGo.AddComponent<TextMeshProUGUI>();
+            intentValueText.text = "";
+            intentValueText.alignment = TextAlignmentOptions.Center;
+            intentValueText.fontSize = 2;
+            intentValueText.color = Color.white;
+            intentValueText.enabled = false;
+
+            // ========== Create MoveNameText child ==========
+            var moveNameGo = new GameObject("MoveNameText");
+            moveNameGo.transform.SetParent(rootGo.transform, false);
+            moveNameGo.transform.localPosition = new Vector3(0f, -0.11f, 0f);
+            moveNameGo.transform.localScale = Vector3.one;
+
+            var moveNameText = moveNameGo.AddComponent<TextMeshProUGUI>();
+            moveNameText.text = "";
+            moveNameText.alignment = TextAlignmentOptions.Center;
+            moveNameText.fontSize = 2;
+            moveNameText.color = Color.yellow;
+            moveNameText.fontStyle = FontStyles.Bold;
+            moveNameText.enabled = false;
+
+            // ========== Create HoverSprite child ==========
+            var hoverSpriteGo = new GameObject("HoverSprite");
+            hoverSpriteGo.transform.SetParent(rootGo.transform, false);
+            hoverSpriteGo.transform.localPosition = new Vector3(0f, 0f, 0f);
+            hoverSpriteGo.transform.localScale = Vector3.one;
+
+            var hoverSpriteSr = hoverSpriteGo.AddComponent<SpriteRenderer>();
+            hoverSpriteSr.sprite = null; // Will be set by EnemyManager
+            hoverSpriteSr.sortingOrder = 5;
+            hoverSpriteSr.color = new Color32(251, 236, 93, 150); // Default yellowish
+            hoverSpriteSr.enabled = false;
+
+            // ========== Wire up EnemyRender references ==========
+            // Use reflection or direct assignment to set the private fields
+            var intentIconRootField = typeof(EnemyRender).GetField("intentIconRoot", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var intentIconSpriteField = typeof(EnemyRender).GetField("intentIconSprite", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var intentValueTextField = typeof(EnemyRender).GetField("intentValueText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var moveNameRootField = typeof(EnemyRender).GetField("moveNameRoot", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var moveNameTextField = typeof(EnemyRender).GetField("moveNameText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var hoverSpriteRootField = typeof(EnemyRender).GetField("hoverSpriteRoot", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var hoverSpriteRendererField = typeof(EnemyRender).GetField("hoverSpriteRenderer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            if (intentIconRootField != null) intentIconRootField.SetValue(enemyRender, intentIconGo);
+            if (intentIconSpriteField != null) intentIconSpriteField.SetValue(enemyRender, intentIconSr);
+            if (intentValueTextField != null) intentValueTextField.SetValue(enemyRender, intentValueText);
+            if (moveNameRootField != null) moveNameRootField.SetValue(enemyRender, moveNameGo);
+            if (moveNameTextField != null) moveNameTextField.SetValue(enemyRender, moveNameText);
+            if (hoverSpriteRootField != null) hoverSpriteRootField.SetValue(enemyRender, hoverSpriteGo);
+            if (hoverSpriteRendererField != null) hoverSpriteRendererField.SetValue(enemyRender, hoverSpriteSr);
+
+            Debug.Log("[EnemyManager] EnemyPrefab created successfully with all child objects and components.");
+
+            return enemyRender;
         }
     }
 }

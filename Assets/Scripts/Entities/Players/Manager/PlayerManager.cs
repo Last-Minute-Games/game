@@ -169,6 +169,13 @@ public class PlayerManager : MonoBehaviour
                 case OperationType.Damage:
                     if (targetEnemy != null && targetEnemy.data != null)
                     {
+                        // Play attack sound effect
+                        var cardFXHelper = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        if (cardFXHelper != null)
+                        {
+                            cardFXHelper.OnCardAttack();
+                        }
+                        
                         // Camera shake if enemy has block
                         if (targetEnemy.data.block > 0)
                         {
@@ -204,6 +211,16 @@ public class PlayerManager : MonoBehaviour
                 case OperationType.AddShield:
                     if (playerData != null)
                     {
+                        // Play block sound effect
+                        var cardFXHelperBlock = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        if (cardFXHelperBlock != null)
+                        {
+                            cardFXHelperBlock.OnCardBlock();
+                        }
+                        
+                        // Camera shake when gaining block
+                        CameraShake.Shake();
+                        
                         playerData.GainBlock(value);
                         Debug.Log($"[PlayerManager] Player gained {value} block. Total block: {playerData.block}");
                     }
@@ -212,6 +229,13 @@ public class PlayerManager : MonoBehaviour
                 case OperationType.Heal:
                     if (playerData != null)
                     {
+                        // Play heal sound effect
+                        var cardFXHelperHeal = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        if (cardFXHelperHeal != null)
+                        {
+                            cardFXHelperHeal.OnCardHeal();
+                        }
+                        
                         playerData.Heal(value);
                         Debug.Log($"[PlayerManager] Player healed {value} HP. Current HP: {playerData.currentHealth}/{playerData.maxHealth}");
                     }

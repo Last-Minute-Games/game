@@ -139,6 +139,9 @@ public class RoundManager : MonoBehaviour
     
     private IEnumerator StartFirstWaveWithTransition()
     {
+        // Safety: Unlock card interactions in case they got stuck
+        CardFXHelper.CardInteraction.Locked = false;
+        
         // Show "WAVE 1" transition immediately
         if (roundTransitionUI != null)
         {
@@ -196,6 +199,9 @@ public class RoundManager : MonoBehaviour
     
     private IEnumerator StartWaveSetup()
     {
+        // Safety: Unlock card interactions in case they got stuck
+        CardFXHelper.CardInteraction.Locked = false;
+        
         // Clear player's hand for fresh start in new wave
         if (player != null && player.cardManager != null)
         {
@@ -298,6 +304,8 @@ public class RoundManager : MonoBehaviour
 
         Debug.Log($"--- Round {roundNumber} Start ---");
         
+        // Safety: Unlock card interactions in case they got stuck from previous turn
+        CardFXHelper.CardInteraction.Locked = false;
 
         // DON'T reset enemy block here - let it persist through this round
         // Block will be reset AFTER the enemy turn executes
