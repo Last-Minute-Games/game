@@ -29,6 +29,20 @@ namespace Systems.Overworld.Intro
         [SerializeField] private DialogBehaviour dialogBehaviour;
         [SerializeField] private DialogNodeGraph wakeUpDialogGraph;
         
+        [System.Serializable]
+        public class DayWakeUpDialogue
+        {
+            [Tooltip("Day flag to check for (e.g., 'day.two', 'day.three', 'day.four')")]
+            public string dayFlag;
+            
+            [Tooltip("Dialogue graph to play when waking up on this day (after returning from battle)")]
+            public DialogNodeGraph dialogueGraph;
+        }
+        
+        [Header("Day-Specific Wake-Up Dialogues")]
+        [Tooltip("Array of day-specific dialogues. Each entry specifies which day flag to check and which dialogue to play when waking up.")]
+        [SerializeField] private DayWakeUpDialogue[] dayWakeUpDialogues;
+        
         [Header("HUD")]
         [SerializeField] private HudInitializer hudInitializer;
         [SerializeField] private bool autoFindHudInitializer = true;
@@ -326,8 +340,17 @@ namespace Systems.Overworld.Intro
 
             if (playFlag != 1)
             {
-                Debug.Log("[OverworldWakeUpCutscene] Flag not set, disabling");
-                enabled = false;
+                // Check if we should play day-specific wake-up dialogue instead
+                if (ShouldPlayDaySpecificWakeUpDialogue())
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Day-specific wake-up dialogue detected, starting...");
+                    StartCoroutine(PlayDaySpecificWakeUpDialogue());
+                }
+                else
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Flag not set and no day-specific dialogue, disabling");
+                    enabled = false;
+                }
                 return;
             }
 
@@ -415,6 +438,173 @@ namespace Systems.Overworld.Intro
             PlayerPrefs.Save();
             Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {PlayerPrefs.GetInt("PlayWakeUpCutscene")}" +
                       $" [next scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + 1}]");
+        }
+        
+        /// <summary>
+        /// Check if we should play day-specific wake-up dialogue
+        /// </summary>
+        private bool ShouldPlayDaySpecificWakeUpDialogue()
+        {
+            if (dayWakeUpDialogues == null || dayWakeUpDialogues.Length == 0)
+            {
+                return false;
+            }
+
+            // Check each day in the array
+            foreach (var dayDialogue in dayWakeUpDialogues)
+            {
+                if (dayDialogue == null || string.IsNullOrEmpty(dayDialogue.dayFlag) || dayDialogue.dialogueGraph == null)
+                {
+                    continue;
+                }
+
+                // Check if this day flag is set and the next day flag is not set
+                if (GameFlags.HasFlag(dayDialogue.dayFlag))
+                {
+                    // Determine what the "next" day flag would be
+                    string nextDayFlag = GetNextDayFlag(dayDialogue.dayFlag);
+                    
+                    // If there's a next day flag, only trigger if it's not set
+                    // If there's no next day flag, just check if current day is set
+                    if (string.IsNullOrEmpty(nextDayFlag) || !GameFlags.HasFlag(nextDayFlag))
+                    {
+                        Debug.Log($"[OverworldWakeUpCutscene] {dayDialogue.dayFlag} wake-up dialogue available");
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        
+        /// <summary>
+        /// Get the dialogue graph for the current day
+        /// </summary>
+        private DialogNodeGraph GetDaySpecificWakeUpDialogue()
+        {
+            if (dayWakeUpDialogues == null || dayWakeUpDialogues.Length == 0)
+            {
+                return null;
+            }
+
+            // Find the matching day dialogue
+            foreach (var dayDialogue in dayWakeUpDialogues)
+            {
+                if (dayDialogue == null || string.IsNullOrEmpty(dayDialogue.dayFlag) || dayDialogue.dialogueGraph == null)
+                {
+                    continue;
+                }
+
+                if (GameFlags.HasFlag(dayDialogue.dayFlag))
+                {
+                    // Determine what the "next" day flag would be
+                    string nextDayFlag = GetNextDayFlag(dayDialogue.dayFlag);
+                    
+                    // If there's a next day flag, only return if it's not set
+                    // If there's no next day flag, just return the current day
+                    if (string.IsNullOrEmpty(nextDayFlag) || !GameFlags.HasFlag(nextDayFlag))
+                    {
+                        return dayDialogue.dialogueGraph;
+                    }
+                }
+            }
+
+            return null;
+        }
+        
+        /// <summary>
+        /// Get the next day flag for a given day flag (used to check if we're still on that day)
+        /// </summary>
+        private string GetNextDayFlag(string currentDayFlag)
+        {
+            switch (currentDayFlag)
+            {
+                case "day.one": return "day.two";
+                case "day.two": return "day.three";
+                case "day.three": return "day.four";
+                case "day.four": return "day.five";
+                case "day.five": return null; // No day after five
+                default: return null;
+            }
+        }
+        
+        /// <summary>
+        /// Play day-specific wake-up dialogue after clock reconstruction completes
+        /// </summary>
+        private IEnumerator PlayDaySpecificWakeUpDialogue()
+        {
+            Debug.Log("[OverworldWakeUpCutscene] Waiting for clock reconstruction to complete...");
+            
+            // Wait for clock reconstruction animation (typically takes ~4 seconds)
+            yield return new WaitForSeconds(4f);
+            
+            // Small delay after wake-up
+            yield return new WaitForSeconds(0.5f);
+
+            // Get the dialogue for current day
+            DialogNodeGraph dialogueGraph = GetDaySpecificWakeUpDialogue();
+            if (dialogueGraph == null || dialogBehaviour == null)
+            {
+                Debug.LogWarning("[OverworldWakeUpCutscene] Cannot play day-specific dialogue - missing graph or dialogBehaviour");
+                yield break;
+            }
+
+            // Pause clock timer
+            if (clockTimer == null)
+            {
+                clockTimer = FindObjectOfType<ClockTimer>();
+            }
+            
+            if (clockTimer != null)
+            {
+                clockTimer.PauseTimer(true);
+                Debug.Log("[OverworldWakeUpCutscene] Clock timer paused for day-specific dialogue");
+            }
+
+            // Set player dialogue state
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                CharacterMotor2D playerMotor = playerObj.GetComponent<CharacterMotor2D>();
+                if (playerMotor != null)
+                {
+                    playerMotor.SetDialogueActive(true);
+                }
+            }
+
+            // Wait for dialogue to finish
+            bool dialogueFinished = false;
+            UnityEngine.Events.UnityAction onFinished = () => { dialogueFinished = true; };
+            dialogBehaviour.OnDialogFinished.AddListener(onFinished);
+            
+            Debug.Log($"[OverworldWakeUpCutscene] Starting day-specific wake-up dialogue: {dialogueGraph.name}");
+            dialogBehaviour.StartDialog(dialogueGraph);
+            
+            while (!dialogueFinished)
+            {
+                yield return null;
+            }
+            
+            dialogBehaviour.OnDialogFinished.RemoveListener(onFinished);
+
+            // Resume clock timer
+            if (clockTimer != null)
+            {
+                clockTimer.PauseTimer(false);
+                Debug.Log("[OverworldWakeUpCutscene] Clock timer resumed after day-specific dialogue");
+            }
+
+            // Reset player dialogue state
+            if (playerObj != null)
+            {
+                CharacterMotor2D playerMotor = playerObj.GetComponent<CharacterMotor2D>();
+                if (playerMotor != null)
+                {
+                    playerMotor.SetDialogueActive(false);
+                }
+            }
+
+            Debug.Log("[OverworldWakeUpCutscene] Day-specific wake-up dialogue complete");
         }
     }
 }
