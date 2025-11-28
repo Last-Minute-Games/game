@@ -47,11 +47,11 @@ public class GameFlags : PersistentSingleton<GameFlags>
         base.Awake();
         
         // Try to load saved flags first
-        // if (!LoadFlags())
-        // {
+        if (!LoadFlags())
+        {
             // If no saved data, initialize with defaults
             InitializeDefaultFlags();
-        // }
+        }
         
         // Notify listeners that initialization is complete
         OnInitialized?.Invoke();
