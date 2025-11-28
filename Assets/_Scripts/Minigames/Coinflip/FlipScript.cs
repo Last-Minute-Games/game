@@ -13,9 +13,13 @@ public class FlipScript : MonoBehaviour
     public Sprite[] sides;           // 0 = Heads, 1 = Tails
     public int LastResult { get; private set; } = 0;
 
+    [Header("Spin Animation (sprite sheet)")]
+    [Tooltip("Frames from your coin spin sprite sheet, left to right.")]
+    public Sprite[] spinFrames;      // e.g. the 7 frames you sliced
+
     [Header("Flip Timing")]
-    public float totalFlipTime = 0.45f;
-    public int flips = 6;
+    public float totalFlipTime = 1f;
+    public int flips = 3;            // how many times to loop through spinFrames
 
     bool isFlipping;
 
@@ -31,6 +35,7 @@ public class FlipScript : MonoBehaviour
 
     void SetSprite(Sprite s)
     {
+        if (!s) return;
         if (uiImage) uiImage.sprite = s;
         if (spriteRenderer) spriteRenderer.sprite = s;
     }
@@ -44,9 +49,11 @@ public class FlipScript : MonoBehaviour
     public void SetResult(int result)   // 0 heads, 1 tails
     {
         LastResult = Mathf.Clamp(result, 0, 1);
-        SetSprite(sides[LastResult]);
+        if (sides != null && sides.Length > LastResult)
+            SetSprite(sides[LastResult]);
     }
 
+    // Called by GameManager
     public void Flip(bool forceHeads, Action<int> onComplete)
     {
         if (isFlipping) return;
@@ -58,18 +65,39 @@ public class FlipScript : MonoBehaviour
         isFlipping = true;
         SetVisible(true);
 
-        float step = totalFlipTime / Mathf.Max(flips, 1);
-
-        for (int i = 0; i < flips; i++)
+        // --- NEW: use the sprite-sheet frames if we have them ---
+        if (spinFrames != null && spinFrames.Length > 0)
         {
-            // Toggle sprite quickly to pretend spinning
-            int temp = (i % 2 == 0) ? 0 : 1;
-            SetSprite(sides[temp]);
-            yield return new WaitForSeconds(step);
+            int loops = Mathf.Max(flips, 1);
+            int totalFrames = Mathf.Max(spinFrames.Length * loops, 1);
+            float step = totalFlipTime / totalFrames;
+
+            for (int i = 0; i < totalFrames; i++)
+            {
+                int frameIndex = i % spinFrames.Length;
+                SetSprite(spinFrames[frameIndex]);
+                yield return new WaitForSeconds(step);
+            }
+        }
+        else
+        {
+            // Fallback: old simple flicker between heads/tails
+            float step = totalFlipTime / Mathf.Max(flips, 1);
+
+            for (int i = 0; i < flips; i++)
+            {
+                int temp = (i % 2 == 0) ? 0 : 1;
+                if (sides != null && sides.Length > temp)
+                    SetSprite(sides[temp]);
+                yield return new WaitForSeconds(step);
+            }
         }
 
-        LastResult = forceHeads ? 0 : 1;   // your GameManager chooses outcome
-        SetSprite(sides[LastResult]);
+        // Decide final result (GameManager already randomizes forceHeads)
+        LastResult = forceHeads ? 0 : 1;
+
+        if (sides != null && sides.Length > LastResult)
+            SetSprite(sides[LastResult]);
 
         isFlipping = false;
         onComplete?.Invoke(LastResult);
