@@ -120,17 +120,11 @@ namespace GameItems.Cards.Helpers
             // Clear hover state when selecting
             currentlyHoveredCard = null;
 
-            // If a different card was previously selected, revert its selection visuals
-            if (currentlySelectedCard != null && currentlySelectedCard != card)
-            {
-                Debug.Log($"[CardFXHelper] Reverting selection from '{currentlySelectedCard.Data?.name ?? "unknown"}' to '{card.Data?.name ?? "unknown"}'");
-                animHelper?.HoverExit(currentlySelectedCard); // Return previous card to normal position
-            }
-
             // Only call SelectVisuals if this is a NEW selection (not already selected)
             // This prevents spamming the same card multiple times which stacks tweens
             if (currentlySelectedCard != card)
             {
+                // Store the newly selected card
                 currentlySelectedCard = card;
                 animHelper?.SelectVisuals(card, updatePosition);
                 

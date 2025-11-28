@@ -50,6 +50,8 @@ namespace Entities.Enemies.Render
         public SFXCueData enemyAttackSoundCue;
         [Tooltip("Sound effect to play when enemy gains block/defends")]
         public SFXCueData enemyDefenseSoundCue;
+        [Tooltip("Sound effect to play when enemy heals")]
+        public SFXCueData enemyHealSoundCue;
 
         [Header("Hover Sprite")]
         [Tooltip("Sprite to show when enemy is hovered over")]
@@ -495,6 +497,25 @@ namespace Entities.Enemies.Render
             else if (enemyDefenseSoundCue == null)
             {
                 Debug.LogWarning($"[EnemyRender] Enemy defense sound cue not assigned for {data?.enemyName ?? "unknown"}");
+            }
+        }
+
+        /// <summary>
+        /// Plays the enemy heal sound effect.
+        /// Call this when the enemy is about to execute a heal action.
+        /// </summary>
+        public void PlayEnemyHealSound()
+        {
+            Debug.Log($"[EnemyRender] PlayEnemyHealSound called for {data?.enemyName ?? "unknown"}. HealCue assigned: {enemyHealSoundCue != null}, SFXManager: {SFXManager.Instance != null}");
+            
+            if (enemyHealSoundCue != null && SFXManager.Instance != null)
+            {
+                Debug.Log($"[EnemyRender] Playing enemy heal sound: {enemyHealSoundCue.cueName}");
+                SFXManager.Instance.Play(enemyHealSoundCue);
+            }
+            else if (enemyHealSoundCue == null)
+            {
+                Debug.LogWarning($"[EnemyRender] Enemy heal sound cue not assigned for {data?.enemyName ?? "unknown"}");
             }
         }
 
