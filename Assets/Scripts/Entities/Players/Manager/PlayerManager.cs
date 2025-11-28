@@ -169,6 +169,12 @@ public class PlayerManager : MonoBehaviour
                 case OperationType.Damage:
                     if (targetEnemy != null && targetEnemy.data != null)
                     {
+                        // Camera shake if enemy has block
+                        if (targetEnemy.data.block > 0)
+                        {
+                            CameraShake.Shake();
+                        }
+                        
                         int totalDamage = value + (playerData != null ? playerData.strength : 0);
                         targetEnemy.data.TakeDamage(totalDamage);
                         Debug.Log($"[PlayerManager] Dealt {totalDamage} damage ({value} base + {playerData?.strength} strength) to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");

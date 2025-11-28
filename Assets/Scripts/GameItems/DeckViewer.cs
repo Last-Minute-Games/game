@@ -222,9 +222,15 @@ namespace GameItems
                     
                     // Trigger draw FX (animation + sound)
                     var fxHelper = render.GetComponent<CardFXHelper>();
+                    Debug.Log($"[DeckViewer] Card '{inst.data.name}' - FXHelper found: {fxHelper != null}");
                     if (fxHelper != null)
                     {
+                        Debug.Log($"[DeckViewer] Calling OnCardDrawn for '{inst.data.name}'");
                         fxHelper.OnCardDrawn(render);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[DeckViewer] FXHelper is NULL for card '{inst.data.name}'!");
                     }
                 }
             }
