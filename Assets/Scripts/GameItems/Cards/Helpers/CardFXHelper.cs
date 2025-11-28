@@ -56,10 +56,23 @@ namespace GameItems.Cards.Helpers
         // When hovering over a card
         public void OnCardHover(CardRender card)
         {
-            // Don't check lock - user interactions should always work
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardHover called with null card.");
+                return;
+            }
+            
+            // Ignore hover if interactions are locked (wave transitions, etc.)
+            if (CardInteraction.Locked)
+            {
+                Debug.Log($"[CardFXHelper] OnCardHover ignored - card interactions are locked");
+                return;
+            }
+            
+            // Ignore hover if card is currently being animated (prevents capturing mid-animation positions)
+            if (DG.Tweening.DOTween.IsTweening(card.transform))
+            {
+                Debug.Log($"[CardFXHelper] OnCardHover ignored - card '{card.Data?.name ?? "unknown"}' is animating");
                 return;
             }
             
@@ -107,13 +120,26 @@ namespace GameItems.Cards.Helpers
             // Clear hover state when selecting
             currentlyHoveredCard = null;
 
-            animHelper?.SelectVisuals(card, updatePosition);
-            
-            // Only play sound if this is a NEW selection (not the same card already selected)
+            // If a different card was previously selected, revert its selection visuals
+            if (currentlySelectedCard != null && currentlySelectedCard != card)
+            {
+                Debug.Log($"[CardFXHelper] Reverting selection from '{currentlySelectedCard.Data?.name ?? "unknown"}' to '{card.Data?.name ?? "unknown"}'");
+                animHelper?.HoverExit(currentlySelectedCard); // Return previous card to normal position
+            }
+
+            // Only call SelectVisuals if this is a NEW selection (not already selected)
+            // This prevents spamming the same card multiple times which stacks tweens
             if (currentlySelectedCard != card)
             {
                 currentlySelectedCard = card;
+                animHelper?.SelectVisuals(card, updatePosition);
+                
+                // Only play sound if this is a NEW selection (not the same card already selected)
                 sfxHelper?.PlaySelect();
+            }
+            else
+            {
+                Debug.Log($"[CardFXHelper] OnCardSelect ignored - card '{card.Data?.name ?? "unknown"}' is already selected");
             }
 
             // Reset drag SFX gate for the new drag session
