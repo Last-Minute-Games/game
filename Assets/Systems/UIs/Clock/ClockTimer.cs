@@ -11,6 +11,10 @@ public class ClockTimer : MonoBehaviour
     public Sprite[] clockFrames;
     public float totalTime = 60f;
     public string nextSceneName = "NextScene";
+    
+    [Header("Ending Scene")]
+    [Tooltip("Scene to load when the game ends (e.g., after day five is completed). If empty, will use nextSceneName.")]
+    public string endingSceneName = "";
 
     [Header("Transition / Fade")]
     public ScreenFader screenFader;
@@ -544,41 +548,59 @@ public class ClockTimer : MonoBehaviour
         if (warningAudioSource != null && warningAudioSource.isPlaying)
             warningAudioSource.Stop();
 
-        // Transition to the next scene - KEEP PANELS CLOSED
-        if (string.IsNullOrEmpty(nextSceneName))
+        // Check if day five is completed - if so, play cutscene instead of normal transition
+        // Only play once by checking if cutscene hasn't been played yet
+        if (GameFlags.HasFlag("day.five") && !GameFlags.HasFlag("dayfive.cutscene.played"))
         {
-            Debug.LogError("[ClockTimer] nextSceneName is empty or null - cannot transition.");
+            Debug.Log("[ClockTimer] 🎬 Day five detected - playing cutscene instead of normal transition");
+            GameFlags.SetFlag("dayfive.cutscene.played"); // Mark as played
+            yield return StartCoroutine(PlayDayFiveCutscene());
+            yield break; // Cutscene will handle scene transition
+        }
+
+        // Determine which scene to load (ending scene if day five is completed, otherwise next scene)
+        string sceneToLoad = nextSceneName;
+        if (GameFlags.HasFlag("day.five") && !string.IsNullOrEmpty(endingSceneName))
+        {
+            sceneToLoad = endingSceneName;
+            Debug.Log("[ClockTimer] Day five completed - using ending scene instead of next scene");
+        }
+
+        // Transition to the next scene - KEEP PANELS CLOSED
+        if (string.IsNullOrEmpty(sceneToLoad))
+        {
+            Debug.LogError("[ClockTimer] Scene name is empty or null - cannot transition.");
             yield break;
         }
 
-        Debug.Log($"[ClockTimer] Preparing transition to scene '{nextSceneName}'. ScreenFader assigned: {screenFader != null}");
+        Debug.Log($"[ClockTimer] Preparing transition to scene '{sceneToLoad}'. ScreenFader assigned: {screenFader != null}");
 
         if (screenFader != null)
         {
             // Use ScreenFader transition coroutine
             screenFader.shouldOpenEyesOnSceneLoad = true;
-            Debug.Log($"[ClockTimer] Calling ScreenFader.TransitionToSceneKeepPanelsClosed('{nextSceneName}')");
-            yield return StartCoroutine(screenFader.TransitionToSceneKeepPanelsClosed(nextSceneName));
-            Debug.Log($"[ClockTimer] Returned from ScreenFader.TransitionToSceneKeepPanelsClosed('{nextSceneName}')");
+            Debug.Log($"[ClockTimer] Calling ScreenFader.TransitionToSceneKeepPanelsClosed('{sceneToLoad}')");
+            yield return StartCoroutine(screenFader.TransitionToSceneKeepPanelsClosed(sceneToLoad));
+            Debug.Log($"[ClockTimer] Returned from ScreenFader.TransitionToSceneKeepPanelsClosed('{sceneToLoad}')");
 
             // Note: if the scene did not change, check build settings and logs.
-            Debug.Log($"[ClockTimer] Current active scene after ScreenFader call: {SceneManager.GetActiveScene().name} (expected: {nextSceneName})");
+            Debug.Log($"[ClockTimer] Current active scene after ScreenFader call: {SceneManager.GetActiveScene().name} (expected: {sceneToLoad})");
         }
         else
         {
             Debug.LogWarning("[ClockTimer] screenFader is null - attempting direct async load of next scene.");
-            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(nextSceneName);
+            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneToLoad);
             if (asyncLoad == null)
             {
-                Debug.LogError($"[ClockTimer] SceneManager.LoadSceneAsync returned null for '{nextSceneName}'. Make sure the scene is added to Build Settings.");
+                Debug.LogError($"[ClockTimer] SceneManager.LoadSceneAsync returned null for '{sceneToLoad}'. Make sure the scene is added to Build Settings.");
                 yield break;
             }
 
-            Debug.Log($"[ClockTimer] Started direct async load for '{nextSceneName}'. allowSceneActivation={asyncLoad.allowSceneActivation}");
+            Debug.Log($"[ClockTimer] Started direct async load for '{sceneToLoad}'. allowSceneActivation={asyncLoad.allowSceneActivation}");
             asyncLoad.allowSceneActivation = true;
             while (!asyncLoad.isDone)
                 yield return null;
-            Debug.Log($"[ClockTimer] Direct async load finished for '{nextSceneName}'. Active scene is now: {SceneManager.GetActiveScene().name}");
+            Debug.Log($"[ClockTimer] Direct async load finished for '{sceneToLoad}'. Active scene is now: {SceneManager.GetActiveScene().name}");
         }
     }
 
@@ -861,6 +883,43 @@ public class ClockTimer : MonoBehaviour
     {
         var scene = SceneManager.GetActiveScene();
         return "hudshown." + scene.name + "." + scene.buildIndex;
+    }
+
+    /// <summary>
+    /// Plays the day five cutscene sequence
+    /// </summary>
+    private IEnumerator PlayDayFiveCutscene()
+    {
+        const string cutsceneSceneName = "DayFiveCutscene";
+        const float delayBeforeCutscene = 2f;
+        const float fadeDuration = 1f;
+        
+        Debug.Log("[ClockTimer] Starting day five cutscene");
+        
+        // Wait a moment
+        yield return new WaitForSeconds(delayBeforeCutscene);
+        
+        // Fade to black using screenFader if available
+        if (screenFader != null)
+        {
+            // Fade to black using screenFader
+            float elapsed = 0f;
+            float startAlpha = screenFader.fadePanel != null ? screenFader.fadePanel.color.a : 0f;
+            
+            while (elapsed < fadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float targetAlpha = Mathf.Lerp(startAlpha, 1f, elapsed / fadeDuration);
+                screenFader.SetPanelAlpha(targetAlpha);
+                yield return null;
+            }
+            
+            screenFader.SetPanelAlpha(1f);
+        }
+        
+        // Load the cutscene scene
+        Debug.Log($"[ClockTimer] Loading cutscene scene: {cutsceneSceneName}");
+        SceneManager.LoadScene(cutsceneSceneName);
     }
 
 }
