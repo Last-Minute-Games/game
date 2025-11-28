@@ -106,10 +106,32 @@ public class MinigameController : MonoBehaviour
 
     /// <summary>
     /// Called by the InteractiveSokobanActivator when the player interacts with the entrance.
+    /// Immediately stops all player actions and changes the sprite before transitioning.
     /// </summary>
     public void StartSokoban()
     {
         if (player == null || sokobanRoot == null) return;
+        
+        // Immediately stop all player movement and actions
+        if (overworldPlayerScript != null)
+        {
+            overworldPlayerScript.enabled = false;
+        }
+        
+        // Immediately stop any physics-based movement (if using Rigidbody2D)
+        Rigidbody2D playerRb = player.GetComponent<Rigidbody2D>();
+        if (playerRb != null)
+        {
+            playerRb.velocity = Vector2.zero;
+        }
+        
+        // Immediately change to Sokoban sprite
+        if (playerSpriteRenderer != null && sokobanPlayerSprite != null)
+        {
+            playerSpriteRenderer.sprite = sokobanPlayerSprite;
+        }
+        
+        // Now run the transition (which will complete the setup in PerformSokobanStart)
         RunTransition("ENTERING SOKOBAN", PerformSokobanStart);
     }
 
