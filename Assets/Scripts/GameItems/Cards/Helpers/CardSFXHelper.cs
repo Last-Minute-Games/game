@@ -12,6 +12,11 @@ namespace GameItems.Cards.Helpers
         public SFXCueData confirmCue;
         public SFXCueData cancelCue;
         public SFXCueData discardCue;
+        
+        [Header("Card Effect Sounds")]
+        public SFXCueData attackCue;
+        public SFXCueData healCue;
+        public SFXCueData blockCue;
 
         private void Awake()
         {
@@ -78,6 +83,24 @@ namespace GameItems.Cards.Helpers
         {
             if (SFXManager.Instance == null || discardCue == null) return;
             SFXManager.Instance.Play(discardCue);
+        }
+
+        public void PlayAttack()
+        {
+            if (SFXManager.Instance == null || attackCue == null) return;
+            SFXManager.Instance.Play(attackCue);
+        }
+
+        public void PlayHeal()
+        {
+            if (SFXManager.Instance == null || healCue == null) return;
+            SFXManager.Instance.Play(healCue);
+        }
+
+        public void PlayBlock()
+        {
+            if (SFXManager.Instance == null || blockCue == null) return;
+            SFXManager.Instance.Play(blockCue);
         }
     }
 }

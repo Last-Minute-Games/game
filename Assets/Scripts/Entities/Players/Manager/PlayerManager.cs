@@ -103,9 +103,19 @@ public class PlayerManager : MonoBehaviour
     /// <returns>True if card was successfully played</returns>
     public bool PlayCard(CardData cardData, CardInstance cardInstance = null, EnemyRender targetEnemy = null)
     {
+        // Notify RoundManager that a card is being played
+        // This prevents the timer from ending the turn during card play
+        var roundManager = FindFirstObjectByType<RoundManager>();
+        if (roundManager != null)
+        {
+            roundManager.SetCardPlayingState(true);
+        }
+
         if (playerData == null || cardData == null)
         {
             Debug.LogWarning("[PlayerManager] Cannot play card - playerData or cardData is null");
+            if (roundManager != null)
+                roundManager.SetCardPlayingState(false);
             return false;
         }
 
@@ -114,6 +124,8 @@ public class PlayerManager : MonoBehaviour
         if (!playerData.SpendEnergy(energyCost))
         {
             Debug.LogWarning($"[PlayerManager] Not enough energy to play {cardData.name}. Need {energyCost}, have {playerData.currentEnergy}");
+            if (roundManager != null)
+                roundManager.SetCardPlayingState(false);
             return false;
         }
 
@@ -138,6 +150,11 @@ public class PlayerManager : MonoBehaviour
         }
         
         Debug.Log($"[PlayerManager] Successfully played card: {cardData.name}. Energy remaining: {playerData.currentEnergy}/{playerData.maxEnergy}");
+        
+        // Card play is complete - allow timer to end turn if it expired
+        if (roundManager != null)
+            roundManager.SetCardPlayingState(false);
+        
         return true;
     }
 
@@ -169,6 +186,13 @@ public class PlayerManager : MonoBehaviour
                 case OperationType.Damage:
                     if (targetEnemy != null && targetEnemy.data != null)
                     {
+                        // Play attack sound effect
+                        var cardFXHelper = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        if (cardFXHelper != null)
+                        {
+                            cardFXHelper.OnCardAttack();
+                        }
+                        
                         // Camera shake if enemy has block
                         if (targetEnemy.data.block > 0)
                         {
@@ -204,6 +228,16 @@ public class PlayerManager : MonoBehaviour
                 case OperationType.AddShield:
                     if (playerData != null)
                     {
+                        // Play block sound effect
+                        var cardFXHelperBlock = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        if (cardFXHelperBlock != null)
+                        {
+                            cardFXHelperBlock.OnCardBlock();
+                        }
+                        
+                        // Camera shake when gaining block
+                        CameraShake.Shake();
+                        
                         playerData.GainBlock(value);
                         Debug.Log($"[PlayerManager] Player gained {value} block. Total block: {playerData.block}");
                     }
@@ -212,6 +246,13 @@ public class PlayerManager : MonoBehaviour
                 case OperationType.Heal:
                     if (playerData != null)
                     {
+                        // Play heal sound effect
+                        var cardFXHelperHeal = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        if (cardFXHelperHeal != null)
+                        {
+                            cardFXHelperHeal.OnCardHeal();
+                        }
+                        
                         playerData.Heal(value);
                         Debug.Log($"[PlayerManager] Player healed {value} HP. Current HP: {playerData.currentHealth}/{playerData.maxHealth}");
                     }

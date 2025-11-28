@@ -77,10 +77,28 @@ namespace GameItems
                     Destroy(content.GetChild(i).gameObject);
             }
         }
+
+        /// <summary>
+        /// Stops any ongoing layout animation (e.g., cards repositioning on spline).
+        /// Useful to call before clearing cards to avoid animation conflicts.
+        /// </summary>
+        public void StopLayoutAnimation()
+        {
+            if (_layoutRoutine != null)
+            {
+                Debug.Log("[DeckViewer] Stopping ongoing layout animation");
+                StopCoroutine(_layoutRoutine);
+                _layoutRoutine = null;
+            }
+        }
         
         private IEnumerator UpdateCardPositions(float duration)
         {
-            if (_renders.Count == 0) yield break;
+            if (_renders.Count == 0)
+            {
+                CardFXHelper.CardInteraction.Locked = false; // Unlock even if no cards
+                yield break;
+            }
 
             float cardSpacing = 1f / 10f;
             float firstCardPosition = 0.5f - (_renders.Count - 1) * cardSpacing / 2f;
@@ -269,6 +287,11 @@ namespace GameItems
                 if (_layoutRoutine != null) StopCoroutine(_layoutRoutine);
                 _layoutRoutine = StartCoroutine(UpdateCardPositions(tweenDuration));
             }
+            else
+            {
+                // No spline layout, unlock immediately
+                CardFXHelper.CardInteraction.Locked = false;
+            }
         }
 
         /// <summary>
@@ -345,6 +368,11 @@ namespace GameItems
                 if (_layoutRoutine != null) StopCoroutine(_layoutRoutine);
                 _layoutRoutine = StartCoroutine(UpdateCardPositions(tweenDuration));
             }
+            else
+            {
+                // No spline layout, unlock immediately
+                CardFXHelper.CardInteraction.Locked = false;
+            }
         }
 
         private List<CardData> ResolveCards()
@@ -418,6 +446,18 @@ namespace GameItems
 
             // Capture the current renders into a separate list so they won't be affected by data changes
             List<CardRender> cardsToAnimate = new List<CardRender>(_renders);
+            
+            // Filter out null cards upfront
+            cardsToAnimate.RemoveAll(card => card == null);
+            
+            if (cardsToAnimate.Count == 0)
+            {
+                Debug.LogWarning("[DeckViewer] All cards were null, skipping animation");
+                _renders.Clear();
+                onComplete?.Invoke();
+                return;
+            }
+            
             int totalCards = cardsToAnimate.Count;
             int completedCards = 0;
 
@@ -459,7 +499,18 @@ namespace GameItems
             for (int i = 0; i < cardsToAnimate.Count; i++)
             {
                 var card = cardsToAnimate[i];
-                if (card == null) continue;
+                if (card == null)
+                {
+                    // If card is null, still count it as completed to avoid lock-up
+                    completedCards++;
+                    if (completedCards >= totalCards)
+                    {
+                        CardFXHelper.CardInteraction.Locked = false;
+                        Debug.Log("[DeckViewer] All card visuals discarded (with nulls)");
+                        onComplete?.Invoke();
+                    }
+                    continue;
+                }
 
                 // Detach from parent so it won't be destroyed when content is cleared
                 card.transform.SetParent(null, worldPositionStays: true);
