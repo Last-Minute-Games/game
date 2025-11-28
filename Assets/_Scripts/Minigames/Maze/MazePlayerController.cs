@@ -10,7 +10,7 @@ public class MazePlayerController : MonoBehaviour
     [SerializeField] private GenerateMaze maze;      // drag your GenerateMaze object here
     [SerializeField] private float moveDuration = 0.15f;  // how fast it slides between cells
 
-    private Vector2Int currentIndex;   // which cell (x,y) we’re in
+    private Vector2Int currentIndex;   // which cell (x,y) weï¿½re in
     private bool isMoving = false;
 
     private void Start()
@@ -124,7 +124,7 @@ public class MazePlayerController : MonoBehaviour
 
         if (currentIndex == endIndex && popupController != null)
         {
-            popupController.Hide();
+            popupController.EndMaze(true); // true = solved/win
         }
     }
 }

@@ -1,3 +1,5 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,6 +37,31 @@ public class MazePopupController : MonoBehaviour
     [Tooltip("Sprite to use for the player while in the maze (little head).")]
     public Sprite mazePlayerSprite;
 
+    [Header("Player teleport (Sokoban-style)")]
+    [Tooltip("Main overworld player whose position we save/restore.")]
+    public Transform overworldPlayer;
+
+    [Header("Transition")]
+    [Tooltip("CanvasGroup used to fade the screen when entering/exiting the minigame.")]
+    [SerializeField] CanvasGroup transitionCanvasGroup;
+    [Tooltip("Optional text element that displays the current transition message.")]
+    [SerializeField] TMP_Text transitionStatusText;
+    [Tooltip("How long (in seconds) the screen stays fully faded while we reposition objects.")]
+    [SerializeField] float transitionCoveredDuration = 1.2f;
+    [Tooltip("Fade-in duration in seconds.")]
+    [SerializeField] float transitionFadeInDuration = 0.4f;
+    [Tooltip("Fade-out duration in seconds.")]
+    [SerializeField] float transitionFadeOutDuration = 0.4f;
+
+    private Coroutine transitionRoutine;
+    private bool isTransitionRunning;
+
+    private InitialPositionn playerInitialPosition;
+
+    private Vector3 originalCamPos;
+    private float originalCamSize;
+
+
     // World-space backdrop sprite (renders behind maze)
     private GameObject worldSpaceBackdrop;
 
@@ -46,12 +73,29 @@ public class MazePopupController : MonoBehaviour
 
     void Awake()
     {
-        // Hook quit button
+        // Hook quit button to use transitions
         if (quitButton != null)
-            quitButton.onClick.AddListener(Hide);
+            quitButton.onClick.AddListener(() => EndMaze(false)); // false = quit, not solved
 
+
+        if (overworldPlayer == null)
+        {
+            GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
+            if (playerGO != null)
+                overworldPlayer = playerGO.transform;
+        }
+
+        if (overworldPlayer != null)
+        {
+            playerInitialPosition = overworldPlayer.GetComponent<InitialPositionn>();
+            if (playerInitialPosition == null)
+            {
+                // Optional: auto-add the component if missing
+                playerInitialPosition = overworldPlayer.gameObject.AddComponent<InitialPositionn>();
+            }
+        }
         // Grab overworld player sprite once (same idea as MinigameController)
-        /*
+        
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
@@ -59,7 +103,7 @@ public class MazePopupController : MonoBehaviour
             if (overworldSpriteRenderer != null)
                 overworldSprite = overworldSpriteRenderer.sprite;
         }
-        */
+        
         HideImmediate();                // make sure popup is off
         if (mazeRoot != null)
             mazeRoot.SetActive(false);  // maze itself hidden
@@ -70,7 +114,214 @@ public class MazePopupController : MonoBehaviour
             mazePlayer.gameObject.SetActive(false); // player head hidden at start
         } // no maze control at start
 
+        // Restore overworld sprite if you ever wire it
+        if (overworldSpriteRenderer != null)
+        {
+            overworldSpriteRenderer.enabled = true;
+            if (overworldSprite != null)
+                overworldSpriteRenderer.sprite = overworldSprite;
+        }
+
         mazeGenerated = false;
+
+        // Ensure transition canvas starts disabled
+        if (transitionCanvasGroup != null)
+        {
+            transitionCanvasGroup.alpha = 0f;
+            transitionCanvasGroup.blocksRaycasts = false;
+            transitionCanvasGroup.interactable = false;
+            transitionCanvasGroup.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Called by the MazePopupActivator when the player interacts with the entrance.
+    /// Uses transitions similar to Sokoban.
+    /// </summary>
+    public void StartMaze()
+    {
+        if (isOpen) return;
+        RunTransition("ENTERING MAZE", PerformMazeStart);
+    }
+
+    /// <summary>
+    /// Called by the Quit Button or when exiting the maze.
+    /// Uses transitions similar to Sokoban.
+    /// </summary>
+    /// <param name="solved">True if the player completed the maze, false if they quit.</param>
+    public void EndMaze(bool solved = false)
+    {
+        if (!isOpen) return;
+        RunTransition(solved ? "YOU WIN" : "EXITING MAZE", PerformMazeEnd);
+    }
+
+    private void RunTransition(string message, System.Action midAction)
+    {
+        if (isTransitionRunning)
+        {
+            return;
+        }
+
+        if (transitionCanvasGroup == null)
+        {
+            midAction?.Invoke();
+            return;
+        }
+
+        // Ensure the GameObject is active so we can start coroutines
+        if (!gameObject.activeSelf)
+        {
+            gameObject.SetActive(true);
+        }
+
+        transitionRoutine = StartCoroutine(TransitionRoutine(message, midAction));
+    }
+
+    private IEnumerator TransitionRoutine(string message, System.Action midAction)
+    {
+        isTransitionRunning = true;
+
+        if (transitionStatusText != null)
+        {
+            transitionStatusText.text = message;
+        }
+
+        GameObject transitionObject = transitionCanvasGroup.gameObject;
+        if (!transitionObject.activeSelf)
+        {
+            transitionObject.SetActive(true);
+        }
+
+        transitionCanvasGroup.blocksRaycasts = true;
+        transitionCanvasGroup.interactable = true;
+
+        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
+
+        midAction?.Invoke();
+
+        if (transitionCoveredDuration > 0f)
+        {
+            yield return new WaitForSeconds(transitionCoveredDuration);
+        }
+
+        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 0f, transitionFadeOutDuration);
+
+        transitionCanvasGroup.blocksRaycasts = false;
+        transitionCanvasGroup.interactable = false;
+        transitionObject.SetActive(false);
+
+        transitionRoutine = null;
+        isTransitionRunning = false;
+    }
+
+    private IEnumerator FadeCanvasGroup(float start, float end, float duration)
+    {
+        if (duration <= 0f)
+        {
+            transitionCanvasGroup.alpha = end;
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            transitionCanvasGroup.alpha = Mathf.Lerp(start, end, t);
+            yield return null;
+        }
+
+        transitionCanvasGroup.alpha = end;
+    }
+
+    private void PerformMazeStart()
+    {
+        // Pause NPCs and timer, but NOT player input (using minigame pause)
+        GlobalPause.SetMinigamePaused(true);
+
+        Show();
+    }
+
+    private void PerformMazeEnd()
+    {
+        // Resume NPCs and timer (using minigame pause)
+        GlobalPause.SetMinigamePaused(false);
+
+        PerformHide();
+    }
+
+    private void PerformHide()
+    {
+        if (!isOpen) return;
+        
+        isOpen = false;
+
+        if (playerInitialPosition != null)
+        {
+            playerInitialPosition.RestorePosition();
+        }
+
+        if (mainCamera != null)
+        {
+            mainCamera.transform.position = originalCamPos;
+            mainCamera.orthographicSize = originalCamSize;
+        }
+
+        // Hide popup & maze
+        if (backdrop) backdrop.SetActive(false);
+        if (window) window.SetActive(false);
+        if (mazeRoot) mazeRoot.SetActive(false);
+        
+        // Hide world-space backdrop
+        if (worldSpaceBackdrop != null)
+            worldSpaceBackdrop.SetActive(false);
+        
+        // Clean up UI camera
+        if (uiCamera != null)
+        {
+            Destroy(uiCamera.gameObject);
+            uiCamera = null;
+        }
+
+        // HUD back on
+        if (hudGroup != null)
+            hudGroup.SetActive(true);
+
+        // Re-enable overworld movement
+        foreach (var b in overworldControlScripts)
+            if (b) b.enabled = true;
+
+        // Turn off maze controls & hide player head
+        if (mazePlayer != null)
+        {
+            mazePlayer.enabled = false;
+            mazePlayer.gameObject.SetActive(false);
+        }
+
+        // Restore overworld sprite if you ever wire it
+        if (overworldSpriteRenderer != null)
+        {
+            overworldSpriteRenderer.enabled = true;
+            if (overworldSprite != null)
+                overworldSpriteRenderer.sprite = overworldSprite;
+        }
+
+        // Timer + flag, same style as Blackjack/Sokoban
+        FindObjectOfType<ClockTimer>()?.PauseTimer(false);
+        GameFlags.SetFlag("minigame.maze.finish");
+
+        mazeGenerated = false;
+
+        // Make sure transition canvas is disabled
+        if (transitionCanvasGroup != null)
+        {
+            transitionCanvasGroup.alpha = 0f;
+            transitionCanvasGroup.blocksRaycasts = false;
+            transitionCanvasGroup.interactable = false;
+            transitionCanvasGroup.gameObject.SetActive(false);
+        }
+
+        HideImmediate();
     }
 
     public void Show()
@@ -79,17 +330,68 @@ public class MazePopupController : MonoBehaviour
         isOpen = true;
         mazeGenerated = false;
 
-        // Pause NPCs and ClockTimer (but NOT player input - minigame pause)
-        GlobalPause.SetMinigamePaused(true);
+
+        if (playerInitialPosition != null)
+        {
+            playerInitialPosition.SaveCurrentPosition();
+        }
+        //GlobalPause.SetPaused(true);
 
         if (hudGroup != null) //HUD off
             hudGroup.SetActive(false);
-       
+
+        // Hide overworld player sprite so we only see the maze player head
+        if (overworldSpriteRenderer != null)
+        {
+            overworldSpriteRenderer.enabled = false;
+        }
+
+        if (mainCamera == null)
+            mainCamera = Camera.main;
+
+        if (mainCamera != null)
+        {
+            originalCamPos = mainCamera.transform.position;
+            originalCamSize = mainCamera.orthographicSize;
+        }
 
         // Show popup & maze - create world-space backdrop behind maze
         if (mainCamera == null)
             mainCamera = Camera.main;
-        
+
+        // --- TELEPORT PLAYER TO MAZE START (SOKOBAN-STYLE) ---
+        if (overworldPlayer != null)
+        {
+            Vector3 startPos;
+
+            // 1) If you have a specific start Transform, use that
+            if (mazeStartPoint != null)
+            {
+                startPos = mazeStartPoint.position;
+            }
+            // 2) Otherwise, use cell (0,0) from the maze grid
+            else if (mazeGenerator != null)
+            {
+                startPos = mazeGenerator.GetWorldPosition(new Vector2Int(0, 0));
+            }
+            // 3) Fallback: just use the maze root position
+            else if (mazeRoot != null)
+            {
+                startPos = mazeRoot.transform.position;
+            }
+            else
+            {
+                startPos = overworldPlayer.position;
+            }
+
+            // Snap to whole numbers so it lines up with the grid
+            overworldPlayer.position = new Vector3(
+                Mathf.Round(startPos.x),
+                Mathf.Round(startPos.y),
+                overworldPlayer.position.z
+            );
+        }
+
         // Disable UI backdrop - we'll use world-space instead
         if (backdrop) 
         {
@@ -182,9 +484,7 @@ public class MazePopupController : MonoBehaviour
             mazePlayer.gameObject.SetActive(false);
         }
 
-        // Swap overworld sprite to maze sprite (optional; you mostly see the head in the maze)
-        if (overworldSpriteRenderer != null && mazePlayerSprite != null)
-            overworldSpriteRenderer.sprite = mazePlayerSprite;
+        
 
         if (mazeGenerator != null)
         {
@@ -235,68 +535,41 @@ public class MazePopupController : MonoBehaviour
             bounds.Encapsulate(renderers[i].bounds);
         }
 
-        // Camera center in world space (x,y) � we don't move camera, just read it
-        Vector3 camCenter = mainCamera.transform.position;
+        // --- Move CAMERA to the maze center ---
+        Vector3 camPos = mainCamera.transform.position;
+        camPos.x = bounds.center.x; //chnage this to up the cam
+        camPos.y = bounds.center.y;
+        mainCamera.transform.position = camPos;
 
-        // We only care about x,y; keep maze's existing Z
-        Vector3 targetCenter = new Vector3(camCenter.x, camCenter.y, bounds.center.z);
-
-        // How much to move MazeRoot so its center matches camera center
-        Vector3 delta = targetCenter - bounds.center;
-
-        // Move the whole maze
-        mazeRoot.transform.position += new Vector3(delta.x, delta.y, 0f);
+        // --- Optional: zoom so the whole maze fits on screen ---
+        float halfHeight = bounds.size.y * 0.5f;
+        float halfWidth = bounds.size.x * 0.5f / mainCamera.aspect;
+        mainCamera.orthographicSize = Mathf.Max(halfHeight, halfWidth);
     }
 
+    /// <summary>
+    /// Public Hide method. If transitions are available and not already running, uses them.
+    /// Otherwise, hides immediately.
+    /// </summary>
     public void Hide()
     {
         if (!isOpen) return;
-        isOpen = false;
-
-        // Resume NPCs and ClockTimer (using minigame pause)
-        GlobalPause.SetMinigamePaused(false);
-        // Hide popup & maze
-        if (backdrop) backdrop.SetActive(false);
-        if (window) window.SetActive(false);
-        if (mazeRoot) mazeRoot.SetActive(false);
         
-        // Hide world-space backdrop
-        if (worldSpaceBackdrop != null)
-            worldSpaceBackdrop.SetActive(false);
+        // If we're in a transition, don't call Hide directly - use EndMaze instead
+        if (isTransitionRunning)
+        {
+            return;
+        }
         
-        // Clean up UI camera
-        if (uiCamera != null)
+        // If transitions are available, use them
+        if (transitionCanvasGroup != null)
         {
-            Destroy(uiCamera.gameObject);
-            uiCamera = null;
+            EndMaze(false); // false = quit, not solved
+            return;
         }
-
-        // HUD back on
-        if (hudGroup != null)
-            hudGroup.SetActive(true);
-
-        // Re-enable overworld movement
-        foreach (var b in overworldControlScripts)
-            if (b) b.enabled = true;
-
-        // Turn off maze controls & hide player head
-        if (mazePlayer != null)
-        {
-            mazePlayer.enabled = false;
-            mazePlayer.gameObject.SetActive(false);
-        }
-
-        // Restore overworld sprite if you ever wire it
-        if (overworldSpriteRenderer != null && overworldSprite != null)
-            overworldSpriteRenderer.sprite = overworldSprite;
-
-        // Timer + flag, same style as Blackjack/Sokoban
-        FindObjectOfType<ClockTimer>()?.PauseTimer(false);
-        GameFlags.SetFlag("minigame.maze.finish");
-
-        mazeGenerated = false;   // next time we open, Space is allowed again
-
-        HideImmediate();
+        
+        // Otherwise, hide immediately
+        PerformHide();
     }
 
     void HideImmediate()
