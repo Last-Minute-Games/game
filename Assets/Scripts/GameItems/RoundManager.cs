@@ -531,13 +531,6 @@ public class RoundManager : MonoBehaviour
             Debug.Log("[RoundManager] Added 10 seconds to clock timer as reward");
         }
         
-        // Check if we need to play day five cutscene
-        if (GameFlags.HasFlag("day.five") && !DayFiveCutsceneManager.ShouldPlayCutscene())
-        {
-            Debug.Log("[RoundManager] 🎬 Day five completed - marking cutscene to play");
-            DayFiveCutsceneManager.TriggerDayFiveCutscene();
-        }
-        
         Debug.Log("[RoundManager] Starting return to overworld sequence...");
         StartCoroutine(ReturnToOverworldDelayed());
     }
@@ -566,13 +559,6 @@ public class RoundManager : MonoBehaviour
             Debug.Log("[RoundManager] Removed 100 seconds from clock timer as penalty");
         }
         
-        // Check if we need to play day five cutscene (even on loss)
-        if (GameFlags.HasFlag("day.five") && !DayFiveCutsceneManager.ShouldPlayCutscene())
-        {
-            Debug.Log("[RoundManager] 🎬 Day five completed (loss) - marking cutscene to play");
-            DayFiveCutsceneManager.TriggerDayFiveCutscene();
-        }
-        
         Debug.Log("[RoundManager] Starting return to overworld sequence...");
         StartCoroutine(ReturnToOverworldDelayed());
     }
@@ -581,28 +567,8 @@ public class RoundManager : MonoBehaviour
     {
         yield return new WaitForSeconds(3f);
 
-        // Check if day five cutscene should play
-        if (DayFiveCutsceneManager.ShouldPlayCutscene())
-        {
-            Debug.Log("[RoundManager] Day five cutscene pending - finding manager to play it");
-            
-            // Try to find the cutscene manager in the scene
-            DayFiveCutsceneManager cutsceneManager = FindObjectOfType<DayFiveCutsceneManager>();
-            
-            if (cutsceneManager != null)
-            {
-                Debug.Log("[RoundManager] Playing day five cutscene before returning to overworld");
-                yield return StartCoroutine(cutsceneManager.PlayCutscene());
-                yield break; // Cutscene will handle scene transition
-            }
-            else
-            {
-                Debug.LogWarning("[RoundManager] DayFiveCutsceneManager not found in scene - skipping cutscene");
-                DayFiveCutsceneManager.ResetCutsceneFlag(); // Clear flag if manager missing
-            }
-        }
-
         // Normal return to overworld
+        // ClockTimer will handle day five cutscene check when transitioning from overworld
         Debug.Log("[RoundManager] Returning to Overworld");
         UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
     }
