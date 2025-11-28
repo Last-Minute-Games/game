@@ -269,6 +269,19 @@ namespace Systems.Overworld.Intro
             yield return null;
         }
         
+        private void Awake()
+        {
+            // Check early if we should play day-specific wake-up dialogue
+            // We need to set the flag BEFORE ClockTimer.Start() runs to prevent it from starting the timer
+            if (ShouldPlayDaySpecificWakeUpDialogue())
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Day-specific wake-up dialogue detected in Awake(), setting flag to skip timer start");
+                // Set flag to prevent ClockTimer from starting after reconstruction
+                PlayerPrefs.SetInt("SkipClockTimerStartAfterReconstruct", 1);
+                PlayerPrefs.Save();
+            }
+        }
+        
         void Start()
         {
             Debug.Log("[OverworldWakeUpCutscene] Start() called");
@@ -533,12 +546,29 @@ namespace Systems.Overworld.Intro
         /// </summary>
         private IEnumerator PlayDaySpecificWakeUpDialogue()
         {
-            Debug.Log("[OverworldWakeUpCutscene] Waiting for clock reconstruction to complete...");
+            Debug.Log("[OverworldWakeUpCutscene] Starting day-specific wake-up dialogue sequence");
             
-            // Wait for clock reconstruction animation (typically takes ~4 seconds)
-            yield return new WaitForSeconds(4f);
+            // Flag was already set in Awake(), ClockTimer will check it after reconstruction
             
-            // Small delay after wake-up
+            // Find clock timer
+            if (clockTimer == null)
+            {
+                clockTimer = FindObjectOfType<ClockTimer>();
+            }
+            
+            // Wait for clock reconstruction animation to complete
+            // ClockTimer will automatically start reconstruction if HUD was shown before
+            // The reconstruction animation typically takes:
+            // - Eyes opening effect: ~2 seconds
+            // - Zoom in: ~1.2 seconds (reconstructMoveDuration)
+            // - Repair sequence: ~1.2 seconds (reconstructSequenceDuration)
+            // - Zoom out: ~1.2 seconds (reconstructMoveDuration)
+            // Total: ~5.6 seconds, we'll wait a bit longer to be safe
+            float reconstructionDuration = 6f;
+            Debug.Log($"[OverworldWakeUpCutscene] Waiting {reconstructionDuration} seconds for clock reconstruction to complete...");
+            yield return new WaitForSeconds(reconstructionDuration);
+            
+            // Small delay after reconstruction
             yield return new WaitForSeconds(0.5f);
 
             // Get the dialogue for current day
@@ -546,19 +576,21 @@ namespace Systems.Overworld.Intro
             if (dialogueGraph == null || dialogBehaviour == null)
             {
                 Debug.LogWarning("[OverworldWakeUpCutscene] Cannot play day-specific dialogue - missing graph or dialogBehaviour");
+                
+                // Start timer manually if dialogue won't play
+                if (clockTimer != null)
+                {
+                    clockTimer.StartTimer(clockTimer.totalTime);
+                    Debug.Log("[OverworldWakeUpCutscene] Started clock timer manually (no dialogue to play)");
+                }
                 yield break;
             }
 
-            // Pause clock timer
-            if (clockTimer == null)
-            {
-                clockTimer = FindObjectOfType<ClockTimer>();
-            }
-            
+            // Clock timer should not have started yet (we set the flag), but ensure it's paused
             if (clockTimer != null)
             {
                 clockTimer.PauseTimer(true);
-                Debug.Log("[OverworldWakeUpCutscene] Clock timer paused for day-specific dialogue");
+                Debug.Log("[OverworldWakeUpCutscene] Clock timer paused for day-specific dialogue (should already be stopped)");
             }
 
             // Set player dialogue state
@@ -587,13 +619,6 @@ namespace Systems.Overworld.Intro
             
             dialogBehaviour.OnDialogFinished.RemoveListener(onFinished);
 
-            // Resume clock timer
-            if (clockTimer != null)
-            {
-                clockTimer.PauseTimer(false);
-                Debug.Log("[OverworldWakeUpCutscene] Clock timer resumed after day-specific dialogue");
-            }
-
             // Reset player dialogue state
             if (playerObj != null)
             {
@@ -602,6 +627,17 @@ namespace Systems.Overworld.Intro
                 {
                     playerMotor.SetDialogueActive(false);
                 }
+            }
+
+            // NOW start the clock timer (it hasn't started yet)
+            if (clockTimer != null)
+            {
+                clockTimer.StartTimer(clockTimer.totalTime);
+                Debug.Log("[OverworldWakeUpCutscene] Clock timer started after day-specific dialogue completed");
+            }
+            else
+            {
+                Debug.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot start timer!");
             }
 
             Debug.Log("[OverworldWakeUpCutscene] Day-specific wake-up dialogue complete");

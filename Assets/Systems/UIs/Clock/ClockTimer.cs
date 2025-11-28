@@ -861,7 +861,18 @@ public class ClockTimer : MonoBehaviour
             }
         }
 
-        StartTimer(totalTime);
+        // Check if we should skip starting the timer (e.g., for day-specific wake-up dialogue)
+        bool skipTimerStart = PlayerPrefs.GetInt("SkipClockTimerStartAfterReconstruct", 0) == 1;
+        if (skipTimerStart)
+        {
+            Debug.Log("[ClockTimer] Skipping timer start after reconstruction (will be started manually)");
+            PlayerPrefs.SetInt("SkipClockTimerStartAfterReconstruct", 0);
+            PlayerPrefs.Save();
+        }
+        else
+        {
+            StartTimer(totalTime);
+        }
         // Don't do an additional fade in since eyes opening already revealed the scene
     }
 
