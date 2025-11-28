@@ -425,24 +425,6 @@ namespace Systems.Overworld.Intro
         {
             Debug.Log("[OverworldWakeUpCutscene] TriggerWakeUpCutscene() called");
             
-            // RESET GAME FLAGS TO DEFAULTS
-            // Clear all flags except the default ones (characters, cards, etc.)
-            Debug.Log("[OverworldWakeUpCutscene] Resetting game flags to defaults for new game");
-            GameFlags.ResetToDefaults();
-            
-            // Save the reset state immediately
-            GameFlags.SaveFlags();
-            Debug.Log("[OverworldWakeUpCutscene] Game flags reset and saved");
-            
-            // Clear the journal tutorial flag so it shows again in Overworld
-            // The TutorialScene showed the journal as part of the tutorial, but in Overworld
-            // the player needs to learn to open it themselves
-            if (GameFlags.HasFlag("journal.tutorial.shown"))
-            {
-                GameFlags.RemoveFlag("journal.tutorial.shown");
-                Debug.Log("[OverworldWakeUpCutscene] Cleared 'journal.tutorial.shown' flag for Overworld");
-            }
-            
             // Set flag to prevent clock re-animate animation during cutscene
             PlayerPrefs.SetInt("SkipClockReanimate", 1);
             Debug.Log("[OverworldWakeUpCutscene] Set flag to skip clock re-animate animation");
