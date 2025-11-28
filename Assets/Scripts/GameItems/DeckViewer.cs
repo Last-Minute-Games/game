@@ -77,6 +77,20 @@ namespace GameItems
                     Destroy(content.GetChild(i).gameObject);
             }
         }
+
+        /// <summary>
+        /// Stops any ongoing layout animation (e.g., cards repositioning on spline).
+        /// Useful to call before clearing cards to avoid animation conflicts.
+        /// </summary>
+        public void StopLayoutAnimation()
+        {
+            if (_layoutRoutine != null)
+            {
+                Debug.Log("[DeckViewer] Stopping ongoing layout animation");
+                StopCoroutine(_layoutRoutine);
+                _layoutRoutine = null;
+            }
+        }
         
         private IEnumerator UpdateCardPositions(float duration)
         {

@@ -16,6 +16,10 @@ namespace GameItems.Cards.Helpers
         
         // Prevents SFX spam when selecting (OnPointerDown + OnBeginDrag both call select)
         private CardRender currentlySelectedCard = null;
+        
+        // Prevents draw sound spam when drawing multiple cards per round
+        // Must be STATIC so it's shared across all card instances
+        private static bool drawSoundPlayed = false;
 
         // ────────────────────────────────
         // Public API (state-based actions)
@@ -30,27 +34,40 @@ namespace GameItems.Cards.Helpers
         // Draw card onto player hand
         public void OnCardDrawn(CardRender card)
         {
-            Debug.Log($"[CardFXHelper] OnCardDrawn called. Locked: {CardInteraction.Locked}");
-            if (CardInteraction.Locked) return;
+            Debug.Log($"[CardFXHelper] OnCardDrawn called for card '{card?.Data?.name ?? "unknown"}'");
             if (card == null)
             {
                 Debug.LogWarning("[CardFXHelper] OnCardDrawn called with null card.");
                 return;
             }
 
-            Debug.Log($"[CardFXHelper] OnCardDrawn for '{card.Data?.name ?? "unknown"}'. animHelper: {animHelper != null}, sfxHelper: {sfxHelper != null}");
+            Debug.Log($"[CardFXHelper] OnCardDrawn - animHelper: {animHelper != null}, sfxHelper: {sfxHelper != null}");
             
+            // Always animate the card
             animHelper?.AnimateDraw(card);
             
-            if (sfxHelper != null)
+            // Only play draw sound once per round (first card drawn)
+            if (!drawSoundPlayed && sfxHelper != null)
             {
-                Debug.Log("[CardFXHelper] Calling sfxHelper.PlayDraw()");
+                Debug.Log("[CardFXHelper] Playing draw sound (first card of round)");
                 sfxHelper.PlayDraw();
+                drawSoundPlayed = true;
             }
-            else
-            {
-                Debug.LogWarning("[CardFXHelper] sfxHelper is NULL! Cannot play draw sound.");
-            }
+        }
+
+        // Reset draw sound flag at the start of a new round
+        public void ResetDrawSoundFlag()
+        {
+            Debug.Log($"[CardFXHelper] Draw sound flag reset called (instance method). Before: {drawSoundPlayed}");
+            ResetDrawSoundFlagStatic();
+        }
+
+        // Static method to reset the draw sound flag
+        public static void ResetDrawSoundFlagStatic()
+        {
+            Debug.Log($"[CardFXHelper] Static reset called. Before: {drawSoundPlayed}");
+            drawSoundPlayed = false;
+            Debug.Log($"[CardFXHelper] Static reset complete. After: {drawSoundPlayed}");
         }
 
         // When hovering over a card

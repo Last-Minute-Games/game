@@ -16,6 +16,13 @@ public class RoundManager : MonoBehaviour
     
     // Prevents checking end conditions during wave transitions
     private bool _isTransitioningWaves = false;
+    
+    // Prevents EndPlayerTurn from being called while a card is being played
+    // This avoids conflicts between RebuildSmart() and ClearSmooth()
+    private bool _isPlayingCard = false;
+    
+    // Prevents EndPlayerTurn from being called multiple times
+    private bool _isEndingTurn = false;
 
     [Header("End Screen UI")] 
     public ScreenFadeUI endScreenUI;
@@ -90,6 +97,17 @@ public class RoundManager : MonoBehaviour
         if (currentTurnTime <= 0f)
         {
             Debug.Log("⏰ Turn timer expired! Ending player turn.");
+            
+            // Don't end turn immediately if a card is still being played
+            // The card play will trigger EndPlayerTurn when complete
+            if (_isPlayingCard)
+            {
+                Debug.Log("⏰ Timer expired but a card is being played - deferring turn end");
+                currentTurnTime = 0f;
+                timerActive = false;
+                return;
+            }
+            
             currentTurnTime = 0f;
             timerActive = false;
             EndPlayerTurn();
@@ -141,6 +159,9 @@ public class RoundManager : MonoBehaviour
     {
         // Safety: Unlock card interactions in case they got stuck
         CardFXHelper.CardInteraction.Locked = false;
+        
+        // Reset draw sound flag so it plays once when cards are drawn this wave
+        CardFXHelper.ResetDrawSoundFlagStatic();
         
         // Show "WAVE 1" transition immediately
         if (roundTransitionUI != null)
@@ -202,6 +223,9 @@ public class RoundManager : MonoBehaviour
         // Safety: Unlock card interactions in case they got stuck
         CardFXHelper.CardInteraction.Locked = false;
         
+        // Reset draw sound flag so it plays once when cards are drawn this wave
+        CardFXHelper.ResetDrawSoundFlagStatic();
+        
         // Clear player's hand for fresh start in new wave
         if (player != null && player.cardManager != null)
         {
@@ -225,11 +249,38 @@ public class RoundManager : MonoBehaviour
     }
 
     // -------------------------------------------------------
+    // Card playing state management
+    // -------------------------------------------------------
+    public void SetCardPlayingState(bool isPlaying)
+    {
+        _isPlayingCard = isPlaying;
+        if (isPlaying)
+        {
+            Debug.Log("[RoundManager] Card play started - timer will defer");
+        }
+        else
+        {
+            Debug.Log("[RoundManager] Card play finished");
+            // Don't call EndPlayerTurn here - let the timer check on next frame
+            // This prevents double execution
+        }
+    }
+
+    // -------------------------------------------------------
     // Called when player ends their turn
     // -------------------------------------------------------
     public void EndPlayerTurn()
     {
         if (!battleActive || !playerTurn) return;
+        
+        // Prevent double execution of EndPlayerTurn
+        if (_isEndingTurn)
+        {
+            Debug.LogWarning("[RoundManager] EndPlayerTurn already in progress - skipping duplicate call");
+            return;
+        }
+        
+        _isEndingTurn = true;
 
         // Stop timer
         timerActive = false;
@@ -238,6 +289,14 @@ public class RoundManager : MonoBehaviour
 
         // Hide all arrows from any cards that might be mid-drag
         HideAllCardArrows();
+        
+        // Stop any ongoing hand layout animations before discarding
+        // This prevents cards from being mid-rebuild when we try to clear them
+        if (handViewer != null)
+        {
+            Debug.Log("[RoundManager] Stopping any ongoing hand layout animations");
+            handViewer.StopLayoutAnimation();
+        }
 
         // Animate cards discarding BEFORE clearing data
         if (handViewer != null && handViewer.GetRenders().Count > 0)
@@ -245,6 +304,7 @@ public class RoundManager : MonoBehaviour
             handViewer.ClearSmooth(onComplete: () =>
             {
                 // After animation completes, clear the data and continue
+                _isEndingTurn = false;
                 player.EndTurn();
                 // Refresh other viewers but not hand (already cleared with animation)
                 RefreshDeckViewers(skipHand: true);
@@ -254,6 +314,8 @@ public class RoundManager : MonoBehaviour
         }
         else
         {
+            // No cards to animate, proceed normally
+            _isEndingTurn = false;
             // No cards to animate, proceed normally
             player.EndTurn();
             RefreshDeckViewers();
@@ -306,6 +368,9 @@ public class RoundManager : MonoBehaviour
         
         // Safety: Unlock card interactions in case they got stuck from previous turn
         CardFXHelper.CardInteraction.Locked = false;
+
+        // Reset draw sound flag so it plays once when cards are drawn this round
+        CardFXHelper.ResetDrawSoundFlagStatic();
 
         // DON'T reset enemy block here - let it persist through this round
         // Block will be reset AFTER the enemy turn executes
