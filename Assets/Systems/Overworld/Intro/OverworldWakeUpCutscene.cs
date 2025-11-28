@@ -243,6 +243,14 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(2f); // Wait for HUD animation to play
             
+            // SET DAY.ONE FLAG - This is the start of the game's day progression
+            // This will automatically trigger a save because day flags auto-save
+            if (!GameFlags.HasFlag("day.one"))
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Setting day.one flag (game start)");
+                GameFlags.SetFlag("day.one");
+            }
+            
             Debug.Log("[OverworldWakeUpCutscene] Complete");
             yield return null;
         }
@@ -381,6 +389,15 @@ namespace Systems.Overworld.Intro
         {
             Debug.Log("[OverworldWakeUpCutscene] TriggerWakeUpCutscene() called");
             
+            // RESET GAME FLAGS TO DEFAULTS
+            // Clear all flags except the default ones (characters, cards, etc.)
+            Debug.Log("[OverworldWakeUpCutscene] Resetting game flags to defaults for new game");
+            GameFlags.ResetToDefaults();
+            
+            // Save the reset state immediately
+            GameFlags.SaveFlags();
+            Debug.Log("[OverworldWakeUpCutscene] Game flags reset and saved");
+            
             // Clear the journal tutorial flag so it shows again in Overworld
             // The TutorialScene showed the journal as part of the tutorial, but in Overworld
             // the player needs to learn to open it themselves
@@ -389,6 +406,10 @@ namespace Systems.Overworld.Intro
                 GameFlags.RemoveFlag("journal.tutorial.shown");
                 Debug.Log("[OverworldWakeUpCutscene] Cleared 'journal.tutorial.shown' flag for Overworld");
             }
+            
+            // Set flag to prevent clock re-animate animation during cutscene
+            PlayerPrefs.SetInt("SkipClockReanimate", 1);
+            Debug.Log("[OverworldWakeUpCutscene] Set flag to skip clock re-animate animation");
             
             PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
             PlayerPrefs.Save();
