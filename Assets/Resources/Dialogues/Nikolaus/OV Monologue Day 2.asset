@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 33f741ea10ebcf842a91c9b871dd032a, type: 3}
-  m_Name: TutorialMonologueDoor
+  m_Name: OV Monologue Day 2
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.DialogNodeGraph
   NodesList:
-  - {fileID: 1850849729806023439}
+  - {fileID: 5350302045027927052}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
   NodeToDrawLineFrom: {fileID: 0}
   LinePosition: {x: 0, y: 0}
   IsLocalizationSetUp: 0
---- !u!114 &1850849729806023439
+--- !u!114 &5350302045027927052
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -35,15 +35,15 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 431
-    y: 393
+    x: 273
+    y: 233
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: ???
-    Text: (The door shines brighter as I get closer...)
+    CharacterName: Nikolaus
+    Text: Who have I not spoken to or what I have not investigated?
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes: []
   ChildNode: {fileID: 0}
