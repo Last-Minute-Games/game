@@ -15,6 +15,10 @@ public class BlackjackPopupController : MonoBehaviour
     [Tooltip("Add your player movement scripts here to disable during the popup.")]
     public Behaviour[] playerControlScripts; // e.g., FirstPersonController, CharacterController wrapper, etc.
 
+    [Header("Instructions")]
+    public MinigameInstructions instructions;
+
+
     bool wasCursorVisible;
     CursorLockMode priorLockState;
     [SerializeField] private GameObject hudGroup;
@@ -40,6 +44,16 @@ public class BlackjackPopupController : MonoBehaviour
         if (backdrop) backdrop.SetActive(true);
         if (window) window.SetActive(true);
         gameObject.SetActive(true);
+
+        if (instructions == null)
+        {
+            // auto-find it if you forgot to wire it
+            instructions = GetComponentInChildren<MinigameInstructions>(true);
+        }
+        if (instructions != null)
+        {
+            instructions.OnPopupOpened();
+        }
 
         // Pause player input (still using player control scripts disable)
         foreach (var b in playerControlScripts)

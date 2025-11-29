@@ -33,6 +33,10 @@ public class MazePopupController : MonoBehaviour
     public Behaviour[] overworldControlScripts;
     [SerializeField] private GameObject hudGroup; // same idea as Blackjack
 
+    [Header("Instructions")]
+    [SerializeField] private MinigameInstructions instructions;   // NEW
+
+
     [Header("Sprite Swap (optional but fun)")]
     [Tooltip("Sprite to use for the player while in the maze (little head).")]
     public Sprite mazePlayerSprite;
@@ -473,6 +477,16 @@ public class MazePopupController : MonoBehaviour
         }
         
         gameObject.SetActive(true);
+
+        if (instructions == null)
+        {
+            instructions = GetComponentInChildren<MinigameInstructions>(true);
+        }
+        if (instructions != null)
+        {
+            instructions.OnPopupOpened();
+        }
+
 
         // Disable overworld movement scripts
         foreach (var b in overworldControlScripts)
