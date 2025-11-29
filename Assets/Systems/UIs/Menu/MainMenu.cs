@@ -21,9 +21,14 @@ public class Startscreen : MonoBehaviour
     public CanvasGroup buttonsCanvasGroup;       // Canvas group for fading the buttons
     
     public GameObject playButton;
+    public GameObject loadGameButton;      // NEW: Load Game button
     public GameObject settingsButton;
     public GameObject creditsButton;
     public GameObject quitButton;
+
+    [Header("Save System")]
+    public SaveNamePrompt saveNamePrompt;  // NEW: Save name prompt UI
+    public LoadGameUI loadGameUI;          // NEW: Load game UI
 
     [Header("Credits")]
     public CanvasGroup creditsCanvasGroup; // Parent of all credits UI
@@ -125,6 +130,8 @@ public class Startscreen : MonoBehaviour
         quitButton = GameObject.Find("QuitButton");
         settingsButton = GameObject.Find("SettingsButton");
         creditsButton = GameObject.Find("CreditsButton");
+        loadGameButton = GameObject.Find("LoadGameButton"); // NEW: Find load game button
+        
         _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
         _fadeCanvasGroup.alpha = 1f; // Start transparent
         
@@ -417,6 +424,7 @@ public class Startscreen : MonoBehaviour
     private void SetMenuButtonsActive(bool state)
     {
         if(playButton) playButton.SetActive(state);
+        if(loadGameButton) loadGameButton.SetActive(state); // NEW: Handle load game button
         if(settingsButton) settingsButton.SetActive(state);
         if(creditsButton) creditsButton.SetActive(state);
         if(quitButton) quitButton.SetActive(state);
@@ -424,7 +432,89 @@ public class Startscreen : MonoBehaviour
 
     public void StartGame()
     {
+        // NEW: Show save name prompt instead of directly loading
+        if (saveNamePrompt != null)
+        {
+            saveNamePrompt.Show(OnSaveNameConfirmed, OnSaveNameCancelled);
+        }
+        else
+        {
+            Debug.LogWarning("[MainMenu] SaveNamePrompt not assigned! Loading game without save name.");
+            StartCoroutine(FadeAndLoad());
+        }
+    }
+    
+    /// <summary>
+    /// NEW: Called when user confirms save name
+    /// </summary>
+    private void OnSaveNameConfirmed(string saveName)
+    {
+        Debug.Log($"[MainMenu] Save name confirmed: {saveName}");
+        
+        // Create new save with this name
+        bool success = GameFlagsManager.CreateNewSave(saveName);
+        
+        if (success)
+        {
+            // Start the game
+            StartCoroutine(FadeAndLoad());
+        }
+        else
+        {
+            Debug.LogError($"[MainMenu] Failed to create save: {saveName}");
+        }
+    }
+    
+    /// <summary>
+    /// NEW: Called when user cancels save name prompt
+    /// </summary>
+    private void OnSaveNameCancelled()
+    {
+        Debug.Log("[MainMenu] Save name prompt cancelled");
+        // Do nothing - return to main menu
+    }
+    
+    /// <summary>
+    /// NEW: Show the load game UI
+    /// </summary>
+    public void ShowLoadGame()
+    {
+        if (loadGameUI != null)
+        {
+            Debug.Log("[MainMenu] Opening load game UI");
+            
+            // Subscribe to load event to transition to game
+            SaveGameEvents.OnSaveLoaded += OnGameLoaded;
+            
+            loadGameUI.Show(OnLoadGameBack);
+        }
+        else
+        {
+            Debug.LogWarning("[MainMenu] LoadGameUI not assigned in the inspector!");
+        }
+    }
+    
+    /// <summary>
+    /// NEW: Called when a save is loaded from the load game UI
+    /// </summary>
+    private void OnGameLoaded(string saveName)
+    {
+        Debug.Log($"[MainMenu] Game loaded: {saveName}");
+        
+        // Unsubscribe
+        SaveGameEvents.OnSaveLoaded -= OnGameLoaded;
+        
+        // Load the game scene
         StartCoroutine(FadeAndLoad());
+    }
+    
+    /// <summary>
+    /// NEW: Called when back button is clicked in load game UI
+    /// </summary>
+    private void OnLoadGameBack()
+    {
+        // Unsubscribe in case we didn't load
+        SaveGameEvents.OnSaveLoaded -= OnGameLoaded;
     }
     
     private IEnumerator FlickerButton(GameObject button, float interval)
@@ -449,6 +539,7 @@ public class Startscreen : MonoBehaviour
         settingsButton.SetActive(false);
         creditsButton.SetActive(false); 
         playButton.SetActive(false);
+        if(loadGameButton) loadGameButton.SetActive(false); // NEW: Hide load game button
         
         // start flickering the play button
         StartCoroutine(FlickerButton(playButton, 0.3f));

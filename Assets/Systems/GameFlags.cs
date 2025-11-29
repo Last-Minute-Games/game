@@ -433,11 +433,12 @@ public class GameFlags : PersistentSingleton<GameFlags>
             Instance.OnFlagChanged?.Invoke(flagName);
             Debug.Log($"[GameFlags] Set flag: {flagName}");
             
-            // AUTO-SAVE for day progression flags
+            // AUTO-SAVE for day progression flags using current save name
             if (IsDayFlag(flagName))
             {
                 Debug.Log($"[GameFlags] Day flag detected - auto-saving game progress");
-                SaveFlags();
+                // Use GameFlagsManager to save to current save slot
+                GameFlagsManager.SaveCurrentGame();
             }
         }
     }
