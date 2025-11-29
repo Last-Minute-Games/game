@@ -216,8 +216,8 @@ namespace GameItems.Cards
 
             // Always unlocked if card is marked default
             // also as a fallback for the three main default cards
-            if (card.unlockedByDefault)
-                return true;
+            // if (card.unlockedByDefault)
+            //     return true;
 
             // No unlock flag? Treat as unlocked
             if (string.IsNullOrEmpty(card.unlockFlag))

@@ -47,6 +47,8 @@ public class SFXManager : MonoBehaviour
             src.spatialBlend = 0f; // 2D only
             audioSources.Add(src);
         }
+        
+        Debug.Log($"[SFXManager] Initialized {audioSources.Count} audio sources");
     }
 
     /// <summary>
@@ -55,11 +57,21 @@ public class SFXManager : MonoBehaviour
     public void Play(SFXCueData cue)
     {
         if (cue == null)
+        {
+            Debug.LogWarning("[SFXManager] Play called with null cue!");
             return;
+        }
+
+        Debug.Log($"[SFXManager] Play called with cue: {cue.cueName}");
 
         AudioClip clip = cue.GetRandomClip();
         if (clip == null)
+        {
+            Debug.LogWarning($"[SFXManager] No audio clip found in cue: {cue.cueName}");
             return;
+        }
+
+        Debug.Log($"[SFXManager] Got clip: {clip.name}, length: {clip.length}s");
 
         AudioSource source = GetAvailableSource();
         if (source == null)
@@ -68,11 +80,15 @@ public class SFXManager : MonoBehaviour
             return;
         }
 
+        Debug.Log($"[SFXManager] Using audio source: {source.name}, volume: {cue.volume}");
+
         source.clip = clip;
         source.volume = cue.volume;
         source.pitch = 1f;
         source.spatialBlend = 0f;
         source.Play();
+        
+        Debug.Log($"[SFXManager] Audio source is playing: {source.isPlaying}");
     }
 
     /// <summary>

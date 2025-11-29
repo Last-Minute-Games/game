@@ -1,6 +1,8 @@
 using Entities.Enemies.Helpers;
+using Entities.Enemies.Render;
 using Entities.Players.Data;
 using GameItems.Cards;
+using TMPro;
 
 namespace Entities.Enemies.Manager
 {
@@ -9,33 +11,55 @@ namespace Entities.Enemies.Manager
 
     public class EnemyManager : MonoBehaviour
     {
-        [Header("Data")]
-        public List<EnemyData> enemies = new();
+        [Header("Data")] public List<EnemyData> enemies = new();
 
-        [Header("Intent Icons")]
-        [Tooltip("Reference to the global card icon library for enemy intents.")]
+        [Header("Intent Icons")] [Tooltip("Reference to the global card icon library for enemy intents.")]
         public CardIconLibrary iconLibrary;
 
         [Header("Rendering")]
-        [Tooltip("Parent container where enemy GameObjects (SpriteRenderer + Animator) will be spawned in world space.")]
+        [Tooltip(
+            "Parent container where enemy GameObjects (SpriteRenderer + Animator) will be spawned in world space.")]
         public Transform uiContainer; // now a Transform, not a RectTransform
-        [Tooltip("Prefab for the enemy health bar UI (must have EnemyHealth component).")]
-        [SerializeField] private GameObject healthBarPrefab;
 
-        [Header("Layout (Line-up)")]
-        [Tooltip("Horizontal spacing between enemies in world units.")]
-        [SerializeField] private float horizontalSpacing = 2f;
-        [Tooltip("Fixed Y offset for the line-up (local to container).")]
-        [SerializeField] private float yOffset;
-        [Tooltip("Center the lineup around X=0. If false, lineup starts at X=0 and grows positive.")]
-        [SerializeField] private bool centerAlign = true;
-        [Tooltip("Automatically layout enemies after (re)building.")]
-        [SerializeField] private bool autoLayoutOnBuild = true;
+        [Tooltip("Prefab for the enemy health bar UI (must have EnemyHealth component).")] [SerializeField]
+        private GameObject healthBarPrefab;
+
+        [Tooltip("Prefab for the enemy rendering (must have EnemyRender component with child UI elements).")]
+        [SerializeField]
+        private EnemyRender enemyPrefab;
+
+        [Header("Layout (Line-up)")] [Tooltip("Horizontal spacing between enemies in world units.")] [SerializeField]
+        private float horizontalSpacing = 2f;
+
+        [Tooltip("Fixed Y offset for the line-up (local to container).")] [SerializeField]
+        private float yOffset;
+
+        [Tooltip("Center the lineup around X=0. If false, lineup starts at X=0 and grows positive.")] [SerializeField]
+        private bool centerAlign = true;
+
+        [Tooltip("Automatically layout enemies after (re)building.")] [SerializeField]
+        private bool autoLayoutOnBuild = true;
 
         [Header("Health Bar Settings")]
         [Tooltip("Local position offset for health bar relative to enemy.")]
-        [SerializeField] private Vector3 healthBarOffset = new Vector3(0f, 0.17f, 0f);
-        
+        [SerializeField]
+        private Vector3 healthBarOffset = new Vector3(0f, 0.17f, 0f);
+
+        [Header("Enemy Render Settings")] [Tooltip("Sprite to show when any enemy is hovered over by the player.")]
+        public Sprite hoverSprite;
+
+        [Tooltip("Y offset for hover sprite position relative to enemy.")]
+        public float hoverSpriteYOffset;
+
+        [Tooltip("Offset from enemy position where intent icon appears.")]
+        public Vector3 intentIconOffset = new Vector3(0f, 0.23f, 0f);
+
+        [Tooltip("Size of the intent icon sprite.")]
+        public float intentIconSize = 0.2f;
+
+        [Tooltip("Sorting order offset for hover sprite from enemy sprite.")]
+        public int hoverSpriteSortingOrderOffset = 5;
+
         private readonly List<EnemyRender> _activeRenders = new();
 
         public void InitializeEnemies(List<EnemyData> enemyList)
@@ -73,11 +97,18 @@ namespace Entities.Enemies.Manager
             {
                 if (r != null) Destroy(r.gameObject);
             }
+
             _activeRenders.Clear();
 
             if (uiContainer == null)
             {
                 Debug.LogWarning("EnemyManager: uiContainer not set. Enemies will not be rendered.");
+                return;
+            }
+
+            if (enemyPrefab == null)
+            {
+                Debug.LogWarning("EnemyManager: enemyPrefab not set. Cannot spawn enemies.");
                 return;
             }
 
@@ -89,21 +120,26 @@ namespace Entities.Enemies.Manager
             for (int i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
-                var go = new GameObject(string.IsNullOrEmpty(enemy.enemyName) ? $"Enemy_{i}" : enemy.enemyName,
-                    typeof(Animator), typeof(SpriteRenderer), typeof(EnemyRender));
 
-                // Parent under the provided container
-                var t = go.transform;
-                t.SetParent(uiContainer, false);
+                // Instantiate from prefab
+                var instance = Instantiate(enemyPrefab, uiContainer);
+                var go = instance.gameObject;
+
+                // Rename for clarity
+                go.name = string.IsNullOrEmpty(enemy.enemyName) ? $"Enemy_{i}" : enemy.enemyName;
 
                 // World-space transform defaults
+                var t = go.transform;
                 t.localPosition = Vector3.zero;
                 t.localScale = Vector3.one * 10f;
                 t.localRotation = Quaternion.identity;
 
                 var sr = go.GetComponent<SpriteRenderer>();
-                sr.sprite = enemy.artwork;
-                sr.sortingOrder = i; // order by spawn index (front-to-back or vice versa as needed)
+                if (sr != null)
+                {
+                    sr.sprite = enemy.artwork;
+                    sr.sortingOrder = i; // order by spawn index (front-to-back or vice versa as needed)
+                }
 
                 // Add health bar if prefab is available
                 if (healthBarPrefab != null)
@@ -117,14 +153,16 @@ namespace Entities.Enemies.Manager
                     }
                     else
                     {
-                        Debug.LogWarning($"EnemyManager: healthBarPrefab for {enemy.enemyName} does not have EnemyHealth component.");
+                        Debug.LogWarning(
+                            $"EnemyManager: healthBarPrefab for {enemy.enemyName} does not have EnemyHealth component.");
                     }
                 }
 
-                var render = go.GetComponent<EnemyRender>();
-                render.Bind(enemy);
+                // Bind the enemy data to the render component
+                instance.Bind(enemy, hoverSprite, hoverSpriteYOffset, intentIconOffset, intentIconSize,
+                    hoverSpriteSortingOrderOffset);
 
-                _activeRenders.Add(render);
+                _activeRenders.Add(instance);
             }
 
             if (autoLayoutOnBuild)
@@ -192,7 +230,6 @@ namespace Entities.Enemies.Manager
         // Enemies execute their previously decided intents with delays (turn-based feel)
         public System.Collections.IEnumerator ExecuteEnemyTurnSequence(PlayerData player)
         {
-
             for (int i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
@@ -208,7 +245,7 @@ namespace Entities.Enemies.Manager
                 {
                     // Use GetMoveNameForAction to support custom names
                     string moveName = r.GetMoveNameForAction(enemy.currentAction);
-                    
+
                     // Show popup and wait for it to be visible
                     r.ShowMoveNamePopup(moveName);
                     yield return new WaitForSeconds(0.3f); // Brief pause to let player see the move name
@@ -217,15 +254,64 @@ namespace Entities.Enemies.Manager
                 // Play intent animation based on type
                 if (enemy.currentIntent == EnemyIntent.Attack)
                 {
-                    if (r != null) r.PlayAttack();
-                    
-                    // Wait for attack animation to play out
-                    yield return new WaitForSeconds(0.5f);
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} executing Attack. Playing attack animation.");
+                        r.PlayAttack();
+                    }
+
+                    // Wait a bit for animation to start showing the attack
+                    yield return new WaitForSeconds(0.2f);
+
+                    // Now play the attack sound while animation is mid-swing
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} - Playing attack sound now.");
+                        r.PlayEnemyAttackSound();
+                    }
+
+                    // Wait for rest of attack animation to play out
+                    yield return new WaitForSeconds(0.4f);
                 }
                 else if (enemy.currentIntent == EnemyIntent.Block)
                 {
-                    if (r != null) r.PlayIdle(); // Or a defend animation if you have one
-                    yield return new WaitForSeconds(0.3f);
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} executing Block. Playing idle animation.");
+                        r.PlayIdle(); // Or a defend animation if you have one
+                    }
+
+                    // Wait a bit for visual setup
+                    yield return new WaitForSeconds(0.15f);
+
+                    // Play defense sound as block/shield effect happens
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} - Playing defense sound now.");
+                        r.PlayEnemyDefenseSound();
+                    }
+
+                    yield return new WaitForSeconds(0.2f);
+                }
+                else if (enemy.currentIntent == EnemyIntent.Heal)
+                {
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} executing Heal. Playing idle animation.");
+                        r.PlayIdle(); // Or a heal animation if you have one
+                    }
+
+                    // Wait a bit for visual setup
+                    yield return new WaitForSeconds(0.15f);
+
+                    // Play healing sound as heal effect happens
+                    if (r != null)
+                    {
+                        Debug.Log($"[EnemyManager] {enemy.enemyName} - Playing healing sound now.");
+                        r.PlayEnemyHealSound();
+                    }
+
+                    yield return new WaitForSeconds(0.2f);
                 }
                 else
                 {
@@ -283,7 +369,7 @@ namespace Entities.Enemies.Manager
             if (render != null)
             {
                 render.UpdateHealth();
-                
+
                 // Play hurt animation if still alive
                 if (enemy.isAlive)
                 {
@@ -296,6 +382,7 @@ namespace Entities.Enemies.Manager
                     RemoveDeadEnemies(); // remove from manager list
                 }
             }
+
             FindFirstObjectByType<RoundManager>()?.CheckImmediateEndConditions();
         }
 
@@ -311,21 +398,23 @@ namespace Entities.Enemies.Manager
                 if (enemy.block > 0)
                 {
                     enemy.blockAge++;
-                    
+
                     // Only reset block that's 1 or more turns old
                     if (enemy.blockAge >= 2)
                     {
-                        Debug.Log($"[EnemyManager] {enemy.enemyName} block expired (age {enemy.blockAge}): {enemy.block} → 0");
+                        Debug.Log(
+                            $"[EnemyManager] {enemy.enemyName} block expired (age {enemy.blockAge}): {enemy.block} → 0");
                         enemy.block = 0;
                         enemy.blockAge = 0;
-                        
+
                         var r = GetRenderFor(enemy);
                         if (r != null)
                             r.UpdateHealth();
                     }
                     else
                     {
-                        Debug.Log($"[EnemyManager] {enemy.enemyName} block persists (age {enemy.blockAge}): {enemy.block} block");
+                        Debug.Log(
+                            $"[EnemyManager] {enemy.enemyName} block persists (age {enemy.blockAge}): {enemy.block} block");
                     }
                 }
             }
@@ -343,8 +432,114 @@ namespace Entities.Enemies.Manager
         public bool AllEnemiesDefeated()
         {
             foreach (var e in enemies)
-                if (e.isAlive) return false;
+                if (e.isAlive)
+                    return false;
             return true;
+        }
+
+        /// <summary>
+        /// Creates a new EnemyPrefab with all necessary child objects and components.
+        /// Call this from the Editor or at runtime to generate the prefab structure.
+        /// </summary>
+        /// <param name="parentTransform">Optional: parent transform for the prefab. If null, creates at root.</param>
+        /// <returns>The EnemyRender component of the created prefab.</returns>
+        public static EnemyRender CreateEnemyPrefab(Transform parentTransform = null)
+        {
+            // Create root GameObject
+            var rootGo = new GameObject("EnemyPrefab");
+            rootGo.transform.SetParent(parentTransform, false);
+
+            // Add required components to root
+            var spriteRenderer = rootGo.AddComponent<SpriteRenderer>();
+            spriteRenderer.sprite = null; // Will be set per enemy
+            spriteRenderer.sortingOrder = 0;
+
+            var boxCollider = rootGo.AddComponent<BoxCollider2D>();
+            boxCollider.offset = new Vector2(0f, 0.05f);
+            boxCollider.size = new Vector2(0.3f, 0.3f);
+
+            rootGo.AddComponent<Animator>();
+            // Note: Animator Controller will need to be assigned in Editor if needed
+
+            var enemyRender = rootGo.AddComponent<EnemyRender>();
+
+            // ========== Create IntentIcon child ==========
+            var intentIconGo = new GameObject("IntentIcon");
+            intentIconGo.transform.SetParent(rootGo.transform, false);
+            intentIconGo.transform.localPosition = Vector3.zero;
+            intentIconGo.transform.localScale = Vector3.one;
+
+            var intentIconSr = intentIconGo.AddComponent<SpriteRenderer>();
+            intentIconSr.sprite = null; // Will be set by UpdateIntentIcon
+            intentIconSr.sortingOrder = 10;
+            intentIconSr.enabled = false;
+
+            // Create IntentValueText as child of IntentIcon
+            var intentValueGo = new GameObject("IntentValueText");
+            intentValueGo.transform.SetParent(intentIconGo.transform, false);
+            intentValueGo.transform.localPosition = new Vector3(0.15f, -0.12f, 0f);
+
+            var intentValueText = intentValueGo.AddComponent<TextMeshProUGUI>();
+            intentValueText.text = "";
+            intentValueText.alignment = TextAlignmentOptions.Center;
+            intentValueText.fontSize = 2;
+            intentValueText.color = Color.white;
+            intentValueText.enabled = false;
+
+            // ========== Create MoveNameText child ==========
+            var moveNameGo = new GameObject("MoveNameText");
+            moveNameGo.transform.SetParent(rootGo.transform, false);
+            moveNameGo.transform.localPosition = new Vector3(0f, -0.11f, 0f);
+            moveNameGo.transform.localScale = Vector3.one;
+
+            var moveNameText = moveNameGo.AddComponent<TextMeshProUGUI>();
+            moveNameText.text = "";
+            moveNameText.alignment = TextAlignmentOptions.Center;
+            moveNameText.fontSize = 2;
+            moveNameText.color = Color.yellow;
+            moveNameText.fontStyle = FontStyles.Bold;
+            moveNameText.enabled = false;
+
+            // ========== Create HoverSprite child ==========
+            var hoverSpriteGo = new GameObject("HoverSprite");
+            hoverSpriteGo.transform.SetParent(rootGo.transform, false);
+            hoverSpriteGo.transform.localPosition = new Vector3(0f, 0f, 0f);
+            hoverSpriteGo.transform.localScale = Vector3.one;
+
+            var hoverSpriteSr = hoverSpriteGo.AddComponent<SpriteRenderer>();
+            hoverSpriteSr.sprite = null; // Will be set by EnemyManager
+            hoverSpriteSr.sortingOrder = 5;
+            hoverSpriteSr.color = new Color32(251, 236, 93, 150); // Default yellowish
+            hoverSpriteSr.enabled = false;
+
+            // ========== Wire up EnemyRender references ==========
+            // Use reflection or direct assignment to set the private fields
+            var intentIconRootField = typeof(EnemyRender).GetField("intentIconRoot",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var intentIconSpriteField = typeof(EnemyRender).GetField("intentIconSprite",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var intentValueTextField = typeof(EnemyRender).GetField("intentValueText",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var moveNameRootField = typeof(EnemyRender).GetField("moveNameRoot",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var moveNameTextField = typeof(EnemyRender).GetField("moveNameText",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var hoverSpriteRootField = typeof(EnemyRender).GetField("hoverSpriteRoot",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var hoverSpriteRendererField = typeof(EnemyRender).GetField("hoverSpriteRenderer",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            if (intentIconRootField != null) intentIconRootField.SetValue(enemyRender, intentIconGo);
+            if (intentIconSpriteField != null) intentIconSpriteField.SetValue(enemyRender, intentIconSr);
+            if (intentValueTextField != null) intentValueTextField.SetValue(enemyRender, intentValueText);
+            if (moveNameRootField != null) moveNameRootField.SetValue(enemyRender, moveNameGo);
+            if (moveNameTextField != null) moveNameTextField.SetValue(enemyRender, moveNameText);
+            if (hoverSpriteRootField != null) hoverSpriteRootField.SetValue(enemyRender, hoverSpriteGo);
+            if (hoverSpriteRendererField != null) hoverSpriteRendererField.SetValue(enemyRender, hoverSpriteSr);
+
+            Debug.Log("[EnemyManager] EnemyPrefab created successfully with all child objects and components.");
+
+            return enemyRender;
         }
     }
 }

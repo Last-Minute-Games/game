@@ -84,6 +84,8 @@ public class EntityData
             Color.cyan,
             isPlayer ? TooltipDirection.Down : TooltipDirection.Up
         );
+        
+        if (isPlayer) CameraShake.Shake(0.15f, 0.1f);
     }
 
     public virtual void Heal(int amount)

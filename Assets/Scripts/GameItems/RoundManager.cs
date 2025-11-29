@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Entities.Enemies.Manager;
+using GameItems.Cards.Helpers;
 
 public class RoundManager : MonoBehaviour
 {
@@ -15,6 +16,13 @@ public class RoundManager : MonoBehaviour
     
     // Prevents checking end conditions during wave transitions
     private bool _isTransitioningWaves = false;
+    
+    // Prevents EndPlayerTurn from being called while a card is being played
+    // This avoids conflicts between RebuildSmart() and ClearSmooth()
+    private bool _isPlayingCard = false;
+    
+    // Prevents EndPlayerTurn from being called multiple times
+    private bool _isEndingTurn = false;
 
     [Header("End Screen UI")] 
     public ScreenFadeUI endScreenUI;
@@ -45,6 +53,14 @@ public class RoundManager : MonoBehaviour
     // -------------------------------------------------------
     [System.NonSerialized]
     public System.Action onWaveComplete; // Callback when all enemies in current wave are defeated
+
+    public void ShowWaveStartUI(int waveNumber)
+    {
+        if (roundTransitionUI != null)
+        {
+            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber));
+        }
+    }
 
     // -------------------------------------------------------
     // Public method to trigger victory (called by BattleManager)
@@ -81,6 +97,17 @@ public class RoundManager : MonoBehaviour
         if (currentTurnTime <= 0f)
         {
             Debug.Log("⏰ Turn timer expired! Ending player turn.");
+            
+            // Don't end turn immediately if a card is still being played
+            // The card play will trigger EndPlayerTurn when complete
+            if (_isPlayingCard)
+            {
+                Debug.Log("⏰ Timer expired but a card is being played - deferring turn end");
+                currentTurnTime = 0f;
+                timerActive = false;
+                return;
+            }
+            
             currentTurnTime = 0f;
             timerActive = false;
             EndPlayerTurn();
@@ -130,6 +157,12 @@ public class RoundManager : MonoBehaviour
     
     private IEnumerator StartFirstWaveWithTransition()
     {
+        // Safety: Unlock card interactions in case they got stuck
+        CardFXHelper.CardInteraction.Locked = false;
+        
+        // Reset draw sound flag so it plays once when cards are drawn this wave
+        CardFXHelper.ResetDrawSoundFlagStatic();
+        
         // Show "WAVE 1" transition immediately
         if (roundTransitionUI != null)
         {
@@ -181,20 +214,18 @@ public class RoundManager : MonoBehaviour
 
         Debug.Log($"--- Wave {waveNumber} - Round {roundNumber} Start ---");
         
-        // Show wave transition UI
-        StartCoroutine(StartWaveWithTransition());
+        // Start the wave setup (without showing transition UI - already shown)
+        StartCoroutine(StartWaveSetup());
     }
     
-    private IEnumerator StartWaveWithTransition()
+    private IEnumerator StartWaveSetup()
     {
-        // Show "WAVE X" transition immediately
-        if (roundTransitionUI != null)
-        {
-            // LATER WAVES → fade in & out
-            StartCoroutine(roundTransitionUI.ShowRoundTransition(waveNumber, isFirstWave: false));
-        }
+        // Safety: Unlock card interactions in case they got stuck
+        CardFXHelper.CardInteraction.Locked = false;
         
-        // While the transition is fading in/holding, prepare the next wave
+        // Reset draw sound flag so it plays once when cards are drawn this wave
+        CardFXHelper.ResetDrawSoundFlagStatic();
+        
         // Clear player's hand for fresh start in new wave
         if (player != null && player.cardManager != null)
         {
@@ -205,8 +236,8 @@ public class RoundManager : MonoBehaviour
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
         
-        // Draw new hand - this happens while transition is still showing/fading out
-        player.StartTurn(); // This already draws cards!
+        // Draw new hand
+        player.StartTurn();
 
         RefreshDeckViewers();
 
@@ -218,16 +249,54 @@ public class RoundManager : MonoBehaviour
     }
 
     // -------------------------------------------------------
+    // Card playing state management
+    // -------------------------------------------------------
+    public void SetCardPlayingState(bool isPlaying)
+    {
+        _isPlayingCard = isPlaying;
+        if (isPlaying)
+        {
+            Debug.Log("[RoundManager] Card play started - timer will defer");
+        }
+        else
+        {
+            Debug.Log("[RoundManager] Card play finished");
+            // Don't call EndPlayerTurn here - let the timer check on next frame
+            // This prevents double execution
+        }
+    }
+
+    // -------------------------------------------------------
     // Called when player ends their turn
     // -------------------------------------------------------
     public void EndPlayerTurn()
     {
         if (!battleActive || !playerTurn) return;
+        
+        // Prevent double execution of EndPlayerTurn
+        if (_isEndingTurn)
+        {
+            Debug.LogWarning("[RoundManager] EndPlayerTurn already in progress - skipping duplicate call");
+            return;
+        }
+        
+        _isEndingTurn = true;
 
         // Stop timer
         timerActive = false;
 
         Debug.Log("Player turn ended.");
+
+        // Hide all arrows from any cards that might be mid-drag
+        HideAllCardArrows();
+        
+        // Stop any ongoing hand layout animations before discarding
+        // This prevents cards from being mid-rebuild when we try to clear them
+        if (handViewer != null)
+        {
+            Debug.Log("[RoundManager] Stopping any ongoing hand layout animations");
+            handViewer.StopLayoutAnimation();
+        }
 
         // Animate cards discarding BEFORE clearing data
         if (handViewer != null && handViewer.GetRenders().Count > 0)
@@ -235,6 +304,7 @@ public class RoundManager : MonoBehaviour
             handViewer.ClearSmooth(onComplete: () =>
             {
                 // After animation completes, clear the data and continue
+                _isEndingTurn = false;
                 player.EndTurn();
                 // Refresh other viewers but not hand (already cleared with animation)
                 RefreshDeckViewers(skipHand: true);
@@ -244,6 +314,8 @@ public class RoundManager : MonoBehaviour
         }
         else
         {
+            // No cards to animate, proceed normally
+            _isEndingTurn = false;
             // No cards to animate, proceed normally
             player.EndTurn();
             RefreshDeckViewers();
@@ -294,6 +366,11 @@ public class RoundManager : MonoBehaviour
 
         Debug.Log($"--- Round {roundNumber} Start ---");
         
+        // Safety: Unlock card interactions in case they got stuck from previous turn
+        CardFXHelper.CardInteraction.Locked = false;
+
+        // Reset draw sound flag so it plays once when cards are drawn this round
+        CardFXHelper.ResetDrawSoundFlagStatic();
 
         // DON'T reset enemy block here - let it persist through this round
         // Block will be reset AFTER the enemy turn executes
@@ -336,7 +413,8 @@ public class RoundManager : MonoBehaviour
         if (handViewer != null && !skipHand)
         {
             handViewer.SetPlayer(player);
-            handViewer.SetSource(GameItems.DeckViewer.Source.Hand, rebuild: true);
+            handViewer.SetSource(GameItems.DeckViewer.Source.Hand, rebuild: false);
+            handViewer.RebuildSmart(); // Use smart rebuild to smoothly add new cards
         }
 
         if (drawPileViewer != null)
@@ -350,6 +428,38 @@ public class RoundManager : MonoBehaviour
             discardPileViewer.SetPlayer(player);
             discardPileViewer.SetSource(GameItems.DeckViewer.Source.DiscardPile, rebuild: true);
         }
+    }
+
+    /// <summary>
+    /// Hides all bezier arrows from all cards in hand.
+    /// Called when turn ends or cards are being cleared.
+    /// </summary>
+    private void HideAllCardArrows()
+    {
+        if (handViewer == null) return;
+
+        var cardRenders = handViewer.GetRenders();
+        
+        foreach (var cardRender in cardRenders)
+        {
+            if (cardRender == null) continue;
+
+            // Try to get the BezierCardArrowHelper and hide it
+            var arrowHelper = cardRender.GetComponent<GameItems.Cards.Helpers.BezierCardArrowHelper>();
+            if (arrowHelper != null)
+            {
+                arrowHelper.StopDrawing();
+            }
+            
+            // Clear enemy hover sprites from each card's animation helper
+            var animHelper = cardRender.GetComponent<GameItems.Cards.Helpers.CardAnimationHelper>();
+            if (animHelper != null)
+            {
+                animHelper.ClearEnemyHoverSprites();
+            }
+        }
+
+        Debug.Log($"[RoundManager] Hid arrows for {cardRenders.Count} cards");
     }
 
     // -------------------------------------------------------
@@ -401,8 +511,12 @@ public class RoundManager : MonoBehaviour
     // -------------------------------------------------------
     private void HandlePlayerWin()
     {
-        Debug.Log("🏆 Player Victory!");
+        Debug.Log("[RoundManager] ============================================");
+        Debug.Log("[RoundManager] 🏆 PLAYER VICTORY!");
+        Debug.Log("[RoundManager] ============================================");
 
+        // Advance day flag (this will trigger auto-save)
+        Debug.Log("[RoundManager] Calling AdvanceDayFlag() after victory...");
         AdvanceDayFlag();
 
         // Fade screen + show text
@@ -412,7 +526,12 @@ public class RoundManager : MonoBehaviour
         // TODO: update timer shit
         var clock = FindObjectOfType<ClockTimer>();
         if (clock != null)
+        {
             clock.AddTime(10f); // TODO: adjust reward amount
+            Debug.Log("[RoundManager] Added 10 seconds to clock timer as reward");
+        }
+        
+        Debug.Log("[RoundManager] Starting return to overworld sequence...");
         StartCoroutine(ReturnToOverworldDelayed());
     }
 
@@ -421,8 +540,12 @@ public class RoundManager : MonoBehaviour
     // -------------------------------------------------------
     private void HandlePlayerLose()
     {
-        Debug.Log("❌ Player Defeat!");
+        Debug.Log("[RoundManager] ============================================");
+        Debug.Log("[RoundManager] ❌ PLAYER DEFEAT!");
+        Debug.Log("[RoundManager] ============================================");
 
+        // Advance day flag (this will trigger auto-save)
+        Debug.Log("[RoundManager] Calling AdvanceDayFlag() after defeat...");
         AdvanceDayFlag();
 
         if (endScreenUI != null)
@@ -431,7 +554,12 @@ public class RoundManager : MonoBehaviour
         // TODO: wrong todo just ummm timer change flag shit
         var clock = FindObjectOfType<ClockTimer>();
         if (clock != null)
+        {
             clock.RemoveTime(100f); // TODO: adjust penalty amount
+            Debug.Log("[RoundManager] Removed 100 seconds from clock timer as penalty");
+        }
+        
+        Debug.Log("[RoundManager] Starting return to overworld sequence...");
         StartCoroutine(ReturnToOverworldDelayed());
     }
 
@@ -439,33 +567,63 @@ public class RoundManager : MonoBehaviour
     {
         yield return new WaitForSeconds(3f);
 
+        // Normal return to overworld
+        // ClockTimer will handle day five cutscene check when transitioning from overworld
+        Debug.Log("[RoundManager] Returning to Overworld");
         UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
     }
 
     // handle advancing day flags
+    // Day flags now auto-save when set (implemented in GameFlags.SetFlag)
     private void AdvanceDayFlag()
     {
-        if (GameFlags.HasFlag("day.one"))
+        Debug.Log("[RoundManager] ============================================");
+        Debug.Log("[RoundManager] AdvanceDayFlag() called - Checking day progression");
+        
+        // Log current day state
+        Debug.Log($"[RoundManager] Current day flags: " +
+                  $"day.one={GameFlags.HasFlag("day.one")}, " +
+                  $"day.two={GameFlags.HasFlag("day.two")}, " +
+                  $"day.three={GameFlags.HasFlag("day.three")}, " +
+                  $"day.four={GameFlags.HasFlag("day.four")}, " +
+                  $"day.five={GameFlags.HasFlag("day.five")}");
+        
+        if (GameFlags.HasFlag("day.one") && !GameFlags.HasFlag("day.two"))
         {
+            Debug.Log("[RoundManager] 📅 DAY PROGRESSION: day.one → day.two");
             GameFlags.SetFlag("day.two");
+            Debug.Log("[RoundManager] ✅ Successfully advanced to day.two (auto-saved)");
+            Debug.Log("[RoundManager] ============================================");
             return;
         }
-        if (GameFlags.HasFlag("day.two"))
+        if (GameFlags.HasFlag("day.two") && !GameFlags.HasFlag("day.three"))
         {
+            Debug.Log("[RoundManager] 📅 DAY PROGRESSION: day.two → day.three");
             GameFlags.SetFlag("day.three");
+            Debug.Log("[RoundManager] ✅ Successfully advanced to day.three (auto-saved)");
+            Debug.Log("[RoundManager] ============================================");
             return;
         }
-        if (GameFlags.HasFlag("day.three"))
+        if (GameFlags.HasFlag("day.three") && !GameFlags.HasFlag("day.four"))
         {
+            Debug.Log("[RoundManager] 📅 DAY PROGRESSION: day.three → day.four");
             GameFlags.SetFlag("day.four");
+            Debug.Log("[RoundManager] ✅ Successfully advanced to day.four (auto-saved)");
+            Debug.Log("[RoundManager] ============================================");
             return;
         }
-        if (GameFlags.HasFlag("day.four"))
+        if (GameFlags.HasFlag("day.four") && !GameFlags.HasFlag("day.five"))
         {
+            Debug.Log("[RoundManager] 📅 DAY PROGRESSION: day.four → day.five ⭐ FINAL DAY!");
             GameFlags.SetFlag("day.five");
+            Debug.Log("[RoundManager] ✅ Successfully advanced to day.five (auto-saved)");
+            Debug.Log("[RoundManager] 🎉 FINAL DAY REACHED - Special cutscene will trigger!");
+            Debug.Log("[RoundManager] ============================================");
             return;
         }
 
-        // Already maxed → do nothing
+        // Already at day five - no more progression
+        Debug.Log("[RoundManager] ⚠️ Already at maximum day (day.five) - no progression");
+        Debug.Log("[RoundManager] ============================================");
     }
 }

@@ -1,11 +1,12 @@
 namespace GameItems.Cards.Helpers
 {
     using DG.Tweening;
+    using Entities.Enemies.Render;
     using UnityEngine;
 
     public class CardAnimationHelper : MonoBehaviour
     {
-        [Header("Arrow Helper")] public CardArrowHelper arrowHelper;
+        [Header("Arrow Helper")] public BezierCardArrowHelper arrowHelper;
 
         [Header("Visual Settings")] 
         public float hoverScale = 1.1f;
@@ -28,6 +29,7 @@ namespace GameItems.Cards.Helpers
         private Vector3 _originalPosition;
         private bool _isHovering;
         private bool _isInitialized;
+        private EnemyRender _currentHoveredEnemy; // Track currently hovered enemy for hover sprite
 
         private void Start()
         {
@@ -83,6 +85,9 @@ namespace GameItems.Cards.Helpers
                 _isHovering = true;
             }
 
+            // Ensure arrow is hidden during hover (only show during drag)
+            arrowHelper?.StopDrawing();
+
             // Scale up and move up (always relative to base scale)
             cardTransform.DOScale(_baseScale * hoverScale, 0.15f).SetEase(Ease.OutQuad);
             cardTransform.DOLocalMove(_originalPosition + new Vector3(0, hoverYOffset, 0), 0.15f).SetEase(Ease.OutQuad);
@@ -96,12 +101,14 @@ namespace GameItems.Cards.Helpers
             var cardTransform = card.transform;
             _isHovering = false;
 
+            // Hide arrow if it's showing
+            arrowHelper?.StopDrawing();
+
             // Return to base scale and original position
             cardTransform.DOScale(_baseScale, 0.15f).SetEase(Ease.OutQuad);
             cardTransform.DOLocalMove(_originalPosition, 0.15f).SetEase(Ease.OutQuad);
         }
 
-        // Called by FXHelper.OnCardSelect()
         // Called by FXHelper.OnCardSelect()
         public void SelectVisuals(CardRender card, bool updatePosition = true)
         {
@@ -147,6 +154,35 @@ namespace GameItems.Cards.Helpers
 
             // Scale to select size (always relative to base scale)
             cardTransform.DOScale(_baseScale * selectScale, 0.15f);
+            
+            // Check if this is an enemy-targeting card
+            bool isEnemyTargeting = false;
+            if (card.Data != null)
+            {
+                TargetRule targetRule = card.Data.GetDominatingTargetRule();
+                isEnemyTargeting = targetRule == TargetRule.Enemy;
+            }
+            
+            // For enemy-targeting cards, keep them in the elevated hover position
+            if (isEnemyTargeting)
+            {
+                // Move to hover position (slightly elevated)
+                cardTransform.DOLocalMove(_originalPosition + new Vector3(0, hoverYOffset, 0), 0.15f).SetEase(Ease.OutQuad);
+                
+                // Start arrow drawing
+                if (arrowHelper != null)
+                {
+                    arrowHelper.StartDrawing();
+                }
+            }
+            else
+            {
+                // For non-enemy cards, ensure arrow is hidden
+                if (arrowHelper != null)
+                {
+                    arrowHelper.StopDrawing();
+                }
+            }
         }
 
         // Basic drag following cursor (NO ARROW)
@@ -191,23 +227,91 @@ namespace GameItems.Cards.Helpers
             cardTransform.localScale = Vector3.Lerp(cardTransform.localScale, _baseScale * dragScale, 0.25f);
         }
 
-        // Drag following cursor WITH ARROW (Enemy targeting)
+        // Drag with arrow (Enemy targeting) - card stays in place, only arrow moves
         public void DragFollowMouseWithArrow(CardRender card, Vector2 cursorPos)
         {
-            DragFollowMouseWithCard(card, cursorPos);
-
+            // Card stays in place - don't move it
+            // Only update the bezier arrow
             if (arrowHelper == null)
             {
                 return;
             }
 
-            var cam = ResolveCamera();
-            Vector3 screenPos = cam != null
-                ? cam.WorldToScreenPoint(card.transform.position)
-                : card.transform.position;
-            Vector2 startScreen = new(screenPos.x, screenPos.y);
+            // Get the card's world position (use transform.position for world space)
+            Vector3 cardWorldPos = card.transform.position;
+            
+            // Check which enemy is being hovered (if any)
+            EnemyRender hoveredEnemy = GetHoveredEnemy(cursorPos);
+            bool isHoveringEnemy = hoveredEnemy != null;
+            
+            // Update hover sprite visibility
+            UpdateEnemyHoverSprite(hoveredEnemy);
+            
+            // Update the arrow with card's world position and cursor screen position
+            arrowHelper.UpdateArrow(cardWorldPos, cursorPos, isHoveringEnemy);
+        }
+        
+        /// <summary>
+        /// Gets the enemy currently under the cursor, if any.
+        /// </summary>
+        private EnemyRender GetHoveredEnemy(Vector2 screenPosition)
+        {
+            Camera cam = ResolveCamera();
+            if (cam == null)
+                return null;
 
-            arrowHelper.UpdateArrow(startScreen, cursorPos);
+            // Convert screen position to world position
+            Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(cam.transform.position.z)));
+            
+            // Use OverlapPoint to check what's at the cursor position
+            Collider2D[] colliders = Physics2D.OverlapPointAll(new Vector2(worldPos.x, worldPos.y));
+            
+            foreach (var collider in colliders)
+            {
+                if (collider == null) continue;
+
+                // Check if the hit object has an EnemyRender component
+                var enemyRender = collider.GetComponent<EnemyRender>();
+                if (enemyRender != null && enemyRender.data != null && enemyRender.data.isAlive)
+                {
+                    return enemyRender;
+                }
+            }
+
+            return null;
+        }
+        
+        /// <summary>
+        /// Updates which enemy should show the hover sprite.
+        /// </summary>
+        private void UpdateEnemyHoverSprite(EnemyRender newHoveredEnemy)
+        {
+            // If we switched to a different enemy, hide the previous one's hover sprite
+            if (_currentHoveredEnemy != null && _currentHoveredEnemy != newHoveredEnemy)
+            {
+                _currentHoveredEnemy.HideHoverSprite();
+            }
+            
+            // Show hover sprite on the new enemy (if any)
+            if (newHoveredEnemy != null)
+            {
+                newHoveredEnemy.ShowHoverSprite();
+            }
+            
+            // Update tracked enemy
+            _currentHoveredEnemy = newHoveredEnemy;
+        }
+        
+        /// <summary>
+        /// Clears all enemy hover sprites (call when arrow is hidden).
+        /// </summary>
+        public void ClearEnemyHoverSprites()
+        {
+            if (_currentHoveredEnemy != null)
+            {
+                _currentHoveredEnemy.HideHoverSprite();
+                _currentHoveredEnemy = null;
+            }
         }
 
         // Called when player lets go but target is invalid
@@ -217,6 +321,9 @@ namespace GameItems.Cards.Helpers
 
             // clear arrow
             arrowHelper?.StopDrawing();
+            
+            // clear enemy hover sprites
+            ClearEnemyHoverSprites();
 
             // Return to base scale and original position
             cardTransform.DOScale(_baseScale, 0.15f);
@@ -229,6 +336,9 @@ namespace GameItems.Cards.Helpers
             var cardTransform = card.transform;
 
             arrowHelper?.StopDrawing();
+            
+            // clear enemy hover sprites
+            ClearEnemyHoverSprites();
 
             cardTransform
                 .DOScale(0f, 0.2f)

@@ -91,15 +91,13 @@ public class BattleManager : MonoBehaviour
     private void OnWaveComplete()
     {
         Debug.Log($"Wave {_currentWaveIndex + 1} complete! ({_currentWaveIndex + 1}/{_battleWaves.Count})");
-        
+
         int nextWaveIndex = _currentWaveIndex + 1;
-        
+
         if (nextWaveIndex < _battleWaves.Count)
         {
-            Debug.Log($"Starting wave {nextWaveIndex + 1}...");
-            
             _currentWaveIndex = nextWaveIndex;
-            StartCoroutine(StartWaveDelayed(_currentWaveIndex, 2f));
+            StartCoroutine(WaveTransitionSequence(_currentWaveIndex));
         }
         else
         {
@@ -109,6 +107,21 @@ public class BattleManager : MonoBehaviour
                 roundManager.TriggerVictory();
             }
         }
+    }
+
+    private System.Collections.IEnumerator WaveTransitionSequence(int waveIndex)
+    {
+        // Wait 1.5 seconds after enemies are defeated
+        yield return new WaitForSeconds(1.5f);
+
+        // Show the wave transition UI (which also handles fading)
+        roundManager.ShowWaveStartUI(waveIndex + 1);
+
+        // Wait a moment while the UI is visible before spawning enemies
+        yield return new WaitForSeconds(1f);
+
+        // Now, spawn the enemies for the new wave
+        StartWave(waveIndex);
     }
 
     /// <summary>

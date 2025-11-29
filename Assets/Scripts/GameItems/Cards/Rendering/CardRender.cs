@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Entities.Enemies.Render;
 using GameItems;
 using GameItems.Cards;
 using GameItems.Cards.Helpers;
@@ -72,15 +73,32 @@ public class CardRender : MonoBehaviour,
         _fxHelper = GetComponent<CardFXHelper>();
         if (_fxHelper == null)
         {
+            Debug.LogWarning("[CardRender] CardFXHelper not found on prefab, adding dynamically");
             _fxHelper = gameObject.AddComponent<CardFXHelper>();
+        }
+        else
+        {
+            Debug.Log($"[CardRender] CardFXHelper found on prefab. sfxHelper: {_fxHelper.sfxHelper != null}");
         }
 
         // Ensure sub-helpers are assigned
         if (_fxHelper.sfxHelper == null)
         {
+            Debug.LogWarning("[CardRender] CardSFXHelper is null on CardFXHelper, attempting to find it");
             _fxHelper.sfxHelper = GetComponent<CardSFXHelper>();
             if (_fxHelper.sfxHelper == null)
+            {
+                Debug.LogWarning("[CardRender] CardSFXHelper not found on GameObject, adding new one (drawCue will be missing!)");
                 _fxHelper.sfxHelper = gameObject.AddComponent<CardSFXHelper>();
+            }
+            else
+            {
+                Debug.Log($"[CardRender] Found CardSFXHelper. drawCue assigned: {_fxHelper.sfxHelper.drawCue != null}");
+            }
+        }
+        else
+        {
+            Debug.Log($"[CardRender] CardSFXHelper already assigned. drawCue assigned: {_fxHelper.sfxHelper.drawCue != null}");
         }
 
         if (_fxHelper.animHelper == null)
@@ -93,9 +111,9 @@ public class CardRender : MonoBehaviour,
         // Setup arrow helper for animation helper
         if (_fxHelper.animHelper != null && _fxHelper.animHelper.arrowHelper == null)
         {
-            _fxHelper.animHelper.arrowHelper = GetComponent<CardArrowHelper>();
+            _fxHelper.animHelper.arrowHelper = GetComponent<BezierCardArrowHelper>();
             if (_fxHelper.animHelper.arrowHelper == null)
-                _fxHelper.animHelper.arrowHelper = gameObject.AddComponent<CardArrowHelper>();
+                _fxHelper.animHelper.arrowHelper = gameObject.AddComponent<BezierCardArrowHelper>();
         }
     }
 
@@ -308,10 +326,52 @@ public class CardRender : MonoBehaviour,
 
         if (_fxHelper != null)
         {
-            // First check if card is near its original position - if so, return it to hand
-            if (_fxHelper.animHelper != null && _fxHelper.animHelper.IsNearOriginalPosition(this))
+            // Hide arrow immediately when drag ends
+            if (_fxHelper.animHelper != null && _fxHelper.animHelper.arrowHelper != null)
             {
-                Debug.Log("[CardRender] Card released near original position - returning to hand");
+                _fxHelper.animHelper.arrowHelper.StopDrawing();
+            }
+            
+            Debug.Log($"[CardRender] OnEndDrag - mouse position: {eventData.position}");
+            
+            // Check the target rule first
+            TargetRule rule = Data.GetDominatingTargetRule();
+            Debug.Log($"[CardRender] Card target rule: {rule}");
+            
+            // For enemy-targeting cards, check if cursor is near the card (not card position)
+            // For other cards, check if card itself is near original position
+            bool shouldReturnToHand = false;
+            
+            if (rule == TargetRule.Enemy)
+            {
+                // For enemy-targeting cards, check if the CURSOR is near the card's position
+                // (since the card stays in place, we need to check cursor movement)
+                Camera cam = Camera.main;
+                if (cam != null)
+                {
+                    Vector3 cardScreenPos = cam.WorldToScreenPoint(transform.position);
+                    float cursorDistance = Vector2.Distance(eventData.position, new Vector2(cardScreenPos.x, cardScreenPos.y));
+                    
+                    // If cursor is close to the card (didn't drag far), return to hand
+                    if (cursorDistance <= 100f) // 100 pixels threshold
+                    {
+                        Debug.Log($"[CardRender] Cursor too close to card ({cursorDistance} pixels) - returning to hand");
+                        shouldReturnToHand = true;
+                    }
+                }
+            }
+            else
+            {
+                // For non-enemy targeting cards, use the original position check
+                if (_fxHelper.animHelper != null && _fxHelper.animHelper.IsNearOriginalPosition(this))
+                {
+                    Debug.Log("[CardRender] Card released near original position - returning to hand");
+                    shouldReturnToHand = true;
+                }
+            }
+            
+            if (shouldReturnToHand)
+            {
                 _fxHelper.OnCardRelease(this, validTarget: false);
 
                 // Fix layout
@@ -323,8 +383,6 @@ public class CardRender : MonoBehaviour,
             }
 
             bool validTarget = false;
-            TargetRule rule = Data.GetDominatingTargetRule();
-
             EnemyRender targetEnemy = null;
 
             switch (rule)
@@ -332,24 +390,44 @@ public class CardRender : MonoBehaviour,
                 case TargetRule.Enemy:
                     targetEnemy = GetEnemyOnMouse(eventData.position);
                     if (targetEnemy != null)
+                    {
+                        Debug.Log($"[CardRender] Valid enemy target found: {targetEnemy.data.enemyName}");
                         validTarget = true;
+                    }
+                    else
+                    {
+                        Debug.Log("[CardRender] No enemy target found at release position");
+                    }
                     break;
 
                 case TargetRule.Self:
+                    Debug.Log("[CardRender] Self-targeting card");
                     validTarget = true;
                     break;
             }
 
             if (validTarget)
             {
+                Debug.Log("[CardRender] Valid target confirmed, attempting to play card");
                 var playerManager = FindFirstObjectByType<PlayerManager>();
                 if (playerManager != null)
                 {
                     bool cardPlayed = playerManager.PlayCard(Data, Instance, targetEnemy);
                     if (!cardPlayed)
+                    {
+                        Debug.LogWarning("[CardRender] PlayCard returned false - card was not played");
                         validTarget = false;
+                    }
                     else
                     {
+                        Debug.Log("[CardRender] Card successfully played");
+                        
+                        // Clear enemy hover sprites immediately when card is successfully played
+                        if (_fxHelper != null && _fxHelper.animHelper != null)
+                        {
+                            _fxHelper.animHelper.ClearEnemyHoverSprites();
+                        }
+                        
                         // Check if card has EndTurn effect - if so, don't rebuild as EndPlayerTurn handles it
                         bool cardHasEndTurn = CheckForEndTurnEffect();
 
@@ -363,6 +441,7 @@ public class CardRender : MonoBehaviour,
                 }
                 else
                 {
+                    Debug.LogWarning("[CardRender] PlayerManager not found");
                     validTarget = false;
                 }
             }
@@ -390,33 +469,50 @@ public class CardRender : MonoBehaviour,
             return null;
         }
 
-        Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, cam.nearClipPlane));
+        // For 2D games, we need to convert screen to world at the camera's z-plane
+        Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(cam.transform.position.z)));
+        
+        Debug.Log($"[CardRender] Checking for enemy at screen pos: {screenPosition}, world pos: {worldPos}");
 
-        // Raycast at the drop position to check for enemy colliders, ignoring the card itself
-        RaycastHit2D[] hits = new RaycastHit2D[10];
-        ContactFilter2D filter = new ContactFilter2D();
+        // Use OverlapPoint to check what's at the mouse cursor position
+        Collider2D[] colliders = Physics2D.OverlapPointAll(new Vector2(worldPos.x, worldPos.y));
+        
+        Debug.Log($"[CardRender] Found {colliders.Length} colliders at mouse position");
 
-        Physics2D.Raycast(worldPos, Vector2.zero, filter, hits);
-
-        foreach (var hit in hits)
+        foreach (var collider in colliders)
         {
-            if (hit.collider == null) continue;
+            if (collider == null) continue;
 
             // Skip if it's this card's collider
-            if (hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform))
+            if (collider.gameObject == gameObject || collider.transform.IsChildOf(transform))
+            {
+                Debug.Log($"[CardRender] Skipping card's own collider: {collider.name}");
                 continue;
+            }
 
-            Debug.Log($"Hit: {hit.collider.name}");
+            Debug.Log($"[CardRender] Hit: {collider.name}, layer: {LayerMask.LayerToName(collider.gameObject.layer)}");
 
             // Check if the hit object has an EnemyRender component
-            EnemyRender enemyRender = hit.collider.GetComponent<EnemyRender>();
-            if (enemyRender != null && enemyRender.data is { isAlive: true })
+            EnemyRender enemyRender = collider.GetComponent<EnemyRender>();
+            if (enemyRender != null)
             {
-                Debug.Log($"[CardRender] Card dropped on enemy: {enemyRender.data.enemyName}");
-                return enemyRender;
+                if (enemyRender.data != null && enemyRender.data.isAlive)
+                {
+                    Debug.Log($"[CardRender] ✓ Card dropped on ALIVE enemy: {enemyRender.data.enemyName}");
+                    return enemyRender;
+                }
+                else if (enemyRender.data == null)
+                {
+                    Debug.LogWarning($"[CardRender] Enemy found but has no data: {collider.name}");
+                }
+                else if (!enemyRender.data.isAlive)
+                {
+                    Debug.Log($"[CardRender] Enemy found but is dead: {enemyRender.data.enemyName}");
+                }
             }
         }
 
+        Debug.Log("[CardRender] No valid enemy found at mouse position");
         return null;
     }
 

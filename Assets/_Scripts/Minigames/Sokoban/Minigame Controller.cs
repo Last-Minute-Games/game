@@ -106,10 +106,34 @@ public class MinigameController : MonoBehaviour
 
     /// <summary>
     /// Called by the InteractiveSokobanActivator when the player interacts with the entrance.
+    /// Immediately stops all player actions, then transitions and changes sprite after fade.
     /// </summary>
     public void StartSokoban()
     {
         if (player == null || sokobanRoot == null) return;
+        
+        // Immediately stop all player movement and actions
+        if (overworldPlayerScript != null)
+        {
+            overworldPlayerScript.enabled = false;
+        }
+        
+        // Immediately stop any physics-based movement (if using Rigidbody2D)
+        Rigidbody2D playerRb = player.GetComponent<Rigidbody2D>();
+        if (playerRb != null)
+        {
+            playerRb.linearVelocity = Vector2.zero;
+        }
+        
+        // Immediately stop all animations by disabling the Animator
+        Animator playerAnimator = player.GetComponent<Animator>();
+        if (playerAnimator != null)
+        {
+            playerAnimator.enabled = false;
+        }
+        
+        // Sprite change happens during transition (after fade) in PerformSokobanStart
+        // Now run the transition (which will complete the setup in PerformSokobanStart)
         RunTransition("ENTERING SOKOBAN", PerformSokobanStart);
     }
 
@@ -289,6 +313,13 @@ public class MinigameController : MonoBehaviour
 
         sokobanPlayerScript.enabled = false;
         overworldPlayerScript.enabled = true;
+
+        // Re-enable the Animator when returning to overworld
+        Animator playerAnimator = player.GetComponent<Animator>();
+        if (playerAnimator != null)
+        {
+            playerAnimator.enabled = true;
+        }
 
         if (playerSpriteRenderer != null && overworldPlayerSprite != null)
         {

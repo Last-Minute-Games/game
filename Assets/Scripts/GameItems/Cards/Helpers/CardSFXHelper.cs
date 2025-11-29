@@ -1,52 +1,106 @@
 using UnityEngine;
 
-public class CardSFXHelper : MonoBehaviour
+namespace GameItems.Cards.Helpers
 {
-    [Header("Card Action Sounds")]
-    public SFXCueData drawCue;
-    public SFXCueData hoverCue;
-    public SFXCueData selectCue;
-    public SFXCueData dragCue;
-    public SFXCueData confirmCue;
-    public SFXCueData cancelCue;
-    public SFXCueData discardCue;
-
-    // ────────────────────────────────
-    // Playback API
-    // ────────────────────────────────
-
-    public void PlayDraw()
+    public class CardSFXHelper : MonoBehaviour
     {
-        SFXManager.Instance?.Play(drawCue);
-    }
+        [Header("Card Action Sounds")]
+        public SFXCueData drawCue;
+        public SFXCueData hoverCue;
+        public SFXCueData selectCue;
+        public SFXCueData dragCue;
+        public SFXCueData confirmCue;
+        public SFXCueData cancelCue;
+        public SFXCueData discardCue;
+        
+        [Header("Card Effect Sounds")]
+        public SFXCueData attackCue;
+        public SFXCueData healCue;
+        public SFXCueData blockCue;
 
-    public void PlayHover()
-    {
-        SFXManager.Instance?.Play(hoverCue);
-    }
+        private void Awake()
+        {
+            Debug.Log($"[CardSFXHelper] Awake on {gameObject.name}. drawCue assigned: {drawCue != null}");
+            if (drawCue != null)
+            {
+                Debug.Log($"[CardSFXHelper] drawCue name: {drawCue.cueName}, clips: {drawCue.audioClips?.Length ?? 0}");
+            }
+        }
 
-    public void PlaySelect()
-    {
-        SFXManager.Instance?.Play(selectCue);
-    }
+        // ────────────────────────────────
+        // Playback API
+        // ────────────────────────────────
 
-    public void PlayDrag()
-    {
-        SFXManager.Instance?.Play(dragCue);
-    }
+        public void PlayDraw()
+        {
+            if (SFXManager.Instance == null)
+            {
+                Debug.LogWarning("[CardSFXHelper] SFXManager.Instance is NULL! Cannot play draw sound.");
+                return;
+            }
+        
+            if (drawCue == null)
+            {
+                Debug.LogWarning("[CardSFXHelper] drawCue is NULL! Assign it in the Inspector.");
+                return;
+            }
+        
+            Debug.Log($"[CardSFXHelper] Playing draw sound: {drawCue.cueName}");
+            SFXManager.Instance.Play(drawCue);
+        }
 
-    public void PlayConfirm()
-    {
-        SFXManager.Instance?.Play(confirmCue);
-    }
+        public void PlayHover()
+        {
+            if (SFXManager.Instance == null || hoverCue == null) return;
+            SFXManager.Instance.Play(hoverCue);
+        }
 
-    public void PlayCancel()
-    {
-        SFXManager.Instance?.Play(cancelCue);
-    }
+        public void PlaySelect()
+        {
+            if (SFXManager.Instance == null || selectCue == null) return;
+            SFXManager.Instance.Play(selectCue);
+        }
 
-    public void PlayDiscard()
-    {
-        SFXManager.Instance?.Play(discardCue);
+        public void PlayDrag()
+        {
+            if (SFXManager.Instance == null || dragCue == null) return;
+            SFXManager.Instance.Play(dragCue);
+        }
+
+        public void PlayConfirm()
+        {
+            if (SFXManager.Instance == null || confirmCue == null) return;
+            SFXManager.Instance.Play(confirmCue);
+        }
+
+        public void PlayCancel()
+        {
+            if (SFXManager.Instance == null || cancelCue == null) return;
+            SFXManager.Instance.Play(cancelCue);
+        }
+
+        public void PlayDiscard()
+        {
+            if (SFXManager.Instance == null || discardCue == null) return;
+            SFXManager.Instance.Play(discardCue);
+        }
+
+        public void PlayAttack()
+        {
+            if (SFXManager.Instance == null || attackCue == null) return;
+            SFXManager.Instance.Play(attackCue);
+        }
+
+        public void PlayHeal()
+        {
+            if (SFXManager.Instance == null || healCue == null) return;
+            SFXManager.Instance.Play(healCue);
+        }
+
+        public void PlayBlock()
+        {
+            if (SFXManager.Instance == null || blockCue == null) return;
+            SFXManager.Instance.Play(blockCue);
+        }
     }
 }
