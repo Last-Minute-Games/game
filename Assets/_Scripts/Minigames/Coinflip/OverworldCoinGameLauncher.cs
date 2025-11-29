@@ -18,6 +18,8 @@ public class OverworldCoinGameLauncher : MonoBehaviour
     public float sceneOpenDelay = 0.35f; // block instant open after load/room swap
     public float reopenCooldown = 0.25f; // block double taps
 
+    public MinigameInstructions coinFlipInstructions;
+
     bool _canOpen = false;
     float _lastCloseTime = -999f;
     private Transform player;
@@ -62,6 +64,16 @@ public class OverworldCoinGameLauncher : MonoBehaviour
 
         // Show the existing popup GameObject
         coinFlipPopup.SetActive(true);
+
+        if (coinFlipInstructions == null)
+        {
+            // fallback: try to find it on children
+            coinFlipInstructions = coinFlipPopup.GetComponentInChildren<MinigameInstructions>(true);
+        }
+        if (coinFlipInstructions != null)
+        {
+            coinFlipInstructions.OnPopupOpened();
+        }
 
         // Pause NPCs and ClockTimer (but NOT player input - using minigame pause)
         GlobalPause.SetMinigamePaused(true);
