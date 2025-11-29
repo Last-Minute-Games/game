@@ -4397,7 +4397,6 @@ GameObject:
   - component: {fileID: 35463138}
   - component: {fileID: 35463137}
   - component: {fileID: 35463136}
-  - component: {fileID: 35463135}
   - component: {fileID: 35463134}
   - component: {fileID: 35463133}
   - component: {fileID: 35463132}
@@ -4673,27 +4672,6 @@ MonoBehaviour:
   OnDialogCompleted:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &35463135
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 35463129}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73dade42bd881814ba09b57a846a4d3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  mode: 0
-  waypoints: []
-  waypointReachDistance: 0.1
-  pauseAtWaypoint: 0.1
-  wanderIntervalRange: {x: 1.2, y: 2}
-  wanderTurnSpeed: 4
-  followTarget: {fileID: 0}
-  chaseDistance: 4
-  stopDistance: 0.75
 --- !u!114 &35463136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -35401,7 +35379,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 264085561}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73dade42bd881814ba09b57a846a4d3a, type: 3}
   m_Name: 
@@ -56078,7 +56056,6 @@ GameObject:
   - component: {fileID: 433678964}
   - component: {fileID: 433678963}
   - component: {fileID: 433678962}
-  - component: {fileID: 433678961}
   - component: {fileID: 433678960}
   - component: {fileID: 433678959}
   - component: {fileID: 433678958}
@@ -56354,31 +56331,6 @@ MonoBehaviour:
   OnDialogCompleted:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &433678961
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 433678955}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73dade42bd881814ba09b57a846a4d3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  mode: 0
-  waypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  waypointReachDistance: 0.1
-  pauseAtWaypoint: 0.1
-  wanderIntervalRange: {x: 1.2, y: 2}
-  wanderTurnSpeed: 4
-  followTarget: {fileID: 0}
-  chaseDistance: 4
-  stopDistance: 0.75
 --- !u!114 &433678962
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -82465,7 +82417,6 @@ GameObject:
   - component: {fileID: 617018889}
   - component: {fileID: 617018888}
   - component: {fileID: 617018887}
-  - component: {fileID: 617018886}
   - component: {fileID: 617018885}
   - component: {fileID: 617018884}
   - component: {fileID: 617018883}
@@ -82741,31 +82692,6 @@ MonoBehaviour:
   OnDialogCompleted:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &617018886
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 617018880}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73dade42bd881814ba09b57a846a4d3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  mode: 0
-  waypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  waypointReachDistance: 0.1
-  pauseAtWaypoint: 0.1
-  wanderIntervalRange: {x: 1.2, y: 2}
-  wanderTurnSpeed: 4
-  followTarget: {fileID: 0}
-  chaseDistance: 4
-  stopDistance: 0.75
 --- !u!114 &617018887
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -251047,7 +250973,6 @@ GameObject:
   - component: {fileID: 1427658070}
   - component: {fileID: 1427658069}
   - component: {fileID: 1427658068}
-  - component: {fileID: 1427658067}
   - component: {fileID: 1427658066}
   - component: {fileID: 1427658065}
   - component: {fileID: 1427658064}
@@ -251323,27 +251248,6 @@ MonoBehaviour:
   OnDialogCompleted:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1427658067
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1427658061}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73dade42bd881814ba09b57a846a4d3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  mode: 0
-  waypoints: []
-  waypointReachDistance: 0.1
-  pauseAtWaypoint: 0.1
-  wanderIntervalRange: {x: 1.2, y: 2}
-  wanderTurnSpeed: 4
-  followTarget: {fileID: 0}
-  chaseDistance: 4
-  stopDistance: 0.75
 --- !u!114 &1427658068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -272400,7 +272304,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1562285583}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73dade42bd881814ba09b57a846a4d3a, type: 3}
   m_Name: 
@@ -276382,7 +276286,6 @@ GameObject:
   - component: {fileID: 1590742456}
   - component: {fileID: 1590742455}
   - component: {fileID: 1590742454}
-  - component: {fileID: 1590742453}
   - component: {fileID: 1590742452}
   - component: {fileID: 1590742451}
   - component: {fileID: 1590742450}
@@ -276658,29 +276561,6 @@ MonoBehaviour:
   OnDialogCompleted:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1590742453
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1590742447}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73dade42bd881814ba09b57a846a4d3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  mode: 0
-  waypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  waypointReachDistance: 0.1
-  pauseAtWaypoint: 0.1
-  wanderIntervalRange: {x: 1.2, y: 2}
-  wanderTurnSpeed: 4
-  followTarget: {fileID: 0}
-  chaseDistance: 4
-  stopDistance: 0.75
 --- !u!114 &1590742454
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298265,7 +298145,6 @@ GameObject:
   - component: {fileID: 1735654933}
   - component: {fileID: 1735654932}
   - component: {fileID: 1735654931}
-  - component: {fileID: 1735654930}
   - component: {fileID: 1735654929}
   - component: {fileID: 1735654928}
   - component: {fileID: 1735654927}
@@ -298541,34 +298420,6 @@ MonoBehaviour:
   OnDialogCompleted:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1735654930
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1735654924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73dade42bd881814ba09b57a846a4d3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  mode: 1
-  waypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  waypointReachDistance: 0.1
-  pauseAtWaypoint: 3
-  wanderIntervalRange: {x: 1.2, y: 2}
-  wanderTurnSpeed: 4
-  followTarget: {fileID: 0}
-  chaseDistance: 4
-  stopDistance: 0.75
 --- !u!114 &1735654931
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -356418,7 +356269,6 @@ GameObject:
   - component: {fileID: 1925833477}
   - component: {fileID: 1925833476}
   - component: {fileID: 1925833475}
-  - component: {fileID: 1925833474}
   - component: {fileID: 1925833473}
   - component: {fileID: 1925833472}
   - component: {fileID: 1925833471}
@@ -356694,31 +356544,6 @@ MonoBehaviour:
   OnDialogCompleted:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1925833474
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1925833468}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73dade42bd881814ba09b57a846a4d3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  mode: 1
-  waypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  waypointReachDistance: 0.1
-  pauseAtWaypoint: 3
-  wanderIntervalRange: {x: 1.2, y: 2}
-  wanderTurnSpeed: 4
-  followTarget: {fileID: 0}
-  chaseDistance: 4
-  stopDistance: 0.75
 --- !u!114 &1925833475
 MonoBehaviour:
   m_ObjectHideFlags: 0
