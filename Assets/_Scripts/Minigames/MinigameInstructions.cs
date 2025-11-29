@@ -3,12 +3,17 @@ using UnityEngine;
 public class MinigameInstructions : MonoBehaviour
 {
     [SerializeField] private GameObject instructionsPanel;
+
+    [Tooltip("Show automatically the first time this popup opens?")]
     [SerializeField] private bool showOnFirstOpen = true;
 
     bool _hasShownOnce = false;
 
-    void OnEnable()
+    // This will be called by the launcher when the minigame popup is opened
+    public void OnPopupOpened()
     {
+        if (instructionsPanel == null) return;
+
         if (showOnFirstOpen && !_hasShownOnce)
         {
             _hasShownOnce = true;
@@ -16,6 +21,7 @@ public class MinigameInstructions : MonoBehaviour
         }
         else
         {
+            // After the first time, start with instructions hidden
             Hide();
         }
     }
