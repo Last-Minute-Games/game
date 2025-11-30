@@ -25,7 +25,7 @@ MonoBehaviour:
     actionChance: 0.6
     customName: Wing Slash
   - intent: 1
-    value: 1
+    value: 5
     actionChance: 0.25
     customName: Echoshield
   - intent: 2
@@ -33,7 +33,7 @@ MonoBehaviour:
     actionChance: 0.25
     customName: Blood Sip
   - intent: 3
-    value: 1.1
+    value: 1
     actionChance: 0.1
     customName: Sonic Charge
   attackRange:
@@ -46,8 +46,8 @@ MonoBehaviour:
     min: 0.868
     max: 1.11
   buffRange:
-    min: 1.18
-    max: 1.26
+    min: 1.05
+    max: 1.15
   animatorController: {fileID: 9100000, guid: 681fab083306c8942a3eec79ae9b2441, type: 2}
   idleAnim: {fileID: 11400000, guid: 9392c00411cac2d4d9086da9fb81a186, type: 2}
   attackAnim: {fileID: 11400000, guid: 27212de400a94c44eb6b86d87b795613, type: 2}

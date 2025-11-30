@@ -21,7 +21,7 @@ MonoBehaviour:
   artwork: {fileID: 4930606676764459096, guid: 27956d19a3c8c40e2b523901f8daab00, type: 3}
   actionPattern:
   - intent: 0
-    value: 15
+    value: 10
     actionChance: 0.5
     customName: Cloak
   - intent: 1
@@ -29,8 +29,8 @@ MonoBehaviour:
     actionChance: 0.25
     customName: Ectoplasma
   - intent: 2
-    value: 15
-    actionChance: 0
+    value: 8
+    actionChance: 0.283
     customName: Soul Call
   - intent: 3
     value: 1
@@ -46,8 +46,8 @@ MonoBehaviour:
     min: 0.817
     max: 1.278
   buffRange:
-    min: 1.115
-    max: 1.44
+    min: 1.05
+    max: 1.15
   animatorController: {fileID: 9100000, guid: 681fab083306c8942a3eec79ae9b2441, type: 2}
   idleAnim: {fileID: 11400000, guid: d7420f1d171cfff40b95c62c770bf1cf, type: 2}
   attackAnim: {fileID: 11400000, guid: 9d4ae8b107b7b6a4b8a558a2101b3fb0, type: 2}
