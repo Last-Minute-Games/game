@@ -8,7 +8,13 @@ using Entities.Enemies.Helpers;
 public struct EnemyAction
 {
     public EnemyIntent intent;
-    public int value;
+
+    [Tooltip("Value of this action. For Attack/Block/Heal, rounded to int. For Buff, float multiplier.")]
+    public float value;
+
+    [Range(0.1f, 1f)]
+    public float actionChance; // chance of action being played
+
     [Tooltip("Optional custom name for this action (e.g., 'Crushing Blow' instead of 'Attack'). Leave empty to use default.")]
     public string customName;
 }
@@ -43,8 +49,8 @@ public class EnemyData : EntityData
     [Header("Core Stats (fallbacks when pattern value is 0)")]
     public int attackPower;
     public int defensePower;
-    public int healPower;  // NEW
-    public int buffPower;  // NEW
+    public int healPower;
+    public int buffPower;
 
     [Header("Intent System")]
     public EnemyIntent currentIntent;
@@ -81,6 +87,12 @@ public class EnemyData : EntityData
     public EnemyConfig.IntentMultiplierRange healRange;
     public EnemyConfig.IntentMultiplierRange buffRange;
 
+    // ──────────────────────────────────────────────────────────────
+    // NEW: Buff multiplier (affects ATK/BLK/HEAL permanently)
+    // ──────────────────────────────────────────────────────────────
+    [Header("Runtime Buff Multiplier (affects Attack/Block/Heal only)")]
+    public float buffMultiplier = 1f;
+
     // -------------------------------------------------------
     // Initialization
     // -------------------------------------------------------
@@ -94,32 +106,31 @@ public class EnemyData : EntityData
 
         actionPattern = new List<EnemyAction>();
 
-        // default ranges if zeroed
         attackRange.min = attackRange.min == 0 ? 1f : attackRange.min;
         attackRange.max = attackRange.max == 0 ? 1f : attackRange.max;
-        blockRange.min  = blockRange .min == 0 ? 1f : blockRange .min;
-        blockRange.max  = blockRange .max == 0 ? 1f : blockRange .max;
-        healRange.min   = healRange  .min == 0 ? 1f : healRange  .min;
-        healRange.max   = healRange  .max == 0 ? 1f : healRange  .max;
-        buffRange.min   = buffRange  .min == 0 ? 1f : buffRange  .min;
-        buffRange.max   = buffRange  .max == 0 ? 1f : buffRange  .max;
+        blockRange.min  = blockRange.min == 0 ? 1f : blockRange.min;
+        blockRange.max  = blockRange.max == 0 ? 1f : blockRange.max;
+        healRange.min   = healRange.min == 0 ? 1f : healRange.min;
+        healRange.max   = healRange.max == 0 ? 1f : healRange.max;
+        buffRange.min   = buffRange.min == 0 ? 1f : buffRange.min;
+        buffRange.max   = buffRange.max == 0 ? 1f : buffRange.max;
     }
 
-    /// <summary>Ensures any action with value ≤ 0 is set from fallbacks based on intent.</summary>
     public void NormalizeActionPatternWithFallbacks()
     {
         if (actionPattern == null) return;
+
         for (int i = 0; i < actionPattern.Count; i++)
         {
             var a = actionPattern[i];
-            if (a.value <= 0)
+            if (a.value <= 0f)
             {
                 a.value = a.intent switch
                 {
-                    EnemyIntent.Attack => Mathf.Max(0, attackPower),
-                    EnemyIntent.Block  => Mathf.Max(0, defensePower),
-                    EnemyIntent.Heal   => Mathf.Max(0, healPower),
-                    EnemyIntent.Buff   => Mathf.Max(0, buffPower),
+                    EnemyIntent.Attack => attackPower,
+                    EnemyIntent.Block  => defensePower,
+                    EnemyIntent.Heal   => healPower,
+                    EnemyIntent.Buff   => buffPower,
                     _ => a.value
                 };
                 actionPattern[i] = a;
@@ -128,23 +139,39 @@ public class EnemyData : EntityData
     }
 
     // -------------------------------------------------------
-    // Enemy chooses what to do next
+    // Weighted selection only (your system)
+    // -------------------------------------------------------
+    private EnemyAction ChooseStrategicAction()
+    {
+        if (actionPattern == null || actionPattern.Count == 0)
+        {
+            Debug.LogWarning("[AI] Enemy has no actionPattern");
+            return new EnemyAction { intent = EnemyIntent.Attack, value = attackPower };
+        }
+
+        float totalWeight = 0f;
+        foreach (var a in actionPattern)
+            totalWeight += Mathf.Max(0.01f, a.actionChance);
+
+        float roll = UnityEngine.Random.Range(0, totalWeight);
+
+        float cumulative = 0f;
+        foreach (var a in actionPattern)
+        {
+            cumulative += Mathf.Max(0.01f, a.actionChance);
+            if (roll <= cumulative)
+                return a;
+        }
+
+        return actionPattern[actionPattern.Count - 1];
+    }
+
+    // -------------------------------------------------------
+    // Decide next intent
     // -------------------------------------------------------
     public void DecideNextIntent()
     {
-        // Ensure fallbacks are applied at runtime too
         NormalizeActionPatternWithFallbacks();
-
-        if (actionPattern == null || actionPattern.Count == 0)
-        {
-            // Fallback: simple attack using attackRange
-            currentIntent = EnemyIntent.Attack;
-            currentAction = new EnemyAction { intent = EnemyIntent.Attack, value = attackPower, customName = "" };
-            float mul = SampleMiddleBiased(attackRange.min, attackRange.max);
-            intentValue = Mathf.Max(0, Mathf.RoundToInt(currentAction.value * mul));
-            intentText = "Attack";
-            return;
-        }
 
         EnemyAction chosenAction = ChooseStrategicAction();
         currentIntent = chosenAction.intent;
@@ -159,96 +186,44 @@ public class EnemyData : EntityData
             case EnemyIntent.Buff:   mult = SampleMiddleBiased(buffRange.min  , buffRange.max  ); break;
         }
 
-        intentValue = Mathf.Max(0, Mathf.RoundToInt(chosenAction.value * mult));
-        intentText  = string.IsNullOrWhiteSpace(chosenAction.customName)
-                        ? chosenAction.intent.ToString()
-                        : chosenAction.customName;
-    }
+        bool isBuff = chosenAction.intent == EnemyIntent.Buff;
 
-    private EnemyAction ChooseStrategicAction()
-    {
-        float healthPercent = currentHealth / (float)maxHealth;
-
-        var attackActions = new List<EnemyAction>();
-        var blockActions  = new List<EnemyAction>();
-        var healActions   = new List<EnemyAction>();
-        var buffActions   = new List<EnemyAction>();
-
-        foreach (var action in actionPattern)
+        if (!isBuff)
         {
-            switch (action.intent)
-            {
-                case EnemyIntent.Attack: attackActions.Add(action); break;
-                case EnemyIntent.Block:  blockActions .Add(action); break;
-                case EnemyIntent.Heal:   healActions  .Add(action); break;
-                case EnemyIntent.Buff:   buffActions  .Add(action); break;
-            }
+            intentValue = Mathf.RoundToInt(chosenAction.value * mult * buffMultiplier);
+        }
+        else
+        {
+            intentValue = 0;
         }
 
-        int averageBlockValue = 0;
-        if (blockActions.Count > 0)
-        {
-            int totalBlockValue = 0;
-            foreach (var a in blockActions) totalBlockValue += a.value;
-            averageBlockValue = totalBlockValue / blockActions.Count;
-        }
-
-        int lowBlockThreshold = averageBlockValue / 2;
-        int criticalBlockThreshold = Mathf.Max(3, averageBlockValue / 4);
-        bool hasLowBlock = block > 0 && block <= lowBlockThreshold;
-        bool hasCriticalBlock = block > 0 && block <= criticalBlockThreshold;
-        bool hasNoBlock = block == 0;
-        bool hasGoodBlock = block > lowBlockThreshold;
-
-        if (healthPercent < 0.2f)
-        {
-            if (healActions.Count > 0) return GetRandomAction(healActions);
-            if (blockActions.Count > 0 && (hasNoBlock || hasCriticalBlock)) return GetRandomAction(blockActions);
-        }
-
-        if (healthPercent < 0.5f)
-        {
-            if (healActions.Count > 0 && UnityEngine.Random.value < 0.7f) return GetRandomAction(healActions);
-            if (blockActions.Count > 0 && (hasNoBlock || hasLowBlock))
-                if (UnityEngine.Random.value < 0.7f) return GetRandomAction(blockActions);
-        }
-
-        if (hasNoBlock && blockActions.Count > 0)
-        {
-            if (UnityEngine.Random.value < 0.5f) return GetRandomAction(blockActions);
-        }
-        else if (hasCriticalBlock && blockActions.Count > 0)
-        {
-            if (UnityEngine.Random.value < 0.4f) return GetRandomAction(blockActions);
-        }
-        else if (hasLowBlock && blockActions.Count > 0)
-        {
-            if (UnityEngine.Random.value < 0.25f) return GetRandomAction(blockActions);
-        }
-
-        if (healthPercent > 0.8f && hasGoodBlock && buffActions.Count > 0)
-        {
-            if (UnityEngine.Random.value < 0.3f) return GetRandomAction(buffActions);
-        }
-
-        if (attackActions.Count > 0) return GetRandomAction(attackActions);
-
-        Debug.LogWarning($"[AI] {enemyName} has no attack actions - picking random");
-        return actionPattern[UnityEngine.Random.Range(0, actionPattern.Count)];
-    }
-
-    private EnemyAction GetRandomAction(List<EnemyAction> actions)
-    {
-        if (actions == null || actions.Count == 0)
-        {
-            Debug.LogError("[AI] GetRandomAction called with empty list!");
-            return new EnemyAction { intent = EnemyIntent.Attack, value = attackPower, customName = "" };
-        }
-        return actions[UnityEngine.Random.Range(0, actions.Count)];
+        intentText = string.IsNullOrWhiteSpace(chosenAction.customName)
+            ? chosenAction.intent.ToString()
+            : chosenAction.customName;
     }
 
     // -------------------------------------------------------
-    // Execute current intent
+    // NEW — Apply buff to ATK/BLK/HEAL actionPattern values
+    // -------------------------------------------------------
+    private void ApplyBuffToActionPattern(float mult)
+    {
+        if (actionPattern == null) return;
+
+        for (int i = 0; i < actionPattern.Count; i++)
+        {
+            EnemyAction a = actionPattern[i];
+
+            // DO NOT buff buff actions
+            if (a.intent == EnemyIntent.Buff)
+                continue;
+
+            a.value = a.value * mult; // float precision
+            actionPattern[i] = a;
+        }
+    }
+
+    // -------------------------------------------------------
+    // Execute current intent (Buff updated)
     // -------------------------------------------------------
     public void ExecuteIntent(PlayerData player)
     {
@@ -269,37 +244,31 @@ public class EnemyData : EntityData
                 break;
 
             case EnemyIntent.Buff:
-                // Sample from buff range, then scale ONLY Attack/Block/Heal ranges (exclude buff self-scaling)
-                float m = SampleMiddleBiased(buffRange.min, buffRange.max);
-                ApplyBuffToRanges(m, includeBuff: false);
+            {
+                float mult = SampleMiddleBiased(buffRange.min, buffRange.max);
+
+                if (currentAction.value > 0f)
+                    mult *= currentAction.value;  // float multiplier
+
+                buffMultiplier *= mult;
+
+                ApplyBuffToActionPattern(mult);
+
+                Debug.Log($"[Buff] {enemyName} applied buff! mult={mult:F3}, total={buffMultiplier:F3}");
                 break;
+            }
         }
     }
 
+    // -------------------------------------------------------
+    // Utility
+    // -------------------------------------------------------
     public bool IsAlive() => isAlive;
 
-    // ─────────────────────────────────────────────────────────────────────
-    // Helpers
-    // ─────────────────────────────────────────────────────────────────────
     private static float SampleMiddleBiased(float min, float max)
     {
         float a = UnityEngine.Random.Range(min, max);
         float b = UnityEngine.Random.Range(min, max);
         return (a + b) * 0.5f;
-    }
-
-    private void ApplyBuffToRanges(float mul, bool includeBuff)
-    {
-        attackRange = ScaleClamped(attackRange, mul);
-        blockRange  = ScaleClamped(blockRange , mul);
-        healRange   = ScaleClamped(healRange  , mul);
-        if (includeBuff) buffRange = ScaleClamped(buffRange, mul);
-
-        static EnemyConfig.IntentMultiplierRange ScaleClamped(EnemyConfig.IntentMultiplierRange r, float m)
-        {
-            var rr = new EnemyConfig.IntentMultiplierRange { min = r.min * m, max = r.max * m };
-            rr.Normalize();
-            return rr;
-        }
     }
 }

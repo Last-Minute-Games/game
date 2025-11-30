@@ -134,6 +134,14 @@ public class EnemyConfig : ScriptableObject
         healRange  .Normalize();
         buffRange  .Normalize();
 
+        // enforce buffRange clamping specifically
+        buffRange.min = Mathf.Clamp(buffRange.min, 1.05f, 2f);
+        buffRange.max = Mathf.Clamp(buffRange.max, 1.05f, 2f);
+
+        // ensure order is correct
+        if (buffRange.min > buffRange.max)
+            buffRange.min = buffRange.max;
+
         // assign id
         if (string.IsNullOrWhiteSpace(uniqueID))
             uniqueID = Guid.NewGuid().ToString();

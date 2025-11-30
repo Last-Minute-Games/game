@@ -21,14 +21,21 @@ MonoBehaviour:
   artwork: {fileID: 7892174264202526986, guid: 3297483253c0d27a791181e2e071b1bf, type: 3}
   actionPattern:
   - intent: 0
-    value: 15
+    value: 18
+    actionChance: 0.45
     customName: Cheese Touch
   - intent: 1
     value: 15
+    actionChance: 0.25
     customName: Rind Guard
   - intent: 2
     value: 15
+    actionChance: 0.15
     customName: Cheese Snack
+  - intent: 3
+    value: 1
+    actionChance: 0.15
+    customName: Rancid Rally
   attackRange:
     min: 0.829
     max: 1.25
@@ -39,7 +46,7 @@ MonoBehaviour:
     min: 0.845
     max: 1.256
   buffRange:
-    min: 1.143
+    min: 1.26
     max: 1.571
   animatorController: {fileID: 0}
   idleAnim: {fileID: 11400000, guid: 8b605171e364b0400a0eb4976e0b3afa, type: 2}
