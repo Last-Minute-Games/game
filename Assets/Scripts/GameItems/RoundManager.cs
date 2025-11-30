@@ -524,7 +524,7 @@ public class RoundManager : MonoBehaviour
             endScreenUI.ShowMessage("YOU WIN", new Color(1f, 0.84f, 0.0f)); // gold
 
         // TODO: update timer shit
-        var clock = FindObjectOfType<ClockTimer>();
+        var clock = UnityEngine.Object.FindObjectOfType<ClockTimer>(true);
         if (clock != null)
         {
             clock.AddTime(10f); // TODO: adjust reward amount
@@ -552,7 +552,7 @@ public class RoundManager : MonoBehaviour
             endScreenUI.ShowMessage("YOU LOSE", Color.red);
 
         // TODO: wrong todo just ummm timer change flag shit
-        var clock = FindObjectOfType<ClockTimer>();
+        var clock = UnityEngine.Object.FindObjectOfType<ClockTimer>(true);
         if (clock != null)
         {
             clock.RemoveTime(100f); // TODO: adjust penalty amount
@@ -576,6 +576,9 @@ public class RoundManager : MonoBehaviour
         if (fader != null)
         {
             Debug.Log("[RoundManager] Using ScreenFader for transition");
+
+            fader.shouldOpenEyesOnSceneLoad = true;
+
             yield return fader.TransitionToSceneWithEyesClosing("Overworld");
         }
         else
