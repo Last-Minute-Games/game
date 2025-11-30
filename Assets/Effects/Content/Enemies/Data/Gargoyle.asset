@@ -21,14 +21,14 @@ MonoBehaviour:
   artwork: {fileID: 4337190145794645005, guid: f3d3322ae5cd90f3b924d3a1cd357aa2, type: 3}
   actionPattern:
   - intent: 0
-    value: 30
+    value: 25
     customName: Stomp
   - intent: 1
     value: 15
-    customName: Defend
+    customName: Brace
   - intent: 2
     value: 15
-    customName: Heal
+    customName: Reconstitute
   attackRange:
     min: 0.84
     max: 1.402
@@ -48,6 +48,6 @@ MonoBehaviour:
   deathAnim: {fileID: 11400000, guid: b649d60f67f81f0f89a1122c512b15e5, type: 2}
   positionOffset: {x: 0, y: 0, z: 0}
   scaleOffset: {x: 1, y: 1, z: 1}
-  minMultiplier: 0.826
-  maxMultiplier: 1.195
+  minMultiplier: 0.902
+  maxMultiplier: 1.294
   uniqueID: 951af61c-8ecd-48f2-a2d2-e0be6b5e464e

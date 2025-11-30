@@ -19,7 +19,16 @@ MonoBehaviour:
   healPower: 5
   buffPower: 1
   artwork: {fileID: 7892174264202526986, guid: 3297483253c0d27a791181e2e071b1bf, type: 3}
-  actionPattern: []
+  actionPattern:
+  - intent: 0
+    value: 15
+    customName: Cheese Touch
+  - intent: 1
+    value: 15
+    customName: Rind Guard
+  - intent: 2
+    value: 15
+    customName: Cheese Snack
   attackRange:
     min: 0.829
     max: 1.25
