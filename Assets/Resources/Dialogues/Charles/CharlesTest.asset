@@ -15,8 +15,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -597.5
-    y: -247
+    x: -132
+    y: 165.5
     width: 190
     height: 135
   IsDragging: 1
@@ -50,13 +50,13 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2009.5
-    y: -344
+    x: -1544
+    y: 68.5
     width: 200
     height: 120
   IsDragging: 1
   IsSelected: 0
-  _flagName: SokobanComplete
+  _flagName: minigame.sokoban.win
   ParentNodes:
   - {fileID: 6774562159654365960}
   TrueChildNode: {fileID: -2355520360247351113}
@@ -76,8 +76,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3296.833
-    y: 135.99988
+    x: -2831.333
+    y: 548.4999
     width: 190
     height: 175
   IsDragging: 1
@@ -110,8 +110,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1426.5
-    y: -258
+    x: -961
+    y: 154.5
     width: 190
     height: 115
   IsDragging: 1
@@ -138,8 +138,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3139.833
-    y: -410.00012
+    x: -2674.333
+    y: 2.499878
     width: 190
     height: 135
   IsDragging: 1
@@ -170,8 +170,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3056.1665
-    y: -14.333374
+    x: -2590.6665
+    y: 398.16663
     width: 190
     height: 135
   IsDragging: 1
@@ -203,8 +203,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3056.1665
-    y: 124.33325
+    x: -2590.6665
+    y: 536.83325
     width: 190
     height: 135
   IsDragging: 1
@@ -220,6 +220,31 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &-5609889285606500520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 040c7688b61812647b338495939d2824, type: 3}
+  m_Name: GameFlag Condition Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.GameFlagConditionNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1138.5
+    y: 331.5
+    width: 200
+    height: 120
+  IsDragging: 1
+  IsSelected: 0
+  _flagName: minigame.sokoban.loss
+  ParentNodes: []
+  TrueChildNode: {fileID: 0}
+  FalseChildNode: {fileID: 0}
 --- !u!114 &-5524138455415709277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -235,8 +260,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 6.5
-    y: 173
+    x: 472
+    y: 585.5
     width: 190
     height: 135
   IsDragging: 1
@@ -267,8 +292,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3138.8333
-    y: -273.33344
+    x: -2673.3333
+    y: 139.16656
     width: 190
     height: 135
   IsDragging: 1
@@ -299,8 +324,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3843.1665
-    y: -134.33344
+    x: -3377.6665
+    y: 278.16656
     width: 190
     height: 135
   IsDragging: 1
@@ -331,8 +356,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1692.5
-    y: -269
+    x: -1227
+    y: 143.5
     width: 190
     height: 135
   IsDragging: 1
@@ -363,8 +388,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -4097.8335
-    y: 154
+    x: -3632.3335
+    y: 566.5
     width: 190
     height: 175
   IsDragging: 1
@@ -426,6 +451,7 @@ MonoBehaviour:
   - {fileID: 3803400012888440554}
   - {fileID: -5524138455415709277}
   - {fileID: 2983682691910107380}
+  - {fileID: -5609889285606500520}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -447,11 +473,11 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1617.5
-    y: 70
+    x: -1155.5
+    y: 507.5
     width: 190
     height: 135
-  IsDragging: 0
+  IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Charles
@@ -479,8 +505,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3772.833
-    y: 121.33325
+    x: -3307.333
+    y: 533.83325
     width: 190
     height: 135
   IsDragging: 1
@@ -512,8 +538,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3530.5
-    y: -332.6668
+    x: -3065
+    y: 79.83319
     width: 190
     height: 175
   IsDragging: 1
@@ -546,8 +572,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -4030.833
-    y: 760.6665
+    x: -3565.333
+    y: 1173.1665
     width: 190
     height: 135
   IsDragging: 1
@@ -579,8 +605,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -323.5
-    y: -257
+    x: 142
+    y: 155.5
     width: 190
     height: 135
   IsDragging: 1
@@ -612,8 +638,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 188.5
-    y: 336
+    x: 654
+    y: 748.5
     width: 190
     height: 155
   IsDragging: 1
@@ -641,8 +667,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3140.4998
-    y: -567.0001
+    x: -2674.9998
+    y: -154.50012
     width: 190
     height: 135
   IsDragging: 1
@@ -673,8 +699,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -14.5
-    y: -31
+    x: 451
+    y: 381.5
     width: 190
     height: 135
   IsDragging: 1
@@ -707,8 +733,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3140.1665
-    y: -719.66675
+    x: -2674.6665
+    y: -307.16675
     width: 190
     height: 135
   IsDragging: 1
@@ -739,8 +765,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -905.5
-    y: -266
+    x: -440
+    y: 146.5
     width: 190
     height: 135
   IsDragging: 1
@@ -768,8 +794,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3059.4998
-    y: 264.6665
+    x: -2593.9998
+    y: 677.1665
     width: 190
     height: 135
   IsDragging: 1
@@ -800,8 +826,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -28.5
-    y: -242
+    x: 437
+    y: 170.5
     width: 190
     height: 115
   IsDragging: 1
@@ -829,8 +855,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3750.833
-    y: 370.6665
+    x: -3285.333
+    y: 783.1665
     width: 190
     height: 135
   IsDragging: 1
@@ -861,8 +887,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -4371.5
-    y: 165.33325
+    x: -3906
+    y: 577.83325
     width: 190
     height: 135
   IsDragging: 1
@@ -892,8 +918,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3057.4998
-    y: 413
+    x: -2591.9998
+    y: 825.5
     width: 190
     height: 135
   IsDragging: 1
@@ -924,8 +950,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2008.5
-    y: -22
+    x: -1543
+    y: 390.5
     width: 190
     height: 135
   IsDragging: 1
@@ -956,8 +982,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1145.5
-    y: -269
+    x: -680
+    y: 143.5
     width: 190
     height: 135
   IsDragging: 1
@@ -988,8 +1014,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2636.5
-    y: 186
+    x: -2171
+    y: 598.5
     width: 190
     height: 115
   IsDragging: 0
@@ -1023,8 +1049,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2276.5
-    y: 117
+    x: -1811
+    y: 529.5
     width: 190
     height: 135
   IsDragging: 0
