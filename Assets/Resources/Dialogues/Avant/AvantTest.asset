@@ -15,8 +15,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1789
-    y: 329.5
+    x: 2863
+    y: 440.5
     width: 190
     height: 135
   IsDragging: 1
@@ -49,8 +49,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -899.5
-    y: 865
+    x: 174.5
+    y: 976
     width: 190
     height: 135
   IsDragging: 1
@@ -82,8 +82,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1098.5
-    y: 158
+    x: -24.5
+    y: 269
     width: 190
     height: 135
   IsDragging: 1
@@ -111,8 +111,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1109
-    y: 731.5
+    x: -35
+    y: 842.5
     width: 190
     height: 135
   IsDragging: 1
@@ -141,8 +141,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2062.5
-    y: 574.5
+    x: -988.5
+    y: 685.5
     width: 190
     height: 135
   IsDragging: 1
@@ -159,6 +159,31 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &-5934932871048047522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 040c7688b61812647b338495939d2824, type: 3}
+  m_Name: GameFlag Condition Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.GameFlagConditionNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1610
+    y: 540
+    width: 200
+    height: 120
+  IsDragging: 1
+  IsSelected: 0
+  _flagName: minigame.riddle.lost
+  ParentNodes: []
+  TrueChildNode: {fileID: 5007462364540204673}
+  FalseChildNode: {fileID: 0}
 --- !u!114 &-5051715272586582717
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -174,8 +199,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1795.5
-    y: -82.5
+    x: -721.5
+    y: 28.5
     width: 190
     height: 135
   IsDragging: 1
@@ -207,8 +232,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1469
-    y: -400.5
+    x: -395
+    y: -289.5
     width: 190
     height: 135
   IsDragging: 1
@@ -237,8 +262,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 655
-    y: 129.5
+    x: 1729
+    y: 240.5
     width: 190
     height: 115
   IsDragging: 1
@@ -265,8 +290,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1274
-    y: 145.5
+    x: 2348
+    y: 256.5
     width: 190
     height: 135
   IsDragging: 1
@@ -298,8 +323,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1092
-    y: 465
+    x: -18
+    y: 576
     width: 190
     height: 135
   IsDragging: 1
@@ -327,8 +352,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -603.5
-    y: -10
+    x: 470.5
+    y: 101
     width: 190
     height: 135
   IsDragging: 1
@@ -392,6 +417,8 @@ MonoBehaviour:
   - {fileID: 5173437448618743654}
   - {fileID: -8303601220153635508}
   - {fileID: 1616043764763156438}
+  - {fileID: -5934932871048047522}
+  - {fileID: 7685364909672213241}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -413,17 +440,16 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 101
-    y: 347.5
+    x: 1207
+    y: 453.5
     width: 200
     height: 120
   IsDragging: 1
   IsSelected: 0
   _flagName: minigame.riddle.win
-  ParentNodes:
-  - {fileID: 1308101640241108091}
+  ParentNodes: []
   TrueChildNode: {fileID: 4608101503442498856}
-  FalseChildNode: {fileID: 5007462364540204673}
+  FalseChildNode: {fileID: 0}
 --- !u!114 &803300941970166249
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -439,8 +465,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1563.5
-    y: 194.5
+    x: -489.5
+    y: 305.5
     width: 190
     height: 155
   IsDragging: 1
@@ -471,8 +497,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -158
-    y: 408.5
+    x: 916
+    y: 519.5
     width: 190
     height: 135
   IsDragging: 0
@@ -503,8 +529,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1023.5
-    y: -660.5
+    x: 50.5
+    y: -549.5
     width: 190
     height: 135
   IsDragging: 1
@@ -531,8 +557,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1566.5
-    y: -107.5
+    x: -492.5
+    y: 3.5
     width: 190
     height: 135
   IsDragging: 1
@@ -561,8 +587,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2079
-    y: 328.5
+    x: 3153
+    y: 439.5
     width: 190
     height: 135
   IsDragging: 1
@@ -595,8 +621,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1172.5
-    y: -233
+    x: -98.5
+    y: -122
     width: 190
     height: 135
   IsDragging: 1
@@ -627,8 +653,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -417
-    y: 400.5
+    x: 657
+    y: 511.5
     width: 190
     height: 135
   IsDragging: 1
@@ -637,7 +663,8 @@ MonoBehaviour:
     CharacterName: Nikolaus
     Text: Charles told me you had found some sort of document may I see it?
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
-  ParentNodes: []
+  ParentNodes:
+  - {fileID: 7685364909672213241}
   ChildNode: {fileID: 1308101640241108091}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -658,8 +685,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1029
-    y: -431
+    x: 45
+    y: -320
     width: 190
     height: 135
   IsDragging: 1
@@ -691,8 +718,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1319.5
-    y: 163.5
+    x: -245.5
+    y: 274.5
     width: 190
     height: 135
   IsDragging: 1
@@ -724,8 +751,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -901.5
-    y: 725
+    x: 172.5
+    y: 836
     width: 190
     height: 135
   IsDragging: 1
@@ -756,8 +783,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1318.5
-    y: 295.5
+    x: -244.5
+    y: 406.5
     width: 190
     height: 135
   IsDragging: 1
@@ -788,8 +815,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -728.5
-    y: 184.5
+    x: 345.5
+    y: 295.5
     width: 190
     height: 135
   IsDragging: 1
@@ -820,8 +847,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1801
-    y: -389
+    x: -727
+    y: -278
     width: 190
     height: 135
   IsDragging: 1
@@ -853,8 +880,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 353
-    y: 172.5
+    x: 1427
+    y: 283.5
     width: 190
     height: 135
   IsDragging: 1
@@ -863,8 +890,7 @@ MonoBehaviour:
     CharacterName: Nikolaus
     Text: Fitzroy... what could this...?
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
-  ParentNodes:
-  - {fileID: 270367387342089315}
+  ParentNodes: []
   ChildNode: {fileID: -2428536568738158784}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -885,8 +911,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 440
-    y: 586.5
+    x: 1514
+    y: 697.5
     width: 190
     height: 135
   IsDragging: 1
@@ -897,6 +923,7 @@ MonoBehaviour:
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
   - {fileID: 270367387342089315}
+  - {fileID: -5934932871048047522}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -917,8 +944,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -713
-    y: 347
+    x: 361
+    y: 458
     width: 190
     height: 135
   IsDragging: 1
@@ -950,8 +977,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2734.833
-    y: -35.333252
+    x: -1660.833
+    y: 75.66675
     width: 190
     height: 135
   IsDragging: 1
@@ -981,8 +1008,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1025
-    y: 130.5
+    x: 2099
+    y: 241.5
     width: 190
     height: 135
   IsDragging: 1
@@ -1016,8 +1043,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1541
-    y: 188.5
+    x: 2615
+    y: 299.5
     width: 190
     height: 135
   IsDragging: 0
@@ -1049,8 +1076,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1323
-    y: 459.5
+    x: -249
+    y: 570.5
     width: 190
     height: 135
   IsDragging: 1
@@ -1082,8 +1109,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1096.5
-    y: 298
+    x: -22.5
+    y: 409
     width: 190
     height: 135
   IsDragging: 1
@@ -1112,8 +1139,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -823.5
-    y: 13.5
+    x: 250.5
+    y: 124.5
     width: 190
     height: 135
   IsDragging: 1
@@ -1146,8 +1173,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -806
-    y: 529.5
+    x: 268
+    y: 640.5
     width: 190
     height: 135
   IsDragging: 0
@@ -1155,7 +1182,7 @@ MonoBehaviour:
   _sentence:
     CharacterName: Nikolaus
     Text: Still you were very close to the king.
-    CharacterSprite: {fileID: 0}
+    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
   - {fileID: -1211290618911506022}
   ChildNode: {fileID: -6613814892437995513}
@@ -1178,8 +1205,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1349.5
-    y: -613.5
+    x: -275.5
+    y: -502.5
     width: 190
     height: 135
   IsDragging: 1
@@ -1196,6 +1223,31 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &7685364909672213241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 040c7688b61812647b338495939d2824, type: 3}
+  m_Name: GameFlag Condition Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.GameFlagConditionNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 752
+    y: 276
+    width: 200
+    height: 120
+  IsDragging: 1
+  IsSelected: 0
+  _flagName: character.spoketocharles
+  ParentNodes: []
+  TrueChildNode: {fileID: 2426616656705598935}
+  FalseChildNode: {fileID: 0}
 --- !u!114 &8097817019629068892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1211,8 +1263,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1170
-    y: -78.5
+    x: -96
+    y: 32.5
     width: 190
     height: 135
   IsDragging: 1
@@ -1244,8 +1296,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1806.5
-    y: 189
+    x: -732.5
+    y: 300
     width: 190
     height: 135
   IsDragging: 1
@@ -1277,8 +1329,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2380
-    y: -39
+    x: -1306
+    y: 72
     width: 190
     height: 175
   IsDragging: 1

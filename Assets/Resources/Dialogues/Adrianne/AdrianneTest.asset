@@ -15,16 +15,16 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -51
-    y: 46.5
+    x: 360
+    y: 375.5
     width: 200
     height: 120
   IsDragging: 1
   IsSelected: 0
-  _flagName: SpokentoElias
+  _flagName: character.spoketoelias
   ParentNodes: []
   TrueChildNode: {fileID: 5062585804381860848}
-  FalseChildNode: {fileID: 5362745953541671061}
+  FalseChildNode: {fileID: 0}
 --- !u!114 &-7255255940802018403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40,8 +40,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 923
-    y: 513.5
+    x: 1330
+    y: 792.5
     width: 190
     height: 135
   IsDragging: 1
@@ -70,8 +70,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1038
-    y: 229.5
+    x: 1445
+    y: 508.5
     width: 190
     height: 135
   IsDragging: 1
@@ -104,8 +104,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2637
-    y: 669.5
+    x: 3044
+    y: 948.5
     width: 190
     height: 135
   IsDragging: 0
@@ -136,12 +136,12 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1749.5
-    y: 332
+    x: 2156.5
+    y: 611
     width: 190
     height: 135
   IsDragging: 1
-  IsSelected: 1
+  IsSelected: 0
   _sentence:
     CharacterName: Adrianne
     Text: At least it was an instant death and he did not suffer. Grover was a good
@@ -170,8 +170,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 538
-    y: 228.5
+    x: 945
+    y: 507.5
     width: 190
     height: 135
   IsDragging: 1
@@ -200,8 +200,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1537
-    y: 109.5
+    x: 1944
+    y: 388.5
     width: 190
     height: 135
   IsDragging: 1
@@ -233,8 +233,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1283
-    y: 239.5
+    x: 1690
+    y: 518.5
     width: 190
     height: 155
   IsDragging: 1
@@ -265,8 +265,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2472
-    y: 459.5
+    x: 2879
+    y: 738.5
     width: 190
     height: 135
   IsDragging: 1
@@ -300,8 +300,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1949.25
-    y: 510.5
+    x: 2356.25
+    y: 789.5
     width: 190
     height: 135
   IsDragging: 1
@@ -333,8 +333,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 579.75
-    y: -75
+    x: 986.75
+    y: 204
     width: 190
     height: 115
   IsDragging: 1
@@ -399,8 +399,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 687
-    y: 453.5
+    x: 1094
+    y: 732.5
     width: 190
     height: 135
   IsDragging: 1
@@ -431,8 +431,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2184
-    y: 479.5
+    x: 2591
+    y: 758.5
     width: 190
     height: 135
   IsDragging: 1
@@ -464,8 +464,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1178
-    y: 521.5
+    x: 1585
+    y: 800.5
     width: 190
     height: 135
   IsDragging: 1
@@ -496,8 +496,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2181.75
-    y: 700
+    x: 2588.75
+    y: 979
     width: 190
     height: 135
   IsDragging: 1
@@ -532,8 +532,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 276.25
-    y: 220.16669
+    x: 683.25
+    y: 499.1667
     width: 190
     height: 135
   IsDragging: 1
@@ -542,8 +542,7 @@ MonoBehaviour:
     CharacterName: Adrianne
     Text: Hello, Nikolaus.
     CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
-  ParentNodes:
-  - {fileID: -7710240511575501943}
+  ParentNodes: []
   ChildNode: {fileID: -6600178266136748303}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -564,8 +563,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 253.75
-    y: -76.5
+    x: 660.75
+    y: 202.5
     width: 190
     height: 135
   IsDragging: 1
@@ -595,8 +594,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1814
-    y: 113.5
+    x: 2221
+    y: 392.5
     width: 190
     height: 135
   IsDragging: 1
@@ -627,8 +626,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1545
-    y: 284.5
+    x: 1952
+    y: 563.5
     width: 190
     height: 135
   IsDragging: 1
