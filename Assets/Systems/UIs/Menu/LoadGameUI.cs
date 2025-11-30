@@ -149,14 +149,37 @@ public class LoadGameUI : MonoBehaviour
         // Get file info for last modified date
         FileInfo fileInfo = new FileInfo(filePath);
         
+        // Get save metadata (day, clock time, etc.)
+        GameFlagsSaveData saveData = GameFlags.GetSaveMetadata(saveName);
+        string dayInfo = saveData != null ? FormatDayInfo(saveData.currentDay) : "Unknown";
+        float clockTime = saveData != null ? saveData.clockTimeLeft : 0f;
+        
         slotUI.Initialize(
             saveName, 
+            dayInfo,
+            clockTime,
             fileInfo.LastWriteTime, 
             () => OnLoadSave(saveName),
             () => OnDeleteSave(saveName)
         );
         
         _saveSlots.Add(slotUI);
+    }
+    
+    /// <summary>
+    /// Format day info for display (e.g., "Day 2")
+    /// </summary>
+    private string FormatDayInfo(string dayFlag)
+    {
+        switch (dayFlag)
+        {
+            case "day.one": return "Day 1";
+            case "day.two": return "Day 2";
+            case "day.three": return "Day 3";
+            case "day.four": return "Day 4";
+            case "day.five": return "Day 5";
+            default: return "Day 1";
+        }
     }
     
     private void OnLoadSave(string saveName)
@@ -288,6 +311,8 @@ public class SaveSlotUI : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI saveNameText;
+    [SerializeField] private TextMeshProUGUI dayInfoText;
+    [SerializeField] private TextMeshProUGUI clockTimeText;
     [SerializeField] private TextMeshProUGUI dateText;
     [SerializeField] private Button loadButton;
     [SerializeField] private Button deleteButton;
@@ -295,7 +320,7 @@ public class SaveSlotUI : MonoBehaviour
     private System.Action _onLoad;
     private System.Action _onDelete;
     
-    public void Initialize(string saveName, System.DateTime lastModified, System.Action onLoad, System.Action onDelete)
+    public void Initialize(string saveName, string dayInfo, float clockTime, System.DateTime lastModified, System.Action onLoad, System.Action onDelete)
     {
         _onLoad = onLoad;
         _onDelete = onDelete;
@@ -303,6 +328,10 @@ public class SaveSlotUI : MonoBehaviour
         // Auto-find components if not assigned
         if (saveNameText == null)
             saveNameText = transform.Find("SaveNameText")?.GetComponent<TextMeshProUGUI>();
+        if (dayInfoText == null)
+            dayInfoText = transform.Find("DayInfoText")?.GetComponent<TextMeshProUGUI>();
+        if (clockTimeText == null)
+            clockTimeText = transform.Find("ClockTimeText")?.GetComponent<TextMeshProUGUI>();
         if (dateText == null)
             dateText = transform.Find("DateText")?.GetComponent<TextMeshProUGUI>();
         if (loadButton == null)
@@ -310,12 +339,27 @@ public class SaveSlotUI : MonoBehaviour
         if (deleteButton == null)
             deleteButton = transform.Find("DeleteButton")?.GetComponent<Button>();
         
-        // Set text
+        // Set save name
         if (saveNameText != null)
             saveNameText.text = saveName;
-            
+        
+        // Set day info
+        if (dayInfoText != null)
+            dayInfoText.text = dayInfo;
+        
+        // Set clock time with clock icon
+        if (clockTimeText != null)
+        {
+            int minutes = Mathf.FloorToInt(clockTime / 60f);
+            int seconds = Mathf.FloorToInt(clockTime % 60f);
+            clockTimeText.text = $"?{minutes:D2}:{seconds:D2}";
+        }
+        
+        // Set date (optional - can be hidden if not needed)
         if (dateText != null)
-            dateText.text = lastModified.ToString("MM/dd/yyyy HH:mm");
+        {
+            dateText.gameObject.SetActive(false); // Hide date to match design
+        }
         
         // Setup button listeners
         if (loadButton != null)

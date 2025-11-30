@@ -456,6 +456,24 @@ public class ClockTimer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Get the current time left on the clock (for saving)
+    /// </summary>
+    public float GetTimeLeft()
+    {
+        return timeLeft;
+    }
+
+    /// <summary>
+    /// Restore the time left on the clock (for loading)
+    /// </summary>
+    public void RestoreTimeLeft(float time)
+    {
+        timeLeft = Mathf.Max(0f, time);
+        totalTime = Mathf.Max(timeLeft, totalTime);
+        Debug.Log($"[ClockTimer] Time restored to: {timeLeft:F2}s");
+    }
+
     private IEnumerator InitialFadeIn()
     {
         if (screenFader != null)
