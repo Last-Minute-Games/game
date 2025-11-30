@@ -55,7 +55,6 @@ namespace GameItems.Editor
             DrawDaySection("DAY 2 WAVES", _targetConfig.day2Waves);
             DrawDaySection("DAY 3 WAVES", _targetConfig.day3Waves);
             DrawDaySection("DAY 4 WAVES", _targetConfig.day4Waves);
-            DrawDaySection("DAY 5 WAVES", _targetConfig.day5Waves);
 
             EditorGUILayout.EndScrollView();
 
@@ -233,7 +232,6 @@ namespace GameItems.Editor
             if (GUILayout.Button("Day 2")) AddWaveToDay(_targetConfig.day2Waves);
             if (GUILayout.Button("Day 3")) AddWaveToDay(_targetConfig.day3Waves);
             if (GUILayout.Button("Day 4")) AddWaveToDay(_targetConfig.day4Waves);
-            if (GUILayout.Button("Day 5")) AddWaveToDay(_targetConfig.day5Waves);
 
             EditorGUILayout.EndHorizontal();
         }
