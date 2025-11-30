@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5624a485d2ae413db15be89954eda8f8, type: 3}
+  m_Name: Jerry
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyConfig
+  enemyName: Jerry
+  maxHealth: 65
+  attackPower: 0
+  defensePower: 0
+  healPower: 5
+  buffPower: 1
+  artwork: {fileID: 0}
+  actionPattern: []
+  attackRange:
+    min: 0.829
+    max: 1.25
+  blockRange:
+    min: 0.778
+    max: 1.228
+  healRange:
+    min: 0.845
+    max: 1.256
+  buffRange:
+    min: 1.143
+    max: 1.571
+  animatorController: {fileID: 0}
+  idleAnim: {fileID: 0}
+  attackAnim: {fileID: 0}
+  hurtAnim: {fileID: 0}
+  deathAnim: {fileID: 0}
+  positionOffset: {x: 0, y: 0, z: 0}
+  scaleOffset: {x: 1, y: 1, z: 1}
+  minMultiplier: 1
+  maxMultiplier: 1
+  uniqueID: 99bae991-0b1e-4fd4-92e3-70d1f2619eca

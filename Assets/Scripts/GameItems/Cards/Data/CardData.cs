@@ -72,6 +72,47 @@ public class CardData : GameItemData
     public bool unlockedByDefault;
 
     // --------------------------------------------------
+    // PER-OPERATION VARIABILITY SLIDERS (SPEC ONLY; NO LOGIC CHANGES)
+    // --------------------------------------------------
+
+    [System.Serializable]
+    public struct EffectMultiplierRange
+    {
+        [Tooltip("Minimum multiplier for this operation.")]
+        [Range(0.3f, 4f)] public float min;
+
+        [Tooltip("Maximum multiplier for this operation.")]
+        [Range(0.3f, 4f)] public float max;
+
+        /// <summary>Ensures min ≤ max and both within [0.3, 4].</summary>
+        public void Normalize()
+        {
+            if (min > max) min = max;
+            min = Mathf.Clamp(min, 0.3f, 4f);
+            max = Mathf.Clamp(max, 0.3f, 4f);
+        }
+    }
+
+    [Header("Operation Multipliers (applied conceptually to effect values; 0.3–4)")]
+    [Tooltip("Multiplier range for DAMAGE-type effects.")]
+    public EffectMultiplierRange damageRange = new EffectMultiplierRange { min = 1f, max = 1f };
+
+    [Tooltip("Multiplier range for SHIELD/BLOCK-type effects.")]
+    public EffectMultiplierRange blockRange = new EffectMultiplierRange { min = 1f, max = 1f };
+
+    [Tooltip("Multiplier range for HEAL-type effects.")]
+    public EffectMultiplierRange healRange = new EffectMultiplierRange { min = 1f, max = 1f };
+
+    [Tooltip("Multiplier range for ADD ENERGY effects.")]
+    public EffectMultiplierRange energyRange = new EffectMultiplierRange { min = 1f, max = 1f };
+
+    [Tooltip("Multiplier range for DRAW CARDS effects.")]
+    public EffectMultiplierRange drawRange = new EffectMultiplierRange { min = 1f, max = 1f };
+
+    [Tooltip("Multiplier range for ADD STRENGTH effects.")]
+    public EffectMultiplierRange strengthRange = new EffectMultiplierRange { min = 1f, max = 1f };
+
+    // --------------------------------------------------
     // Description substitution
     // --------------------------------------------------
 
@@ -150,7 +191,6 @@ public class CardData : GameItemData
             {
                 if (baseSum <= 0)
                 {
-                    // Equal split if all are zero; distribute remainder round-robin
                     int per = strength / eligibleKeys.Count;
                     int rem = strength - per * eligibleKeys.Count;
                     for (int i = 0; i < eligibleKeys.Count; i++)
@@ -162,7 +202,6 @@ public class CardData : GameItemData
                 }
                 else
                 {
-                    // Proportional split
                     int remaining = strength;
                     var adds = new Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
                     foreach (var k in eligibleKeys)
@@ -173,7 +212,6 @@ public class CardData : GameItemData
                         adds[k] = add;
                         remaining -= add;
                     }
-                    // Fix rounding drift by largest base first
                     eligibleKeys.Sort((a, b) => rolledByKey[b].postCopyValue.CompareTo(rolledByKey[a].postCopyValue));
                     int steps = Mathf.Abs(remaining);
                     int step = remaining > 0 ? 1 : -1;
@@ -275,14 +313,21 @@ public class CardData : GameItemData
         // Only enforce when there are at least 2 effects (prevents self-rewrite while typing)
         if (effects != null && effects.Count > 1)
             EnsureUniqueTextKeys();
+
+        // Keep new slider specs sane without changing behavior
+        damageRange.Normalize();
+        blockRange .Normalize();
+        healRange  .Normalize();
+        energyRange.Normalize();
+        drawRange  .Normalize();
+        strengthRange.Normalize();
     }
 
-    // --- FIXED: keep first occurrence, only rewrite subsequent duplicates/empties ---
+    // Keep first occurrence; only rewrite subsequent duplicates or empties.
     void EnsureUniqueTextKeys()
     {
         if (effects == null || effects.Count <= 1) return;
 
-        // Count occurrences (case-insensitive)
         var counts = new Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
         foreach (var e in effects)
         {
@@ -290,11 +335,9 @@ public class CardData : GameItemData
             counts[e.textKey] = counts.TryGetValue(e.textKey, out var c) ? c + 1 : 1;
         }
 
-        // Track all keys in use so we can generate fresh unique ones
         var used = new HashSet<string>(counts.Keys, System.StringComparer.OrdinalIgnoreCase);
         var firstKept = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
 
-        // Helper to get next unused key (X, Y, Z, A..Z, AA..)
         string NextAvailable()
         {
             int idx = 0;
@@ -306,7 +349,6 @@ public class CardData : GameItemData
             }
         }
 
-        // Walk in order: keep the first instance of a duplicate, fix subsequent ones; also fix empties.
         for (int i = 0; i < effects.Count; i++)
         {
             var e = effects[i];
@@ -320,21 +362,18 @@ public class CardData : GameItemData
                 continue;
             }
 
-            // Unique → keep
             if (!counts.TryGetValue(e.textKey, out int cnt) || cnt == 1)
             {
                 firstKept.Add(e.textKey);
                 continue;
             }
 
-            // Duplicate: keep the first occurrence, rename the rest
             if (!firstKept.Contains(e.textKey))
             {
-                firstKept.Add(e.textKey); // this is the "first" one we keep
+                firstKept.Add(e.textKey);
                 continue;
             }
 
-            // Subsequent duplicate → rename
             string replacement = NextAvailable();
             e.textKey = replacement;
             effects[i] = e;
