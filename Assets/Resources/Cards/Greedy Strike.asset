@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d25d76a890fff1ddb4d8fba905828ff, type: 3}
   m_Name: Greedy Strike
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  itemName: Greedy Strike
-  description: '
-
-'
+  itemName: Tariff Strike
+  description: Impose your tariffs on your enemy, striking for <X> damage and drawing
+    <Y> cards.
   artwork: {fileID: 1248064718575856032, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   iconCategory: 0
   effects:
@@ -29,6 +28,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 1, g: 0, b: 0, a: 0}
+    textKey: X
     postCopyValue: 0
   - targetRule: 1
     minMultiplier: 1
@@ -40,6 +40,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 1, g: 0.9013662, b: 0, a: 0}
+    textKey: Y
     postCopyValue: 0
   uniqueID: 5
   intentionText: xxx
@@ -56,3 +57,5 @@ MonoBehaviour:
   strongPrefix: Potent
   weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   strongPrefixColor: {r: 1, g: 0.4, b: 0.4, a: 1}
+  unlockFlag: card.greedy_strike
+  unlockedByDefault: 0

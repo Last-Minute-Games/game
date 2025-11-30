@@ -13,9 +13,7 @@ MonoBehaviour:
   m_Name: Exchange
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   itemName: Exchange
-  description: 'bark
-
-'
+  description: Deal <X> damage, and draw <Y> cards.
   artwork: {fileID: -2644645080646993927, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   iconCategory: 3
   effects:
@@ -29,6 +27,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 1, g: 0, b: 0, a: 0}
+    textKey: X
     postCopyValue: 0
   - targetRule: 1
     minMultiplier: 0.7
@@ -40,6 +39,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 1, g: 0.76034176, b: 0, a: 0}
+    textKey: Y
     postCopyValue: 0
   uniqueID: 4
   intentionText: xxx
@@ -56,3 +56,5 @@ MonoBehaviour:
   strongPrefix: Potent
   weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   strongPrefixColor: {r: 1, g: 0.4, b: 0.4, a: 1}
+  unlockFlag: card.exchange
+  unlockedByDefault: 0

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Heal Potion
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   itemName: Heal Potion
-  description: Defend
+  description: Slurp on the elixir of life and heal for <X>.
   artwork: {fileID: -4243800429209383466, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
   iconCategory: 2
   effects:
@@ -27,6 +27,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 0.23921567, g: 1, b: 0.45888448, a: 0}
+    textKey: X
     postCopyValue: 0
   uniqueID: 6
   intentionText: 

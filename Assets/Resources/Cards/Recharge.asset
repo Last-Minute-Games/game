@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d25d76a890fff1ddb4d8fba905828ff, type: 3}
   m_Name: Recharge
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  itemName: Recharge
-  description: 
+  itemName: Energy Drink
+  description: Drink a victorian era energy drink and gain <X> energy.
   artwork: {fileID: 5006561751768449717, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
   iconCategory: 2
   effects:
@@ -27,6 +27,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 0.9622642, g: 0.84667873, b: 0.20425421, a: 0}
+    textKey: X
     postCopyValue: 0
   uniqueID: 7
   intentionText: xxx
