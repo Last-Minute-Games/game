@@ -66,6 +66,9 @@ public struct Effect
     [Tooltip("Color used to highlight this effect's value in card descriptions.")]
     public Color variableColor;
 
+    [Tooltip("Unique key to substitute in descriptions, e.g., X, Y, Z. Must be unique per-card.")]
+    public string textKey;
+
     // Runtime value that will be used after multiplier is applied
     [HideInInspector] public int postCopyValue;
 
@@ -79,16 +82,13 @@ public struct Effect
     public Effect Clone(bool applyMultiplier)
     {
         Effect clone = this;
-        
         float rolledMultiplier = applyMultiplier ? UnityEngine.Random.Range(minMultiplier, maxMultiplier) : 1f;
         clone.postCopyValue = Mathf.RoundToInt(baseValue * rolledMultiplier);
-        
         return clone;
     }
 
     /// <summary>
     /// Returns the HTML hex string representation of variableColor for rich text tags.
-    /// Example: "&lt;color=#FF0000&gt;+10&lt;/color&gt;"
     /// </summary>
     public string GetColorTag()
     {
@@ -112,8 +112,8 @@ public struct Effect
             delay = 0,
             delayUnit = TimeUnit.Turns,
             variableColor = Color.white,
+            textKey = "X",
             postCopyValue = 0
         };
     }
 }
-
