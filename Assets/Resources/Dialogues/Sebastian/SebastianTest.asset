@@ -15,8 +15,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1707
-    y: 25
+    x: -1419
+    y: -145
     width: 190
     height: 135
   IsDragging: 1
@@ -28,7 +28,8 @@ MonoBehaviour:
       you important information.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
   ParentNodes:
-  - {fileID: 1319802799837363103}
+  - {fileID: 7078456455220398583}
+  - {fileID: 3427114357737076240}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -49,8 +50,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2770
-    y: -392.5
+    x: -2514
+    y: -78.5
     width: 190
     height: 135
   IsDragging: 1
@@ -83,8 +84,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2444
-    y: -349.5
+    x: -2188
+    y: -35.5
     width: 190
     height: 135
   IsDragging: 1
@@ -117,8 +118,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1558
-    y: 250
+    x: -1327
+    y: 260
     width: 190
     height: 135
   IsDragging: 1
@@ -130,7 +131,7 @@ MonoBehaviour:
       I should suspect him.)
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes: []
-  ChildNode: {fileID: 0}
+  ChildNode: {fileID: -1584494736714723176}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -150,8 +151,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2798.5
-    y: 92
+    x: -2542.5
+    y: 406
     width: 190
     height: 135
   IsDragging: 1
@@ -184,15 +185,15 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1825
-    y: 137.5
+    x: -1674
+    y: 90.5
     width: 200
     height: 120
   IsDragging: 1
   IsSelected: 0
   _flagName: minigame.coinflip.loss
   ParentNodes: []
-  TrueChildNode: {fileID: 0}
+  TrueChildNode: {fileID: -4489242929632964236}
   FalseChildNode: {fileID: 0}
 --- !u!114 &-4946900645984076244
 MonoBehaviour:
@@ -209,19 +210,22 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 298.5
-    y: 378.5
+    x: 708.5
+    y: 395.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   Answers:
   - You did not fail Sebastian. This was unprecedented. I promise you I will find
-    the murderer and make sure they receive justice.
-  - 
+    the murderer and make sure justice is served.
+  - Your family has served the King for generations has it not?
   AnswerKeys: []
-  ParentNodes: []
-  ChildNodes: []
+  ParentNodes:
+  - {fileID: 1236067226624846481}
+  ChildNodes:
+  - {fileID: 8285540685692211380}
+  - {fileID: 8176746066426699083}
 --- !u!114 &-4533912319225719144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -237,8 +241,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -797.5
-    y: 260
+    x: -552.5
+    y: 330
     width: 190
     height: 135
   IsDragging: 1
@@ -249,8 +253,9 @@ MonoBehaviour:
       then I have stayed here in the armoy while keeping in contact with the other
       knights as to anything suspicious.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
+  ParentNodes:
+  - {fileID: 3254787349553903804}
+  ChildNode: {fileID: 1630411998814602096}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -270,8 +275,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1822
-    y: 245
+    x: -1655
+    y: 289
     width: 190
     height: 135
   IsDragging: 1
@@ -280,7 +285,8 @@ MonoBehaviour:
     CharacterName: Sebastian
     Text: Better luck next time lad, Now let me be.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
+  ParentNodes:
+  - {fileID: -6235712034880259103}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -301,8 +307,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3389
-    y: -530.5
+    x: -3133
+    y: -216.5
     width: 190
     height: 135
   IsDragging: 1
@@ -333,8 +339,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3061
-    y: -370.5
+    x: -2805
+    y: -56.5
     width: 190
     height: 155
   IsDragging: 1
@@ -366,18 +372,20 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -339.5
-    y: 264
+    x: -22.5
+    y: 309
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Sebastian
-    Text: 
+    Text: I was resting as people need to do after a long day. Surely you are not
+      implying I am incompetent.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
+  ParentNodes:
+  - {fileID: 1630411998814602096}
+  ChildNode: {fileID: 8531949591649622038}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -397,8 +405,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1297
-    y: 247
+    x: -1070
+    y: 297
     width: 190
     height: 135
   IsDragging: 1
@@ -410,8 +418,9 @@ MonoBehaviour:
       he wanted to pass the throne down to. Now with him gone and no clear heir named,
       anyone will try to claim the throne or worst yet conquer us.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
+  ParentNodes:
+  - {fileID: -7885906385303265709}
+  ChildNode: {fileID: 3254787349553903804}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -431,8 +440,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2084
-    y: 434
+    x: -2037
+    y: 377
     width: 190
     height: 135
   IsDragging: 1
@@ -441,7 +450,8 @@ MonoBehaviour:
     CharacterName: Sebastian
     Text: Again? Quit wasting my time with trivial chatter.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
+  ParentNodes:
+  - {fileID: 472343938148936110}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -472,11 +482,9 @@ MonoBehaviour:
   - {fileID: 3427114357737076240}
   - {fileID: -8108868356237645619}
   - {fileID: -612797590614259977}
-  - {fileID: 1319802799837363103}
   - {fileID: -8662176446772619085}
   - {fileID: -7885906385303265709}
   - {fileID: -4489242929632964236}
-  - {fileID: 2588002077630232101}
   - {fileID: -1584494736714723176}
   - {fileID: 7865127170012591611}
   - {fileID: 3254787349553903804}
@@ -494,6 +502,9 @@ MonoBehaviour:
   - {fileID: 8531949591649622038}
   - {fileID: 1236067226624846481}
   - {fileID: -4946900645984076244}
+  - {fileID: 7078456455220398583}
+  - {fileID: 8176746066426699083}
+  - {fileID: 8285540685692211380}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -515,15 +526,15 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2093
-    y: 141.5
+    x: -2046
+    y: 136.5
     width: 200
     height: 120
   IsDragging: 1
   IsSelected: 0
   _flagName: minigame.coinflip.tryagain
   ParentNodes: []
-  TrueChildNode: {fileID: 0}
+  TrueChildNode: {fileID: -612797590614259977}
   FalseChildNode: {fileID: 0}
 --- !u!114 &1098637340302900949
 MonoBehaviour:
@@ -540,8 +551,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3698
-    y: -357.5
+    x: -3442
+    y: -43.5
     width: 190
     height: 155
   IsDragging: 1
@@ -572,8 +583,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 100
-    y: 385.5
+    x: 447
+    y: 416.5
     width: 190
     height: 135
   IsDragging: 1
@@ -585,41 +596,13 @@ MonoBehaviour:
       you should report to the high priest. They are in the throne room and will
       listen to your suspicions.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
+  ParentNodes:
+  - {fileID: 8531949591649622038}
+  ChildNode: {fileID: -4946900645984076244}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &1319802799837363103
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
-  m_Name: Answer Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1941.5
-    y: -214.5
-    width: 190
-    height: 135
-  IsDragging: 1
-  IsSelected: 0
-  Answers:
-  - Please Sebastian, if you know anything at all tell me.s head knight do you know
-    anything?
-  - I know as someone who closely guarded the King, you must know something.
-  AnswerKeys: []
-  ParentNodes: []
-  ChildNodes:
-  - {fileID: -8662176446772619085}
 --- !u!114 &1630411998814602096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -635,18 +618,21 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -570.5
-    y: 287.5
+    x: -320.5
+    y: 330.5
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - Why were you asleep, should the head knight not me up early?
+  - Why were you asleep, should the head knight not be up early?
   - Has anything suspicious been reported?
   AnswerKeys: []
-  ParentNodes: []
-  ChildNodes: []
+  ParentNodes:
+  - {fileID: -4533912319225719144}
+  ChildNodes:
+  - {fileID: -2262266928108547543}
+  - {fileID: 4544078553189619226}
 --- !u!114 &1985154962997009171
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -662,8 +648,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2766.5
-    y: -173
+    x: -2510.5
+    y: 141
     width: 190
     height: 135
   IsDragging: 1
@@ -674,37 +660,6 @@ MonoBehaviour:
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
   ParentNodes:
   - {fileID: -2265861453493556102}
-  ChildNode: {fileID: 0}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &2588002077630232101
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -2088.5
-    y: 247.5
-    width: 190
-    height: 135
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Sebastian
-    Text: Back for a rematch? Very well.
-    CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -725,8 +680,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2764.5
-    y: -575.5
+    x: -2508.5
+    y: -261.5
     width: 190
     height: 135
   IsDragging: 1
@@ -758,8 +713,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1033.5
-    y: 249.5
+    x: -803.5
+    y: 315.5
     width: 190
     height: 155
   IsDragging: 1
@@ -770,8 +725,12 @@ MonoBehaviour:
     know what you were doing?
   - Can you think of someone that would benefit directly from this?
   AnswerKeys: []
-  ParentNodes: []
-  ChildNodes: []
+  ParentNodes:
+  - {fileID: -1584494736714723176}
+  ChildNodes:
+  - {fileID: 7865127170012591611}
+  - {fileID: -4533912319225719144}
+  - {fileID: 6395704166968033230}
 --- !u!114 &3427114357737076240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -787,8 +746,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2192
-    y: -351
+    x: -1936
+    y: -37
     width: 190
     height: 135
   IsDragging: 1
@@ -799,7 +758,9 @@ MonoBehaviour:
   AnswerKeys: []
   ParentNodes:
   - {fileID: -8108868356237645619}
-  ChildNodes: []
+  ChildNodes:
+  - {fileID: 7078456455220398583}
+  - {fileID: -8662176446772619085}
 --- !u!114 &3568482784595334336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -815,15 +776,15 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1559.5
-    y: 149
+    x: -1353.5
+    y: 67
     width: 200
     height: 120
   IsDragging: 1
   IsSelected: 0
   _flagName: minigame.coinflip.win
   ParentNodes: []
-  TrueChildNode: {fileID: 0}
+  TrueChildNode: {fileID: -7885906385303265709}
   FalseChildNode: {fileID: 0}
 --- !u!114 &4544078553189619226
 MonoBehaviour:
@@ -840,8 +801,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -340.5
-    y: 393
+    x: -19.5
+    y: 496
     width: 190
     height: 135
   IsDragging: 1
@@ -851,8 +812,9 @@ MonoBehaviour:
     Text: Aside from reports of a wannabe detective lurking around and questioning
       others, no, there has not.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
+  ParentNodes:
+  - {fileID: 1630411998814602096}
+  ChildNode: {fileID: 8531949591649622038}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -872,8 +834,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3977.6665
-    y: -348.33325
+    x: -3721.6665
+    y: -34.333252
     width: 190
     height: 135
   IsDragging: 1
@@ -903,8 +865,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3391
-    y: -362
+    x: -3135
+    y: -48
     width: 190
     height: 135
   IsDragging: 1
@@ -938,8 +900,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -308.5
-    y: -27
+    x: -21.5
+    y: -55
     width: 190
     height: 135
   IsDragging: 1
@@ -949,7 +911,8 @@ MonoBehaviour:
     Text: Because you are nothing but a pleb playing at something he is not. I do
       not know why Grover even brought you into the castle, and I do not trust you.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
+  ParentNodes:
+  - {fileID: 7775901377258256470}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -970,8 +933,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -793.5
-    y: 429.5
+    x: -608.5
+    y: 571.5
     width: 190
     height: 135
   IsDragging: 1
@@ -980,8 +943,41 @@ MonoBehaviour:
     CharacterName: Sebastian
     Text: I cannot. If I had someone in mind I would not share with you either.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 0}
+  ParentNodes:
+  - {fileID: 3254787349553903804}
+  ChildNode: {fileID: 8531949591649622038}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &7078456455220398583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1714
+    y: -192
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Nikolaus
+    Text: I know as someone who closely guarded the King, you must know something.
+    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+  ParentNodes:
+  - {fileID: 3427114357737076240}
+  ChildNode: {fileID: -8662176446772619085}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -1001,18 +997,21 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -563.5
-    y: 72
+    x: -312.5
+    y: 98
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   Answers:
   - If we both want the same thing, why do we not work together?
-  - Yes, thank you Sebatian.
+  - Yes, thank you Sebastian.
   AnswerKeys: []
-  ParentNodes: []
-  ChildNodes: []
+  ParentNodes:
+  - {fileID: 7865127170012591611}
+  ChildNodes:
+  - {fileID: 6075520144324501270}
+  - {fileID: 8320667907554013657}
 --- !u!114 &7865127170012591611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1028,7 +1027,7 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -796.5
+    x: -537.5
     y: 94.5
     width: 190
     height: 135
@@ -1036,11 +1035,77 @@ MonoBehaviour:
   IsSelected: 0
   _sentence:
     CharacterName: Sebastian
-    Text: Very well, then you can surely work off that in your silly investigation.
+    Text: Very well, then you can surely work from that in your silly investigation.
       Now let me be. While you play around as some detective,  I will find who truly
       did this.
     CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
-  ParentNodes: []
+  ParentNodes:
+  - {fileID: 3254787349553903804}
+  ChildNode: {fileID: 7775901377258256470}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &8176746066426699083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1019
+    y: 479
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Sebastian
+    Text: Yes. My father died in action protecting the King. I should have been prepared
+      to also lose my life for him. A king must not die before his knight,
+    CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
+  ParentNodes:
+  - {fileID: -4946900645984076244}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &8285540685692211380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1003
+    y: 243
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Sebastian
+    Text: What relief that bring sme.
+    CharacterSprite: {fileID: -6322953688314822395, guid: c9583b64e73bdd1478a84d540701a034, type: 3}
+  ParentNodes:
+  - {fileID: -4946900645984076244}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -1061,8 +1126,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -308.5
-    y: 133
+    x: -22.5
+    y: 136
     width: 190
     height: 135
   IsDragging: 1
@@ -1071,7 +1136,8 @@ MonoBehaviour:
     CharacterName: Nikolaus
     Text: (Well that was a waste of time, he did not really share anything useful.)
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
-  ParentNodes: []
+  ParentNodes:
+  - {fileID: 7775901377258256470}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -1092,8 +1158,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -102.5
-    y: 403.5
+    x: 242.5
+    y: 667.5
     width: 190
     height: 115
   IsDragging: 1
@@ -1101,5 +1167,9 @@ MonoBehaviour:
   Answers:
   - There is no need to be so hostile.
   AnswerKeys: []
-  ParentNodes: []
-  ChildNodes: []
+  ParentNodes:
+  - {fileID: -2262266928108547543}
+  - {fileID: 4544078553189619226}
+  - {fileID: 6395704166968033230}
+  ChildNodes:
+  - {fileID: 1236067226624846481}
