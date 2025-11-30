@@ -14,12 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyConfig
   enemyName: Gargoyle
   maxHealth: 120
-  attackPower: 0
-  defensePower: 0
+  attackPower: 30
+  defensePower: 15
   healPower: 5
   buffPower: 1
-  artwork: {fileID: 0}
-  actionPattern: []
+  artwork: {fileID: 4337190145794645005, guid: f3d3322ae5cd90f3b924d3a1cd357aa2, type: 3}
+  actionPattern:
+  - intent: 0
+    value: 30
+    customName: Stomp
+  - intent: 1
+    value: 15
+    customName: Defend
+  - intent: 2
+    value: 15
+    customName: Heal
   attackRange:
     min: 0.84
     max: 1.402
