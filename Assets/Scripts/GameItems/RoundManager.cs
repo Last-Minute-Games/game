@@ -519,16 +519,7 @@ public class RoundManager : MonoBehaviour
         Debug.Log("[RoundManager] Calling AdvanceDayFlag() after victory...");
         AdvanceDayFlag();
 
-        // TODO: update timer shit
-        var clock = FindObjectOfType<ClockTimer>();
-        if (clock != null)
-        {
-            float timerAmount = 30f;
-            clock.AddTime(timerAmount); // TODO: adjust reward amount
-            Debug.Log($"[RoundManager] Added {timerAmount} seconds to clock timer as reward");
-        } else {
-            Debug.Log($"[RoundManager] ClockTimer was not found.");
-        }
+        GameFlags.SetFlag("nether.win"); // game flag to notify clock timer
 
         // Fade screen + show text
         if (endScreenUI != null)
@@ -551,16 +542,7 @@ public class RoundManager : MonoBehaviour
         Debug.Log("[RoundManager] Calling AdvanceDayFlag() after defeat...");
         AdvanceDayFlag();
 
-        // TODO: wrong todo just ummm timer change flag shit
-        var clock = FindObjectOfType<ClockTimer>();
-        if (clock != null)
-        {
-            float timerAmount = 30f;
-            clock.RemoveTime(timerAmount); // TODO: adjust penalty amount
-            Debug.Log($"[RoundManager] Removed {timerAmount} seconds from clock timer as penalty");
-        } else {
-            Debug.Log($"[RoundManager] ClockTimer was not found.");
-        }
+        GameFlags.SetFlag("nether.lose"); // game flag to notify clock timer
 
         if (endScreenUI != null)
             endScreenUI.ShowMessage("YOU LOSE", Color.red);
