@@ -178,6 +178,17 @@ public class BattleManager : MonoBehaviour
             enemy.attackPower = Mathf.RoundToInt(enemy.attackPower * _waveMultiplier);
             enemy.defensePower = Mathf.RoundToInt(enemy.defensePower * _waveMultiplier);
 
+            // scale all actionpattern values by wave multiplier
+            if (enemy.actionPattern != null)
+            {
+                for (int i = 0; i < enemy.actionPattern.Count; i++)
+                {
+                    var a = enemy.actionPattern[i];
+                    a.value = Mathf.RoundToInt(a.value * _waveMultiplier);
+                    enemy.actionPattern[i] = a;
+                }
+            }
+
             enemies.Add(enemy);
         }
 
