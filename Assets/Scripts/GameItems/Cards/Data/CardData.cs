@@ -12,8 +12,7 @@ public class CardData : GameItemData
 
     [Header("Card Info")]
     [Tooltip("Displayed text for the card's intention (e.g., 'Deal damage', 'Block', etc.).")]
-    [TextArea(1, 3)]
-    public string intentionText;
+    [TextArea(1, 3)] public string intentionText;
 
     [Tooltip("Sound cue played when this card is used.")]
     public SFXCueData soundCue;
@@ -200,7 +199,7 @@ public class CardData : GameItemData
     }
 
     // --------------------------------------------------
-    // Existing helpers (unchanged)
+    // Existing helpers
     // --------------------------------------------------
 
     public bool IsCardVariabilityValid()
@@ -217,7 +216,7 @@ public class CardData : GameItemData
         float lowBound = baseVal * min;
         float highBound = baseVal * max;
 
-        if (post == baseVal) // for cases where there is no gap between minT, maxT and multiplier isn't on
+        if (post == baseVal)
             return CardVariationTier.NormalModifier;
 
         float t = Mathf.InverseLerp(lowBound, highBound, post);
@@ -226,8 +225,9 @@ public class CardData : GameItemData
             return CardVariationTier.WeakModifier;
         if (t >= maxMultiplierThreshold)
             return CardVariationTier.StrongModifier;
-        return CardVariationTier.NormalModifier; // ultimate fallback
+        return CardVariationTier.NormalModifier;
     }
+
     public string GetWeakPrefixColorTag() =>
         ColorUtility.ToHtmlStringRGB(weakPrefixColor);
 
@@ -246,10 +246,6 @@ public class CardData : GameItemData
         };
     }
 
-    /// <summary>
-    /// Gets the appropriate artwork sprite based on the variation tier.
-    /// Returns poorArtwork for weak tier, potentArtwork for strong tier, or default artwork otherwise.
-    /// </summary>
     public Sprite GetArtworkForTier(CardVariationTier tier)
     {
         return tier switch
@@ -264,51 +260,85 @@ public class CardData : GameItemData
     {
         base.OnValidate();
 
-        // Ensure max ≥ min
         if (maxMultiplierThreshold < minMultiplierThreshold)
             maxMultiplierThreshold = minMultiplierThreshold;
 
-        // Ensure min ≤ max
         if (minMultiplierThreshold > maxMultiplierThreshold)
             minMultiplierThreshold = maxMultiplierThreshold;
 
         minMultiplierThreshold = Mathf.Clamp01(minMultiplierThreshold);
         maxMultiplierThreshold = Mathf.Clamp01(maxMultiplierThreshold);
 
-        // automatically add custom unlockFlag name using name
         if (string.IsNullOrWhiteSpace(unlockFlag))
-        {
             unlockFlag = $"card.{name.ToLower().Replace(" ", "_")}";
-        }
 
-        EnsureUniqueTextKeys(); // enforce uniqueness for substitution
+        // Only enforce when there are at least 2 effects (prevents self-rewrite while typing)
+        if (effects != null && effects.Count > 1)
+            EnsureUniqueTextKeys();
     }
 
+    // --- FIXED: keep first occurrence, only rewrite subsequent duplicates/empties ---
     void EnsureUniqueTextKeys()
     {
-        if (effects == null || effects.Count == 0) return;
+        if (effects == null || effects.Count <= 1) return;
 
-        var used = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
-
+        // Count occurrences (case-insensitive)
+        var counts = new Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
         foreach (var e in effects)
         {
-            if (!string.IsNullOrWhiteSpace(e.textKey) && !used.Contains(e.textKey))
-                used.Add(e.textKey);
+            if (string.IsNullOrWhiteSpace(e.textKey)) continue;
+            counts[e.textKey] = counts.TryGetValue(e.textKey, out var c) ? c + 1 : 1;
         }
 
+        // Track all keys in use so we can generate fresh unique ones
+        var used = new HashSet<string>(counts.Keys, System.StringComparer.OrdinalIgnoreCase);
+        var firstKept = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+
+        // Helper to get next unused key (X, Y, Z, A..Z, AA..)
+        string NextAvailable()
+        {
+            int idx = 0;
+            while (true)
+            {
+                string candidate = NextKey(idx++);
+                if (!used.Contains(candidate))
+                    return candidate;
+            }
+        }
+
+        // Walk in order: keep the first instance of a duplicate, fix subsequent ones; also fix empties.
         for (int i = 0; i < effects.Count; i++)
         {
             var e = effects[i];
-            if (string.IsNullOrWhiteSpace(e.textKey) || used.Contains(e.textKey))
-            {
-                string next = NextKey(used.Count);
-                while (used.Contains(next))
-                    next = NextKey(used.Count + 1);
 
-                e.textKey = next;
+            if (string.IsNullOrWhiteSpace(e.textKey))
+            {
+                string fresh = NextAvailable();
+                e.textKey = fresh;
                 effects[i] = e;
-                used.Add(next);
+                used.Add(fresh);
+                continue;
             }
+
+            // Unique → keep
+            if (!counts.TryGetValue(e.textKey, out int cnt) || cnt == 1)
+            {
+                firstKept.Add(e.textKey);
+                continue;
+            }
+
+            // Duplicate: keep the first occurrence, rename the rest
+            if (!firstKept.Contains(e.textKey))
+            {
+                firstKept.Add(e.textKey); // this is the "first" one we keep
+                continue;
+            }
+
+            // Subsequent duplicate → rename
+            string replacement = NextAvailable();
+            e.textKey = replacement;
+            effects[i] = e;
+            used.Add(replacement);
         }
     }
 

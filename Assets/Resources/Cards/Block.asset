@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Block
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   itemName: Block
-  description: Defend
+  description: Raise your shield and gain <Z>
   artwork: {fileID: -1526429089148878959, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   iconCategory: 1
   effects:
@@ -27,6 +27,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 0.24056602, g: 0.5325512, b: 1, a: 0}
+    textKey: Z
     postCopyValue: 0
   uniqueID: 1
   intentionText: 
