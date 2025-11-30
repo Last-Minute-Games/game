@@ -20,15 +20,21 @@ public class Startscreen : MonoBehaviour
     public CanvasGroup mainMenuLogoCanvasGroup;  // Canvas group for fading the logo
     public CanvasGroup buttonsCanvasGroup;       // Canvas group for fading the buttons
     
-    public GameObject playButton;
-    public GameObject loadGameButton;      // NEW: Load Game button
+    public GameObject playButton;          // The single Play button
     public GameObject settingsButton;
     public GameObject creditsButton;
     public GameObject quitButton;
 
-    [Header("Save System")]
-    public SaveNamePrompt saveNamePrompt;  // NEW: Save name prompt UI
-    public LoadGameUI loadGameUI;          // NEW: Load game UI
+    [Header("Play Choice Menu")]
+    public GameObject playChoicePanel;
+    public CanvasGroup playChoiceCanvasGroup;
+    public Button newGameChoiceButton;
+    public Button continueChoiceButton;
+    public Button backChoiceButton;
+
+    [Header("Save System References")]
+    public SaveNamePrompt saveNamePrompt;  // Save name prompt UI
+    public LoadGameUI loadGameUI;          // Load game UI
 
     [Header("Credits")]
     public CanvasGroup creditsCanvasGroup; // Parent of all credits UI
@@ -126,11 +132,11 @@ public class Startscreen : MonoBehaviour
 
     void Start()
     {
+        // Find buttons
         playButton = GameObject.Find("PlayButton");
-        quitButton = GameObject.Find("QuitButton");
         settingsButton = GameObject.Find("SettingsButton");
         creditsButton = GameObject.Find("CreditsButton");
-        loadGameButton = GameObject.Find("LoadGameButton"); // NEW: Find load game button
+        quitButton = GameObject.Find("QuitButton");
         
         _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
         _fadeCanvasGroup.alpha = 1f; // Start transparent
@@ -164,6 +170,18 @@ public class Startscreen : MonoBehaviour
         {
             creditsCanvasGroup.alpha = 0f;
             creditsCanvasGroup.gameObject.SetActive(false); // Start with it inactive
+        }
+
+        // NEW: Hide play choice panel initially
+        if (playChoicePanel != null)
+        {
+            playChoicePanel.SetActive(false);
+            if (playChoiceCanvasGroup != null)
+            {
+                playChoiceCanvasGroup.alpha = 0f;
+                playChoiceCanvasGroup.blocksRaycasts = false;
+                playChoiceCanvasGroup.interactable = false;
+            }
         }
 
         // Suppress UI sounds during logo loading and suppress clicks on menu buttons
@@ -424,28 +442,208 @@ public class Startscreen : MonoBehaviour
     private void SetMenuButtonsActive(bool state)
     {
         if(playButton) playButton.SetActive(state);
-        if(loadGameButton) loadGameButton.SetActive(state); // NEW: Handle load game button
         if(settingsButton) settingsButton.SetActive(state);
         if(creditsButton) creditsButton.SetActive(state);
         if(quitButton) quitButton.SetActive(state);
     }
 
+    /// <summary>
+    /// Called when Play button is clicked - smart flow based on save existence
+    /// </summary>
     public void StartGame()
     {
-        // NEW: Show save name prompt instead of directly loading
+        Debug.Log("[MainMenu] Play button clicked - checking for saves");
+        
+        bool hasSaves = CheckIfAnySavesExist();
+        
+        if (hasSaves)
+        {
+            // Saves exist - show choice menu
+            Debug.Log("[MainMenu] Saves detected - showing choice menu");
+            ShowPlayChoiceMenu();
+        }
+        else
+        {
+            // No saves - skip to name prompt
+            Debug.Log("[MainMenu] No saves detected - skipping to name prompt");
+            ShowSaveNamePrompt();
+        }
+    }
+
+    /// <summary>
+    /// Check if any save files exist in the Saves folder
+    /// </summary>
+    private bool CheckIfAnySavesExist()
+    {
+        string saveDirectory = System.IO.Path.Combine(Application.persistentDataPath, "Saves");
+        if (!System.IO.Directory.Exists(saveDirectory))
+        {
+            Debug.Log("[MainMenu] Save directory does not exist");
+            return false;
+        }
+            
+        string[] saveFiles = System.IO.Directory.GetFiles(saveDirectory, "GameFlags_*.json");
+        Debug.Log($"[MainMenu] Found {saveFiles.Length} save files");
+        return saveFiles.Length > 0;
+    }
+
+    /// <summary>
+    /// Show the play choice menu with fade animation
+    /// </summary>
+    private void ShowPlayChoiceMenu()
+    {
+        if (playChoicePanel == null)
+        {
+            Debug.LogError("[MainMenu] PlayChoicePanel not assigned!");
+            return;
+        }
+        
+        playChoicePanel.SetActive(true);
+        
+        // Hide main menu buttons temporarily
+        if (buttonsCanvasGroup != null)
+        {
+            buttonsCanvasGroup.interactable = false;
+        }
+        
+        StartCoroutine(FadeInPlayChoice());
+    }
+
+    /// <summary>
+    /// Hide the play choice menu with fade animation
+    /// </summary>
+    private void HidePlayChoiceMenu()
+    {
+        if (playChoicePanel == null) return;
+        
+        StartCoroutine(FadeOutPlayChoice());
+        
+        // Re-enable main menu buttons
+        if (buttonsCanvasGroup != null)
+        {
+            buttonsCanvasGroup.interactable = true;
+        }
+    }
+
+    /// <summary>
+    /// Fade in the play choice menu
+    /// </summary>
+    private IEnumerator FadeInPlayChoice()
+    {
+        if (playChoiceCanvasGroup == null) yield break;
+        
+        playChoiceCanvasGroup.blocksRaycasts = true;
+        playChoiceCanvasGroup.interactable = false;
+        
+        float duration = 0.3f;
+        float timer = 0f;
+        
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            playChoiceCanvasGroup.alpha = Mathf.Lerp(0f, 1f, timer / duration);
+            yield return null;
+        }
+        
+        playChoiceCanvasGroup.alpha = 1f;
+        playChoiceCanvasGroup.interactable = true;
+    }
+
+    /// <summary>
+    /// Fade out the play choice menu
+    /// </summary>
+    private IEnumerator FadeOutPlayChoice()
+    {
+        if (playChoiceCanvasGroup == null)
+        {
+            playChoicePanel.SetActive(false);
+            yield break;
+        }
+        
+        playChoiceCanvasGroup.interactable = false;
+        
+        float duration = 0.3f;
+        float timer = 0f;
+        
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            playChoiceCanvasGroup.alpha = Mathf.Lerp(1f, 0f, timer / duration);
+            yield return null;
+        }
+        
+        playChoiceCanvasGroup.alpha = 0f;
+        playChoiceCanvasGroup.blocksRaycasts = false;
+        playChoicePanel.SetActive(false);
+    }
+
+    /// <summary>
+    /// Show save name prompt (called when New Game is chosen)
+    /// </summary>
+    private void ShowSaveNamePrompt()
+    {
         if (saveNamePrompt != null)
         {
+            Debug.Log("[MainMenu] Showing save name prompt");
             saveNamePrompt.Show(OnSaveNameConfirmed, OnSaveNameCancelled);
         }
         else
         {
-            Debug.LogWarning("[MainMenu] SaveNamePrompt not assigned! Loading game without save name.");
-            StartCoroutine(FadeAndLoad());
+            Debug.LogError("[MainMenu] SaveNamePrompt not assigned!");
+        }
+    }
+
+    /// <summary>
+    /// NEW GAME button clicked from choice menu
+    /// </summary>
+    public void OnNewGameFromChoice()
+    {
+        Debug.Log("[MainMenu] New Game selected from choice menu");
+        HidePlayChoiceMenu();
+        ShowSaveNamePrompt();
+    }
+
+    /// <summary>
+    /// CONTINUE button clicked from choice menu
+    /// </summary>
+    public void OnContinueFromChoice()
+    {
+        Debug.Log("[MainMenu] Continue selected from choice menu");
+        HidePlayChoiceMenu();
+        ShowLoadGameMenu();
+    }
+
+    /// <summary>
+    /// BACK button clicked from choice menu
+    /// </summary>
+    public void OnBackFromChoice()
+    {
+        Debug.Log("[MainMenu] Back clicked from choice menu");
+        HidePlayChoiceMenu();
+    }
+
+    /// <summary>
+    /// Show the load game menu
+    /// </summary>
+    private void ShowLoadGameMenu()
+    {
+        if (loadGameUI != null)
+        {
+            Debug.Log("[MainMenu] Opening load game UI");
+            
+            // Subscribe to load event to transition to game
+            SaveGameEvents.OnSaveLoaded += OnGameLoaded;
+            
+            loadGameUI.Show(OnLoadGameBack);
+        }
+        else
+        {
+            Debug.LogError("[MainMenu] LoadGameUI not assigned!");
         }
     }
     
     /// <summary>
-    /// NEW: Called when user confirms save name
+    /// Called when user confirms save name
     /// </summary>
     private void OnSaveNameConfirmed(string saveName)
     {
@@ -466,7 +664,7 @@ public class Startscreen : MonoBehaviour
     }
     
     /// <summary>
-    /// NEW: Called when user cancels save name prompt
+    /// Called when user cancels save name prompt
     /// </summary>
     private void OnSaveNameCancelled()
     {
@@ -475,27 +673,7 @@ public class Startscreen : MonoBehaviour
     }
     
     /// <summary>
-    /// NEW: Show the load game UI
-    /// </summary>
-    public void ShowLoadGame()
-    {
-        if (loadGameUI != null)
-        {
-            Debug.Log("[MainMenu] Opening load game UI");
-            
-            // Subscribe to load event to transition to game
-            SaveGameEvents.OnSaveLoaded += OnGameLoaded;
-            
-            loadGameUI.Show(OnLoadGameBack);
-        }
-        else
-        {
-            Debug.LogWarning("[MainMenu] LoadGameUI not assigned in the inspector!");
-        }
-    }
-    
-    /// <summary>
-    /// NEW: Called when a save is loaded from the load game UI
+    /// Called when a save is loaded from the load game UI
     /// </summary>
     private void OnGameLoaded(string saveName)
     {
@@ -509,14 +687,15 @@ public class Startscreen : MonoBehaviour
     }
     
     /// <summary>
-    /// NEW: Called when back button is clicked in load game UI
+    /// Called when back button is clicked in load game UI
     /// </summary>
     private void OnLoadGameBack()
     {
+        Debug.Log("[MainMenu] Back from load game UI");
         // Unsubscribe in case we didn't load
         SaveGameEvents.OnSaveLoaded -= OnGameLoaded;
     }
-    
+
     private IEnumerator FlickerButton(GameObject button, float interval)
     {
         bool visible = true;
@@ -539,7 +718,6 @@ public class Startscreen : MonoBehaviour
         settingsButton.SetActive(false);
         creditsButton.SetActive(false); 
         playButton.SetActive(false);
-        if(loadGameButton) loadGameButton.SetActive(false); // NEW: Hide load game button
         
         // start flickering the play button
         StartCoroutine(FlickerButton(playButton, 0.3f));

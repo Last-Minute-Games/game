@@ -81,7 +81,8 @@ public class SaveSystemButton : MonoBehaviour
             
         if (_mainMenu != null)
         {
-            _mainMenu.ShowLoadGame();
+            // Use the same smart flow as the Play button
+            _mainMenu.StartGame();
         }
         else
         {

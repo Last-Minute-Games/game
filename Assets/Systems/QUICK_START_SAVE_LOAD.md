@@ -137,138 +137,22 @@ In **SaveNamePrompt** component (add if missing):
 
 ---
 
-## Step 8: Update MainMenu.cs Code (Copy-Paste)
+## Step 8: Update MainMenu.cs Code ? COMPLETE
 
-Open `Assets/Systems/UIs/Menu/MainMenu.cs` and replace the `Start()` method with:
+**This step has been completed automatically!** The MainMenu.cs file has been updated with:
 
-```csharp
-void Start()
-{
-    // Find buttons
-    newGameButton = GameObject.Find("NewGameButton");
-    continueButton = GameObject.Find("ContinueButton");
-    settingsButton = GameObject.Find("SettingsButton");
-    creditsButton = GameObject.Find("CreditsButton");
-    quitButton = GameObject.Find("QuitButton");
-    
-    _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup").GetComponent<CanvasGroup>();
-    _fadeCanvasGroup.alpha = 1f;
-    
-    _logoCanvasGroup = GameObject.Find("LogoCanvasGroup").GetComponent<CanvasGroup>();
-    _logoCanvasGroup.alpha = 0f;
+- ? Renamed `playButton` ? `newGameButton`
+- ? Renamed `loadGameButton` ? `continueButton`
+- ? Updated `Start()` method to find new button names
+- ? Added `UpdateContinueButton()` method
+- ? Added `CheckIfAnySavesExist()` method
+- ? Added `OnNewGameClicked()` method
+- ? Added `OnContinueClicked()` method
+- ? Updated all references to use new button names
 
-    // Setup canvas groups
-    if (mainMenuLogo && !mainMenuLogoCanvasGroup)
-        mainMenuLogoCanvasGroup = mainMenuLogo.GetComponent<CanvasGroup>() ?? mainMenuLogo.AddComponent<CanvasGroup>();
-    
-    if (buttonsParent && !buttonsCanvasGroup)
-        buttonsCanvasGroup = buttonsParent.GetComponent<CanvasGroup>() ?? buttonsParent.AddComponent<CanvasGroup>();
-
-    if (mainMenuLogoCanvasGroup) mainMenuLogoCanvasGroup.alpha = 1f;
-    if (buttonsCanvasGroup) buttonsCanvasGroup.alpha = 1f;
-
-    // Credits setup
-    if (creditLogo) _creditLogoStartPos = creditLogo.anchoredPosition;
-    if (creditText) _creditTextStartPos = creditText.anchoredPosition;
-    if (creditsCanvasGroup)
-    {
-        creditsCanvasGroup.alpha = 0f;
-        creditsCanvasGroup.gameObject.SetActive(false);
-    }
-
-    // Update continue button state
-    UpdateContinueButton();
-
-    UIButtonFX.globalAudioEnabled = false;
-    UIButtonFX.suppressClickInMainMenu = true;
-    
-    StartCoroutine(LogoStartup());
-    InitializeMainMenuMusic();
-}
-```
-
-Add these new methods at the end of the class:
-
-```csharp
-/// <summary>
-/// Enable/disable Continue button based on save existence
-/// </summary>
-private void UpdateContinueButton()
-{
-    if (continueButton == null) return;
-    
-    bool hasSaves = CheckIfAnySavesExist();
-    
-    Button btn = continueButton.GetComponent<Button>();
-    if (btn != null)
-        btn.interactable = hasSaves;
-    
-    CanvasGroup cg = continueButton.GetComponent<CanvasGroup>();
-    if (cg == null) cg = continueButton.AddComponent<CanvasGroup>();
-    cg.alpha = hasSaves ? 1f : 0.5f;
-}
-
-/// <summary>
-/// Check if any save files exist
-/// </summary>
-private bool CheckIfAnySavesExist()
-{
-    string saveDirectory = System.IO.Path.Combine(Application.persistentDataPath, "Saves");
-    if (!System.IO.Directory.Exists(saveDirectory))
-        return false;
-        
-    string[] saveFiles = System.IO.Directory.GetFiles(saveDirectory, "GameFlags_*.json");
-    return saveFiles.Length > 0;
-}
-
-/// <summary>
-/// New Game button clicked
-/// </summary>
-public void OnNewGameClicked()
-{
-    if (saveNamePrompt != null)
-    {
-        Debug.Log("[MainMenu] Showing save name prompt");
-        saveNamePrompt.Show(OnSaveNameConfirmed, OnSaveNameCancelled);
-    }
-    else
-    {
-        Debug.LogError("[MainMenu] SaveNamePrompt not assigned!");
-    }
-}
-
-/// <summary>
-/// Continue button clicked
-/// </summary>
-public void OnContinueClicked()
-{
-    if (loadGameUI != null)
-    {
-        Debug.Log("[MainMenu] Opening load game UI");
-        
-        // Subscribe to load event
-        SaveGameEvents.OnSaveLoaded += OnGameLoaded;
-        
-        // Show load game UI
-        loadGameUI.Show(OnLoadGameBack);
-    }
-    else
-    {
-        Debug.LogError("[MainMenu] LoadGameUI not assigned!");
-    }
-}
-```
-
-Rename variables at the top of the class:
-```csharp
-// OLD:
-public GameObject playButton;
-public GameObject loadGameButton;
-
-// NEW:
-public GameObject newGameButton;
-public GameObject continueButton;
-```
+**What you still need to do:**
+- Wire up the button OnClick() events in Unity Inspector (see Step 7)
+- Update your UI scene with the new button names (see Steps 1-6)
 
 ---
 
