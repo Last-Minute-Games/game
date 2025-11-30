@@ -570,7 +570,19 @@ public class RoundManager : MonoBehaviour
         // Normal return to overworld
         // ClockTimer will handle day five cutscene check when transitioning from overworld
         Debug.Log("[RoundManager] Returning to Overworld");
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
+
+        // Using ScreenFader if available
+        var fader = ScreenFader.Instance;
+        if (fader != null)
+        {
+            Debug.Log("[RoundManager] Using ScreenFader for transition");
+            yield return fader.TransitionToSceneWithEyesClosing("Overworld");
+        }
+        else
+        {
+            Debug.LogWarning("[RoundManager] ScreenFader missing! Falling back to direct load.");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
+        }
     }
 
     // handle advancing day flags
