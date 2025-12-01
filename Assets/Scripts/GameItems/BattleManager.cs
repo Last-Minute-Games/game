@@ -79,11 +79,11 @@ public class BattleManager : MonoBehaviour
         // ---------------------------------------------------------
         // Wait for tutorial before starting wave
         // ---------------------------------------------------------
-        if (ShouldRunTutorialForToday())
-        {
-            Debug.Log("[BattleManager] Running Nether Tutorial...");
-            yield return NetherTutorial.Instance.RunTutorial();
-        }
+        // if (ShouldRunTutorialForToday())
+        // {
+        //     Debug.Log("[BattleManager] Running Nether Tutorial...");
+        //     yield return NetherTutorial.Instance.RunTutorial();
+        // }
 
         StartWave(0); // start first wave
         
