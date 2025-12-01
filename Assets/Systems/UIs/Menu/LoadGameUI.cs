@@ -24,8 +24,21 @@ public class LoadGameUI : MonoBehaviour
     private List<SaveSlotUI> _saveSlots = new List<SaveSlotUI>();
     private System.Action _onBack;
     
+    private CanvasGroup _fadeCanvasGroup; // For scene transition fades
+    
     private void Awake()
     {
+        // Find the fade canvas group (same as MainMenu does)
+        _fadeCanvasGroup = GameObject.Find("FadeCanvasGroup")?.GetComponent<CanvasGroup>();
+        if (_fadeCanvasGroup != null)
+        {
+            Debug.Log("[LoadGameUI] Found FadeCanvasGroup for scene transitions");
+        }
+        else
+        {
+            Debug.LogWarning("[LoadGameUI] FadeCanvasGroup not found - scene transitions will not fade");
+        }
+        
         // Setup the main canvas rect transform first
         SetupMainCanvasRect();
         
@@ -580,22 +593,69 @@ public class LoadGameUI : MonoBehaviour
         {
             Debug.Log($"[LoadGameUI] Successfully loaded save: {saveName}");
             
-            // Always load the overworld scene when loading a save
-            // OverworldWakeUpCutscene will automatically:
-            // 1. Play eyes opening animation
-            // 2. Play clock reconstruction animation (19 ? 13 ? 1)
-            // 3. Play day-specific wake-up dialogue (if configured for current day)
-            // 4. Start the clock timer with the saved time
-            UnityEngine.SceneManagement.SceneManager.LoadScene("overworld");
-            
-            // Notify that save was loaded
-            SaveGameEvents.OnSaveLoaded?.Invoke(saveName);
-            Hide();
+            // Start fade transition coroutine
+            StartCoroutine(FadeAndLoadOverworld(saveName));
         }
         else
         {
             Debug.LogError($"[LoadGameUI] Failed to load save: {saveName}");
         }
+    }
+    
+    /// <summary>
+    /// Fade out, load overworld scene, then fade in
+    /// </summary>
+    private IEnumerator FadeAndLoadOverworld(string saveName)
+    {
+        Debug.Log("[LoadGameUI] Starting fade out before loading overworld");
+        
+        // Disable interaction on load game UI
+        if (loadGameCanvasGroup != null)
+        {
+            loadGameCanvasGroup.interactable = false;
+        }
+        
+        if (_fadeCanvasGroup != null)
+        {
+            // Fade to black using the fade canvas (same as MainMenu does)
+            _fadeCanvasGroup.blocksRaycasts = true;
+            
+            float fadeTimer = 0f;
+            float targetDuration = fadeDuration * 2.5f; // Longer fade like MainMenu
+            
+            while (fadeTimer < targetDuration)
+            {
+                fadeTimer += Time.deltaTime;
+                _fadeCanvasGroup.alpha = Mathf.Lerp(0f, 1f, fadeTimer / targetDuration);
+                yield return null;
+            }
+            
+            _fadeCanvasGroup.alpha = 1f;
+            Debug.Log("[LoadGameUI] Fade to black complete");
+        }
+        else
+        {
+            Debug.LogWarning("[LoadGameUI] No fade canvas - loading scene immediately");
+        }
+        
+        // Wait a brief moment for dramatic effect
+        yield return new WaitForSeconds(0.3f);
+        
+        // Load the overworld scene - OverworldWakeUpCutscene will automatically:
+        // 1. Play eyes opening animation (it handles its own fade)
+        // 2. Play clock reconstruction animation (19 ? 13 ? 1)
+        // 3. Play day-specific wake-up dialogue (if configured for current day)
+        // 4. Start the clock timer with the saved time
+        Debug.Log("[LoadGameUI] Loading overworld scene");
+        
+        AsyncOperation op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("overworld");
+        op.allowSceneActivation = true;
+        
+        // Wait until load is done
+        while (!op.isDone)
+            yield return null;
+        
+        Debug.Log("[LoadGameUI] Overworld scene loaded");
     }
     
     private void OnDeleteSave(string saveName)
