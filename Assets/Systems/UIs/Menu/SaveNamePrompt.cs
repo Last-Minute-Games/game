@@ -24,6 +24,7 @@ public class SaveNamePrompt : MonoBehaviour
     
     private System.Action<string> _onConfirm;
     private System.Action _onCancel;
+    private bool _isVisible = false;  // Track if prompt is currently showing
     
     private void Awake()
     {
@@ -45,8 +46,8 @@ public class SaveNamePrompt : MonoBehaviour
         if (promptCanvasGroup != null)
         {
             promptCanvasGroup.alpha = 0f;
-            promptCanvasGroup.interactable = false;
-            promptCanvasGroup.blocksRaycasts = false;
+            promptCanvasGroup.interactable = true;  // Keep true so children work
+            promptCanvasGroup.blocksRaycasts = false;  // Don't block when hidden
         }
         
         // Hide error text
@@ -54,6 +55,40 @@ public class SaveNamePrompt : MonoBehaviour
             errorText.gameObject.SetActive(false);
             
         gameObject.SetActive(false);
+    }
+
+    private void Update()
+    {
+        // Only run when prompt is visible
+        if (!_isVisible) return;
+        
+        // Automatically re-focus input field if nothing is selected
+        if (saveNameInput != null && UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            var currentSelected = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+            
+            // If nothing is selected, or if something other than our buttons/input is selected
+            if (currentSelected == null)
+            {
+                saveNameInput.Select();
+                saveNameInput.ActivateInputField();
+            }
+        }
+        
+        // Allow Enter to confirm if input is valid
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            if (confirmButton != null && confirmButton.interactable)
+            {
+                OnConfirmClicked();
+            }
+        }
+        
+        // Allow Escape to cancel
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            OnCancelClicked();
+        }
     }
     
     /// <summary>
@@ -63,6 +98,7 @@ public class SaveNamePrompt : MonoBehaviour
     {
         _onConfirm = onConfirm;
         _onCancel = onCancel;
+        _isVisible = true;  // Mark as visible
         
         // Reset input field
         if (saveNameInput != null)
@@ -86,19 +122,27 @@ public class SaveNamePrompt : MonoBehaviour
     /// </summary>
     public void Hide()
     {
+        _isVisible = false;  // Mark as hidden
         StartCoroutine(FadeOut());
     }
     
     private void OnConfirmClicked()
     {
+        Debug.Log("[SaveNamePrompt] Confirm button clicked!");
+        
         if (saveNameInput == null)
+        {
+            Debug.LogWarning("[SaveNamePrompt] saveNameInput is null!");
             return;
+        }
             
         string saveName = saveNameInput.text.Trim();
+        Debug.Log($"[SaveNamePrompt] Save name entered: '{saveName}'");
         
         // Validate save name
         if (!ValidateSaveName(saveName, out string error))
         {
+            Debug.LogWarning($"[SaveNamePrompt] Validation failed: {error}");
             ShowError(error);
             return;
         }
@@ -106,17 +150,20 @@ public class SaveNamePrompt : MonoBehaviour
         // Check if save already exists
         if (GameFlags.HasSaveFile(saveName))
         {
+            Debug.LogWarning($"[SaveNamePrompt] Save '{saveName}' already exists!");
             ShowError($"Save '{saveName}' already exists!");
             return;
         }
         
         // Success - invoke callback
+        Debug.Log($"[SaveNamePrompt] Validation passed, invoking callback");
         _onConfirm?.Invoke(saveName);
         Hide();
     }
     
     private void OnCancelClicked()
     {
+        Debug.Log("[SaveNamePrompt] Cancel button clicked!");
         _onCancel?.Invoke();
         Hide();
     }
@@ -184,8 +231,12 @@ public class SaveNamePrompt : MonoBehaviour
         if (promptCanvasGroup == null)
             yield break;
             
-        promptCanvasGroup.interactable = false;
+        // IMPORTANT: Set blocksRaycasts FIRST to prevent clicks beneath
         promptCanvasGroup.blocksRaycasts = true;
+        promptCanvasGroup.interactable = true;  // Keep TRUE so child elements work
+        
+        // Start from 0 alpha
+        promptCanvasGroup.alpha = 0f;
         
         float timer = 0f;
         while (timer < fadeDuration)
@@ -196,7 +247,14 @@ public class SaveNamePrompt : MonoBehaviour
         }
         
         promptCanvasGroup.alpha = 1f;
-        promptCanvasGroup.interactable = true;
+        
+        // IMPORTANT: Re-focus the input field after fade completes
+        if (saveNameInput != null)
+        {
+            yield return null; // Wait one frame
+            saveNameInput.Select();
+            saveNameInput.ActivateInputField();
+        }
     }
     
     private IEnumerator FadeOut()

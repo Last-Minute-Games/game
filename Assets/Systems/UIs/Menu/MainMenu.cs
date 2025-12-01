@@ -500,11 +500,19 @@ public class Startscreen : MonoBehaviour
         
         playChoicePanel.SetActive(true);
         
-        // Hide main menu buttons temporarily
+        // IMMEDIATELY disable interaction and block raycasts before fading
         if (buttonsCanvasGroup != null)
         {
             buttonsCanvasGroup.interactable = false;
+            buttonsCanvasGroup.blocksRaycasts = false;  // Stop clicks immediately
         }
+        
+        // Fade out main menu logo and buttons
+        if (mainMenuLogoCanvasGroup != null)
+            StartCoroutine(FadeCoroutine(mainMenuLogoCanvasGroup, 1f, 0f, 0.3f));
+        
+        if (buttonsCanvasGroup != null)
+            StartCoroutine(FadeCoroutine(buttonsCanvasGroup, 1f, 0f, 0.3f));
         
         StartCoroutine(FadeInPlayChoice());
     }
@@ -518,11 +526,26 @@ public class Startscreen : MonoBehaviour
         
         StartCoroutine(FadeOutPlayChoice());
         
-        // Re-enable main menu buttons
+        // Fade main menu logo and buttons back in
+        if (mainMenuLogoCanvasGroup != null)
+            StartCoroutine(FadeCoroutine(mainMenuLogoCanvasGroup, 0f, 1f, 0.3f));
+        
         if (buttonsCanvasGroup != null)
         {
-            buttonsCanvasGroup.interactable = true;
+            StartCoroutine(FadeCoroutine(buttonsCanvasGroup, 0f, 1f, 0.3f));
+            // Re-enable interaction after fade completes
+            StartCoroutine(ReEnableButtonsAfterDelay(0.3f));
         }
+    }
+
+    /// <summary>
+    /// Re-enable buttons canvas group after delay
+    /// </summary>
+    private IEnumerator ReEnableButtonsAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (buttonsCanvasGroup != null)
+            buttonsCanvasGroup.interactable = true;
     }
 
     /// <summary>
@@ -585,6 +608,21 @@ public class Startscreen : MonoBehaviour
         if (saveNamePrompt != null)
         {
             Debug.Log("[MainMenu] Showing save name prompt");
+            
+            // IMMEDIATELY disable interaction and block raycasts before fading
+            if (buttonsCanvasGroup != null)
+            {
+                buttonsCanvasGroup.interactable = false;
+                buttonsCanvasGroup.blocksRaycasts = false;  // Stop clicks immediately
+            }
+            
+            // Fade out main menu elements before showing prompt
+            if (mainMenuLogoCanvasGroup != null)
+                StartCoroutine(FadeCoroutine(mainMenuLogoCanvasGroup, 1f, 0f, 0.3f));
+            
+            if (buttonsCanvasGroup != null)
+                StartCoroutine(FadeCoroutine(buttonsCanvasGroup, 1f, 0f, 0.3f));
+            
             saveNamePrompt.Show(OnSaveNameConfirmed, OnSaveNameCancelled);
         }
         else
@@ -609,7 +647,11 @@ public class Startscreen : MonoBehaviour
     public void OnContinueFromChoice()
     {
         Debug.Log("[MainMenu] Continue selected from choice menu");
-        HidePlayChoiceMenu();
+        
+        // Hide play choice menu WITHOUT restoring main menu elements
+        StartCoroutine(FadeOutPlayChoiceOnly());
+        
+        // Then show load game menu
         ShowLoadGameMenu();
     }
 
@@ -623,6 +665,36 @@ public class Startscreen : MonoBehaviour
     }
 
     /// <summary>
+    /// Fade out play choice menu without restoring main menu
+    /// </summary>
+    private IEnumerator FadeOutPlayChoiceOnly()
+    {
+        if (playChoiceCanvasGroup == null)
+        {
+            if (playChoicePanel != null)
+                playChoicePanel.SetActive(false);
+            yield break;
+        }
+        
+        playChoiceCanvasGroup.interactable = false;
+        
+        float duration = 0.3f;
+        float timer = 0f;
+        
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            playChoiceCanvasGroup.alpha = Mathf.Lerp(1f, 0f, timer / duration);
+            yield return null;
+        }
+        
+        playChoiceCanvasGroup.alpha = 0f;
+        playChoiceCanvasGroup.blocksRaycasts = false;
+        if (playChoicePanel != null)
+            playChoicePanel.SetActive(false);
+    }
+
+    /// <summary>
     /// Show the load game menu
     /// </summary>
     private void ShowLoadGameMenu()
@@ -630,6 +702,20 @@ public class Startscreen : MonoBehaviour
         if (loadGameUI != null)
         {
             Debug.Log("[MainMenu] Opening load game UI");
+            
+            // ALWAYS ensure main menu elements are faded out and interaction is disabled
+            if (buttonsCanvasGroup != null)
+            {
+                buttonsCanvasGroup.interactable = false;
+                buttonsCanvasGroup.blocksRaycasts = false;
+            }
+            
+            // Fade out main menu elements if they're visible
+            if (mainMenuLogoCanvasGroup != null && mainMenuLogoCanvasGroup.alpha > 0.1f)
+                StartCoroutine(FadeCoroutine(mainMenuLogoCanvasGroup, mainMenuLogoCanvasGroup.alpha, 0f, 0.3f));
+            
+            if (buttonsCanvasGroup != null && buttonsCanvasGroup.alpha > 0.1f)
+                StartCoroutine(FadeCoroutine(buttonsCanvasGroup, buttonsCanvasGroup.alpha, 0f, 0.3f));
             
             // Subscribe to load event to transition to game
             SaveGameEvents.OnSaveLoaded += OnGameLoaded;
@@ -660,6 +746,8 @@ public class Startscreen : MonoBehaviour
         else
         {
             Debug.LogError($"[MainMenu] Failed to create save: {saveName}");
+            // Fade main menu back in on error
+            RestoreMainMenuElements();
         }
     }
     
@@ -669,7 +757,24 @@ public class Startscreen : MonoBehaviour
     private void OnSaveNameCancelled()
     {
         Debug.Log("[MainMenu] Save name prompt cancelled");
-        // Do nothing - return to main menu
+        // Restore main menu elements
+        RestoreMainMenuElements();
+    }
+
+    /// <summary>
+    /// Restore main menu logo and buttons with fade
+    /// </summary>
+    private void RestoreMainMenuElements()
+    {
+        if (mainMenuLogoCanvasGroup != null)
+            StartCoroutine(FadeCoroutine(mainMenuLogoCanvasGroup, 0f, 1f, 0.3f));
+        
+        if (buttonsCanvasGroup != null)
+        {
+            StartCoroutine(FadeCoroutine(buttonsCanvasGroup, 0f, 1f, 0.3f));
+            buttonsCanvasGroup.blocksRaycasts = true;  // Re-enable raycasts
+            StartCoroutine(ReEnableButtonsAfterDelay(0.3f));
+        }
     }
     
     /// <summary>
@@ -694,6 +799,9 @@ public class Startscreen : MonoBehaviour
         Debug.Log("[MainMenu] Back from load game UI");
         // Unsubscribe in case we didn't load
         SaveGameEvents.OnSaveLoaded -= OnGameLoaded;
+        
+        // Restore main menu elements
+        RestoreMainMenuElements();
     }
 
     private IEnumerator FlickerButton(GameObject button, float interval)
@@ -749,5 +857,8 @@ public class Startscreen : MonoBehaviour
         #endif
     }
 }
+
+
+
 
 
