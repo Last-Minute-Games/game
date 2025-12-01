@@ -76,6 +76,15 @@ public class BattleManager : MonoBehaviour
         roundManager.Initialize(playerManager, enemyManager);
         roundManager.onWaveComplete = OnWaveComplete;
 
+        // BEFORE tutorial runs, blackout the screen
+        if (roundManager.roundTransitionUI != null)
+        {
+            var blackout = roundManager.roundTransitionUI.canvasGroup;
+            blackout.alpha = 1f;              // keep screen fully black
+            blackout.blocksRaycasts = true;
+            blackout.interactable = false;
+        }
+
         // ---------------------------------------------------------
         // Wait for tutorial before starting wave
         // ---------------------------------------------------------
