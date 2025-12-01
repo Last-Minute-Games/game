@@ -133,6 +133,12 @@ namespace GameItems.Cards.Helpers
                 Debug.LogWarning("[CardFXHelper] OnCardSelect called with null card.");
                 return;
             }
+            
+            if (CardInteraction.Locked) 
+            {
+                Debug.Log($"[CardFXHelper] OnCardSelect ignored - card interactions are locked");
+                return;
+            }
 
             // Clear hover state when selecting
             currentlyHoveredCard = null;
