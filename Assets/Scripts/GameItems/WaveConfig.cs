@@ -16,19 +16,16 @@ public class WaveConfig : ScriptableObject
     [Header("Day 4 Waves")]
     public List<WaveData> day4Waves = new();
 
-    [Header("Day 5 Waves")]
-    public List<WaveData> day5Waves = new();
-
     /// <summary>
     /// Returns the waves for whichever day flag is active.
     /// </summary>
     public List<WaveData> GetWavesForCurrentDay()
     {
-        if (GameFlags.HasFlag("day.one"))   return day1Waves;
-        if (GameFlags.HasFlag("day.two"))   return day2Waves;
-        if (GameFlags.HasFlag("day.three")) return day3Waves;
+        // reversed so it checks for the latest flag
         if (GameFlags.HasFlag("day.four"))  return day4Waves;
-        if (GameFlags.HasFlag("day.five"))  return day5Waves;
+        if (GameFlags.HasFlag("day.three")) return day3Waves;
+        if (GameFlags.HasFlag("day.two"))   return day2Waves;
+        if (GameFlags.HasFlag("day.one"))   return day1Waves;
 
         // fallback (should never happen)
         return day1Waves;

@@ -15,6 +15,10 @@ public class GameFlags : PersistentSingleton<GameFlags>
     // PlayerPrefs key for saving flags (legacy support)
     private const string SAVE_KEY = "GameFlags_SaveData";
     
+    [Header("Debug Controls")]
+    [Tooltip("Enable debug flag controls (P to add all card flags)")]
+    public bool enableDebugControls = true;
+    
     // JSON file path for save game system
     private static string GetSaveFilePath(string saveSlot = "default")
     {
@@ -65,6 +69,45 @@ public class GameFlags : PersistentSingleton<GameFlags>
         // Notify listeners that initialization is complete
         OnInitialized?.Invoke();
         Debug.Log("[GameFlags] Initialization complete - reset to defaults (use LoadFromSaveFile() or LoadFromPlayerPrefs() to load saved data)");
+    }
+
+    private void Update()
+    {
+        // Debug controls
+        if (enableDebugControls)
+        {
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                AddAllCardFlags();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Debug method: Add all card flags
+    /// </summary>
+    private void AddAllCardFlags()
+    {
+        string[] cardFlags = new string[]
+        {
+            "card.block",
+            "card.double_slash",
+            "card.dramatic_exit",
+            "card.exchange",
+            "card.tariff_strike",
+            "card.heal_potion",
+            "card.energy_drink",
+            "card.shield_slash",
+            "card.slash",
+            "card.workout"
+        };
+
+        Debug.Log("[GameFlags] DEBUG: Adding all card flags (P pressed)");
+        foreach (string flag in cardFlags)
+        {
+            SetFlag(flag);
+        }
+        Debug.Log($"[GameFlags] DEBUG: Added {cardFlags.Length} card flags");
     }
 
     /// <summary>
@@ -326,10 +369,19 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         try
         {
+            // Get current clock time from ClockTimer
+            ClockTimer clockTimer = FindObjectOfType<ClockTimer>();
+            float clockTimeLeft = clockTimer != null ? clockTimer.GetTimeLeft() : 60f;
+            
+            // Determine current day
+            string currentDay = GetCurrentDay();
+            
             // Create a serializable wrapper for the HashSet
             GameFlagsSaveData saveData = new GameFlagsSaveData
             {
-                flags = new List<string>(_activeFlags)
+                flags = new List<string>(_activeFlags),
+                clockTimeLeft = clockTimeLeft,
+                currentDay = currentDay
             };
 
             // Serialize to JSON
@@ -348,7 +400,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
             // Write to file
             File.WriteAllText(filePath, json);
 
-            Debug.Log($"[GameFlags] Saved {_activeFlags.Count} flags to file: {filePath}");
+            Debug.Log($"[GameFlags] Saved {_activeFlags.Count} flags to file: {filePath} (clockTime: {clockTimeLeft:F2}s, day: {currentDay})");
             return true;
         }
         catch (Exception ex)
@@ -394,7 +446,15 @@ public class GameFlags : PersistentSingleton<GameFlags>
                 }
             }
 
-            Debug.Log($"[GameFlags] Loaded {saveData.flags.Count} flags from file: {filePath} (total: {_activeFlags.Count})");
+            // Restore clock time if ClockTimer exists
+            ClockTimer clockTimer = FindObjectOfType<ClockTimer>();
+            if (clockTimer != null && saveData.clockTimeLeft > 0)
+            {
+                clockTimer.RestoreTimeLeft(saveData.clockTimeLeft);
+                Debug.Log($"[GameFlags] Restored clock time: {saveData.clockTimeLeft:F2}s");
+            }
+
+            Debug.Log($"[GameFlags] Loaded {saveData.flags.Count} flags from file: {filePath} (total: {_activeFlags.Count}, day: {saveData.currentDay})");
             return true;
         }
         catch (Exception ex)
@@ -402,6 +462,19 @@ public class GameFlags : PersistentSingleton<GameFlags>
             Debug.LogError($"[GameFlags] Failed to load flags from file: {ex.Message}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Get the current day string from active flags
+    /// </summary>
+    private string GetCurrentDay()
+    {
+        if (_activeFlags.Contains("day.five")) return "day.five";
+        if (_activeFlags.Contains("day.four")) return "day.four";
+        if (_activeFlags.Contains("day.three")) return "day.three";
+        if (_activeFlags.Contains("day.two")) return "day.two";
+        if (_activeFlags.Contains("day.one")) return "day.one";
+        return "day.one"; // Default
     }
 
     // ========== STATIC API (Singleton Pattern) ==========
@@ -433,11 +506,12 @@ public class GameFlags : PersistentSingleton<GameFlags>
             Instance.OnFlagChanged?.Invoke(flagName);
             Debug.Log($"[GameFlags] Set flag: {flagName}");
             
-            // AUTO-SAVE for day progression flags
+            // AUTO-SAVE for day progression flags using current save name
             if (IsDayFlag(flagName))
             {
                 Debug.Log($"[GameFlags] Day flag detected - auto-saving game progress");
-                SaveFlags();
+                // Use GameFlagsManager to save to current save slot
+                GameFlagsManager.SaveCurrentGame();
             }
         }
     }
@@ -574,6 +648,31 @@ public class GameFlags : PersistentSingleton<GameFlags>
         }
     }
 
+    /// <summary>
+    /// Get save metadata without loading the entire save
+    /// </summary>
+    public static GameFlagsSaveData GetSaveMetadata(string saveSlot = "default")
+    {
+        string filePath = GetSaveFilePath(saveSlot);
+        
+        if (!File.Exists(filePath))
+        {
+            return null;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(filePath);
+            GameFlagsSaveData saveData = JsonUtility.FromJson<GameFlagsSaveData>(json);
+            return saveData;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[GameFlags] Failed to read save metadata: {ex.Message}");
+            return null;
+        }
+    }
+
     // ========== INSTANCE API (for ScriptableObject references) ==========
 
     /// <summary>
@@ -608,4 +707,6 @@ public class GameFlags : PersistentSingleton<GameFlags>
 public class GameFlagsSaveData
 {
     public List<string> flags = new List<string>();
+    public float clockTimeLeft = 60f; // NEW: Save clock time remaining
+    public string currentDay = "day.one"; // NEW: Save current day for display
 }

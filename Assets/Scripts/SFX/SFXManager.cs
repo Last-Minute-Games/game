@@ -137,4 +137,20 @@ public class SFXManager : MonoBehaviour
         }
         return null;
     }
+
+    public void PlayClip(AudioClip clip, float volume = 1f)
+    {
+        if (clip == null)
+            return;
+
+        AudioSource src = GetAvailableSource();
+        if (src == null)
+            return;
+
+        src.clip = clip;
+        src.volume = volume;
+        src.pitch = 1f;
+        src.spatialBlend = 0f;
+        src.Play();
+    }
 }

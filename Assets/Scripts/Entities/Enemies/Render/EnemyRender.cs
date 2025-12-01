@@ -314,15 +314,28 @@ namespace Entities.Enemies.Render
                 intentIconSprite.sprite = intentSprite;
                 intentIconSprite.enabled = true;
                 
-                // Show intent value if > 0
-                if (intentValueText != null && data.intentValue > 0)
+                if (intentValueText != null)
                 {
-                    intentValueText.text = data.intentValue.ToString();
-                    intentValueText.enabled = true;
-                }
-                else if (intentValueText != null)
-                {
-                    intentValueText.enabled = false;
+                    if (data.currentIntent == EnemyIntent.Buff)
+                    {
+                        // Buffs use MULTIPLIER, not intentValue
+                        float rawFloat = data.currentAction.value * data.buffMultiplier;
+
+                        // Display prefix "x" + up to 2 decimals
+                        intentValueText.text = "x" + rawFloat.ToString("0.##");
+
+                        intentValueText.enabled = true;
+                    }
+                    else if (data.intentValue > 0)
+                    {
+                        // Attack / Block / Heal → integer
+                        intentValueText.text = data.intentValue.ToString();
+                        intentValueText.enabled = true;
+                    }
+                    else
+                    {
+                        intentValueText.enabled = false;
+                    }
                 }
             }
             else

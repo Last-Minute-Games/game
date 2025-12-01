@@ -22,15 +22,30 @@ namespace GameItems.Cards
         // -----------------------------------------------------------
         public List<CardData> GenerateRandomCards(int number)
         {
-            List<CardData> unlockedPool = allCardPool.FindAll(c => IsCardUnlocked(c)); // filter unlocked cards
+            List<CardData> result = new();
 
+            // ARANTEED PICKS — ALWAYS ADD Slash (9) and Block (1)
+            //  👀 🍦 😱 AHHHASDSEDX
+            CardData slash = PullCard(9);
+            if (slash != null && !result.Contains(slash))
+                result.Add(slash);
+
+            CardData block = PullCard(1);
+            if (block != null && !result.Contains(block))
+                result.Add(block);
+
+            // Optional: reduce the amount of random cards so total stays consistent
+            number -= result.Count;
+            if (number < 0) number = 0;
+
+            // ---- ORIGINAL FUNCTION BELOW ----
+            List<CardData> unlockedPool = allCardPool.FindAll(c => IsCardUnlocked(c)); 
             if (unlockedPool.Count == 0)
             {
                 Debug.LogWarning("No unlocked cards available!");
-                return new();
+                return result;
             }
 
-            List<CardData> result = new();
             for (int i = 0; i < number; i++)
             {
                 var card = unlockedPool[_rng.Next(unlockedPool.Count)];

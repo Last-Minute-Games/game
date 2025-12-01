@@ -61,4 +61,3 @@ public abstract class GameItemData : ScriptableObject
             Debug.LogWarning($"[GameItemData] {name} has no Effects assigned!", this);
     }
 }
-
