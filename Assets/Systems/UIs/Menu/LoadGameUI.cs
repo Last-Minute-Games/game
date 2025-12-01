@@ -21,14 +21,7 @@ public class LoadGameUI : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private float fadeDuration = 0.5f;
     
-    [Header("Delete Confirmation")]
-    [SerializeField] private GameObject deleteConfirmPanel;
-    [SerializeField] private TextMeshProUGUI deleteConfirmText;
-    [SerializeField] private Button deleteYesButton;
-    [SerializeField] private Button deleteNoButton;
-    
     private List<SaveSlotUI> _saveSlots = new List<SaveSlotUI>();
-    private string _pendingDeleteSave;
     private System.Action _onBack;
     
     private void Awake()
@@ -36,12 +29,6 @@ public class LoadGameUI : MonoBehaviour
         // Setup button listeners
         if (backButton != null)
             backButton.onClick.AddListener(OnBackClicked);
-            
-        if (deleteYesButton != null)
-            deleteYesButton.onClick.AddListener(ConfirmDelete);
-            
-        if (deleteNoButton != null)
-            deleteNoButton.onClick.AddListener(CancelDelete);
         
         // Start hidden
         if (loadGameCanvasGroup != null)
@@ -50,10 +37,6 @@ public class LoadGameUI : MonoBehaviour
             loadGameCanvasGroup.interactable = false;
             loadGameCanvasGroup.blocksRaycasts = false;
         }
-        
-        // Hide delete confirmation panel
-        if (deleteConfirmPanel != null)
-            deleteConfirmPanel.SetActive(false);
             
         gameObject.SetActive(false);
     }
@@ -206,30 +189,10 @@ public class LoadGameUI : MonoBehaviour
     
     private void OnDeleteSave(string saveName)
     {
-        _pendingDeleteSave = saveName;
+        Debug.Log($"[LoadGameUI] Deleting save: {saveName}");
         
-        if (deleteConfirmPanel != null)
-        {
-            if (deleteConfirmText != null)
-                deleteConfirmText.text = $"Delete save '{saveName}'?";
-                
-            deleteConfirmPanel.SetActive(true);
-        }
-        else
-        {
-            // No confirmation panel - delete immediately (not recommended)
-            ConfirmDelete();
-        }
-    }
-    
-    private void ConfirmDelete()
-    {
-        if (string.IsNullOrEmpty(_pendingDeleteSave))
-            return;
-            
-        Debug.Log($"[LoadGameUI] Deleting save: {_pendingDeleteSave}");
-        
-        bool success = GameFlags.DeleteSaveFile(_pendingDeleteSave);
+        // Delete immediately without confirmation
+        bool success = GameFlags.DeleteSaveFile(saveName);
         
         if (success)
         {
@@ -237,21 +200,8 @@ public class LoadGameUI : MonoBehaviour
             RefreshSaveList();
             
             // Notify that save was deleted
-            SaveGameEvents.OnSaveDeleted?.Invoke(_pendingDeleteSave);
+            SaveGameEvents.OnSaveDeleted?.Invoke(saveName);
         }
-        
-        _pendingDeleteSave = null;
-        
-        if (deleteConfirmPanel != null)
-            deleteConfirmPanel.SetActive(false);
-    }
-    
-    private void CancelDelete()
-    {
-        _pendingDeleteSave = null;
-        
-        if (deleteConfirmPanel != null)
-            deleteConfirmPanel.SetActive(false);
     }
     
     private void OnBackClicked()
