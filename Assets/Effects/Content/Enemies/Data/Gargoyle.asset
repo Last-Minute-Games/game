@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5624a485d2ae413db15be89954eda8f8, type: 3}
+  m_Name: Gargoyle
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyConfig
+  enemyName: Gargoyle
+  maxHealth: 120
+  attackPower: 30
+  defensePower: 15
+  healPower: 5
+  buffPower: 1
+  artwork: {fileID: 4337190145794645005, guid: f3d3322ae5cd90f3b924d3a1cd357aa2, type: 3}
+  actionPattern:
+  - intent: 0
+    value: 18
+    actionChance: 0.4
+    customName: Stomp
+  - intent: 1
+    value: 12
+    actionChance: 0.3
+    customName: Stoneguard
+  - intent: 2
+    value: 12
+    actionChance: 0.2
+    customName: Reconstitute
+  - intent: 3
+    value: 1
+    actionChance: 0
+    customName: Ancient Empowerement
+  attackRange:
+    min: 0.84
+    max: 1.402
+  blockRange:
+    min: 0.857
+    max: 1.402
+  healRange:
+    min: 0.744
+    max: 1.087
+  buffRange:
+    min: 1.05
+    max: 1.05
+  animatorController: {fileID: 0}
+  idleAnim: {fileID: 11400000, guid: 3167a4b93495129428b9b6a37fad6a6f, type: 2}
+  attackAnim: {fileID: 11400000, guid: 016b7163000a2798f9a8626d9f42dfb6, type: 2}
+  hurtAnim: {fileID: 11400000, guid: c7e33e48ab4131c85bc741b5a0e29edf, type: 2}
+  deathAnim: {fileID: 11400000, guid: b649d60f67f81f0f89a1122c512b15e5, type: 2}
+  positionOffset: {x: 0, y: 0, z: 0}
+  scaleOffset: {x: 1, y: 1, z: 1}
+  minMultiplier: 0.81
+  maxMultiplier: 1.2
+  uniqueID: 951af61c-8ecd-48f2-a2d2-e0be6b5e464e

@@ -386,4 +386,6 @@ public class ScreenFader : MonoBehaviour
 
         Debug.Log("[ScreenFader] Scene loaded - panels still closed, waiting for eyes to open");
     }
+
+    public static ScreenFader Instance => s_instance; // accessor
 }

@@ -16,14 +16,38 @@ MonoBehaviour:
   maxHealth: 30
   attackPower: 10
   defensePower: 6
+  healPower: 5
+  buffPower: 1
   artwork: {fileID: 8658351832292309105, guid: 3e586d66359f7b248afc8a29083042d5, type: 3}
   actionPattern:
   - intent: 0
     value: 9
-    customName: Strike
+    actionChance: 0.7
+    customName: Gaze Beam
   - intent: 1
     value: 7
-    customName: 
+    actionChance: 0.2
+    customName: Blink Guard
+  - intent: 2
+    value: 7
+    actionChance: 0.3
+    customName: Iris Mend
+  - intent: 3
+    value: 1
+    actionChance: 0.1
+    customName: Focus Surge
+  attackRange:
+    min: 0.65
+    max: 1.28
+  blockRange:
+    min: 0.81
+    max: 1.42
+  healRange:
+    min: 0.81
+    max: 1.44
+  buffRange:
+    min: 1.05
+    max: 1.05
   animatorController: {fileID: 9100000, guid: 681fab083306c8942a3eec79ae9b2441, type: 2}
   idleAnim: {fileID: 11400000, guid: 56abeb48810e5264595cdd64835bc8fb, type: 2}
   attackAnim: {fileID: 11400000, guid: c5e8990e1d4cea94aa10bb317a9e6885, type: 2}
@@ -31,5 +55,6 @@ MonoBehaviour:
   deathAnim: {fileID: 11400000, guid: 5dfeaf940ebcf0a40a31c3d6dca3d496, type: 2}
   positionOffset: {x: 0, y: 0, z: 0}
   scaleOffset: {x: 1, y: 1, z: 1}
-  minMultiplier: 0.911
-  maxMultiplier: 1.33
+  minMultiplier: 0.92
+  maxMultiplier: 1.37
+  uniqueID: 379d8a21-c28b-49bd-b812-dd7fb80bd952
