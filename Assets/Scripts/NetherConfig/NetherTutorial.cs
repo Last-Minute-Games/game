@@ -145,7 +145,7 @@ public class NetherTutorial : MonoBehaviour
     private void PlaySound()
     {
         if (turnPageSFX != null)
-            SFXManager.Instance.PlayClip(turnPageSFX);
+            SFXManager.Instance.PlayClip(turnPageSFX, 0.2f);
     }
 
     private void FinishTutorial()
