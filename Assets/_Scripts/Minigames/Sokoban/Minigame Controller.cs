@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using Unity.Cinemachine;
 
 /// <summary>
 /// The central manager for the Sokoban minigame within the Overworld scene.
@@ -11,6 +12,8 @@ public class MinigameController : MonoBehaviour
 {
     // Make this class accessible globally for scripts like WinConditionManager and Activator
     public static MinigameController Instance { get; private set; }
+
+
 
     [Header("Puzzle Components")]
     [Tooltip("The parent GameObject containing all walls, boxes, and goals.")]
@@ -34,6 +37,19 @@ public class MinigameController : MonoBehaviour
     [Tooltip("The position where the player should return to in the Overworld. Set dynamically by SokobanActivator.")]
     // This is now set by the Activator, but we keep it public for access.
     public Vector3 overworldExitPosition;
+
+    [Header("Camera")]
+    [SerializeField] private Transform sokobanCameraAnchor; // drag the anchor here in Inspector
+    [SerializeField] private float sokobanCameraSize = 8f;  // set this to the size that shows whole room
+
+    private float overworldCameraSize;
+
+    [Header("Cinemachine")]
+    [SerializeField] private CinemachineCamera cmCamera;   // drag your CinemachineCamera here
+
+    private Transform overworldFollowTarget;
+    private float overworldOrthoSize;
+
 
     [Header("UI")]
     [SerializeField] GameObject hudRoot;
@@ -89,6 +105,17 @@ public class MinigameController : MonoBehaviour
         {
             hudCanvasGroup = hudRoot.GetComponent<CanvasGroup>();
             hudWasActive = hudRoot.activeSelf;
+        }
+
+        if (Camera.main != null)
+        {
+            overworldCameraSize = Camera.main.orthographicSize;
+        }
+
+        if (cmCamera != null)
+        {
+            overworldFollowTarget = cmCamera.Follow;
+            overworldOrthoSize = cmCamera.Lens.OrthographicSize;
         }
 
         // --- FIX: SET INITIAL STATE (REQUIRED FOR IN-SCENE MINIGAMES) ---
@@ -255,6 +282,18 @@ public class MinigameController : MonoBehaviour
     {
         HideHUD();
 
+        // Tell Cinemachine to lock on the Sokoban room
+        if (cmCamera != null)
+        {
+            if (sokobanCameraAnchor != null)
+            {
+                cmCamera.Follow = sokobanCameraAnchor;  // stop following player, follow anchor instead
+            }
+
+            cmCamera.Lens.OrthographicSize = sokobanCameraSize; // zoom out to see whole room
+        }
+
+
         // Pause NPCs and timer, but NOT player input (using minigame pause)
         GlobalPause.SetMinigamePaused(true);
 
@@ -297,14 +336,14 @@ public class MinigameController : MonoBehaviour
 
         player.transform.position = overworldExitPosition;
 
-        if (Camera.main != null)
+        // Put Cinemachine back to overworld mode
+        if (cmCamera != null)
         {
-            Camera.main.transform.position = new Vector3(
-                player.transform.position.x,
-                player.transform.position.y,
-                Camera.main.transform.position.z
-            );
+            cmCamera.Follow = overworldFollowTarget;
+            cmCamera.Lens.OrthographicSize = overworldOrthoSize;
         }
+
+        
 
         ShowHUD();
 
