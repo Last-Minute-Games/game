@@ -253,4 +253,37 @@ public class BattleManager : MonoBehaviour
 
         return wave;
     }
+    // ============================================================================
+    //                               CHEAT BLOCK
+    //     Comment out the entire block to disable cheats instantly.
+    // ============================================================================
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            if (playerManager != null && playerManager.playerData != null)
+            {
+                playerManager.playerData.currentHealth = Mathf.Min(
+                    playerManager.playerData.maxHealth,
+                    playerManager.playerData.currentHealth + 5
+                );
+
+                Debug.Log("CHEAT: Healed +5 HP");
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            if (playerManager != null && playerManager.playerData != null)
+            {
+                playerManager.playerData.currentHealth = Mathf.Max(
+                    0,
+                    playerManager.playerData.currentHealth - 5
+                );
+
+                Debug.Log("CHEAT: Took -5 HP");
+            }
+        }
+    }
+    // ============================================================================
 }
