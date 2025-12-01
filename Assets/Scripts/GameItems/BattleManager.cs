@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Entities.Enemies.Manager;
 using Entities.Players.Data;
 using GameItems;
+using GameItems.Cards.Helpers;
 
 public class BattleManager : MonoBehaviour
 {
@@ -25,6 +26,10 @@ public class BattleManager : MonoBehaviour
     
     private void Start()
     {
+        // Initialize CardFXManager early to ensure it's available
+        var cardFXManager = CardFXManager.Instance;
+        Debug.Log($"[BattleManager] CardFXManager initialized: {cardFXManager != null}");
+        
         if (playerManager == null)
         {
             Debug.LogError("BattleManager: PlayerManager is not assigned.");

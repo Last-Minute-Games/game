@@ -8,18 +8,8 @@ namespace GameItems.Cards.Helpers
         public CardSFXHelper sfxHelper;
         public CardAnimationHelper animHelper;
 
-        // Prevents SFX spam while dragging
-        private bool dragSoundPlayed = false;
-        
-        // Prevents SFX spam while hovering
-        private CardRender currentlyHoveredCard = null;
-        
-        // Prevents SFX spam when selecting (OnPointerDown + OnBeginDrag both call select)
-        private CardRender currentlySelectedCard = null;
-        
-        // Prevents draw sound spam when drawing multiple cards per round
-        // Must be STATIC so it's shared across all card instances
-        private static bool drawSoundPlayed = false;
+        // Prevents SFX spam while dragging (per card instance)
+        private bool dragSoundPlayed;
 
         // ────────────────────────────────
         // Public API (state-based actions)
@@ -46,28 +36,25 @@ namespace GameItems.Cards.Helpers
             // Always animate the card
             animHelper?.AnimateDraw(card);
             
-            // Only play draw sound once per round (first card drawn)
-            if (!drawSoundPlayed && sfxHelper != null)
+            // Only play draw sound once per round (first card drawn) - use manager's shared state
+            if (!CardFXManager.Instance.DrawSoundPlayed && sfxHelper != null)
             {
                 Debug.Log("[CardFXHelper] Playing draw sound (first card of round)");
                 sfxHelper.PlayDraw();
-                drawSoundPlayed = true;
+                CardFXManager.Instance.DrawSoundPlayed = true;
             }
         }
 
         // Reset draw sound flag at the start of a new round
         public void ResetDrawSoundFlag()
         {
-            Debug.Log($"[CardFXHelper] Draw sound flag reset called (instance method). Before: {drawSoundPlayed}");
-            ResetDrawSoundFlagStatic();
+            CardFXManager.Instance.ResetDrawSoundFlag();
         }
 
         // Static method to reset the draw sound flag
         public static void ResetDrawSoundFlagStatic()
         {
-            Debug.Log($"[CardFXHelper] Static reset called. Before: {drawSoundPlayed}");
-            drawSoundPlayed = false;
-            Debug.Log($"[CardFXHelper] Static reset complete. After: {drawSoundPlayed}");
+            CardFXManager.Instance.ResetDrawSoundFlag();
         }
 
         // When hovering over a card
@@ -94,9 +81,9 @@ namespace GameItems.Cards.Helpers
             }
             
             // Only play sound and visuals if this is a NEW hover (not the same card)
-            if (currentlyHoveredCard != card)
+            if (CardFXManager.Instance.CurrentlyHoveredCard != card)
             {
-                currentlyHoveredCard = card;
+                CardFXManager.Instance.CurrentlyHoveredCard = card;
                 
                 // Debug.Log("On Hover");
 
@@ -116,9 +103,9 @@ namespace GameItems.Cards.Helpers
             }
             
             // Clear hover tracking when exiting
-            if (currentlyHoveredCard == card)
+            if (CardFXManager.Instance.CurrentlyHoveredCard == card)
             {
-                currentlyHoveredCard = null;
+                CardFXManager.Instance.CurrentlyHoveredCard = null;
             }
 
             animHelper?.HoverExit(card);
@@ -140,16 +127,61 @@ namespace GameItems.Cards.Helpers
                 return;
             }
 
+            Debug.Log($"[CardFXHelper] OnCardSelect called for '{card.Data?.name}'");
+            Debug.Log($"[CardFXHelper] Currently selected card: '{CardFXManager.Instance.CurrentlySelectedCard?.Data?.name ?? "none"}'");
+
             // Clear hover state when selecting
-            currentlyHoveredCard = null;
+            CardFXManager.Instance.CurrentlyHoveredCard = null;
 
             // Only call SelectVisuals if this is a NEW selection (not already selected)
             // This prevents spamming the same card multiple times which stacks tweens
-            if (currentlySelectedCard != card)
+            if (CardFXManager.Instance.CurrentlySelectedCard != card)
             {
-                // Store the newly selected card
-                currentlySelectedCard = card;
-                animHelper?.SelectVisuals(card, updatePosition);
+                Debug.Log($"[CardFXHelper] This is a NEW selection");
+                
+                // Return the previously selected card to its original position using its OWN helper
+                if (CardFXManager.Instance.CurrentlySelectedCard != null)
+                {
+                    var previousCard = CardFXManager.Instance.CurrentlySelectedCard;
+                    Debug.Log($"[CardFXHelper] Previous card exists: '{previousCard.Data?.name}'");
+                    
+                    var previousCardHelper = previousCard.GetComponent<CardFXHelper>();
+                    Debug.Log($"[CardFXHelper] Previous card helper found: {previousCardHelper != null}");
+                    
+                    if (previousCardHelper != null && previousCardHelper.animHelper != null)
+                    {
+                        Debug.Log($"[CardFXHelper] Calling ReturnToPosition on previous card '{previousCard.Data?.name}'");
+                        previousCardHelper.animHelper.ReturnToPosition(previousCard);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[CardFXHelper] Previous card helper or animHelper is null!");
+                    }
+                }
+                else
+                {
+                    Debug.Log($"[CardFXHelper] No previously selected card to return");
+                }
+                
+                // Store the newly selected card BEFORE applying visuals
+                CardFXManager.Instance.CurrentlySelectedCard = card;
+                Debug.Log($"[CardFXHelper] Stored '{card.Data?.name}' as currently selected");
+                
+                // Small delay to ensure the previous card's ReturnToPosition tween starts
+                // before we apply SelectVisuals to the new card (prevents tween conflicts)
+                DG.Tweening.DOVirtual.DelayedCall(0.05f, () =>
+                {
+                    // Apply selection visuals to the new card
+                    if (card != null && animHelper != null)
+                    {
+                        Debug.Log($"[CardFXHelper] Calling SelectVisuals on new card '{card.Data?.name}'");
+                        animHelper.SelectVisuals(card, updatePosition);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[CardFXHelper] Card or animHelper became null before SelectVisuals could be called!");
+                    }
+                });
                 
                 // Only play sound if this is a NEW selection (not the same card already selected)
                 sfxHelper?.PlaySelect();
@@ -211,8 +243,8 @@ namespace GameItems.Cards.Helpers
             }
 
             // Clear hover and selection state on release
-            currentlyHoveredCard = null;
-            currentlySelectedCard = null;
+            CardFXManager.Instance.CurrentlyHoveredCard = null;
+            CardFXManager.Instance.CurrentlySelectedCard = null;
             
             dragSoundPlayed = false; // reset for next drag
 
@@ -275,13 +307,13 @@ namespace GameItems.Cards.Helpers
             }
 
             // Clear hover and selection tracking
-            if (currentlyHoveredCard == card)
+            if (CardFXManager.Instance.CurrentlyHoveredCard == card)
             {
-                currentlyHoveredCard = null;
+                CardFXManager.Instance.CurrentlyHoveredCard = null;
             }
-            if (currentlySelectedCard == card)
+            if (CardFXManager.Instance.CurrentlySelectedCard == card)
             {
-                currentlySelectedCard = null;
+                CardFXManager.Instance.CurrentlySelectedCard = null;
             }
 
             animHelper?.HoverExit(card);
