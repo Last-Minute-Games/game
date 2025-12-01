@@ -1370,22 +1370,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NetherTutorial
   slides:
   - image: {fileID: 2999459662881226216, guid: 9c42f4c4191e049f79dce9d1dfa5e72e, type: 3}
-    text: "You are <color=#FF4A4A>dead</color>.\n\nYou are in purgatory due to a
-      <color=#C77DFF>curse</color>. \nYou must <color=#FFA53F>fight your way out</color>.\n\nIf
-      you <color=#FF4A4A>lose</color>, you lose time on your clock.\nIf you <color=#6CFF6C>win</color>,
-      you gain time on your clock."
+    text: 'You are <color=#FF4A4A>dead</color>.
+
+
+      You are in purgatory due
+      to a <color=#C77DFF>curse</color>. You must <color=#FFA53F>fight your way out</color>.
+
+
+      If
+      you <color=#FF4A4A>lose</color>, you lose time on your clock. If you <color=#6CFF6C>win</color>,
+      you gain time on your clock.'
     slideOrder: 0
   - image: {fileID: -697763020151794088, guid: 0bece81d2e79bd44c849e7bf23aa328f, type: 3}
     text: "You are placed into a turn-based card battle.\n\nOn the top left, you
-      will find a <color=#5BCEFA>timer</color>. \nPay close attention\u2014when it
-      runs out, your turn ends automatically."
+      will find a <color=#5BCEFA>timer</color>. \n\nPay close attention\u2014when
+      it runs out, your turn ends automatically."
     slideOrder: 1
   - image: {fileID: 4448715427215634006, guid: f8d7722b39808df4b874873ad6fb1a95, type: 3}
-    text: "You will receive a <color=#FFA53F>deck of cards</color>.\n\nEach card
-      has a number in the top-left corner representing its \n<color=#5BCEFA>energy
-      cost</color>.\n\nYour current <color=#5BCEFA>energy</color> is shown in the
-      bottom-left corner.\nIf it reaches <color=#FFA53F>0</color>, your turn ends
-      instantly."
+    text: 'You will receive a <color=#FFA53F>deck of cards</color>.
+
+
+      Each
+      card has a number in the top-left corner representing its <color=#5BCEFA>energy
+      cost</color>.
+
+
+      Your current <color=#5BCEFA>energy</color> is shown in
+      the bottom-left corner. If it reaches <color=#FFA53F>0</color>, your turn ends
+      instantly.'
     slideOrder: 2
   - image: {fileID: 4448715427215634006, guid: f8d7722b39808df4b874873ad6fb1a95, type: 3}
     text: "The card description explains what the card does when played.\n\nSome
@@ -1393,7 +1405,7 @@ MonoBehaviour:
       attention to the titles and effects."
     slideOrder: 3
   - image: {fileID: 4448715427215634006, guid: f8d7722b39808df4b874873ad6fb1a95, type: 3}
-    text: "Watch for <color=#FFA53F>intention</color> icons above \n<color=#FF4A4A>enemies</color>.
+    text: "Watch for <color=#FFA53F>intention</color> icons above <color=#FF4A4A>enemies</color>.
       \n\nThese reveal what the enemy will do once your turn ends."
     slideOrder: 4
   - image: {fileID: 4448715427215634006, guid: f8d7722b39808df4b874873ad6fb1a95, type: 3}
@@ -1408,8 +1420,11 @@ MonoBehaviour:
       same applies for <color=#FF4A4A>enemies</color>.'
     slideOrder: 5
   - image: {fileID: 4448715427215634006, guid: f8d7722b39808df4b874873ad6fb1a95, type: 3}
-    text: Survive all enemy waves to escape the  <color=#C77DFF>curse's punishment</color>. 
-      <color=#FF4A4A>It will get harder.</color>
+    text: 'Survive all enemy waves to escape the  <color=#C77DFF>curse''s punishment</color>.
+
+
+      <color=#FF4A4A>It
+      will only get harder from here.</color>'
     slideOrder: 5
   canvasGroup: {fileID: 818791381}
   slideImage: {fileID: 1622782426}
@@ -1418,7 +1433,7 @@ MonoBehaviour:
   nextButton: {fileID: 2129146771}
   prevButton: {fileID: 897064182}
   startGameButton: {fileID: 1706062458}
-  turnPageSFX: {fileID: 0}
+  turnPageSFX: {fileID: 8300000, guid: 93d1cf6183e5e8fa997cb5913253de6c, type: 3}
 --- !u!1 &865282853
 GameObject:
   m_ObjectHideFlags: 0
