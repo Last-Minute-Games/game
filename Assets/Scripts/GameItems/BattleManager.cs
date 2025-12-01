@@ -23,8 +23,11 @@ public class BattleManager : MonoBehaviour
     private List<WaveData> _battleWaves;
     private int _currentWaveIndex = 0;
     private float _waveMultiplier = 1f;
-    
-    private void Start()
+
+    // ---------------------------------------------------------
+    // Start() is now IEnumerator Start()
+    // ---------------------------------------------------------
+    private IEnumerator Start()
     {
         // Initialize CardFXManager early to ensure it's available
         var cardFXManager = CardFXManager.Instance;
@@ -33,7 +36,7 @@ public class BattleManager : MonoBehaviour
         if (playerManager == null)
         {
             Debug.LogError("BattleManager: PlayerManager is not assigned.");
-            return;
+            yield break;
         }
 
         // 1️⃣ Initialize Player using config asset
@@ -72,12 +75,18 @@ public class BattleManager : MonoBehaviour
         roundManager.Initialize(playerManager, enemyManager);
         roundManager.onWaveComplete = OnWaveComplete;
 
-        if (ShouldRunTutorialForToday()) // verify if we are on day one
+        // ---------------------------------------------------------
+        // Wait for tutorial before starting wave
+        // ---------------------------------------------------------
+        if (ShouldRunTutorialForToday())
         {
-            StartCoroutine(/* insert */);
+            Debug.Log("[BattleManager] Running Nether Tutorial...");
+            yield return NetherTutorial.Instance.RunTutorial();
         }
 
-        // 4️⃣ Start the first wave
+        // ---------------------------------------------------------
+        // 4️⃣ Start the first wave (AFTER tutorial finishes)
+        // ---------------------------------------------------------
         StartWave(0);
         
         // 5️⃣ Build the deck visualization
@@ -90,7 +99,7 @@ public class BattleManager : MonoBehaviour
         // 5️⃣ Start camera bobbing for combat feel
         CameraShake.StartBobbing(bobSpeed: 0.5f, bobAmount: 0.05f);
     }
-    
+
     [Header("Legacy - Enemy Database (Fallback)")]
     [Tooltip("Fallback enemy database if no WaveConfig is assigned")]
     [SerializeField] private List<EnemyConfig> enemyDatabase;
@@ -122,20 +131,19 @@ public class BattleManager : MonoBehaviour
     private bool ShouldRunTutorialForToday()
     {
         if (GameFlags.HasFlag("day.five")) {
-            // shouldn't be possible as there is no nether for day five
-            Debug.Log("[BattleManager] Skipping nether tutorial, it is day five.")
+            Debug.Log("[BattleManager] Skipping nether tutorial, it is day five.");
             return false;
         } else if (GameFlags.HasFlag("day.four")) {
-            Debug.Log("[BattleManager] Skipping nether tutorial, it is day four.")
+            Debug.Log("[BattleManager] Skipping nether tutorial, it is day four.");
             return false;
         } else if (GameFlags.HasFlag("day.three")) {
-            Debug.Log("[BattleManager] Skipping nether tutorial, it is day three.")
+            Debug.Log("[BattleManager] Skipping nether tutorial, it is day three.");
             return false;
         } else if (GameFlags.HasFlag("day.two")) {
-            Debug.Log("[BattleManager] Skipping nether tutorial, it is day two.")
+            Debug.Log("[BattleManager] Skipping nether tutorial, it is day two.");
             return false;
         } else if (GameFlags.HasFlag("day.one")) {
-            Debug.Log("[BattleManager] Initiating tutorial, it is day one.")
+            Debug.Log("[BattleManager] Initiating tutorial, it is day one.");
             return true;
         } 
         return false; // default is no tutorial
@@ -143,31 +151,18 @@ public class BattleManager : MonoBehaviour
 
     private System.Collections.IEnumerator WaveTransitionSequence(int waveIndex)
     {
-        // Wait 1.5 seconds after enemies are defeated
         yield return new WaitForSeconds(1.5f);
-
-        // Show the wave transition UI (which also handles fading)
         roundManager.ShowWaveStartUI(waveIndex + 1);
-
-        // Wait a moment while the UI is visible before spawning enemies
         yield return new WaitForSeconds(1f);
-
-        // Now, spawn the enemies for the new wave
         StartWave(waveIndex);
     }
 
-    /// <summary>
-    /// Start a wave with optional delay
-    /// </summary>
     private System.Collections.IEnumerator StartWaveDelayed(int waveIndex, float delay)
     {
         yield return new WaitForSeconds(delay);
         StartWave(waveIndex);
     }
 
-    /// <summary>
-    /// Starts a specific wave
-    /// </summary>
     private void StartWave(int waveIndex)
     {
         if (waveIndex >= _battleWaves.Count)
@@ -178,11 +173,9 @@ public class BattleManager : MonoBehaviour
 
         WaveData wave = _battleWaves[waveIndex];
 
-        // Optional message
         if (!string.IsNullOrEmpty(wave.waveMessage))
             Debug.Log($">>> {wave.waveMessage} <<<");
 
-        // 1️⃣ Build final enemy list from this wave's rules
         List<EnemyConfig> waveEnemyConfigs = wave.GenerateEnemiesForWave();
 
         if (waveEnemyConfigs == null || waveEnemyConfigs.Count == 0)
@@ -191,7 +184,6 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        // 2️⃣ Apply this wave's scaling increment once
         if (wave.statMultiplierIncrease != 0f)
         {
             _waveMultiplier += wave.statMultiplierIncrease;
@@ -204,13 +196,11 @@ public class BattleManager : MonoBehaviour
 
             EnemyData enemy = config.CreateRuntimeInstance();
 
-            // Always scaled by the current _waveMultiplier
             enemy.maxHealth = Mathf.RoundToInt(enemy.maxHealth * _waveMultiplier);
             enemy.currentHealth = enemy.maxHealth;
             enemy.attackPower = Mathf.RoundToInt(enemy.attackPower * _waveMultiplier);
             enemy.defensePower = Mathf.RoundToInt(enemy.defensePower * _waveMultiplier);
 
-            // scale all actionpattern values by wave multiplier
             if (enemy.actionPattern != null)
             {
                 for (int i = 0; i < enemy.actionPattern.Count; i++)
@@ -230,10 +220,8 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        // 3️⃣ Spawn enemies
         enemyManager.InitializeEnemies(enemies);
 
-        // 4️⃣ Start Round System
         if (waveIndex == 0)
             roundManager.StartRound();
         else
@@ -244,7 +232,6 @@ public class BattleManager : MonoBehaviour
     {
         List<EnemyData> wave = new();
 
-        // Fallback: load 2 random enemies from your database
         if (enemyDatabase == null || enemyDatabase.Count == 0)
         {
             Debug.LogWarning("BattleManager: Enemy database is empty!");
