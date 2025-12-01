@@ -85,10 +85,7 @@ public class BattleManager : MonoBehaviour
             yield return NetherTutorial.Instance.RunTutorial();
         }
 
-        // ---------------------------------------------------------
-        // 4️⃣ Start the first wave (AFTER tutorial finishes)
-        // ---------------------------------------------------------
-        StartWave(0);
+        StartWave(0); // start first wave
         
         // 5️⃣ Build the deck visualization
         if (deckViewer != null)
