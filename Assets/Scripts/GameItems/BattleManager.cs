@@ -72,6 +72,11 @@ public class BattleManager : MonoBehaviour
         roundManager.Initialize(playerManager, enemyManager);
         roundManager.onWaveComplete = OnWaveComplete;
 
+        if (ShouldRunTutorialForToday()) // verify if we are on day one
+        {
+            StartCoroutine(/* insert */);
+        }
+
         // 4️⃣ Start the first wave
         StartWave(0);
         
@@ -112,6 +117,28 @@ public class BattleManager : MonoBehaviour
                 roundManager.TriggerVictory();
             }
         }
+    }
+
+    private bool ShouldRunTutorialForToday()
+    {
+        if (GameFlags.HasFlag("day.five")) {
+            // shouldn't be possible as there is no nether for day five
+            Debug.Log("[BattleManager] Skipping nether tutorial, it is day five.")
+            return false;
+        } else if (GameFlags.HasFlag("day.four")) {
+            Debug.Log("[BattleManager] Skipping nether tutorial, it is day four.")
+            return false;
+        } else if (GameFlags.HasFlag("day.three")) {
+            Debug.Log("[BattleManager] Skipping nether tutorial, it is day three.")
+            return false;
+        } else if (GameFlags.HasFlag("day.two")) {
+            Debug.Log("[BattleManager] Skipping nether tutorial, it is day two.")
+            return false;
+        } else if (GameFlags.HasFlag("day.one")) {
+            Debug.Log("[BattleManager] Initiating tutorial, it is day one.")
+            return true;
+        } 
+        return false; // default is no tutorial
     }
 
     private System.Collections.IEnumerator WaveTransitionSequence(int waveIndex)
