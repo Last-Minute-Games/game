@@ -15,6 +15,10 @@ public class GameFlags : PersistentSingleton<GameFlags>
     // PlayerPrefs key for saving flags (legacy support)
     private const string SAVE_KEY = "GameFlags_SaveData";
     
+    [Header("Debug Controls")]
+    [Tooltip("Enable debug flag controls (P to add all card flags)")]
+    public bool enableDebugControls = true;
+    
     // JSON file path for save game system
     private static string GetSaveFilePath(string saveSlot = "default")
     {
@@ -65,6 +69,45 @@ public class GameFlags : PersistentSingleton<GameFlags>
         // Notify listeners that initialization is complete
         OnInitialized?.Invoke();
         Debug.Log("[GameFlags] Initialization complete - reset to defaults (use LoadFromSaveFile() or LoadFromPlayerPrefs() to load saved data)");
+    }
+
+    private void Update()
+    {
+        // Debug controls
+        if (enableDebugControls)
+        {
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                AddAllCardFlags();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Debug method: Add all card flags
+    /// </summary>
+    private void AddAllCardFlags()
+    {
+        string[] cardFlags = new string[]
+        {
+            "card.block",
+            "card.double_slash",
+            "card.dramatic_exit",
+            "card.exchange",
+            "card.tariff_strike",
+            "card.heal_potion",
+            "card.energy_drink",
+            "card.shield_slash",
+            "card.slash",
+            "card.workout"
+        };
+
+        Debug.Log("[GameFlags] DEBUG: Adding all card flags (P pressed)");
+        foreach (string flag in cardFlags)
+        {
+            SetFlag(flag);
+        }
+        Debug.Log($"[GameFlags] DEBUG: Added {cardFlags.Length} card flags");
     }
 
     /// <summary>
