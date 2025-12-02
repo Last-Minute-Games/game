@@ -99,7 +99,11 @@ public class GameFlags : PersistentSingleton<GameFlags>
             "card.energy_drink",
             "card.shield_slash",
             "card.slash",
-            "card.workout"
+            "card.workout",
+            "minigame.blackjack.show",
+            "minigame.sokoban.show",
+            "minigame.coinflip.show",
+            "minigame.maze.show"
         };
 
         Debug.Log("[GameFlags] DEBUG: Adding all card flags (P pressed)");
