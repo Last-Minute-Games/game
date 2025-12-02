@@ -4,6 +4,8 @@ using UnityEngine;
 using Entities.Players.Data;
 using Entities.Enemies.Helpers;
 
+// TODO: Buff balancing needs to be done before being considered back on the enemies
+
 [Serializable]
 public struct EnemyAction
 {
