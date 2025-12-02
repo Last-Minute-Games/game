@@ -229,6 +229,9 @@ public class BattleManager : MonoBehaviour
 
         enemyManager.InitializeEnemies(enemies);
 
+        roundManager.turnTimeLimit = wave.turnTimeLimit;
+        Debug.Log($"[BattleManager] Applied wave turn timer: {wave.turnTimeLimit}s");
+
         if (waveIndex == 0)
             roundManager.StartRound();
         else
