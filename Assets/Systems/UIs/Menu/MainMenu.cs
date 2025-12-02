@@ -533,6 +533,8 @@ public class Startscreen : MonoBehaviour
         if (buttonsCanvasGroup != null)
         {
             StartCoroutine(FadeCoroutine(buttonsCanvasGroup, 0f, 1f, 0.3f));
+            // FIXED: Re-enable blocksRaycasts immediately so buttons can receive clicks
+            buttonsCanvasGroup.blocksRaycasts = true;
             // Re-enable interaction after fade completes
             StartCoroutine(ReEnableButtonsAfterDelay(0.3f));
         }
