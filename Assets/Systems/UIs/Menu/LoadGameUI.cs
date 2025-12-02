@@ -263,7 +263,80 @@ public class LoadGameUI : MonoBehaviour
         _onBack = onBack;
         gameObject.SetActive(true);
         RefreshSaveList();
+        EnsureBackButtonClickable(); // FIXED: Ensure back button is set up correctly
         StartCoroutine(FadeIn());
+    }
+    
+    /// <summary>
+    /// Ensure the back button is properly configured and clickable
+    /// </summary>
+    private void EnsureBackButtonClickable()
+    {
+        if (backButton == null)
+        {
+            Debug.LogWarning("[LoadGameUI] Back button reference is null!");
+            return;
+        }
+        
+        // Ensure the button is interactable
+        backButton.interactable = true;
+        
+        // Get the button's RectTransform and bring it to front (if it's a sibling of save slots)
+        RectTransform buttonRect = backButton.GetComponent<RectTransform>();
+        if (buttonRect != null)
+        {
+            buttonRect.SetAsLastSibling(); // Render on top
+            Debug.Log("[LoadGameUI] Back button moved to front of sibling order");
+        }
+        
+        // Ensure any CanvasGroup on the button allows interaction
+        CanvasGroup buttonCanvasGroup = backButton.GetComponent<CanvasGroup>();
+        if (buttonCanvasGroup != null)
+        {
+            buttonCanvasGroup.interactable = true;
+            buttonCanvasGroup.blocksRaycasts = true;
+            buttonCanvasGroup.alpha = 1f;
+        }
+        
+        // ADDED: Ensure the button's parent hierarchy doesn't block raycasts
+        Transform parent = backButton.transform.parent;
+        while (parent != null)
+        {
+            CanvasGroup parentCG = parent.GetComponent<CanvasGroup>();
+            if (parentCG != null && !parentCG.blocksRaycasts)
+            {
+                Debug.LogWarning($"[LoadGameUI] Parent {parent.name} has blocksRaycasts=false - fixing");
+                parentCG.blocksRaycasts = true;
+            }
+            
+            // Stop at the main loadGameCanvasGroup
+            if (parent.GetComponent<CanvasGroup>() == loadGameCanvasGroup)
+                break;
+                
+            parent = parent.parent;
+        }
+        
+        // ADDED: Force the back button GameObject to be active
+        backButton.gameObject.SetActive(true);
+        
+        // ADDED: Check if there's a GraphicRaycaster on the canvas
+        Canvas canvas = backButton.GetComponentInParent<Canvas>();
+        if (canvas != null)
+        {
+            var raycaster = canvas.GetComponent<UnityEngine.UI.GraphicRaycaster>();
+            if (raycaster == null)
+            {
+                Debug.LogWarning("[LoadGameUI] No GraphicRaycaster found on canvas - adding one");
+                canvas.gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+            }
+            else if (!raycaster.enabled)
+            {
+                Debug.LogWarning("[LoadGameUI] GraphicRaycaster was disabled - enabling");
+                raycaster.enabled = true;
+            }
+        }
+        
+        Debug.Log($"[LoadGameUI] Back button clickability ensured: interactable={backButton.interactable}, active={backButton.gameObject.activeInHierarchy}");
     }
     
     /// <summary>
@@ -434,6 +507,14 @@ public class LoadGameUI : MonoBehaviour
                 Debug.Log($"[LoadGameUI] Disabling nested Canvas on {canvas.gameObject.name}");
                 canvas.enabled = false;
             }
+        }
+        
+        // FIXED: Ensure save slots don't have CanvasGroups that might block raycasts
+        CanvasGroup slotCanvasGroup = slotObj.GetComponent<CanvasGroup>();
+        if (slotCanvasGroup != null)
+        {
+            slotCanvasGroup.blocksRaycasts = true; // Only block within the slot bounds
+            slotCanvasGroup.interactable = true;
         }
         
         // Ensure the prefab has a RectTransform
@@ -687,6 +768,65 @@ public class LoadGameUI : MonoBehaviour
         Hide();
     }
     
+    /// <summary>
+    /// Debug method to check why back button might not be clickable
+    /// Call this from Unity console or another script to diagnose issues
+    /// </summary>
+    [ContextMenu("Debug Back Button")]
+    public void DebugBackButton()
+    {
+        if (backButton == null)
+        {
+            Debug.LogError("[LoadGameUI] Back button is NULL!");
+            return;
+        }
+        
+        Debug.Log("=== BACK BUTTON DEBUG ===");
+        Debug.Log($"Button active: {backButton.gameObject.activeInHierarchy}");
+        Debug.Log($"Button enabled: {backButton.enabled}");
+        Debug.Log($"Button interactable: {backButton.interactable}");
+        Debug.Log($"Button position: {backButton.transform.position}");
+        
+        // Check Image/raycastTarget
+        var image = backButton.GetComponent<Image>();
+        if (image != null)
+        {
+            Debug.Log($"Button Image raycastTarget: {image.raycastTarget}");
+        }
+        
+        // Check CanvasGroup
+        var cg = backButton.GetComponent<CanvasGroup>();
+        if (cg != null)
+        {
+            Debug.Log($"Button CanvasGroup - alpha: {cg.alpha}, interactable: {cg.interactable}, blocksRaycasts: {cg.blocksRaycasts}");
+        }
+        
+        // Check parent hierarchy
+        Transform parent = backButton.transform.parent;
+        int level = 0;
+        while (parent != null && level < 5)
+        {
+            var parentCG = parent.GetComponent<CanvasGroup>();
+            if (parentCG != null)
+            {
+                Debug.Log($"Parent {level} ({parent.name}) CanvasGroup - alpha: {parentCG.alpha}, interactable: {parentCG.interactable}, blocksRaycasts: {parentCG.blocksRaycasts}");
+            }
+            parent = parent.parent;
+            level++;
+        }
+        
+        // Check Canvas/GraphicRaycaster
+        var canvas = backButton.GetComponentInParent<Canvas>();
+        if (canvas != null)
+        {
+            Debug.Log($"Canvas found: {canvas.name}, enabled: {canvas.enabled}");
+            var raycaster = canvas.GetComponent<UnityEngine.UI.GraphicRaycaster>();
+            Debug.Log($"GraphicRaycaster: {(raycaster != null ? "exists" : "MISSING")}, enabled: {raycaster?.enabled}");
+        }
+        
+        Debug.Log("=== END DEBUG ===");
+    }
+    
     private IEnumerator FadeIn()
     {
         if (loadGameCanvasGroup == null)
@@ -696,7 +836,7 @@ public class LoadGameUI : MonoBehaviour
         }
             
         loadGameCanvasGroup.blocksRaycasts = true;
-        loadGameCanvasGroup.interactable = false;
+        loadGameCanvasGroup.interactable = true; // FIXED: Set interactable immediately
         
         float timer = 0f;
         while (timer < fadeDuration)
@@ -707,7 +847,13 @@ public class LoadGameUI : MonoBehaviour
         }
         
         loadGameCanvasGroup.alpha = 1f;
-        loadGameCanvasGroup.interactable = true;
+        
+        // Ensure back button is clickable after fade
+        if (backButton != null)
+        {
+            backButton.interactable = true;
+            Debug.Log("[LoadGameUI] Back button is now interactable");
+        }
         
         Debug.Log("[LoadGameUI] Fade in complete, UI is now interactable");
     }
@@ -735,10 +881,7 @@ public class LoadGameUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    /// <summary>
-    /// Fix the internal layout of a save slot, ensuring child elements are properly anchored and sized.
-    /// This is crucial after dynamically changing the slot's height.
-    /// </summary>
+
     private void FixSlotInternalLayout(GameObject slotObj)
     {
         // Get RectTransform of the slot object
@@ -816,9 +959,6 @@ public class LoadGameUI : MonoBehaviour
     }
 }
 
-/// <summary>
-/// Individual save slot UI component
-/// </summary>
 public class SaveSlotUI : MonoBehaviour
 {
     [Header("UI References")]
@@ -984,9 +1124,7 @@ public class SaveSlotUI : MonoBehaviour
     }
 }
 
-/// <summary>
-/// Static events for save game operations
-/// </summary>
+
 public static class SaveGameEvents
 {
     public static System.Action<string> OnSaveLoaded;
