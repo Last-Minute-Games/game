@@ -71,6 +71,19 @@ if ($exit -ne 0) {
 }
 
 Write-Host "✅ $BuildTarget build completed. Output: $OutDir"
+
+# Remove Unity backup folder that shouldn't be shipped
+Write-Host ""
+Write-Host "Removing Unity backup folder..."
+Get-ChildItem -Path $OutDir -Recurse -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*BackUpThisFolder_ButDontShipItWithYourGame*" } | ForEach-Object {
+    try {
+        Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction Stop
+        Write-Host "✅ Cleaned up backup folder: $($_.Name)"
+    } catch {
+        Write-Host "⚠️  Failed to remove backup folder: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+}
+
 # Also emit the path for CI steps that want to read it
 "$OutDir" | Out-File -FilePath "$env:GITHUB_WORKSPACE\_last_build_dir.txt" -Encoding ascii
 
