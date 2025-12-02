@@ -90,6 +90,8 @@ public class BattleManager : MonoBehaviour
         // ---------------------------------------------------------
         if (ShouldRunTutorialForToday())
         {
+            Debug.Log("[BattleManager] Waiting for ScreenFader.cs to finish transition.");
+            yield return new WaitForSeconds(3f); // estimated time to allow for ScreenFader.cs to finish
             Debug.Log("[BattleManager] Running Nether Tutorial...");
             yield return NetherTutorial.Instance.RunTutorial();
         }
