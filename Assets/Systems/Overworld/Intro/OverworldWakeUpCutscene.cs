@@ -46,6 +46,13 @@ namespace Systems.Overworld.Intro
         [Header("HUD")]
         [SerializeField] private bool autoFindHudInitializer = true;
         
+        [Header("Battle Result Time Adjustments")]
+        [Tooltip("Seconds to add to clock when player wins a battle")]
+        [SerializeField] private float winTimeBonus = 30f;
+        
+        [Tooltip("Seconds to subtract from clock when player loses a battle")]
+        [SerializeField] private float loseTimePenalty = 30f;
+        
         private bool hasPlayed = false;
         
         private IEnumerator BeginWakeUpSequence()
@@ -325,6 +332,10 @@ namespace Systems.Overworld.Intro
             {
                 dialogBehaviour = FindFirstObjectByType<DialogBehaviour>();
             }
+
+            // CHECK FOR BATTLE RESULT FLAGS AND ADJUST CLOCK TIMER
+            // This happens before any cutscene logic to ensure time is adjusted properly
+            CheckAndApplyBattleResultTimeAdjustment();
 
             // Check if we should play the cutscene
             int playFlag = PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
@@ -670,6 +681,46 @@ namespace Systems.Overworld.Intro
             }
 
             Debug.Log("[OverworldWakeUpCutscene] Day-specific wake-up dialogue complete");
+        }
+        
+        /// <summary>
+        /// Check for nether.win or nether.lose flags and adjust ClockTimer accordingly.
+        /// Clears the flags after applying the time adjustment.
+        /// </summary>
+        private void CheckAndApplyBattleResultTimeAdjustment()
+        {
+            // Find ClockTimer if not already found
+            if (clockTimer == null)
+            {
+                clockTimer = FindObjectOfType<ClockTimer>();
+            }
+            
+            if (clockTimer == null)
+            {
+                Debug.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot apply battle result time adjustment");
+                return;
+            }
+            
+            // Check for win flag
+            if (GameFlags.HasFlag("nether.win"))
+            {
+                Debug.Log($"[OverworldWakeUpCutscene] ? Battle won! Adding {winTimeBonus} seconds to clock timer");
+                clockTimer.AddTime(winTimeBonus);
+                GameFlags.RemoveFlag("nether.win");
+                Debug.Log("[OverworldWakeUpCutscene] Cleared nether.win flag");
+            }
+            // Check for lose flag
+            else if (GameFlags.HasFlag("nether.lose"))
+            {
+                Debug.Log($"[OverworldWakeUpCutscene] ? Battle lost! Subtracting {loseTimePenalty} seconds from clock timer");
+                clockTimer.RemoveTime(loseTimePenalty);
+                GameFlags.RemoveFlag("nether.lose");
+                Debug.Log("[OverworldWakeUpCutscene] Cleared nether.lose flag");
+            }
+            else
+            {
+                Debug.Log("[OverworldWakeUpCutscene] No battle result flags detected (nether.win or nether.lose)");
+            }
         }
     }
 }
