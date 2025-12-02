@@ -6,9 +6,6 @@ public class ShowOnFlag : MonoBehaviour
     [Tooltip("If empty, this GameObject is toggled.")]
     [SerializeField] private GameObject[] objectsToToggle;
 
-    [Tooltip("If true: visible when flag exists. If false: visible when flag does NOT exist.")]
-    [SerializeField] private bool visibleWhenFlagSet = true;
-
     private void Awake()
     {
         // Default to toggling ourselves
@@ -24,7 +21,14 @@ public class ShowOnFlag : MonoBehaviour
             GameFlags.Instance.OnFlagChanged += HandleFlagChanged;
         }
 
-        // In case GameFlags is already initialized, update now
+        // Initial check in Awake
+        UpdateVisibility();
+    }
+
+    private void Start()
+    {
+        // Check again in Start to ensure GameFlags is fully initialized
+        // This handles cases where GameFlags wasn't ready in Awake
         UpdateVisibility();
     }
 
@@ -52,14 +56,14 @@ public class ShowOnFlag : MonoBehaviour
 
     private void UpdateVisibility()
     {
+        // Always show when flag exists, hide when it doesn't
         bool hasFlag = GameFlags.HasFlag(flagName);
-        bool shouldBeActive = visibleWhenFlagSet ? hasFlag : !hasFlag;
 
         foreach (var obj in objectsToToggle)
         {
             if (obj != null)
             {
-                obj.SetActive(shouldBeActive);
+                obj.SetActive(hasFlag);
             }
         }
     }
