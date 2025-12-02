@@ -6,94 +6,165 @@ using Entities.Enemies.Helpers;
 [CreateAssetMenu(menuName = "Enemies/Enemy Data", fileName = "NewEnemy")]
 public class EnemyConfig : ScriptableObject
 {
-    [Header("Core")] public string enemyName;
+    [Header("Core")]
+    public string enemyName;
     public int maxHealth;
-    public int attackPower;
-    public int defensePower;
+
+    [Tooltip("Fallback values if an actionPattern element's value is 0.")]
+    public int attackPower = 10;
+    public int defensePower = 5;
+    public int healPower = 5;
+    public int buffPower = 1;
+
     public Sprite artwork;
     public List<EnemyAction> actionPattern;
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Per-Intent Variability Sliders (multipliers applied to actionPattern.value)
+    // ─────────────────────────────────────────────────────────────────────
+    [Serializable]
+    public struct IntentMultiplierRange
+    {
+        [Range(0.3f, 4f)] public float min;
+        [Range(0.3f, 4f)] public float max;
+
+        public void Normalize()
+        {
+            if (min > max) min = max;
+            min = Mathf.Clamp(min, 0.3f, 4f);
+            max = Mathf.Clamp(max, 0.3f, 4f);
+        }
+
+        public IntentMultiplierRange Scaled(float factor)
+        {
+            var r = new IntentMultiplierRange { min = min * factor, max = max * factor };
+            r.Normalize(); // clamp + order
+            return r;
+        }
+    }
+
+    [Header("Intent Multipliers (0.3–4, triangle-sampled each use)")]
+    public IntentMultiplierRange attackRange = new IntentMultiplierRange { min = 1f, max = 1f };
+    public IntentMultiplierRange blockRange  = new IntentMultiplierRange { min = 1f, max = 1f };
+    public IntentMultiplierRange healRange   = new IntentMultiplierRange { min = 1f, max = 1f };
+    public IntentMultiplierRange buffRange   = new IntentMultiplierRange { min = 1f, max = 1f };
+
     [Header("Animator (Optional)")]
-    [Tooltip(
-        "If assigned, this RuntimeAnimatorController will drive the enemy's animation states (Idle/Attack/Hurt/Death). Drag & drop here.")]
+    [Tooltip("If assigned, this RuntimeAnimatorController will drive the enemy's animation states (Idle/Attack/Hurt/Death). Drag & drop here.")]
     public RuntimeAnimatorController animatorController;
 
     [Header("Sprite Animations (Lightweight, used if no Animator Controller)")]
-    [Tooltip("Looping idle sprite animation for this enemy (optional).")]
     public SpriteAnimation idleAnim;
-
-    [Tooltip("Attack sprite animation for this enemy (optional).")]
     public SpriteAnimation attackAnim;
-
-    [Tooltip("Hurt sprite animation for this enemy (optional).")]
     public SpriteAnimation hurtAnim;
-
-    [Tooltip("Death sprite animation for this enemy (optional).")]
     public SpriteAnimation deathAnim;
 
-    [Header("Visual Adjustments")] [Tooltip("Position offset to adjust where the enemy sprite appears in the scene.")]
+    [Header("Visual Adjustments")]
     public Vector3 positionOffset = Vector3.zero;
-
-    [Tooltip("Scale multiplier to adjust the size of the enemy sprite (1 = normal size).")]
     public Vector3 scaleOffset = Vector3.one;
 
+    [Header("Global Enemy Variability Multiplier (applies to HP + intent sliders)")]
+    [Range(0f, 2f)] public float minMultiplier = 1f;
+    [Range(0f, 2f)] public float maxMultiplier = 1f;
 
-    [Header("Enemy variability multiplier to be applied to enemy stats.")]
-    [Tooltip("Minimum possible multiplier applied to enemy stats.")]
-    [Range(0f, 2f)]
-    public float minMultiplier = 1f;
-
-    [Tooltip("Maximum possible multiplier applied to enemy stats.")] [Range(0f, 2f)]
-    public float maxMultiplier = 1f;
-
-    [Header("Identity")] [Tooltip("Automatically assigned unique ID for flag tracking.")]
+    [Header("Identity")]
     public string uniqueID;
 
     public EnemyData CreateRuntimeInstance()
     {
         var data = new EnemyData();
-        data.sourceConfig = this; // this = EnemyConfig
-        float enemyStatMultiplier = GetMiddleBiasedMultiplier();
-        Debug.Log($"{enemyStatMultiplier} enemy multiplier applied");
+        data.sourceConfig = this;
 
-        data.Initialize(enemyName,
-            (int)(maxHealth * enemyStatMultiplier),
-            (int)(attackPower * enemyStatMultiplier),
-            (int)(defensePower * enemyStatMultiplier));
-        data.actionPattern = new List<EnemyAction>(actionPattern);
+        // Global (triangle) multiplier
+        float globalMul = GetMiddleBiasedMultiplier();
+        Debug.Log($"{globalMul} enemy multiplier applied");
+
+        // Initialize runtime data; scale max HP by global
+        data.Initialize(enemyName, (int)(maxHealth * globalMul), attackPower, defensePower);
+
+        // Also pass heal/buff fallbacks (scaled) into runtime
+        data.healPower = Mathf.RoundToInt(healPower * globalMul);
+        data.buffPower = Mathf.RoundToInt(buffPower * globalMul);
+
+        // Copy pattern & visuals
+        data.actionPattern = actionPattern != null ? new List<EnemyAction>(actionPattern) : new List<EnemyAction>();
         data.artwork = artwork;
-        // Propagate animator controller and sprite animations
         data.animatorController = animatorController;
-        data.idleAnim = idleAnim;
+        data.idleAnim   = idleAnim;
         data.attackAnim = attackAnim;
-        data.hurtAnim = hurtAnim;
-        data.deathAnim = deathAnim;
-        // Propagate visual adjustments
+        data.hurtAnim   = hurtAnim;
+        data.deathAnim  = deathAnim;
         data.positionOffset = positionOffset;
-        data.scaleOffset = scaleOffset;
+        data.scaleOffset    = scaleOffset;
+
+        // Effective ranges = sliders scaled by global multiplier
+        var effAttack = attackRange; effAttack.Normalize();
+        var effBlock  = blockRange;  effBlock.Normalize();
+        var effHeal   = healRange;   effHeal.Normalize();
+        var effBuff   = buffRange;   effBuff.Normalize();
+
+        data.attackRange = effAttack.Scaled(globalMul);
+        data.blockRange  = effBlock .Scaled(globalMul);
+        data.healRange   = effHeal  .Scaled(globalMul);
+        data.buffRange   = effBuff  .Scaled(globalMul);
+
+        // Ensure pattern zeros use fallbacks at runtime too
+        data.NormalizeActionPatternWithFallbacks();
+
         return data;
     }
 
     public float GetMiddleBiasedMultiplier()
     {
-        // generates two uniform random values, averages them → triangle distribution
         float a = UnityEngine.Random.Range(minMultiplier, maxMultiplier);
         float b = UnityEngine.Random.Range(minMultiplier, maxMultiplier);
-
         return (a + b) * 0.5f;
     }
 
     protected void OnValidate()
     {
-        // ensure multipliers are valid
-        if (minMultiplier > maxMultiplier)
-            minMultiplier = maxMultiplier;
-
-        // clamp
+        // global clamps
+        if (minMultiplier > maxMultiplier) minMultiplier = maxMultiplier;
         minMultiplier = Mathf.Max(0f, minMultiplier);
         maxMultiplier = Mathf.Max(minMultiplier, maxMultiplier);
 
+        // ranges
+        attackRange.Normalize();
+        blockRange .Normalize();
+        healRange  .Normalize();
+        buffRange  .Normalize();
+
+        // enforce buffRange clamping specifically
+        buffRange.min = Mathf.Clamp(buffRange.min, 1.05f, 2f);
+        buffRange.max = Mathf.Clamp(buffRange.max, 1.05f, 2f);
+
+        // ensure order is correct
+        if (buffRange.min > buffRange.max)
+            buffRange.min = buffRange.max;
+
+        // assign id
         if (string.IsNullOrWhiteSpace(uniqueID))
             uniqueID = Guid.NewGuid().ToString();
+
+        // Fill zero-valued pattern entries with fallbacks (edit-time convenience)
+        if (actionPattern != null)
+        {
+            for (int i = 0; i < actionPattern.Count; i++)
+            {
+                var a = actionPattern[i];
+                if (a.value <= 0)
+                {
+                    a.value = a.intent switch
+                    {
+                        EnemyIntent.Attack => Mathf.Max(0, attackPower),
+                        EnemyIntent.Block  => Mathf.Max(0, defensePower),
+                        EnemyIntent.Heal   => Mathf.Max(0, healPower),
+                        EnemyIntent.Buff   => Mathf.Max(0, buffPower),
+                        _ => a.value
+                    };
+                    actionPattern[i] = a;
+                }
+            }
+        }
     }
 }

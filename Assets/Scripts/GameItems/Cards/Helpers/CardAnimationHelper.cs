@@ -34,11 +34,12 @@ namespace GameItems.Cards.Helpers
         private void Start()
         {
             // Capture the true base scale at start
+            // DO NOT capture position here - it will be set by UpdateOriginalPosition() after layout
             if (!_isInitialized)
             {
                 _baseScale = transform.localScale;
-                _originalPosition = transform.localPosition;
                 _isInitialized = true;
+                Debug.Log($"[CardAnimationHelper] Start - Initialized base scale: {_baseScale}");
             }
         }
 
@@ -48,11 +49,12 @@ namespace GameItems.Cards.Helpers
             var cardTransform = card.transform;
             
             // Initialize base scale if not done yet
+            // DO NOT capture position here - it will be set by UpdateOriginalPosition() after layout
             if (!_isInitialized)
             {
                 _baseScale = cardTransform.localScale;
-                _originalPosition = cardTransform.localPosition;
                 _isInitialized = true;
+                Debug.Log($"[CardAnimationHelper] AnimateDraw - Initialized base scale: {_baseScale}");
             }
 
             cardTransform.localScale = Vector3.zero;
@@ -71,15 +73,23 @@ namespace GameItems.Cards.Helpers
             var cardTransform = card.transform;
             
             // Store original position if not already hovering
+            // Only update position if we don't have one yet (fallback for safety)
             if (!_isHovering)
             {
-                _originalPosition = cardTransform.localPosition;
+                // Only capture position if it hasn't been set by UpdateOriginalPosition yet
+                // This is a fallback - normally UpdateOriginalPosition should set it after layout
+                if (_originalPosition == Vector3.zero)
+                {
+                    _originalPosition = cardTransform.localPosition;
+                    Debug.Log($"[CardAnimationHelper] HoverVisuals - Fallback position capture: {_originalPosition}");
+                }
                 
                 // Initialize base scale if not done yet
                 if (!_isInitialized)
                 {
                     _baseScale = cardTransform.localScale;
                     _isInitialized = true;
+                    Debug.Log($"[CardAnimationHelper] HoverVisuals - Initialized base scale: {_baseScale}");
                 }
                 
                 _isHovering = true;
@@ -115,12 +125,20 @@ namespace GameItems.Cards.Helpers
             var cardTransform = card.transform;
             
             // Initialize base scale if not done yet
+            // DO NOT capture position here - it should be set by UpdateOriginalPosition() after layout
             if (!_isInitialized)
             {
                 _baseScale = cardTransform.localScale;
-                _originalPosition = cardTransform.localPosition;
+                
+                // Only capture position if it hasn't been set yet (fallback for safety)
+                if (_originalPosition == Vector3.zero)
+                {
+                    _originalPosition = cardTransform.localPosition;
+                    Debug.Log($"[CardAnimationHelper] SelectVisuals - Fallback position capture: {_originalPosition}");
+                }
+                
                 _isInitialized = true;
-                Debug.Log($"[CardAnimationHelper] Initialized - base scale: {_baseScale}, original position: {_originalPosition}");
+                Debug.Log($"[CardAnimationHelper] SelectVisuals - Initialized - base scale: {_baseScale}, original position: {_originalPosition}");
             }
             
             // Only update original position if requested
@@ -134,9 +152,8 @@ namespace GameItems.Cards.Helpers
                 }
                 else
                 {
-                    // Not hovering, capture current position
-                    // _originalPosition = cardTransform.localPosition;
-                    Debug.Log($"[CardAnimationHelper] Select without hover - storing original position: {_originalPosition}");
+                    // Not hovering, don't update position - it should be set by UpdateOriginalPosition()
+                    Debug.Log($"[CardAnimationHelper] Select without hover - keeping original position: {_originalPosition}");
                 }
             }
             else
@@ -317,17 +334,38 @@ namespace GameItems.Cards.Helpers
         // Called when player lets go but target is invalid
         public void ReturnToPosition(CardRender card)
         {
+            if (card == null)
+            {
+                Debug.LogWarning("[CardAnimationHelper] ReturnToPosition called with null card");
+                return;
+            }
+            
             var cardTransform = card.transform;
+
+            Debug.Log($"[CardAnimationHelper] ===== ReturnToPosition START =====");
+            Debug.Log($"[CardAnimationHelper] Card: '{card.Data?.name}'");
+            Debug.Log($"[CardAnimationHelper] Current localPosition: {cardTransform.localPosition}");
+            Debug.Log($"[CardAnimationHelper] Target _originalPosition: {_originalPosition}");
+            Debug.Log($"[CardAnimationHelper] _isInitialized: {_isInitialized}");
+            Debug.Log($"[CardAnimationHelper] Current scale: {cardTransform.localScale}");
+            Debug.Log($"[CardAnimationHelper] Target _baseScale: {_baseScale}");
+
+            // Kill any existing tweens to prevent conflicts
+            cardTransform.DOKill();
+            Debug.Log($"[CardAnimationHelper] Killed existing tweens");
 
             // clear arrow
             arrowHelper?.StopDrawing();
             
             // clear enemy hover sprites
             ClearEnemyHoverSprites();
-
+            
             // Return to base scale and original position
             cardTransform.DOScale(_baseScale, 0.15f);
             cardTransform.DOLocalMove(_originalPosition, returnDuration).SetEase(Ease.OutCubic);
+            
+            Debug.Log($"[CardAnimationHelper] Started tweens - scale to {_baseScale}, move to {_originalPosition}");
+            Debug.Log($"[CardAnimationHelper] ===== ReturnToPosition END =====");
         }
 
         // Called when card successfully hits a target
@@ -370,6 +408,16 @@ namespace GameItems.Cards.Helpers
         public Vector3 GetOriginalPosition()
         {
             return _originalPosition;
+        }
+        
+        /// <summary>
+        /// Updates the original position to the current position.
+        /// Call this after cards are repositioned (e.g., after layout on spline).
+        /// </summary>
+        public void UpdateOriginalPosition()
+        {
+            _originalPosition = transform.localPosition;
+            Debug.Log($"[CardAnimationHelper] Original position updated to: {_originalPosition}");
         }
     }
 }

@@ -13,20 +13,41 @@ MonoBehaviour:
   m_Name: Ghost
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDataSO
   enemyName: Ghost
-  maxHealth: 25
+  maxHealth: 50
   attackPower: 10
   defensePower: 6
+  healPower: 5
+  buffPower: 1
   artwork: {fileID: 4930606676764459096, guid: 27956d19a3c8c40e2b523901f8daab00, type: 3}
   actionPattern:
-  - intent: 1
-    value: 15
-    customName: Cloak
   - intent: 0
     value: 10
+    actionChance: 0.5
+    customName: Cloak
+  - intent: 1
+    value: 10
+    actionChance: 0.25
     customName: Ectoplasma
   - intent: 2
-    value: 5
+    value: 8
+    actionChance: 0.283
     customName: Soul Call
+  - intent: 3
+    value: 1
+    actionChance: 0.15
+    customName: Haunting Aura
+  attackRange:
+    min: 0.924
+    max: 1.228
+  blockRange:
+    min: 0.772
+    max: 0.997
+  healRange:
+    min: 0.817
+    max: 1.278
+  buffRange:
+    min: 1.05
+    max: 1.05
   animatorController: {fileID: 9100000, guid: 681fab083306c8942a3eec79ae9b2441, type: 2}
   idleAnim: {fileID: 11400000, guid: d7420f1d171cfff40b95c62c770bf1cf, type: 2}
   attackAnim: {fileID: 11400000, guid: 9d4ae8b107b7b6a4b8a558a2101b3fb0, type: 2}
@@ -36,3 +57,4 @@ MonoBehaviour:
   scaleOffset: {x: 0.9, y: 0.9, z: 0.9}
   minMultiplier: 0.911
   maxMultiplier: 1.33
+  uniqueID: 023b2630-6e97-4091-842a-4ba2fd026ab6

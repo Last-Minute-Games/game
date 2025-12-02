@@ -114,10 +114,25 @@ namespace GameItems
                 Vector3 up = spline.EvaluateUpVector(t);
                 Quaternion rotation = Quaternion.LookRotation(-up, Vector3.Cross(-up, forward).normalized);
 
+                var cardRender = _renders[i]; // Capture for closure
+
                 // Using DOTween to animate position and rotation
+                // Use OnComplete callback to update original position after tween finishes
                 _renders[i].transform
                     .DOMove(splinePosition + transform.position + 0.01f * i * Vector3.back, duration)
-                    .SetEase(Ease.OutQuad);
+                    .SetEase(Ease.OutQuad)
+                    .OnComplete(() =>
+                    {
+                        if (cardRender != null)
+                        {
+                            var fxHelper = cardRender.GetComponent<CardFXHelper>();
+                            if (fxHelper != null && fxHelper.animHelper != null)
+                            {
+                                fxHelper.animHelper.UpdateOriginalPosition();
+                                Debug.Log($"[DeckViewer] OnComplete - Updated original position for card '{cardRender.Data?.name}' to {fxHelper.animHelper.GetOriginalPosition()}");
+                            }
+                        }
+                    });
 
                 _renders[i].transform
                     .DORotate(rotation.eulerAngles, duration)

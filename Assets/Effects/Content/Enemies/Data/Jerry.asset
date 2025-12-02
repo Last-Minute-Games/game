@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5624a485d2ae413db15be89954eda8f8, type: 3}
+  m_Name: Jerry
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyConfig
+  enemyName: Jerry
+  maxHealth: 65
+  attackPower: 0
+  defensePower: 0
+  healPower: 5
+  buffPower: 1
+  artwork: {fileID: 7892174264202526986, guid: 3297483253c0d27a791181e2e071b1bf, type: 3}
+  actionPattern:
+  - intent: 0
+    value: 12
+    actionChance: 0.45
+    customName: Cheese Touch
+  - intent: 1
+    value: 12
+    actionChance: 0.25
+    customName: Rind Guard
+  - intent: 2
+    value: 12
+    actionChance: 0.15
+    customName: Cheese Snack
+  - intent: 3
+    value: 1
+    actionChance: 0.15
+    customName: Rancid Rally
+  attackRange:
+    min: 0.829
+    max: 1.25
+  blockRange:
+    min: 0.778
+    max: 1.228
+  healRange:
+    min: 0.845
+    max: 1.256
+  buffRange:
+    min: 1.05
+    max: 1.05
+  animatorController: {fileID: 0}
+  idleAnim: {fileID: 11400000, guid: 8b605171e364b0400a0eb4976e0b3afa, type: 2}
+  attackAnim: {fileID: 11400000, guid: 2c51ed2f7e46d4db484fb9e51daebde7, type: 2}
+  hurtAnim: {fileID: 11400000, guid: 06b6ff59c5f5a9efd9aac22e118d5134, type: 2}
+  deathAnim: {fileID: 11400000, guid: 5f20f58584bf0c7c9b907d1b78eec1fb, type: 2}
+  positionOffset: {x: 0, y: 0, z: 0}
+  scaleOffset: {x: 1, y: 1, z: 1}
+  minMultiplier: 0.8
+  maxMultiplier: 1.294
+  uniqueID: 99bae991-0b1e-4fd4-92e3-70d1f2619eca

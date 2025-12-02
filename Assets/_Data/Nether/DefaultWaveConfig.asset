@@ -17,26 +17,78 @@ MonoBehaviour:
     waveMessage: Wave 1!!
     delayBeforeWave: 1
     guaranteedEnemies:
-    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
-    randomEnemyPool:
     - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
     - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    randomEnemyPool: []
     minEnemiesPerWave: 0
     maxEnemiesPerWave: 0
     statMultiplierIncrease: 0.2
-  - waveName: Wave 2
-    waveMessage: Wave 2!!
+  day2Waves:
+  - waveName: Wave 1
+    waveMessage: Wave 1!
     delayBeforeWave: 1
     guaranteedEnemies:
     - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
+    randomEnemyPool:
+    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
+    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    minEnemiesPerWave: 2
+    maxEnemiesPerWave: 2
+    statMultiplierIncrease: 0
+  day3Waves:
+  - waveName: Wave 1
+    waveMessage: Wave 1!
+    delayBeforeWave: 1
+    guaranteedEnemies:
+    - {fileID: 11400000, guid: 09ac1d1bfbc4d785fbb90ded529d9e06, type: 2}
+    randomEnemyPool:
+    - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
+    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    minEnemiesPerWave: 1
+    maxEnemiesPerWave: 2
+    statMultiplierIncrease: 0.1
+  - waveName: Wave 2
+    waveMessage: Wave 2!
+    delayBeforeWave: 1
+    guaranteedEnemies:
+    - {fileID: 11400000, guid: 09ac1d1bfbc4d785fbb90ded529d9e06, type: 2}
     - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
     randomEnemyPool:
-    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
     - {fileID: 11400000, guid: 9ff56b26ec6db9045a25753108748cdd, type: 2}
+    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    minEnemiesPerWave: 1
+    maxEnemiesPerWave: 1
+    statMultiplierIncrease: 0.1
+  day4Waves:
+  - waveName: Wave 1
+    waveMessage: Wave 1!
+    delayBeforeWave: 1
+    guaranteedEnemies:
+    - {fileID: 11400000, guid: 09ac1d1bfbc4d785fbb90ded529d9e06, type: 2}
+    randomEnemyPool:
+    - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
+    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
+    minEnemiesPerWave: 1
+    maxEnemiesPerWave: 2
+    statMultiplierIncrease: 0.1
+  - waveName: Wave 2
+    waveMessage: Wave 2!
+    delayBeforeWave: 1
+    guaranteedEnemies:
+    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
+    - {fileID: 11400000, guid: 09ac1d1bfbc4d785fbb90ded529d9e06, type: 2}
+    randomEnemyPool: []
     minEnemiesPerWave: 0
     maxEnemiesPerWave: 0
     statMultiplierIncrease: 0.2
-  day2Waves: []
-  day3Waves: []
-  day4Waves: []
-  day5Waves: []
+  - waveName: Boss Round
+    waveMessage: Boss Round1!
+    delayBeforeWave: 0
+    guaranteedEnemies:
+    - {fileID: 11400000, guid: 61b0e4e754505bddcb28302876177e51, type: 2}
+    randomEnemyPool:
+    - {fileID: 11400000, guid: 09ac1d1bfbc4d785fbb90ded529d9e06, type: 2}
+    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
+    minEnemiesPerWave: 2
+    maxEnemiesPerWave: 2
+    statMultiplierIncrease: 0.2

@@ -26,6 +26,10 @@ public class ClockTimer : MonoBehaviour
     // How many seconds before actual 0 the clock should stop normal progression and play the break sequence
     public float endEarlyBy = 0; // Changed from 2f to match grandfatherThreshold
 
+    [Header("Debug Controls")]
+    [Tooltip("Enable debug time controls (K to subtract 10s, L to add 10s)")]
+    public bool enableDebugControls = true;
+
     private float timeLeft;
     private int frameCount;
     private int lastFrameIndex = -1;
@@ -264,6 +268,21 @@ public class ClockTimer : MonoBehaviour
 
     void Update()
     {
+        // Debug controls
+        if (enableDebugControls)
+        {
+            if (Input.GetKeyDown(KeyCode.K))
+            {
+                RemoveTime(10f);
+                Debug.Log($"[ClockTimer] DEBUG: Removed 10 seconds (K pressed). Time left: {timeLeft:F2}s");
+            }
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                AddTime(10f);
+                Debug.Log($"[ClockTimer] DEBUG: Added 10 seconds (L pressed). Time left: {timeLeft:F2}s");
+            }
+        }
+
         if (isPaused || hasEnded) return;
 
         // Safety: ensure required UI still exists
@@ -454,6 +473,24 @@ public class ClockTimer : MonoBehaviour
             IsTimeEnded = true;
             StartCoroutine(ClockBreakThenFade());
         }
+    }
+
+    /// <summary>
+    /// Get the current time left on the clock (for saving)
+    /// </summary>
+    public float GetTimeLeft()
+    {
+        return timeLeft;
+    }
+
+    /// <summary>
+    /// Restore the time left on the clock (for loading)
+    /// </summary>
+    public void RestoreTimeLeft(float time)
+    {
+        timeLeft = Mathf.Max(0f, time);
+        totalTime = Mathf.Max(timeLeft, totalTime);
+        Debug.Log($"[ClockTimer] Time restored to: {timeLeft:F2}s");
     }
 
     private IEnumerator InitialFadeIn()
