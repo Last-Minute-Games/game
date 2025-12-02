@@ -44,7 +44,6 @@ namespace Systems.Overworld.Intro
         [SerializeField] private DayWakeUpDialogue[] dayWakeUpDialogues;
         
         [Header("HUD")]
-        [SerializeField] private HudInitializer hudInitializer;
         [SerializeField] private bool autoFindHudInitializer = true;
         
         private bool hasPlayed = false;
@@ -56,15 +55,6 @@ namespace Systems.Overworld.Intro
             if (hasPlayed) yield break;
             hasPlayed = true;
             
-            // Find HUD initializer if needed
-            if (hudInitializer == null && autoFindHudInitializer)
-            {
-                hudInitializer = FindObjectOfType<HudInitializer>();
-                if (hudInitializer != null)
-                {
-                    Debug.Log("[OverworldWakeUpCutscene] Found HudInitializer");
-                }
-            }
             
             // Find and pause ClockTimer
             if (clockTimer == null)
@@ -236,17 +226,6 @@ namespace Systems.Overworld.Intro
             
             yield return new WaitForSeconds(0.5f); // Wait for fade to complete
             
-            // TRIGGER HUD INITIALIZATION ANIMATION
-            // This happens after the player is out of bed and can see the game world
-            if (hudInitializer != null)
-            {
-                Debug.Log("[OverworldWakeUpCutscene] Triggering HUD initialization");
-                hudInitializer.TriggerAnimation();
-            }
-            else
-            {
-                Debug.LogWarning("[OverworldWakeUpCutscene] HudInitializer not found, cannot trigger HUD animation");
-            }
             
             // Resume ClockTimer at the same time as HUD animation
             if (clockTimer != null)
