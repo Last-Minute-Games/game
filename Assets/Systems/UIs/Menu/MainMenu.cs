@@ -41,7 +41,7 @@ public class Startscreen : MonoBehaviour
     public RectTransform creditLogo;       // The credits logo to scroll
     public RectTransform creditText;       // The credits text to scroll
     public float creditsScrollDuration = 10f;
-    public float creditsHoldTime = 2f;
+    public float creditsHoldTime = 0.1f;   // Minimal hold time before fading back
     public float scrollSpeed = 1f;         // Runtime-adjustable scroll speed (1 = normal)
 
     [Header("Settings")]
@@ -366,8 +366,8 @@ public class Startscreen : MonoBehaviour
         Canvas parentCanvas = creditsCanvasGroup.GetComponentInParent<Canvas>();
         float canvasHeight = parentCanvas != null ? parentCanvas.GetComponent<RectTransform>().rect.height : 1080f;
         
-        // Calculate off-screen positions (way above the top of the canvas)
-        float offScreenY = canvasHeight * 1.5f + 1000f;  // Much higher to ensure everything is off-screen
+        // REDUCED: Just need to be slightly above screen, not way off
+        float offScreenY = canvasHeight + 500f;  // Just 200 units above screen top
 
         // Compute a shared offset so both elements travel the same distance (units/sec will match)
         float minStartY = Mathf.Min(_creditLogoStartPos.y, _creditTextStartPos.y);
@@ -410,8 +410,7 @@ public class Startscreen : MonoBehaviour
         if (creditLogo) creditLogo.anchoredPosition = logoEndPos;
         if (creditText) creditText.anchoredPosition = textEndPos;
 
-        // 5. Hold at the end
-        //yield return new WaitForSeconds(creditsHoldTime);
+        // NO HOLD TIME - fade immediately
 
         // 6. Fade out the credits
         yield return StartCoroutine(FadeCoroutine(creditsCanvasGroup, 1f, 0f, fadeDuration));
@@ -859,6 +858,194 @@ public class Startscreen : MonoBehaviour
         #endif
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
