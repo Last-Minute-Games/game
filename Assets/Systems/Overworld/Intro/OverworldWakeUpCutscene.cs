@@ -685,7 +685,7 @@ namespace Systems.Overworld.Intro
         
         /// <summary>
         /// Check for nether.win or nether.lose flags and adjust ClockTimer accordingly.
-        /// Clears the flags after applying the time adjustment.
+        /// Clears the flags after applying the time adjustment and saves the game.
         /// </summary>
         private void CheckAndApplyBattleResultTimeAdjustment()
         {
@@ -701,6 +701,8 @@ namespace Systems.Overworld.Intro
                 return;
             }
             
+            bool timeWasAdjusted = false;
+            
             // Check for win flag
             if (GameFlags.HasFlag("nether.win"))
             {
@@ -708,6 +710,7 @@ namespace Systems.Overworld.Intro
                 clockTimer.AddTime(winTimeBonus);
                 GameFlags.RemoveFlag("nether.win");
                 Debug.Log("[OverworldWakeUpCutscene] Cleared nether.win flag");
+                timeWasAdjusted = true;
             }
             // Check for lose flag
             else if (GameFlags.HasFlag("nether.lose"))
@@ -716,10 +719,19 @@ namespace Systems.Overworld.Intro
                 clockTimer.RemoveTime(loseTimePenalty);
                 GameFlags.RemoveFlag("nether.lose");
                 Debug.Log("[OverworldWakeUpCutscene] Cleared nether.lose flag");
+                timeWasAdjusted = true;
             }
             else
             {
                 Debug.Log("[OverworldWakeUpCutscene] No battle result flags detected (nether.win or nether.lose)");
+            }
+            
+            // Save the game if time was adjusted to persist the new clock time
+            if (timeWasAdjusted)
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Saving game after clock time adjustment...");
+                GameFlagsManager.SaveCurrentGame();
+                Debug.Log("[OverworldWakeUpCutscene] Game saved successfully with new clock time");
             }
         }
     }
