@@ -76,14 +76,23 @@ public class BattleManager : MonoBehaviour
         roundManager.Initialize(playerManager, enemyManager);
         roundManager.onWaveComplete = OnWaveComplete;
 
+        // BEFORE tutorial runs, blackout the screen
+        if (roundManager.roundTransitionUI != null)
+        {
+            var blackout = roundManager.roundTransitionUI.canvasGroup;
+            blackout.alpha = 1f;              // keep screen fully black
+            blackout.blocksRaycasts = true;
+            blackout.interactable = false;
+        }
+
         // ---------------------------------------------------------
         // Wait for tutorial before starting wave
         // ---------------------------------------------------------
-        // if (ShouldRunTutorialForToday())
-        // {
-        //     Debug.Log("[BattleManager] Running Nether Tutorial...");
-        //     yield return NetherTutorial.Instance.RunTutorial();
-        // }
+        if (ShouldRunTutorialForToday())
+        {
+            Debug.Log("[BattleManager] Running Nether Tutorial...");
+            yield return NetherTutorial.Instance.RunTutorial();
+        }
 
         StartWave(0); // start first wave
         
@@ -220,6 +229,9 @@ public class BattleManager : MonoBehaviour
 
         enemyManager.InitializeEnemies(enemies);
 
+        roundManager.turnTimeLimit = wave.turnTimeLimit;
+        Debug.Log($"[BattleManager] Applied wave turn timer: {wave.turnTimeLimit}s");
+
         if (waveIndex == 0)
             roundManager.StartRound();
         else
@@ -244,4 +256,37 @@ public class BattleManager : MonoBehaviour
 
         return wave;
     }
+    // ============================================================================
+    //                               CHEAT BLOCK
+    //     Comment out the entire block to disable cheats instantly.
+    // ============================================================================
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            if (playerManager != null && playerManager.playerData != null)
+            {
+                playerManager.playerData.currentHealth = Mathf.Min(
+                    playerManager.playerData.maxHealth,
+                    playerManager.playerData.currentHealth + 5
+                );
+
+                Debug.Log("CHEAT: Healed +5 HP");
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            if (playerManager != null && playerManager.playerData != null)
+            {
+                playerManager.playerData.currentHealth = Mathf.Max(
+                    0,
+                    playerManager.playerData.currentHealth - 5
+                );
+
+                Debug.Log("CHEAT: Took -5 HP");
+            }
+        }
+    }
+    // ============================================================================
 }

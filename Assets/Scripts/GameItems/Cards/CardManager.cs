@@ -25,6 +25,7 @@ namespace GameItems.Cards
             List<CardData> result = new();
 
             // ARANTEED PICKS — ALWAYS ADD Slash (9) and Block (1)
+            // TODO it is not pulling the cards
             //  👀 🍦 😱 AHHHASDSEDX
             CardData slash = PullCard(9);
             if (slash != null && !result.Contains(slash))
