@@ -1405,7 +1405,7 @@ MonoBehaviour:
     slideOrder: 3
   - image: {fileID: 4448715427215634006, guid: f8d7722b39808df4b874873ad6fb1a95, type: 3}
     text: "Watch for <color=#FFA53F>intention</color> icons above <color=#FF4A4A>enemies</color>.
-      \n\nThese reveal what the enemy will do once your turn ends."
+      \n\nThese give you hints on what your enemy will do once your turn ends."
     slideOrder: 4
   - image: {fileID: 4448715427215634006, guid: f8d7722b39808df4b874873ad6fb1a95, type: 3}
     text: 'Your <color=#FF2E2E>health bar</color> is at the top of the screen.
@@ -1413,6 +1413,10 @@ MonoBehaviour:
 
       If
       you have any <color=#5BCEFA>defense</color>, your health bar will glow.
+
+
+      The
+      number displayed is the amount of <color=#5BCEFA>defense</color> you have.
 
 
       The
@@ -2669,7 +2673,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -2622969791598322152, guid: db37ed2d6b314e8739b1326ef6aa8138, type: 3}
+  m_Sprite: {fileID: 7357148315928940369, guid: ad32f650998f7d140a887c1438f12781, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
