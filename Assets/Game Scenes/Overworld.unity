@@ -360917,6 +360917,7 @@ GameObject:
   - component: {fileID: 1925833471}
   - component: {fileID: 1925833470}
   - component: {fileID: 1925833480}
+  - component: {fileID: 1925833481}
   m_Layer: 0
   m_Name: Adrianne
   m_TagString: NPC
@@ -361375,6 +361376,29 @@ MonoBehaviour:
   offset: 0
   invertY: 1
   useSpriteBounds: 0
+--- !u!114 &1925833481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1925833468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9b33bc4ba55cba4f99e087ae66c5a4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractiveItem
+  dialogBehaviour: {fileID: 1269124604}
+  dialogGraph: {fileID: 11400000, guid: f660c445ac72ad6479f2592fe4c5b623, type: 2}
+  interactKey: 101
+  interactionRange: 1
+  flagToSet: 
+  conversationMusic: {fileID: 8300000, guid: e88d465ab46d3f149b394e839c6330ec, type: 3}
+  musicVolume: 0.5
+  musicFadeDuration: 2
+  loopMusic: 1
+  roomAudioDuckVolume: 0
+  roomAudioFadeDuration: 2
 --- !u!1 &1927063071
 GameObject:
   m_ObjectHideFlags: 0
