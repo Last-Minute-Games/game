@@ -124,6 +124,7 @@ echo "Removing Unity 'Do Not Ship' folders..."
 
 DO_NOT_SHIP_PATTERNS=(
     "*_BurstDebugInformation_DoNotShip"
+    "*BackUpThisFolder_ButDontShipItWithYourGame*"
     "BackUpThisFolder_ButDontShipItWithYourGame"
     "*DoNotShip*"
     "*donotship*"

@@ -13,17 +13,37 @@ MonoBehaviour:
   m_Name: Bat
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDataSO
   enemyName: Bat
-  maxHealth: 25
+  maxHealth: 40
   attackPower: 10
   defensePower: 6
+  healPower: 5
+  buffPower: 1
   artwork: {fileID: -697763020151794088, guid: 0bece81d2e79bd44c849e7bf23aa328f, type: 3}
   actionPattern:
   - intent: 0
     value: 5
-    customName: Bite
+    actionChance: 0.6
+    customName: Wing Slash
+  - intent: 1
+    value: 5
+    actionChance: 0.25
+    customName: Echoshield
   - intent: 2
     value: 10
-    customName: Rest
+    actionChance: 0.25
+    customName: Blood Sip
+  attackRange:
+    min: 0.857
+    max: 1.132
+  blockRange:
+    min: 0.845
+    max: 1.132
+  healRange:
+    min: 0.868
+    max: 1.11
+  buffRange:
+    min: 1.05
+    max: 1.05
   animatorController: {fileID: 9100000, guid: 681fab083306c8942a3eec79ae9b2441, type: 2}
   idleAnim: {fileID: 11400000, guid: 9392c00411cac2d4d9086da9fb81a186, type: 2}
   attackAnim: {fileID: 11400000, guid: 27212de400a94c44eb6b86d87b795613, type: 2}
@@ -33,3 +53,4 @@ MonoBehaviour:
   scaleOffset: {x: 0.9, y: 0.9, z: 0.9}
   minMultiplier: 0.911
   maxMultiplier: 1.33
+  uniqueID: f10db2a0-13c2-416f-8e58-4386c70c925a

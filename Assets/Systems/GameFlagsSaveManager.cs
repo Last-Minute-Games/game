@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Helper component for managing GameFlags save/load operations.
 /// Can be attached to UI buttons or used for auto-save functionality.
+/// NOTE: Manual saving is disabled - the game auto-saves on day progression.
 /// </summary>
 public class GameFlagsSaveManager : MonoBehaviour
 {
@@ -64,23 +65,25 @@ public class GameFlagsSaveManager : MonoBehaviour
     }
 
     // ========== PUBLIC METHODS (can be called from UI buttons) ==========
+    // NOTE: Manual saving is disabled in the main game - auto-save handles everything
 
     /// <summary>
-    /// Save current flags to PlayerPrefs. Can be called from UI button.
+    /// Save current flags. Used by auto-save system.
+    /// Manual save buttons should be disabled in the UI.
     /// </summary>
-    public void SaveFlags()
+    private void SaveFlags()
     {
-        GameFlags.SaveFlags();
+        GameFlagsManager.SaveCurrentGame();
         if (logSaveOperations)
-            Debug.Log("[GameFlagsSaveManager] Flags saved");
+            Debug.Log("[GameFlagsSaveManager] Flags auto-saved");
     }
 
     /// <summary>
-    /// Load flags from PlayerPrefs. Can be called from UI button.
+    /// Load flags from save file. Can be called from UI button.
     /// </summary>
     public void LoadFlags()
     {
-        bool success = GameFlags.LoadFlags();
+        bool success = GameFlagsManager.LoadCurrentGame();
         if (logSaveOperations)
         {
             if (success)
@@ -95,7 +98,7 @@ public class GameFlagsSaveManager : MonoBehaviour
     /// </summary>
     public void DeleteSavedFlags()
     {
-        GameFlags.DeleteSavedFlags();
+        GameFlagsManager.DeleteCurrentSave();
         if (logSaveOperations)
             Debug.Log("[GameFlagsSaveManager] Saved flags deleted");
     }
@@ -116,7 +119,7 @@ public class GameFlagsSaveManager : MonoBehaviour
     public void StartNewGame()
     {
         GameFlags.ResetToDefaults();
-        GameFlags.SaveFlags();
+        GameFlagsManager.SaveCurrentGame();
         if (logSaveOperations)
             Debug.Log("[GameFlagsSaveManager] New game started (flags reset and saved)");
     }
@@ -126,7 +129,7 @@ public class GameFlagsSaveManager : MonoBehaviour
     /// </summary>
     public void ContinueGame()
     {
-        bool success = GameFlags.LoadFlags();
+        bool success = GameFlagsManager.LoadCurrentGame();
         if (logSaveOperations)
         {
             if (success)
@@ -141,7 +144,7 @@ public class GameFlagsSaveManager : MonoBehaviour
     /// </summary>
     public bool HasSavedGame()
     {
-        return GameFlags.HasSavedFlags();
+        return GameFlagsManager.HasCurrentSave();
     }
 
     /// <summary>

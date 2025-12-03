@@ -21,10 +21,19 @@ namespace Systems.Overworld.Intro
 
         public UnityEvent OnTriggerEnter;
 
-        [Header("Trigger Settings")] public TriggerType currentType = TriggerType.Unknown;
+        [Header("Trigger Settings")] 
+        public TriggerType currentType = TriggerType.Unknown;
         public bool onlyTriggerOnce = true;
+        
+        [Header("Flag-Based Persistence (Optional)")]
+        [Tooltip("If enabled, this trigger will set a flag when triggered and never fire again even after scene reload")]
+        public bool useFlagSystem = false;
+        
+        [Tooltip("The flag name to check/set. If empty, will auto-generate from object name")]
+        public string flagName = "";
 
-        [Header("Lighting Settings")] public Light2D selectedLight2D;
+        [Header("Lighting Settings")] 
+        public Light2D selectedLight2D;
         public bool setLightActive = false;
 
         void Start()
@@ -33,6 +42,20 @@ namespace Systems.Overworld.Intro
             // _boxCollider.isTrigger = true;
 
             _tutorialScene = FindFirstObjectByType<TutorialScene>();
+            
+            // Auto-generate flag name if not specified
+            if (useFlagSystem && string.IsNullOrEmpty(flagName))
+            {
+                flagName = $"tutorial.trigger.{gameObject.name}";
+                Debug.Log($"[TutorialTrigger] Auto-generated flag name: {flagName}");
+            }
+            
+            // Check if this trigger has already been activated
+            if (useFlagSystem && GameFlags.HasFlag(flagName))
+            {
+                Debug.Log($"[TutorialTrigger] Flag '{flagName}' already set - disabling trigger");
+                gameObject.SetActive(false);
+            }
         }
 
         // Update is called once per frame
@@ -40,7 +63,14 @@ namespace Systems.Overworld.Intro
         {
             if (!other.CompareTag("Player")) return;
 
-            Debug.Log("Player entered the tutorial trigger area.");
+            Debug.Log($"[TutorialTrigger] Player entered the tutorial trigger area: {gameObject.name}");
+            
+            // Set flag if using flag system
+            if (useFlagSystem && !string.IsNullOrEmpty(flagName))
+            {
+                GameFlags.SetFlag(flagName);
+                Debug.Log($"[TutorialTrigger] Set flag: {flagName}");
+            }
 
             if (OnTriggerEnter != null && OnTriggerEnter.GetPersistentEventCount() > 0)
             {

@@ -94,6 +94,7 @@ Write-Host "\nRemoving Unity 'Do Not Ship' folders..." -ForegroundColor Cyan
 # Common Unity debug/backup folders that should not be shipped
 $doNotShipPatterns = @(
     "*_BurstDebugInformation_DoNotShip",
+    "*BackUpThisFolder_ButDontShipItWithYourGame*",
     "BackUpThisFolder_ButDontShipItWithYourGame",
     "*DoNotShip*",
     "*donotship*",

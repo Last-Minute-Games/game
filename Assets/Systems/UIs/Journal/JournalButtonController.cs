@@ -138,6 +138,17 @@ public class JournalUI : MonoBehaviour
         SetOpen(true, playSound: true);
     }
 
+    /// <summary>
+    /// Force open the journal, bypassing pause menu and input checks.
+    /// Useful for tutorials or scripted sequences where you want to show the journal to the player.
+    /// Always plays the open sound effect.
+    /// </summary>
+    public void ForceOpen()
+    {
+        Debug.Log("[JournalUI] ForceOpen() called - bypassing input checks for tutorial/scripted sequence");
+        SetOpen(true, playSound: true);
+    }
+
     public void Close()
     {
         Debug.Log("[JournalUI] Close() called.");

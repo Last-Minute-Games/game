@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Dramatic Exit
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   itemName: Dramatic Exit
-  description: End turn.
+  description: ' End your turn.'
   artwork: {fileID: -1892731767966475392, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
   iconCategory: 7
   effects:
@@ -27,6 +27,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 1, g: 0, b: 0, a: 0}
+    textKey: Y
     postCopyValue: 0
   uniqueID: 3
   intentionText: xxx
@@ -43,3 +44,5 @@ MonoBehaviour:
   strongPrefix: Potent
   weakPrefixColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   strongPrefixColor: {r: 1, g: 0.4, b: 0.4, a: 1}
+  unlockFlag: card.dramatic_exit
+  unlockedByDefault: 0

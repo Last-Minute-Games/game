@@ -519,18 +519,12 @@ public class RoundManager : MonoBehaviour
         Debug.Log("[RoundManager] Calling AdvanceDayFlag() after victory...");
         AdvanceDayFlag();
 
+        GameFlags.SetFlag("nether.win"); // game flag to notify clock timer
+
         // Fade screen + show text
         if (endScreenUI != null)
             endScreenUI.ShowMessage("YOU WIN", new Color(1f, 0.84f, 0.0f)); // gold
 
-        // TODO: update timer shit
-        var clock = FindObjectOfType<ClockTimer>();
-        if (clock != null)
-        {
-            clock.AddTime(10f); // TODO: adjust reward amount
-            Debug.Log("[RoundManager] Added 10 seconds to clock timer as reward");
-        }
-        
         Debug.Log("[RoundManager] Starting return to overworld sequence...");
         StartCoroutine(ReturnToOverworldDelayed());
     }
@@ -548,16 +542,10 @@ public class RoundManager : MonoBehaviour
         Debug.Log("[RoundManager] Calling AdvanceDayFlag() after defeat...");
         AdvanceDayFlag();
 
+        GameFlags.SetFlag("nether.lose"); // game flag to notify clock timer
+
         if (endScreenUI != null)
             endScreenUI.ShowMessage("YOU LOSE", Color.red);
-
-        // TODO: wrong todo just ummm timer change flag shit
-        var clock = FindObjectOfType<ClockTimer>();
-        if (clock != null)
-        {
-            clock.RemoveTime(100f); // TODO: adjust penalty amount
-            Debug.Log("[RoundManager] Removed 100 seconds from clock timer as penalty");
-        }
         
         Debug.Log("[RoundManager] Starting return to overworld sequence...");
         StartCoroutine(ReturnToOverworldDelayed());
@@ -570,7 +558,22 @@ public class RoundManager : MonoBehaviour
         // Normal return to overworld
         // ClockTimer will handle day five cutscene check when transitioning from overworld
         Debug.Log("[RoundManager] Returning to Overworld");
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
+
+        // Using ScreenFader if available
+        var fader = ScreenFader.Instance;
+        if (fader != null)
+        {
+            Debug.Log("[RoundManager] Using ScreenFader for transition");
+
+            fader.shouldOpenEyesOnSceneLoad = true;
+
+            yield return fader.TransitionToSceneWithEyesClosing("Overworld");
+        }
+        else
+        {
+            Debug.LogWarning("[RoundManager] ScreenFader missing! Falling back to direct load.");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
+        }
     }
 
     // handle advancing day flags

@@ -13,9 +13,7 @@ MonoBehaviour:
   m_Name: Shield Slash
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   itemName: Shield Slash
-  description: 'bark
-
-'
+  description: Square up! Deal <X> damage and defend for <Y> defending yourself.
   artwork: {fileID: 5406000085713325184, guid: 804c80709f577e7248d82f95531d62e8, type: 3}
   iconCategory: 0
   effects:
@@ -29,6 +27,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 1, g: 0, b: 0, a: 0}
+    textKey: X
     postCopyValue: 0
   - targetRule: 1
     minMultiplier: 0.7
@@ -40,6 +39,7 @@ MonoBehaviour:
     delay: 0
     delayUnit: 0
     variableColor: {r: 0.24056602, g: 0.5325512, b: 1, a: 0}
+    textKey: Y
     postCopyValue: 0
   uniqueID: 8
   intentionText: xxx
