@@ -1,4 +1,5 @@
 using UnityEngine;
+using DG.Tweening;
 
 namespace GameItems.Cards.Helpers
 {
@@ -114,6 +115,9 @@ namespace GameItems.Cards.Helpers
         // When selecting (clicking / picking up) a card
         public void OnCardSelect(CardRender card, bool updatePosition = true)
         {
+
+            animHelper?.KillHoverTweens();
+
             // Don't check lock - user interactions should always work
             if (card == null)
             {
@@ -194,6 +198,7 @@ namespace GameItems.Cards.Helpers
             // Reset drag SFX gate for the new drag session
             dragSoundPlayed = false;
         }
+
 
         // Called every frame while dragging the card
         public void OnCardDrag(CardRender card, Vector2 cursorPos)
@@ -313,7 +318,7 @@ namespace GameItems.Cards.Helpers
             }
             if (CardFXManager.Instance.CurrentlySelectedCard == card)
             {
-                CardFXManager.Instance.CurrentlySelectedCard = null;
+                return;
             }
 
             animHelper?.HoverExit(card);
