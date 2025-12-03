@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using cherrydev;
 using UnityEngine;
 
@@ -18,9 +19,9 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     [SerializeField] private KeyCode interactKey = KeyCode.E;
     [SerializeField] private float interactionRange = 1f;
 
-    [Header("Flag to Set After Dialog")]
-    [Tooltip("This flag will be set when the dialog finishes (e.g., 'talked_to_npc')")]
-    [SerializeField] private string flagToSet;
+    [Header("Flags to Set After Dialog")]
+    [Tooltip("These flags will be set when the dialog finishes (e.g., 'talked_to_npc', 'quest_completed')")]
+    [SerializeField] private List<string> flagsToSet = new List<string>();
 
     [Header("Conversation Audio")]
     [Tooltip("Music/audio to play during the conversation with this NPC")]
@@ -182,15 +183,21 @@ public class InteractiveItem : MonoBehaviour, IInteractable
             Debug.Log($"[InteractiveItem] {name}: Clock timer resumed");
         }
 
-        // Set the flag when dialog finishes
-        if (!string.IsNullOrEmpty(flagToSet))
+        // Set all flags when dialog finishes
+        if (flagsToSet != null && flagsToSet.Count > 0)
         {
-            GameFlags.SetFlag(flagToSet);
-            Debug.Log($"[InteractiveItem] {name}: Set flag '{flagToSet}'");
+            foreach (string flag in flagsToSet)
+            {
+                if (!string.IsNullOrEmpty(flag))
+                {
+                    GameFlags.SetFlag(flag);
+                    Debug.Log($"[InteractiveItem] {name}: Set flag '{flag}'");
+                }
+            }
         }
         else
         {
-            Debug.Log($"[InteractiveItem] {name}: No flag to set (flagToSet is empty)");
+            Debug.Log($"[InteractiveItem] {name}: No flags to set (flagsToSet is empty)");
         }
 
         if (characterController != null)
