@@ -70,9 +70,9 @@ namespace GameItems.Cards
 
             // 2)
 
-            const int MIN_SLASH = 6;
-            const int MIN_BLOCK = 4;
-            const int MIN_HEAL = 4;
+            const int MIN_SLASH = 4;
+            const int MIN_BLOCK = 2;
+            const int MIN_HEAL = 2;
 
             CardData slash = PullCard(SLASH_ID);
             if (slash != null) {
