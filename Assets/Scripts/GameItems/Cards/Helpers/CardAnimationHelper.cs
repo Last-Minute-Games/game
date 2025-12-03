@@ -419,5 +419,10 @@ namespace GameItems.Cards.Helpers
             _originalPosition = transform.localPosition;
             Debug.Log($"[CardAnimationHelper] Original position updated to: {_originalPosition}");
         }
+
+        public void KillHoverTweens()
+        {
+            transform.DOKill(); // kills hover + exit tweens
+        }
     }
 }

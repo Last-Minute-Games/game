@@ -196,8 +196,10 @@ public class CardRender : MonoBehaviour,
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (_fxHelper != null && !_isDragging)
-            _fxHelper.OnCardHoverExit(this);
+        if (Input.GetMouseButton(0)) return;  // <-- FIX
+        if (_isDragging) return;
+        
+        _fxHelper?.OnCardHoverExit(this);
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -215,8 +217,22 @@ public class CardRender : MonoBehaviour,
     public void OnBeginDrag(PointerEventData eventData)
     {
         _isDragging = true;
+
         if (_fxHelper != null)
+        {
+            // Always do the normal drag-select logic
             _fxHelper.OnCardSelect(this, updatePosition: false);
+
+            // If this card targets enemies, and arrow didn't start because of double-click ---
+            TargetRule rule = Data.GetDominatingTargetRule();
+            if (rule == TargetRule.Enemy)
+            {
+                if (_fxHelper.animHelper != null && _fxHelper.animHelper.arrowHelper != null)
+                {
+                    _fxHelper.animHelper.arrowHelper.StartDrawing();
+                }
+            }
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
