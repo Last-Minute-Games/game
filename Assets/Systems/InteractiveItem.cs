@@ -22,6 +22,22 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     [Tooltip("This flag will be set when the dialog finishes (e.g., 'talked_to_npc')")]
     [SerializeField] private string flagToSet;
 
+    [Header("Conversation Audio")]
+    [Tooltip("Music/audio to play during the conversation with this NPC")]
+    [SerializeField] private AudioClip conversationMusic;
+    [Tooltip("Volume for the conversation music (0-1)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float musicVolume = 0.5f;
+    [Tooltip("How long to fade in/out the music")]
+    [SerializeField] private float musicFadeDuration = 0.5f;
+    [Tooltip("Should the music loop during the conversation?")]
+    [SerializeField] private bool loopMusic = true;
+    [Tooltip("Volume to reduce room audio to during conversation (0-1)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float roomAudioDuckVolume = 0f;
+    [Tooltip("How long to fade room audio in/out")]
+    [SerializeField] private float roomAudioFadeDuration = 1f;
+
     // Runtime
     private GameObject player;
     private CharacterMotor2D characterController;
@@ -30,6 +46,13 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     
     // Track if THIS item started the current conversation
     private bool isMyConversation = false;
+    
+    // Audio
+    private AudioSource conversationAudioSource;
+    private Coroutine fadeCoroutine;
+    private Coroutine roomAudioFadeCoroutine;
+    private RoomAudioZone[] roomAudioZones;
+    private float[] originalRoomVolumes;
 
     void Start()
     {
@@ -53,6 +76,31 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         {
             dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
             dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
+        }
+
+        // Setup audio source for conversation music
+        if (conversationMusic != null)
+        {
+            conversationAudioSource = gameObject.AddComponent<AudioSource>();
+            conversationAudioSource.clip = conversationMusic;
+            conversationAudioSource.loop = loopMusic;
+            conversationAudioSource.playOnAwake = false;
+            conversationAudioSource.volume = 0f;
+            conversationAudioSource.spatialBlend = 0f; // 2D audio
+            Debug.Log($"[InteractiveItem] {name}: Audio source created with clip '{conversationMusic.name}'");
+        }
+        else
+        {
+            Debug.Log($"[InteractiveItem] {name}: No conversation music assigned");
+        }
+
+        // Find all room audio zones for ducking
+        roomAudioZones = FindObjectsOfType<RoomAudioZone>();
+        originalRoomVolumes = new float[roomAudioZones.Length];
+        for (int i = 0; i < roomAudioZones.Length; i++)
+        {
+            if (roomAudioZones[i].roomMusic != null)
+                originalRoomVolumes[i] = roomAudioZones[i].roomMusic.volume;
         }
     }
 
@@ -102,6 +150,24 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
         if (characterController != null)
             characterController.SetDialogueActive(true);
+
+        // Start conversation music
+        if (conversationAudioSource != null && conversationMusic != null)
+        {
+            if (fadeCoroutine != null)
+                StopCoroutine(fadeCoroutine);
+            fadeCoroutine = StartCoroutine(FadeMusic(true));
+            Debug.Log($"[InteractiveItem] {name}: Starting conversation music '{conversationMusic.name}'");
+        }
+        else
+        {
+            Debug.Log($"[InteractiveItem] {name}: Cannot start music - AudioSource: {(conversationAudioSource != null ? "OK" : "NULL")}, Clip: {(conversationMusic != null ? "OK" : "NULL")}");
+        }
+
+        // Duck room audio
+        if (roomAudioFadeCoroutine != null)
+            StopCoroutine(roomAudioFadeCoroutine);
+        roomAudioFadeCoroutine = StartCoroutine(FadeRoomAudio(true));
     }
 
     void OnDialogFinished()
@@ -130,8 +196,96 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         if (characterController != null)
             characterController.SetDialogueActive(false);
 
+        // Stop conversation music
+        if (conversationAudioSource != null && conversationAudioSource.isPlaying)
+        {
+            if (fadeCoroutine != null)
+                StopCoroutine(fadeCoroutine);
+            fadeCoroutine = StartCoroutine(FadeMusic(false));
+            Debug.Log($"[InteractiveItem] {name}: Stopping conversation music");
+        }
+
+        // Restore room audio
+        if (roomAudioFadeCoroutine != null)
+            StopCoroutine(roomAudioFadeCoroutine);
+        roomAudioFadeCoroutine = StartCoroutine(FadeRoomAudio(false));
+
         // Reset the flag so we don't respond to other conversations
         isMyConversation = false;
+    }
+
+    private System.Collections.IEnumerator FadeMusic(bool fadeIn)
+    {
+        if (conversationAudioSource == null) yield break;
+
+        float startVolume = conversationAudioSource.volume;
+        float targetVolume = fadeIn ? musicVolume : 0f;
+        float elapsed = 0f;
+
+        if (fadeIn && !conversationAudioSource.isPlaying)
+        {
+            conversationAudioSource.Play();
+        }
+
+        while (elapsed < musicFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / musicFadeDuration;
+            conversationAudioSource.volume = Mathf.Lerp(startVolume, targetVolume, t);
+            yield return null;
+        }
+
+        conversationAudioSource.volume = targetVolume;
+
+        if (!fadeIn)
+        {
+            conversationAudioSource.Stop();
+        }
+
+        fadeCoroutine = null;
+    }
+
+    private System.Collections.IEnumerator FadeRoomAudio(bool duck)
+    {
+        if (roomAudioZones == null || roomAudioZones.Length == 0) yield break;
+
+        float elapsed = 0f;
+
+        // Store current volumes as starting point
+        float[] startVolumes = new float[roomAudioZones.Length];
+        for (int i = 0; i < roomAudioZones.Length; i++)
+        {
+            if (roomAudioZones[i] != null && roomAudioZones[i].roomMusic != null)
+                startVolumes[i] = roomAudioZones[i].roomMusic.volume;
+        }
+
+        while (elapsed < roomAudioFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / roomAudioFadeDuration;
+
+            for (int i = 0; i < roomAudioZones.Length; i++)
+            {
+                if (roomAudioZones[i] != null && roomAudioZones[i].roomMusic != null)
+                {
+                    float targetVolume = duck ? roomAudioDuckVolume : originalRoomVolumes[i];
+                    roomAudioZones[i].roomMusic.volume = Mathf.Lerp(startVolumes[i], targetVolume, t);
+                }
+            }
+            yield return null;
+        }
+
+        // Ensure final volumes are set
+        for (int i = 0; i < roomAudioZones.Length; i++)
+        {
+            if (roomAudioZones[i] != null && roomAudioZones[i].roomMusic != null)
+            {
+                roomAudioZones[i].roomMusic.volume = duck ? roomAudioDuckVolume : originalRoomVolumes[i];
+            }
+        }
+
+        Debug.Log($"[InteractiveItem] {name}: Room audio {(duck ? "ducked to " + roomAudioDuckVolume : "restored")}");
+        roomAudioFadeCoroutine = null;
     }
 
 #if UNITY_EDITOR
