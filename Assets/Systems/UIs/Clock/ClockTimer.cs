@@ -711,9 +711,26 @@ public class ClockTimer : MonoBehaviour
         isPaused = true;
         Debug.Log("[ClockTimer] Timer paused for reconstruction");
         
+        // Initialize frameCount if it wasn't set (e.g., if Start() returned early)
+        if (frameCount == 0 && clockFrames != null && clockFrames.Length > 0)
+        {
+            frameCount = clockFrames.Length;
+            Debug.Log($"[ClockTimer] Initialized frameCount to {frameCount} (was 0)");
+        }
+        
+        // Debug the condition checks with detailed info
+        Debug.Log($"[ClockTimer] ReconstructClock checks:");
+        Debug.Log($"  - clockFrames: {(clockFrames != null ? $"not null, length={clockFrames.Length}" : "NULL")}");
+        Debug.Log($"  - frameCount: {frameCount}");
+        Debug.Log($"  - breakEndIndex: {breakEndIndex}");
+        Debug.Log($"  - frameCount > breakEndIndex: {frameCount > breakEndIndex}");
+        Debug.Log($"  - clockImage: {(clockImage != null ? "not null" : "NULL")}");
+        
         // Optional safety check
         if (clockFrames != null && frameCount > breakEndIndex && clockImage != null)
         {
+            Debug.Log("[ClockTimer] ✓ All checks passed - starting reconstruction animation");
+
             // Start in the fully broken state (frame 19, which is breakEndIndex)
             clockImage.sprite = clockFrames[breakEndIndex];
 
@@ -884,6 +901,14 @@ public class ClockTimer : MonoBehaviour
             
             // Timer remains paused - caller must call StartTimer() to begin countdown
             Debug.Log("[ClockTimer] Clock reconstruction complete - timer still paused (caller must start it)");
+        }
+        else
+        {
+            Debug.LogWarning($"[ClockTimer] Skipping reconstruction animation - " +
+                $"clockFrames={(clockFrames != null ? "OK" : "NULL")}, " +
+                $"frameCount={frameCount} > breakEndIndex={breakEndIndex} = {frameCount > breakEndIndex}, " +
+                $"clockImage={(clockImage != null ? "OK" : "NULL")}");
+            // Timer remains paused but no animation played
         }
     }
 
