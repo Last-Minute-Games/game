@@ -692,10 +692,11 @@ namespace Systems.Overworld.Intro
 
             yield return new WaitForSeconds(1.4f);
 
-            // Trigger the wake-up cutscene in Overworld
+            // Trigger the wake-up cutscene in Overworld using PlayerPrefs flag
             Debug.Log("=== ABOUT TO TRIGGER WAKE UP CUTSCENE ===");
-            OverworldWakeUpCutscene.TriggerWakeUpCutscene();
-            Debug.Log("=== TRIGGERED - NOW LOADING OVERWORLD ===");
+            PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
+            PlayerPrefs.Save();
+            Debug.Log($"=== TRIGGERED - NOW LOADING OVERWORLD ===");
 
             // go to overworld scene
             AsyncOperation op = SceneManager.LoadSceneAsync("Overworld");

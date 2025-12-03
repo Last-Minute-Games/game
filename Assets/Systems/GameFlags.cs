@@ -452,13 +452,24 @@ public class GameFlags : PersistentSingleton<GameFlags>
 
             // Restore clock time if ClockTimer exists
             ClockTimer clockTimer = FindObjectOfType<ClockTimer>();
-            if (clockTimer != null && saveData.clockTimeLeft > 0)
+            if (clockTimer != null)
             {
-                clockTimer.RestoreTimeLeft(saveData.clockTimeLeft);
-                Debug.Log($"[GameFlags] Restored clock time: {saveData.clockTimeLeft:F2}s");
+                if (saveData.clockTimeLeft > 0)
+                {
+                    clockTimer.RestoreTimeLeft(saveData.clockTimeLeft);
+                    Debug.Log($"[GameFlags] ? Restored clock time from save: {saveData.clockTimeLeft:F2}s");
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameFlags] Save data has invalid clock time: {saveData.clockTimeLeft}s - using default");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[GameFlags] ClockTimer not found in scene - clock time not restored (will be set when ClockTimer initializes)");
             }
 
-            Debug.Log($"[GameFlags] Loaded {saveData.flags.Count} flags from file: {filePath} (total: {_activeFlags.Count}, day: {saveData.currentDay})");
+            Debug.Log($"[GameFlags] ? Loaded {saveData.flags.Count} flags from file: {filePath} (total: {_activeFlags.Count}, day: {saveData.currentDay})");
             return true;
         }
         catch (Exception ex)
