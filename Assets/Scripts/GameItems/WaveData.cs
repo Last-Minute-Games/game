@@ -17,6 +17,9 @@ public class WaveData
     public int minEnemiesPerWave = 1;
     public int maxEnemiesPerWave = 3;
 
+    [Header("Set turn timer for this wave.")]
+    public float turnTimeLimit = 15f;
+
     [Header("Scaling")]
     [Tooltip("Stat multiplier applied on top of previous waves (e.g., 0.2 = +20%)")]
     public float statMultiplierIncrease = 0f;

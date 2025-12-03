@@ -39,6 +39,7 @@ public class NetherTutorial : MonoBehaviour
 
     private bool _running = false;
     private bool _done = false;
+    private bool _hasReachedLastSlide = false;
 
     private void Awake()
     {
@@ -117,7 +118,12 @@ public class NetherTutorial : MonoBehaviour
 
         prevButton.gameObject.SetActive(index > 0);
         nextButton.gameObject.SetActive(index < _orderedSlides.Count - 1);
-        startGameButton.gameObject.SetActive(index == _orderedSlides.Count - 1);
+        // If we're on the last slide, unlock the Start Game button permanently
+        if (index == _orderedSlides.Count - 1)
+            _hasReachedLastSlide = true;
+
+        // Start button persists once unlocked
+        startGameButton.gameObject.SetActive(_hasReachedLastSlide);
     }
 
     private void NextSlide()
@@ -139,7 +145,7 @@ public class NetherTutorial : MonoBehaviour
     private void PlaySound()
     {
         if (turnPageSFX != null)
-            SFXManager.Instance.PlayClip(turnPageSFX);
+            SFXManager.Instance.PlayClip(turnPageSFX, 0.2f);
     }
 
     private void FinishTutorial()
