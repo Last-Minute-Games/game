@@ -24,16 +24,24 @@ namespace GameItems.Cards
         {
             List<CardData> result = new();
 
-            // ARANTEED PICKS — ALWAYS ADD Slash (9) and Block (1)
-            // TODO it is not pulling the cards
-            //  👀 🍦 😱 AHHHASDSEDX
+            // guarantee that slash, block and heal will be put into the draw pile
             CardData slash = PullCard(9);
-            if (slash != null && !result.Contains(slash))
+            if (slash != null && !result.Contains(slash)) {
                 result.Add(slash);
+                result.Add(slash);
+            }
 
             CardData block = PullCard(1);
-            if (block != null && !result.Contains(block))
+            if (block != null && !result.Contains(block)) {
                 result.Add(block);
+                result.Add(block);
+            }
+
+            CardData heal = PullCard(6);
+            if (block != null && !result.Contains(block)) {
+                result.Add(heal);
+            }
+
 
             // Optional: reduce the amount of random cards so total stays consistent
             number -= result.Count;
