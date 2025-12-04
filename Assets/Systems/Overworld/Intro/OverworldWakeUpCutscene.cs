@@ -387,8 +387,9 @@ namespace Systems.Overworld.Intro
             else if (GameFlags.HasFlag("day.six"))
             {
                 Debug.Log("[OverworldWakeUpCutscene] day.six detected - triggering ending sequence");
-                StartCoroutine(HandleDaySixEnding());
+                StartCoroutine(HandleDayEndingSequence("day.six"));
             }
+            // NOTE: day.five does NOT trigger ending here - it triggers at END of day via ClockTimer
             // Check if we should play day-specific wake-up dialogue
             else if (ShouldPlayDaySpecificWakeUpDialogue())
             {
@@ -531,8 +532,8 @@ namespace Systems.Overworld.Intro
                 case "day.two": return "day.three";
                 case "day.three": return "day.four";
                 case "day.four": return "day.five";
-                case "day.five": return "day.six"; // day.five leads to day.six
-                case "day.six": return null; // No day after six - game ends
+                case "day.five": return "day.six"; // day.five progresses to day.six after timer runs out (ClockTimer handles this)
+                case "day.six": return null; // day.six triggers ending immediately
                 default: return null;
             }
         }
@@ -729,11 +730,11 @@ namespace Systems.Overworld.Intro
         }
         
         /// <summary>
-        /// Handle the special day.six ending sequence
+        /// Handle the special day ending sequence (day.five or day.six)
         /// </summary>
-        private IEnumerator HandleDaySixEnding()
+        private IEnumerator HandleDayEndingSequence(string dayFlag)
         {
-            Debug.Log("[OverworldWakeUpCutscene] Starting day.six ending sequence");
+            Debug.Log($"[OverworldWakeUpCutscene] Starting ending sequence for {dayFlag}");
             
             // Pause the environment using GlobalPause
             GlobalPause.SetMinigamePaused(true);
@@ -742,10 +743,17 @@ namespace Systems.Overworld.Intro
             // Optional: Add a brief delay before triggering ending
             yield return new WaitForSeconds(1f);
             
+            // Set the start.ending flag to trigger the ending
+            if (!GameFlags.HasFlag("start.ending"))
+            {
+                Debug.Log($"[OverworldWakeUpCutscene] Setting start.ending flag for {dayFlag}");
+                GameFlags.SetFlag("start.ending");
+            }
+            
             // Trigger the ending transition
             if (endTransition != null)
             {
-                Debug.Log("[OverworldWakeUpCutscene] Triggering EndTransition for day.six");
+                Debug.Log($"[OverworldWakeUpCutscene] Triggering EndTransition for {dayFlag}");
                 endTransition.TriggerEndTransition();
             }
             else
@@ -756,7 +764,7 @@ namespace Systems.Overworld.Intro
                 GlobalPause.SetMinigamePaused(false);
             }
             
-            Debug.Log("[OverworldWakeUpCutscene] Day.six ending sequence initiated");
+            Debug.Log($"[OverworldWakeUpCutscene] Ending sequence initiated for {dayFlag}");
         }
         
         /// <summary>
