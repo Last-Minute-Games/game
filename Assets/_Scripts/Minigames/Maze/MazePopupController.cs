@@ -261,6 +261,9 @@ public class MazePopupController : MonoBehaviour
         GlobalPause.SetMinigamePaused(false);
 
         PerformHide();
+        
+        // Release the interaction lock
+        Systems.InteractionLockManager.Unlock();
     }
 
     private void PerformHide()
