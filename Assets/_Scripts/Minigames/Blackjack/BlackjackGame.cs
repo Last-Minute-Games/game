@@ -45,6 +45,9 @@ public class BlackjackGame : MonoBehaviour
     private int dealerWins = 0;
     private bool matchOver = false;
     public bool MatchOver => matchOver;
+    public bool PlayerWonMatch => matchOver && playerWins > dealerWins;
+    public bool DealerWonMatch => matchOver && dealerWins > playerWins;
+
 
 
     readonly List<GameObject> temp = new List<GameObject>(); //optional???
