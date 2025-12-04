@@ -175,7 +175,22 @@ public class EnemyData : EntityData
     {
         NormalizeActionPatternWithFallbacks();
 
-        EnemyAction chosenAction = ChooseStrategicAction();
+
+        // Keep rolling until Heal is NOT selected above 80% HP
+        EnemyAction chosenAction;
+
+        int safety = 0;
+        do
+        {
+            chosenAction = ChooseStrategicAction();
+            safety++;
+        } 
+        while (
+            chosenAction.intent == EnemyIntent.Heal &&           // avoid HEAL
+            currentHealth > maxHealth * 0.9f &&                  // when above 80% HP
+            safety < 10                                          // prevent infinite loop
+        );
+
         currentIntent = chosenAction.intent;
         currentAction = chosenAction;
 
