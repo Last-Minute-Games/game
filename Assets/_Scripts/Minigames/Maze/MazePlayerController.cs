@@ -10,8 +10,21 @@ public class MazePlayerController : MonoBehaviour
     [SerializeField] private GenerateMaze maze;      // drag your GenerateMaze object here
     [SerializeField] private float moveDuration = 0.15f;  // how fast it slides between cells
 
+    [Header("Movement Audio")]
+    [SerializeField] private AudioSource moveAudioSource;
+    [SerializeField] private AudioClip moveClip;
+
     private Vector2Int currentIndex;   // which cell (x,y) we�re in
     private bool isMoving = false;
+
+    private void Awake()
+    {
+        // Auto-grab AudioSource on this object if you forget to assign it
+        if (moveAudioSource == null)
+        {
+            moveAudioSource = GetComponent<AudioSource>();
+        }
+    }
 
     private void Start()
     {
@@ -106,6 +119,9 @@ public class MazePlayerController : MonoBehaviour
     private IEnumerator MoveToCell(Vector2Int newIndex)
     {
         isMoving = true;
+
+        PlayMoveSound();
+
         Vector3 startPos = transform.position;
         Vector3 endPos = maze.GetWorldPosition(newIndex);
 
@@ -127,4 +143,13 @@ public class MazePlayerController : MonoBehaviour
             popupController.EndMaze(true); // true = solved/win
         }
     }
+
+    private void PlayMoveSound()
+    {
+        if (moveAudioSource != null && moveClip != null)
+        {
+            moveAudioSource.PlayOneShot(moveClip);
+        }
+    }
+
 }
