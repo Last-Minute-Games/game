@@ -14,6 +14,7 @@ public class JournalUI : MonoBehaviour
     private PlayerInput2D _playerInput;
     private ClockTimer _clockTimer;
     private SimplePauseMenu _pauseMenu;
+    private CharacterMotor2D _playerMotor; // Add reference to check dialogue state
     private Animator anim;
 
     [Header("UI Behavior")]
@@ -31,7 +32,11 @@ public class JournalUI : MonoBehaviour
         _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler")?.GetComponent<EnvironmentSoundHandler>();
         
         var player = GameObject.FindGameObjectWithTag("Player");
-        if (player) _playerInput = player.GetComponent<PlayerInput2D>();
+        if (player)
+        {
+            _playerInput = player.GetComponent<PlayerInput2D>();
+            _playerMotor = player.GetComponent<CharacterMotor2D>(); // Get CharacterMotor2D reference
+        }
         
         // Find the ClockTimer in the scene
         _clockTimer = FindFirstObjectByType<ClockTimer>();
@@ -102,6 +107,12 @@ public class JournalUI : MonoBehaviour
             return;
         }
 
+        // Check if dialogue is active - prevent journal from opening
+        if (_playerMotor != null && _playerMotor.IsDialogueActive)
+        {
+            return;
+        }
+
         // Check if Q is pressed
         if (Input.GetKeyDown(toggleKey))
         {
@@ -114,10 +125,10 @@ public class JournalUI : MonoBehaviour
     {
         Debug.Log($"[JournalUI] Toggle pressed. Current state: {(isOpen ? "Open" : "Closed")}");
         
-        // Prevent toggling if input is disabled or paused
-        if (!isInputEnabled || (_pauseMenu != null && _pauseMenu.IsPaused))
+        // Prevent toggling if input is disabled, paused, or in dialogue
+        if (!isInputEnabled || (_pauseMenu != null && _pauseMenu.IsPaused) || (_playerMotor != null && _playerMotor.IsDialogueActive))
         {
-            Debug.Log("[JournalUI] Toggle blocked - input disabled or game paused");
+            Debug.Log("[JournalUI] Toggle blocked - input disabled, game paused, or dialogue active");
             return;
         }
         
@@ -128,10 +139,10 @@ public class JournalUI : MonoBehaviour
     {
         Debug.Log("[JournalUI] Open() called.");
         
-        // Prevent opening if input is disabled or paused
-        if (!isInputEnabled || (_pauseMenu != null && _pauseMenu.IsPaused))
+        // Prevent opening if input is disabled, paused, or in dialogue
+        if (!isInputEnabled || (_pauseMenu != null && _pauseMenu.IsPaused) || (_playerMotor != null && _playerMotor.IsDialogueActive))
         {
-            Debug.Log("[JournalUI] Open blocked - input disabled or game paused");
+            Debug.Log("[JournalUI] Open blocked - input disabled, game paused, or dialogue active");
             return;
         }
         

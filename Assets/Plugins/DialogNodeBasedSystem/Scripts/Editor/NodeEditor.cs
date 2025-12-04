@@ -175,8 +175,14 @@ namespace cherrydev
         /// </summary>
         private static void SetUpNodes()
         {
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null)
+                return;
+
             foreach (Node node in _currentNodeGraph.NodesList)
             {
+                if (node == null)
+                    continue;
+
                 if (node.GetType() == typeof(AnswerNode))
                 {
                     AnswerNode answerNode = (AnswerNode)node;
@@ -335,6 +341,9 @@ namespace cherrydev
 
             foreach (Node node in _currentNodeGraph.NodesList)
             {
+                if (node == null)
+                    continue;
+
                 if (node.GetType() == typeof(SentenceNode))
                 {
                     SentenceNode sentenceNode = (SentenceNode)node;
@@ -436,8 +445,14 @@ namespace cherrydev
         {
             GenericMenu nodesMenu = new GenericMenu();
 
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null)
+                return;
+
             foreach (Node node in _currentNodeGraph.NodesList)
             {
+                if (node == null)
+                    continue;
+
                 string prefix;
                 string nodeText;
 
@@ -548,17 +563,23 @@ namespace cherrydev
         /// <param name="nodeToCenter">The node to center on and select</param>
         private void CenterAndSelectNode(Node nodeToCenter)
         {
-            if (nodeToCenter == null)
+            if (nodeToCenter == null || _currentNodeGraph == null || _currentNodeGraph.NodesList == null)
                 return;
 
             Vector2 windowCenter = new Vector2(position.width / 2, (position.height - ToolbarHeight) / 2);
             Vector2 offset = windowCenter - nodeToCenter.Rect.center;
 
             foreach (Node node in _currentNodeGraph.NodesList)
-                node.DragNode(offset);
+            {
+                if (node != null)
+                    node.DragNode(offset);
+            }
 
             foreach (Node node in _currentNodeGraph.NodesList)
-                node.IsSelected = false;
+            {
+                if (node != null)
+                    node.IsSelected = false;
+            }
 
             nodeToCenter.IsSelected = true;
             _currentNode = nodeToCenter;
@@ -589,12 +610,19 @@ namespace cherrydev
 
             foreach (Node node in _currentNodeGraph.NodesList)
             {
+                // Add null check for node
+                if (node == null)
+                    continue;
+
                 Node parentNode;
                 Node childNode;
 
                 if (node.GetType() == typeof(AnswerNode))
                 {
                     AnswerNode answerNode = (AnswerNode)node;
+
+                    if (answerNode.ChildNodes == null)
+                        continue;
 
                     for (int i = 0; i < answerNode.ChildNodes.Count; i++)
                     {
@@ -884,7 +912,10 @@ namespace cherrydev
                 return;
 
             foreach (Node node in _currentNodeGraph.NodesList)
-                node.Draw(!node.IsSelected ? _nodeStyle : _selectedNodeStyle, _labelStyle);
+            {
+                if (node != null)
+                    node.Draw(!node.IsSelected ? _nodeStyle : _selectedNodeStyle, _labelStyle);
+            }
 
             if (_isLeftMouseDragFromEmpty)
                 SelectNodesBySelectionRect(currentEvent.mousePosition);
@@ -1001,8 +1032,14 @@ namespace cherrydev
 
             if (clickedNode != null)
             {
-                foreach (Node node in _currentNodeGraph.NodesList)
-                    node.IsSelected = false;
+                if (_currentNodeGraph != null && _currentNodeGraph.NodesList != null)
+                {
+                    foreach (Node node in _currentNodeGraph.NodesList)
+                    {
+                        if (node != null)
+                            node.IsSelected = false;
+                    }
+                }
 
                 clickedNode.IsSelected = true;
             }
@@ -1043,8 +1080,14 @@ namespace cherrydev
 
                     if (!ctrlHeld)
                     {
-                        foreach (Node node in _currentNodeGraph.NodesList)
-                            node.IsSelected = false;
+                        if (_currentNodeGraph != null && _currentNodeGraph.NodesList != null)
+                        {
+                            foreach (Node node in _currentNodeGraph.NodesList)
+                            {
+                                if (node != null)
+                                    node.IsSelected = false;
+                            }
+                        }
                     }
                 }
 
@@ -1054,14 +1097,20 @@ namespace cherrydev
             // --- Clicked on a node ---
             if (ctrlHeld)
             {
-                // Toggle the clicked node’s selection
+                // Toggle the clicked node's selection
                 clickedNode.IsSelected = !clickedNode.IsSelected;
             }
             else
             {
                 // Normal single selection
-                foreach (Node node in _currentNodeGraph.NodesList)
-                    node.IsSelected = false;
+                if (_currentNodeGraph != null && _currentNodeGraph.NodesList != null)
+                {
+                    foreach (Node node in _currentNodeGraph.NodesList)
+                    {
+                        if (node != null)
+                            node.IsSelected = false;
+                    }
+                }
 
                 clickedNode.IsSelected = true;
                 _currentNode = clickedNode;
@@ -1102,8 +1151,14 @@ namespace cherrydev
             {
                 _graphDrag = currentEvent.delta;
 
-                foreach (var node in _currentNodeGraph.NodesList)
-                    node.DragNode(_graphDrag);
+                if (_currentNodeGraph != null && _currentNodeGraph.NodesList != null)
+                {
+                    foreach (var node in _currentNodeGraph.NodesList)
+                    {
+                        if (node != null)
+                            node.DragNode(_graphDrag);
+                    }
+                }
 
                 GUI.changed = true;
             }
@@ -1128,8 +1183,15 @@ namespace cherrydev
             {
                 // Pan the graph (no shift)
                 _graphDrag = currentEvent.delta;
-                foreach (var node in _currentNodeGraph.NodesList)
-                    node.DragNode(_graphDrag);
+                
+                if (_currentNodeGraph != null && _currentNodeGraph.NodesList != null)
+                {
+                    foreach (var node in _currentNodeGraph.NodesList)
+                    {
+                        if (node != null)
+                            node.DragNode(_graphDrag);
+                    }
+                }
 
                 GUI.changed = true;
             }
@@ -1203,10 +1265,13 @@ namespace cherrydev
 
             if (clickedNode == null)
             {
-                foreach (Node node in _currentNodeGraph.NodesList)
+                if (_currentNodeGraph != null && _currentNodeGraph.NodesList != null)
                 {
-                    if (node.IsSelected)
-                        node.IsSelected = false;
+                    foreach (Node node in _currentNodeGraph.NodesList)
+                    {
+                        if (node != null && node.IsSelected)
+                            node.IsSelected = false;
+                    }
                 }
             }
         }
@@ -1227,8 +1292,14 @@ namespace cherrydev
                 Mathf.Abs(mousePosition.y - _mouseScrollClickPosition.y)
             );
 
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null)
+                return;
+
             foreach (Node node in _currentNodeGraph.NodesList)
             {
+                if (node == null)
+                    continue;
+
                 if (_selectionRect.Overlaps(node.Rect, true))
                     node.IsSelected = true;
                 else
@@ -1248,12 +1319,12 @@ namespace cherrydev
         /// <returns></returns>
         private Node GetHighlightedNode(Vector2 mousePosition)
         {
-            if (_currentNodeGraph.NodesList.Count == 0)
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null || _currentNodeGraph.NodesList.Count == 0)
                 return null;
 
             foreach (Node node in _currentNodeGraph.NodesList)
             {
-                if (node.Rect.Contains(mousePosition))
+                if (node != null && node.Rect.Contains(mousePosition))
                     return node;
             }
 
@@ -1394,8 +1465,14 @@ namespace cherrydev
         /// <param name="userData"></param>
         private void SelectAllNodes(object userData)
         {
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null)
+                return;
+
             foreach (Node node in _currentNodeGraph.NodesList)
-                node.IsSelected = true;
+            {
+                if (node != null)
+                    node.IsSelected = true;
+            }
 
             GUI.changed = true;
         }
@@ -1404,10 +1481,17 @@ namespace cherrydev
         {
             Node highlightedNode = GetHighlightedNode(position);
 
-            foreach (Node node in _currentNodeGraph.NodesList)
-                node.IsSelected = false;
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null)
+                return;
 
-            highlightedNode.IsSelected = true;
+            foreach (Node node in _currentNodeGraph.NodesList)
+            {
+                if (node != null)
+                    node.IsSelected = false;
+            }
+
+            if (highlightedNode != null)
+                highlightedNode.IsSelected = true;
         }
 
         /// <summary>
@@ -1416,11 +1500,14 @@ namespace cherrydev
         /// <param name="userData"></param>
         private void RemoveSelectedNodes(object userData)
         {
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null)
+                return;
+
             Queue<Node> nodeDeletionQueue = new Queue<Node>();
 
             foreach (Node node in _currentNodeGraph.NodesList)
             {
-                if (node.IsSelected)
+                if (node != null && node.IsSelected)
                     nodeDeletionQueue.Enqueue(node);
             }
 
@@ -1473,9 +1560,12 @@ namespace cherrydev
         /// <param name="userData"></param>
         private void RemoveAllConnections(object userData)
         {
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null)
+                return;
+
             foreach (Node node in _currentNodeGraph.NodesList)
             {
-                if (!node.IsSelected)
+                if (node == null || !node.IsSelected)
                     continue;
 
                 NodeConnectionHelper.RemoveAllConnectionsForNode(node);
@@ -1489,13 +1579,19 @@ namespace cherrydev
         /// </summary>
         private void CenterWindowOnNodes()
         {
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null)
+                return;
+
             Vector2 nodesCenter = CalculateNodesCenter();
             Vector2 canvasCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
 
             Vector2 offset = canvasCenter - nodesCenter;
 
             foreach (var node in _currentNodeGraph.NodesList)
-                node.DragNode(offset);
+            {
+                if (node != null)
+                    node.DragNode(offset);
+            }
 
             GUI.changed = true;
         }
@@ -1506,7 +1602,7 @@ namespace cherrydev
         /// <returns>The center position of all nodes</returns>
         private Vector2 CalculateNodesCenter()
         {
-            if (_currentNodeGraph.NodesList == null || _currentNodeGraph.NodesList.Count == 0)
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null || _currentNodeGraph.NodesList.Count == 0)
                 return Vector2.zero;
 
             float minX = float.MaxValue;
@@ -1516,6 +1612,9 @@ namespace cherrydev
 
             foreach (var node in _currentNodeGraph.NodesList)
             {
+                if (node == null)
+                    continue;
+
                 Rect nodeRect = node.Rect;
                 minX = Mathf.Min(minX, nodeRect.xMin);
                 maxX = Mathf.Max(maxX, nodeRect.xMax);

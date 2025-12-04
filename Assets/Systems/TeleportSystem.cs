@@ -99,6 +99,12 @@ namespace Systems
         
         private IEnumerator TeleportWithFade(Collider2D other)
         {
+            // Try to acquire the interaction lock
+            if (!InteractionLockManager.TryLock())
+            {
+                yield break; // Another interaction is in progress
+            }
+            
             _characterController2D.SetTeleporting(true);
             
             // Start fade-in
@@ -112,6 +118,7 @@ namespace Systems
                 if (tptTo.transform.name == "Throne" )
                 {
                     _tutorialScene.StartCoroutine(_tutorialScene.BeginKingSeq());
+                    InteractionLockManager.Unlock(); // Release lock before yielding
                     yield break;
                 }
  
@@ -135,6 +142,9 @@ namespace Systems
             
             yield return StartCoroutine(FadeOut());
             _fadeCanvasGroup.blocksRaycasts = false;
+            
+            // Release the lock after teleport is fully complete
+            InteractionLockManager.Unlock();
         }
 
         private void OnEnter()
@@ -159,8 +169,8 @@ namespace Systems
                 return;
             }
             
-            // prevent interaction during teleport or dialogue
-            if (_characterController2D.IsTeleporting || _characterController2D.IsDialogueActive) return;
+            // prevent interaction during teleport, dialogue, or if any interaction is in progress
+            if (_characterController2D.IsTeleporting || _characterController2D.IsDialogueActive || InteractionLockManager.IsLocked) return;
             
             if (_player != null && _tptCollider != null && _characterCollider2D != null)
             {

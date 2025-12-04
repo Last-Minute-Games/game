@@ -15,8 +15,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -103
-    y: 193.5
+    x: -712.66675
+    y: 552.49994
     width: 190
     height: 135
   IsDragging: 1
@@ -24,13 +24,43 @@ MonoBehaviour:
   _sentence:
     CharacterName: Elias
     Text: Adrianne was awake cleaning in the armory when she says she heard a loud
-      noise. Poor girl found the body. I know she would not commit such an atrocity.
-      She immediately woke up Avant.
+      noise. Poor girl found the body. I know she would not commit such an
     CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes:
   - {fileID: 4838927791515910715}
-  - {fileID: -718287912672334283}
-  ChildNode: {fileID: -5164880655037716705}
+  ChildNode: {fileID: -4528689342160419649}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-8190716724087408026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -2730.6663
+    y: 631.49994
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Elias
+    Text: "and we hope something in it can help guide us. A shame what happened truly\u2026"
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
+  ParentNodes:
+  - {fileID: 5062585804381860848}
+  ChildNode: {fileID: 4190341653366978687}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -50,8 +80,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1568
-    y: 470.5
+    x: -2089.6658
+    y: 824.99994
     width: 190
     height: 135
   IsDragging: 1
@@ -82,8 +112,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 744
-    y: 186.5
+    x: 390.8329
+    y: 532.99994
     width: 190
     height: 160
   IsDragging: 1
@@ -91,9 +121,11 @@ MonoBehaviour:
   Answers:
   - What was the murder weapon?
   - Go on...
-  AnswerKeys: []
+  AnswerKeys:
+  - 
+  - 
   ParentNodes:
-  - {fileID: 6536397891363944917}
+  - {fileID: -3695473066899373667}
   ChildNodes:
   - {fileID: 6776890424045917068}
   - {fileID: 1698119972616342527}
@@ -113,17 +145,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 171
-    y: 212.5
+    x: -270.66653
+    y: 548.49994
     width: 190
     height: 140
   IsDragging: 1
   IsSelected: 0
   Answers:
   - What happened next?
-  AnswerKeys: []
+  AnswerKeys:
+  - 
   ParentNodes:
-  - {fileID: -8875236663991116034}
+  - {fileID: -4528689342160419649}
   ChildNodes:
   - {fileID: 6536397891363944917}
   PanelType: 0
@@ -142,20 +175,54 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 246
-    y: 482.5
+    x: -64.66702
+    y: 822.49994
     width: 190
-    height: 140
-  IsDragging: 0
+    height: 160
+  IsDragging: 1
   IsSelected: 0
   Answers:
   - Thank you for the information, Elias.
-  AnswerKeys: []
+  - Interesting
+  AnswerKeys:
+  - 
   ParentNodes:
-  - {fileID: -1336557446272445765}
   - {fileID: 5107222237417479469}
+  - {fileID: 6564659706601772333}
   ChildNodes: []
   PanelType: 0
+--- !u!114 &-4528689342160419649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -476.8328
+    y: 552.99994
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Elias
+    Text: atrocity. She immediately woke up Avant.
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
+  ParentNodes:
+  - {fileID: -8875236663991116034}
+  ChildNode: {fileID: -5164880655037716705}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &-4286228503714833561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -171,8 +238,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1735
-    y: 112.5
+    x: 1213.333
+    y: 466.99997
     width: 190
     height: 135
   IsDragging: 1
@@ -184,6 +251,71 @@ MonoBehaviour:
   ParentNodes:
   - {fileID: -1609180178965887716}
   ChildNode: {fileID: 1914550746339420178}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-3695473066899373667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 157.16638
+    y: 546.99994
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Elias
+    Text: It happened too soon, I think the murderer is still here because they left
+      the murder weapon lying around, a shoddy job.
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
+  ParentNodes:
+  - {fileID: 6536397891363944917}
+  ChildNode: {fileID: -6367515031138170138}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-2302226232404435432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1264.8335
+    y: 932.49994
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Elias
+    Text: someone he trusted.
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
+  ParentNodes:
+  - {fileID: 6913231229686443832}
+  ChildNode: {fileID: 9063340067996283398}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -203,8 +335,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1416
-    y: 96.5
+    x: 894.33203
+    y: 450.99997
     width: 190
     height: 135
   IsDragging: 1
@@ -236,22 +368,20 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -95
-    y: 387.5
+    x: -616.66675
+    y: 741.99994
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Elias
-    Text: The church oversees us and works closely with us. Even if other Kingdoms
-      doubt us they respect the church. It is the most neutral body we can bring
-      in to hopefully ease off any tension. As well as they need to bless and prepare
-      the body for the funeral.
+    Text: 'The church oversees us and works closely with us. Even if other Kingdoms
+      doubt us they respect the church. '
     CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes:
   - {fileID: 4838927791515910715}
-  ChildNode: {fileID: -4734907862985980568}
+  ChildNode: {fileID: 6564659706601772333}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -271,8 +401,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1445
-    y: 245.5
+    x: -1918.6665
+    y: 575.49994
     width: 190
     height: 135
   IsDragging: 1
@@ -289,31 +419,6 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-718287912672334283
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d19e89406c5582438a765fdd212f9da, type: 3}
-  m_Name: Set GameFlag Node
-  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.SetGameFlagNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -56.5
-    y: 30
-    width: 200
-    height: 120
-  IsDragging: 1
-  IsSelected: 1
-  _flagName: SpokentoElias
-  _removeFlag: 0
-  ParentNodes: []
-  ChildNode: {fileID: -8875236663991116034}
 --- !u!114 &-642420724575146970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -329,8 +434,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1010
-    y: 505.5
+    x: -1531.6667
+    y: 859.99994
     width: 190
     height: 135
   IsDragging: 1
@@ -363,8 +468,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2228
-    y: 197.5
+    x: 1706.3328
+    y: 551.99994
     width: 190
     height: 135
   IsDragging: 1
@@ -416,7 +521,11 @@ MonoBehaviour:
   - {fileID: 1914550746339420178}
   - {fileID: -503794911566424924}
   - {fileID: -4734907862985980568}
-  - {fileID: -718287912672334283}
+  - {fileID: -8190716724087408026}
+  - {fileID: -2302226232404435432}
+  - {fileID: -4528689342160419649}
+  - {fileID: -3695473066899373667}
+  - {fileID: 6564659706601772333}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -438,8 +547,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1031
-    y: 277.5
+    x: 622.3325
+    y: 635.49994
     width: 190
     height: 135
   IsDragging: 1
@@ -471,13 +580,13 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1990
-    y: 101.5
+    x: 1383.6654
+    y: 580.6666
     width: 200
     height: 120
-  IsDragging: 0
-  IsSelected: 0
-  _flagName: SpokentoElias
+  IsDragging: 1
+  IsSelected: 1
+  _flagName: character.elias.spoketo
   _removeFlag: 0
   ParentNodes:
   - {fileID: -4286228503714833561}
@@ -497,8 +606,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1966
-    y: 246.5
+    x: -2487.6663
+    y: 600.99994
     width: 190
     height: 180
   IsDragging: 1
@@ -507,9 +616,12 @@ MonoBehaviour:
   - Why is the castle on high alert?
   - Have you found anything useful?
   - Is there anything suspicious you may have noticed?
-  AnswerKeys: []
+  AnswerKeys:
+  - 
+  - 
+  - 
   ParentNodes:
-  - {fileID: 5062585804381860848}
+  - {fileID: -8190716724087408026}
   ChildNodes:
   - {fileID: 4347224204610845754}
   - {fileID: -986381864037997048}
@@ -530,8 +642,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1606
-    y: 13.5
+    x: -2087.1663
+    y: 339.00003
     width: 190
     height: 135
   IsDragging: 1
@@ -562,17 +674,20 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -406
-    y: 332.5
+    x: -971.66675
+    y: 743.49994
     width: 190
     height: 180
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - "How are you so certain they didn\u2019t already get away? "
+  - 'How are you so certain they didnt already get away? '
   - Why was the head priest contacted?
   - We cannot keep his death hidden for long.
-  AnswerKeys: []
+  AnswerKeys:
+  - 
+  - 
+  - 
   ParentNodes:
   - {fileID: 9063340067996283398}
   ChildNodes:
@@ -595,20 +710,19 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2252.333
-    y: 259.16672
+    x: -2991.4993
+    y: 629.6667
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Elias
-    Text: "Hello, Nikolaus! Me and Allistair are just here looking through the royal
-      decree. You know times like these are a bit unprecedented and we hope something
-      in it can help guide us. A shame what happened truly\u2026"
+    Text: Hello, Nikolaus! Me and Allistair are just here looking through the royal
+      decree. You know times like these are a bit unprecedented
     CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes: []
-  ChildNode: {fileID: 4190341653366978687}
+  ChildNode: {fileID: -8190716724087408026}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -628,8 +742,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -114
-    y: 587.5
+    x: -432.16678
+    y: 1091.5002
     width: 190
     height: 135
   IsDragging: 1
@@ -661,8 +775,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 470
-    y: 192.5
+    x: -51.667023
+    y: 546.99994
     width: 190
     height: 135
   IsDragging: 1
@@ -670,13 +784,44 @@ MonoBehaviour:
   _sentence:
     CharacterName: Elias
     Text: 'Avant contacted the Head Priest and ordered a shut down. No one is to
-      be let in or out. The borders of the Kingdom are also closed off. It happened
-      too soon, I think the murderer is still here because they left the murder weapon
-      lying around, a shoddy job. '
+      be let in or out. The borders of the Kingdom are also closed off. '
     CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes:
   - {fileID: -5164880655037716705}
-  ChildNode: {fileID: -6367515031138170138}
+  ChildNode: {fileID: -3695473066899373667}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &6564659706601772333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -385.33304
+    y: 741.49994
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Elias
+    Text: It is the most neutral body we can bring in to hopefully ease off any tension.
+      As well as they need to bless and prepare the body for the funeral.
+    CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
+  ParentNodes:
+  - {fileID: -1336557446272445765}
+  ChildNode: {fileID: -4734907862985980568}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -696,8 +841,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1008
-    y: 87.5
+    x: 611.833
+    y: 435.00003
     width: 190
     height: 135
   IsDragging: 1
@@ -729,22 +874,21 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -768
-    y: 377.5
+    x: -1289.667
+    y: 731.99994
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Elias
-    Text: We believe the murderer is still hiding somewhere here. No one should have
-      been able to get close to the King like that so it was likely it was someone
-      he trusted.
+    Text: 'We believe the murderer is still hiding somewhere here. No one should
+      have been able to get close to the King like that so it was likely '
     CharacterSprite: {fileID: 21300000, guid: 8d4c4129234cbc8459cd35ec1489f0f7, type: 3}
   ParentNodes:
-  - {fileID: -642420724575146970}
   - {fileID: 8497319985263957185}
-  ChildNode: {fileID: 9063340067996283398}
+  - {fileID: -642420724575146970}
+  ChildNode: {fileID: -2302226232404435432}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -764,8 +908,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1314
-    y: 478.5
+    x: -1835.6665
+    y: 832.99994
     width: 190
     height: 160
   IsDragging: 1
@@ -773,7 +917,9 @@ MonoBehaviour:
   Answers:
   - ...
   - Tell me more.
-  AnswerKeys: []
+  AnswerKeys:
+  - 
+  - 
   ParentNodes:
   - {fileID: -7015239537917855981}
   ChildNodes:
@@ -795,8 +941,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -655
-    y: 581.5
+    x: -1161.6669
+    y: 1150.5
     width: 190
     height: 135
   IsDragging: 1
@@ -807,7 +953,7 @@ MonoBehaviour:
       not mention it lest I become suspected too.
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
-  - {fileID: 6913231229686443832}
+  - {fileID: -2302226232404435432}
   ChildNode: {fileID: 4838927791515910715}
   _isExternalFunc: 0
   _externalFunctionName: 

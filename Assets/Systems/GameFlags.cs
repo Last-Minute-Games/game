@@ -90,19 +90,17 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         string[] cardFlags = new string[]
         {
-            "card.block",
             "card.double_slash",
             "card.dramatic_exit",
             "card.exchange",
             "card.tariff_strike",
-            "card.heal_potion",
             "card.energy_drink",
             "card.shield_slash",
-            "card.slash",
             "card.workout",
             "minigame.blackjack.show",
             "minigame.sokoban.show",
             "minigame.coinflip.show",
+            "character.avant.heir",
             "minigame.maze.show"
         };
 

@@ -45,6 +45,10 @@ public class MazePopupController : MonoBehaviour
     [Tooltip("Main overworld player whose position we save/restore.")]
     public Transform overworldPlayer;
 
+    [Header("Show Flags")]
+    [Tooltip("Overworld objects (flag/entrance) to hide once the Maze is completed.")]
+    [SerializeField] private GameObject[] mazeShowFlags;
+
     [Header("Transition")]
     [Tooltip("CanvasGroup used to fade the screen when entering/exiting the minigame.")]
     [SerializeField] CanvasGroup transitionCanvasGroup;
@@ -74,6 +78,8 @@ public class MazePopupController : MonoBehaviour
 
     bool isOpen = false;
     private bool mazeGenerated = false;
+
+    private bool mazeSolved = false;
 
     void Awake()
     {
@@ -156,6 +162,9 @@ public class MazePopupController : MonoBehaviour
     public void EndMaze(bool solved = false)
     {
         if (!isOpen) return;
+
+        mazeSolved = solved;
+
         RunTransition(solved ? "YOU WIN" : "EXITING MAZE", PerformMazeEnd);
     }
 
@@ -252,6 +261,9 @@ public class MazePopupController : MonoBehaviour
         GlobalPause.SetMinigamePaused(false);
 
         PerformHide();
+        
+        // Release the interaction lock
+        Systems.InteractionLockManager.Unlock();
     }
 
     private void PerformHide()
@@ -311,8 +323,24 @@ public class MazePopupController : MonoBehaviour
         }
 
         // Timer + flag, same style as Blackjack/Sokoban
+        // Timer off
         FindObjectOfType<ClockTimer>()?.PauseTimer(false);
-        GameFlags.SetFlag("minigame.maze.finish");
+
+        // Only if the maze was actually completed
+        if (mazeSolved)
+        {
+            GameFlags.SetFlag("minigame.maze.finish");
+
+            // Hide any maze entrance / flag objects in the overworld
+            if (mazeShowFlags != null)
+            {
+                foreach (var obj in mazeShowFlags)
+                {
+                    if (obj != null)
+                        obj.SetActive(false);
+                }
+            }
+        }
 
         mazeGenerated = false;
 
