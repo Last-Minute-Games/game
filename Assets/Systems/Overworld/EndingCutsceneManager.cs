@@ -424,12 +424,8 @@ public class EndingCutsceneManager : MonoBehaviour
     /// </summary>
     private IEnumerator LingerThenShowCredits()
     {
-        // Linger on the final text
-        Debug.Log("[EndingCutsceneManager] Dialog complete - idling for 10 seconds before credits");
-        yield return new WaitForSeconds(10f);
-        
         // CLOSE THE DIALOG - Fade out text first
-        Debug.Log("[EndingCutsceneManager] Closing dialog");
+        Debug.Log("[EndingCutsceneManager] Dialog complete - closing dialog");
         yield return StartCoroutine(FadeOutText());
         
         // Hide the dialog panels using DialogDisplayer if it exists
@@ -493,6 +489,7 @@ public class EndingCutsceneManager : MonoBehaviour
         yield return StartCoroutine(FadeCreditsCanvasGroup(creditsCanvasGroup, 0f, 1f, fadeInDuration));
         
         // Scroll the credits completely off-screen
+        Debug.Log("[EndingCutsceneManager] Starting credits scroll");
         float actualScrollDuration = creditsScrollDuration / creditsScrollSpeed;
         float timer = 0f;
         
@@ -544,9 +541,14 @@ public class EndingCutsceneManager : MonoBehaviour
         if (creditLogo) creditLogo.anchoredPosition = logoEndPos;
         if (creditText) creditText.anchoredPosition = textEndPos;
         
-        Debug.Log("[EndingCutsceneManager] Credits scroll complete");
+        Debug.Log("[EndingCutsceneManager] Credits scroll complete - idling for 10 seconds");
         
-        // Fade out the credits immediately (no hold time)
+        // IDLE FOR 10 SECONDS - Let the credits sit finished before fading out
+        yield return new WaitForSeconds(10f);
+        
+        Debug.Log("[EndingCutsceneManager] Fading out credits");
+        
+        // Fade out the credits
         yield return StartCoroutine(FadeCreditsCanvasGroup(creditsCanvasGroup, 1f, 0f, fadeOutDuration));
         creditsCanvasGroup.gameObject.SetActive(false);
         
