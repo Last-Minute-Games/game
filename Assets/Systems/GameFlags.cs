@@ -100,6 +100,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
             "minigame.blackjack.show",
             "minigame.sokoban.show",
             "minigame.coinflip.show",
+            "character.avant.heir",
             "minigame.maze.show"
         };
 

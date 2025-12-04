@@ -53,6 +53,13 @@ namespace Systems.Overworld.Intro
         [Tooltip("Seconds to subtract from clock when player loses a battle")]
         [SerializeField] private float loseTimePenalty = 30f;
         
+        [Header("Day Six Ending")]
+        [Tooltip("EndTransition component to trigger when day.six is detected")]
+        [SerializeField] private EndTransition endTransition;
+        
+        [Tooltip("Auto-find EndTransition if not assigned")]
+        [SerializeField] private bool autoFindEndTransition = true;
+        
         private bool hasPlayed = false;
         
         // Add a flag to determine which sequence to play
@@ -333,6 +340,16 @@ namespace Systems.Overworld.Intro
             {
                 clockTimer = FindObjectOfType<ClockTimer>();
             }
+            
+            // Find EndTransition if needed
+            if (autoFindEndTransition && endTransition == null)
+            {
+                endTransition = FindObjectOfType<EndTransition>();
+                if (endTransition != null)
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Found EndTransition component");
+                }
+            }
 
             // Check if we should play the cutscene (via PlayerPrefs flag from TutorialScene)
             int playFlag = PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
@@ -365,6 +382,12 @@ namespace Systems.Overworld.Intro
                     Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
                     StartCoroutine(BeginWakeUpSequence());
                 }
+            }
+            // Check if day.six flag is set - trigger ending instead of dialogue
+            else if (GameFlags.HasFlag("day.six"))
+            {
+                Debug.Log("[OverworldWakeUpCutscene] day.six detected - triggering ending sequence");
+                StartCoroutine(HandleDaySixEnding());
             }
             // Check if we should play day-specific wake-up dialogue
             else if (ShouldPlayDaySpecificWakeUpDialogue())
@@ -508,7 +531,8 @@ namespace Systems.Overworld.Intro
                 case "day.two": return "day.three";
                 case "day.three": return "day.four";
                 case "day.four": return "day.five";
-                case "day.five": return null; // No day after five
+                case "day.five": return "day.six"; // day.five leads to day.six
+                case "day.six": return null; // No day after six - game ends
                 default: return null;
             }
         }
@@ -588,6 +612,9 @@ namespace Systems.Overworld.Intro
             
             // Apply battle result time adjustment after reconstruction
             CheckAndApplyBattleResultTimeAdjustment();
+            
+            // Check for evidence flags and unlock corresponding cards (every day)
+            CheckAndSetEvidenceCardFlags();
 
             // Get the dialogue for current day
             DialogNodeGraph dialogueGraph = GetDaySpecificWakeUpDialogue();
@@ -699,6 +726,90 @@ namespace Systems.Overworld.Intro
             }
 
             Debug.Log("[OverworldWakeUpCutscene] Day-specific wake-up dialogue complete");
+        }
+        
+        /// <summary>
+        /// Handle the special day.six ending sequence
+        /// </summary>
+        private IEnumerator HandleDaySixEnding()
+        {
+            Debug.Log("[OverworldWakeUpCutscene] Starting day.six ending sequence");
+            
+            // Pause the environment using GlobalPause
+            GlobalPause.SetMinigamePaused(true);
+            Debug.Log("[OverworldWakeUpCutscene] Environment paused for ending sequence");
+            
+            // Optional: Add a brief delay before triggering ending
+            yield return new WaitForSeconds(1f);
+            
+            // Trigger the ending transition
+            if (endTransition != null)
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Triggering EndTransition for day.six");
+                endTransition.TriggerEndTransition();
+            }
+            else
+            {
+                Debug.LogError("[OverworldWakeUpCutscene] EndTransition component not found! Cannot trigger ending.");
+                
+                // Fallback: unpause if we can't trigger ending
+                GlobalPause.SetMinigamePaused(false);
+            }
+            
+            Debug.Log("[OverworldWakeUpCutscene] Day.six ending sequence initiated");
+        }
+        
+        /// <summary>
+        /// Check for evidence flags and set corresponding card flags for the ending.
+        /// This runs every day (days 2-5) so cards are unlocked as evidence is collected.
+        /// </summary>
+        private void CheckAndSetEvidenceCardFlags()
+        {
+            Debug.Log("[OverworldWakeUpCutscene] Checking evidence flags for card unlocks...");
+            
+            // evidence.knife -> card.shield_slash
+            if (GameFlags.HasFlag("evidence.knife"))
+            {
+                if (!GameFlags.HasFlag("card.shield_slash"))
+                {
+                    GameFlags.SetFlag("card.shield_slash");
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: knife found -> Unlocked card: shield_slash");
+                }
+                else
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: knife found (card.shield_slash already unlocked)");
+                }
+            }
+            
+            // evidence.throne -> card.dramatic_exit
+            if (GameFlags.HasFlag("evidence.throne"))
+            {
+                if (!GameFlags.HasFlag("card.dramatic_exit"))
+                {
+                    GameFlags.SetFlag("card.dramatic_exit");
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: throne found -> Unlocked card: dramatic_exit");
+                }
+                else
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: throne found (card.dramatic_exit already unlocked)");
+                }
+            }
+            
+            // evidence.silverware -> card.tariff_strike
+            if (GameFlags.HasFlag("evidence.silverware"))
+            {
+                if (!GameFlags.HasFlag("card.tariff_strike"))
+                {
+                    GameFlags.SetFlag("card.tariff_strike");
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: silverware found -> Unlocked card: tariff_strike");
+                }
+                else
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: silverware found (card.tariff_strike already unlocked)");
+                }
+            }
+            
+            Debug.Log("[OverworldWakeUpCutscene] Evidence flag check complete");
         }
         
         /// <summary>
