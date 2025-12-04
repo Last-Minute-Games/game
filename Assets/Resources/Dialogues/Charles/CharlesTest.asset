@@ -15,8 +15,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -87.5
-    y: 167
+    x: 1643.5
+    y: -118
     width: 190
     height: 135
   IsDragging: 1
@@ -50,8 +50,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1499.5
-    y: 70
+    x: 231.5
+    y: -215
     width: 200
     height: 120
   IsDragging: 1
@@ -75,10 +75,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2786.833
-    y: 549.9999
+    x: -1055.833
+    y: 264.99988
     width: 190
-    height: 175
+    height: 200
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -94,6 +94,33 @@ MonoBehaviour:
   - {fileID: -6361599389147176031}
   - {fileID: 4407265657470502696}
   - {fileID: 6432539645937624382}
+  PanelType: 0
+--- !u!114 &-7122843744178183736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d19e89406c5582438a765fdd212f9da, type: 3}
+  m_Name: Set GameFlag Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.SetGameFlagNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 567.5
+    y: 276
+    width: 200
+    height: 120
+  IsDragging: 1
+  IsSelected: 0
+  _flagName: minigame.sokoban.show
+  _removeFlag: 0
+  ParentNodes:
+  - {fileID: 2874441801261562029}
+  ChildNode: {fileID: 0}
 --- !u!114 &-6583929179693516810
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,8 +136,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2629.833
-    y: 3.999878
+    x: -898.833
+    y: -281.00012
     width: 190
     height: 135
   IsDragging: 1
@@ -141,8 +168,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2546.1665
-    y: 399.66663
+    x: -815.1665
+    y: 114.666626
     width: 190
     height: 135
   IsDragging: 1
@@ -174,8 +201,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2546.1665
-    y: 538.33325
+    x: -815.1665
+    y: 253.33325
     width: 190
     height: 135
   IsDragging: 1
@@ -206,8 +233,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1182
-    y: 350
+    x: 458
+    y: 26
     width: 200
     height: 120
   IsDragging: 1
@@ -215,7 +242,7 @@ MonoBehaviour:
   _flagName: minigame.sokoban.loss
   ParentNodes: []
   TrueChildNode: {fileID: 1075923603147277670}
-  FalseChildNode: {fileID: 0}
+  FalseChildNode: {fileID: 1075923603147277670}
 --- !u!114 &-5524138455415709277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231,8 +258,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 516.5
-    y: 587
+    x: 2247.5
+    y: 301.5
     width: 190
     height: 135
   IsDragging: 1
@@ -263,8 +290,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2628.8333
-    y: 140.66656
+    x: -897.83325
+    y: -144.33344
     width: 190
     height: 135
   IsDragging: 1
@@ -295,8 +322,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -113.5
-    y: 393.5
+    x: 1617.5
+    y: 108.5
     width: 190
     height: 135
   IsDragging: 1
@@ -330,8 +357,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3333.1665
-    y: 279.66656
+    x: -1602.1665
+    y: -5.333435
     width: 190
     height: 135
   IsDragging: 1
@@ -362,8 +389,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -929.5
-    y: 147.5
+    x: 801.5
+    y: -137.5
     width: 190
     height: 135
   IsDragging: 1
@@ -394,8 +421,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1182.5
-    y: 145
+    x: 548.5
+    y: -140
     width: 190
     height: 135
   IsDragging: 1
@@ -425,10 +452,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3587.8335
-    y: 568
+    x: -1856.8335
+    y: 283
     width: 190
-    height: 175
+    height: 200
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -444,6 +471,7 @@ MonoBehaviour:
   - {fileID: 1546684205061242809}
   - {fileID: 4747770003170396795}
   - {fileID: 2486643074951911464}
+  PanelType: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -487,10 +515,10 @@ MonoBehaviour:
   - {fileID: 2983682691910107380}
   - {fileID: -5609889285606500520}
   - {fileID: 2874441801261562029}
-  - {fileID: 2898888290047341716}
   - {fileID: -3371343915219011342}
   - {fileID: -3497793149760490190}
   - {fileID: 210486850876958543}
+  - {fileID: -7122843744178183736}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -512,8 +540,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 608.5
-    y: 199.5
+    x: 2339.5
+    y: -85.5
     width: 190
     height: 135
   IsDragging: 1
@@ -545,8 +573,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -864
-    y: 331
+    x: 867
+    y: 46
     width: 190
     height: 135
   IsDragging: 1
@@ -557,7 +585,6 @@ MonoBehaviour:
     CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
   ParentNodes:
   - {fileID: -8110570794516188708}
-  - {fileID: -5609889285606500520}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -578,8 +605,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3262.833
-    y: 535.33325
+    x: -1531.833
+    y: 250.33325
     width: 190
     height: 135
   IsDragging: 1
@@ -611,10 +638,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3020.5
-    y: 81.33319
+    x: -1289.5
+    y: -203.66681
     width: 190
-    height: 175
+    height: 200
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -630,6 +657,7 @@ MonoBehaviour:
   - {fileID: 3596051953548515286}
   - {fileID: -6583929179693516810}
   - {fileID: -3998835351229838905}
+  PanelType: 0
 --- !u!114 &2486643074951911464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -645,8 +673,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3520.833
-    y: 1174.6665
+    x: -1789.833
+    y: 889.6665
     width: 190
     height: 135
   IsDragging: 1
@@ -678,8 +706,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 186.5
-    y: 157
+    x: 1917.5
+    y: -128
     width: 190
     height: 135
   IsDragging: 1
@@ -712,8 +740,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1488.5
-    y: 528.5
+    x: 242.5
+    y: 245
     width: 190
     height: 135
   IsDragging: 1
@@ -724,37 +752,11 @@ MonoBehaviour:
     CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
   ParentNodes:
   - {fileID: 7601294090109089498}
-  - {fileID: 2898888290047341716}
-  ChildNode: {fileID: 0}
+  ChildNode: {fileID: -7122843744178183736}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &2898888290047341716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 040c7688b61812647b338495939d2824, type: 3}
-  m_Name: GameFlag Condition Node
-  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.GameFlagConditionNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1226
-    y: 525.5
-    width: 200
-    height: 120
-  IsDragging: 1
-  IsSelected: 0
-  _flagName: minigame.sokoban.show
-  ParentNodes: []
-  TrueChildNode: {fileID: 2874441801261562029}
-  FalseChildNode: {fileID: 0}
 --- !u!114 &2983682691910107380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -770,10 +772,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 698.5
-    y: 750
+    x: 2429.5
+    y: 465
     width: 190
-    height: 155
+    height: 180
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -784,6 +786,7 @@ MonoBehaviour:
   ParentNodes:
   - {fileID: -5524138455415709277}
   ChildNodes: []
+  PanelType: 0
 --- !u!114 &3596051953548515286
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -799,8 +802,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2630.4998
-    y: -153.00012
+    x: -899.49976
+    y: -438.00012
     width: 190
     height: 135
   IsDragging: 1
@@ -831,8 +834,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 495.5
-    y: 383
+    x: 2226.5
+    y: 98
     width: 190
     height: 135
   IsDragging: 1
@@ -865,8 +868,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2630.1665
-    y: -305.66675
+    x: -899.1665
+    y: -590.66675
     width: 190
     height: 135
   IsDragging: 1
@@ -897,10 +900,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -395.5
-    y: 150
+    x: 1335.5
+    y: -135
     width: 190
-    height: 135
+    height: 160
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -912,6 +915,7 @@ MonoBehaviour:
   ChildNodes:
   - {fileID: -9182997266056582864}
   - {fileID: -3497793149760490190}
+  PanelType: 0
 --- !u!114 &4407265657470502696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -927,8 +931,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2549.4998
-    y: 678.6665
+    x: -818.49976
+    y: 393.6665
     width: 190
     height: 135
   IsDragging: 1
@@ -959,8 +963,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3240.833
-    y: 784.6665
+    x: -1509.833
+    y: 499.6665
     width: 190
     height: 135
   IsDragging: 1
@@ -991,8 +995,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3861.5
-    y: 579.33325
+    x: -2130.5
+    y: 294.33325
     width: 190
     height: 135
   IsDragging: 1
@@ -1022,8 +1026,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2547.4998
-    y: 827
+    x: -816.49976
+    y: 542
     width: 190
     height: 135
   IsDragging: 1
@@ -1054,8 +1058,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -635.5
-    y: 145
+    x: 1095.5
+    y: -140
     width: 190
     height: 135
   IsDragging: 1
@@ -1086,10 +1090,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2126.5
-    y: 600
+    x: -395.5
+    y: 315
     width: 190
-    height: 115
+    height: 140
   IsDragging: 0
   IsSelected: 0
   Answers:
@@ -1106,6 +1110,7 @@ MonoBehaviour:
   - {fileID: 3956359589354351607}
   ChildNodes:
   - {fileID: 7601294090109089498}
+  PanelType: 0
 --- !u!114 &7601294090109089498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1121,8 +1126,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1766.5
-    y: 531
+    x: -35.5
+    y: 246
     width: 190
     height: 135
   IsDragging: 0

@@ -575,7 +575,7 @@ namespace cherrydev
             FieldInfo trueChildField = nodeType.GetField("TrueChildNode");
             FieldInfo falseChildField = nodeType.GetField("FalseChildNode");
 
-            Node nextNode = null;
+            Node nextNode;
 
             if (conditionResult)
             {
@@ -909,13 +909,20 @@ namespace cherrydev
         /// </summary>
         private void CalculateMaxAmountOfAnswerButtons()
         {
+            if (_currentNodeGraph == null || _currentNodeGraph.NodesList == null)
+                return;
+
             foreach (Node node in _currentNodeGraph.NodesList)
             {
+                // CRITICAL FIX: Check if node is null before processing
+                if (node == null)
+                    continue;
+
                 if (node.GetType() == typeof(AnswerNode))
                 {
                     AnswerNode answerNode = (AnswerNode)node;
 
-                    if (answerNode.Answers.Count > _maxAmountOfAnswerButtons)
+                    if (answerNode.Answers != null && answerNode.Answers.Count > _maxAmountOfAnswerButtons)
                         _maxAmountOfAnswerButtons = answerNode.Answers.Count;
                 }
             }

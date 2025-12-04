@@ -18,17 +18,24 @@ public class BlackjackPopupController : MonoBehaviour
     [Header("Instructions")]
     public MinigameInstructions instructions;
 
+    [Header("Show Flags")]
+    [Tooltip("Overworld objects (flag/entrance) to hide once Blackjack is finished.")]
+    [SerializeField] private GameObject[] blackjackShowFlags;
 
     bool wasCursorVisible;
     CursorLockMode priorLockState;
     [SerializeField] private GameObject hudGroup;
 
+    private BlackjackGame blackjackGame;
     void Awake()
     {
-        if (quitButton != null) quitButton.onClick.AddListener(Hide);
+        if (quitButton != null)
+            quitButton.onClick.AddListener(Hide);
 
-        var game = window.GetComponentInChildren<BlackjackGame>();
-        if (game) game.OnRequestClose += Hide;
+        blackjackGame = window.GetComponentInChildren<BlackjackGame>();
+        if (blackjackGame != null)
+            blackjackGame.OnRequestClose += Hide;
+
         HideImmediate(); // ensure not visible at scene start
     }
 
@@ -81,8 +88,27 @@ public class BlackjackPopupController : MonoBehaviour
         // Resume NPCs and ClockTimer (using minigame pause)
         GlobalPause.SetMinigamePaused(false);
 
-        GameFlags.SetFlag("minigame.blackjack.finish");
-        Debug.Log("[Blackjack] Flag set: minigame.blackjack.finish");
+        bool matchIsOver = (blackjackGame != null && blackjackGame.MatchOver);
+
+        if (matchIsOver)
+        {
+            GameFlags.SetFlag("minigame.blackjack.finish");
+            Debug.Log("[Blackjack] Match over – hiding entrance flag.");
+
+            if (blackjackShowFlags != null)
+            {
+                foreach (var obj in blackjackShowFlags)
+                {
+                    if (obj != null)
+                        obj.SetActive(false);
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("[Blackjack] Closed early – leaving entrance so player can retry.");
+        }
+
 
         // If BlackjackGame needs to do cleanup, you can call a public method on it here.
 

@@ -35,6 +35,13 @@ public class GameManager : MonoBehaviour
     private bool gameOver = false;
     private bool autoMode = false;
 
+    // Track if the player has completed at least one full match (player or AI reaching targetScore)
+    private bool hasCompletedMatch = false;
+
+    // Public read-only access so other scripts can query state
+    public bool GameOver => gameOver;
+    public bool HasCompletedMatch => hasCompletedMatch;
+
     void Start()
     {
         HookButtons();
@@ -116,6 +123,7 @@ public class GameManager : MonoBehaviour
         if (playerScore >= targetScore || aiScore >= targetScore)
         {
             gameOver = true;
+            hasCompletedMatch = true;
             statusText.text += (playerScore > aiScore)
                 ? " You win the match! 🎉"
                 : " AI wins the match! 🤖";
