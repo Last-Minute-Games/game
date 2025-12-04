@@ -86,6 +86,7 @@ public class RiddlePopupController : MonoBehaviour
         foreach (var b in playerControlScripts)
             if (b != null) b.enabled = true;
 
+        GameFlags.SetFlag("minigame.riddle.finish");
         // Restore cursor state
         Cursor.lockState = priorLockState;
         Cursor.visible = wasCursorVisible;
