@@ -74,8 +74,8 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
     minEnemiesPerWave: 1
     maxEnemiesPerWave: 2
-    turnTimeLimit: 10
-    statMultiplierIncrease: 0.1
+    turnTimeLimit: 12
+    statMultiplierIncrease: 0.15
   - waveName: Wave 2
     waveMessage: Wave 2!
     delayBeforeWave: 1
@@ -85,8 +85,8 @@ MonoBehaviour:
     randomEnemyPool: []
     minEnemiesPerWave: 0
     maxEnemiesPerWave: 0
-    turnTimeLimit: 10
-    statMultiplierIncrease: 0.2
+    turnTimeLimit: 12
+    statMultiplierIncrease: 0.1
   - waveName: Boss Round
     waveMessage: Boss Round1!
     delayBeforeWave: 0
@@ -95,5 +95,5 @@ MonoBehaviour:
     randomEnemyPool: []
     minEnemiesPerWave: 0
     maxEnemiesPerWave: 0
-    turnTimeLimit: 15
-    statMultiplierIncrease: 0.2
+    turnTimeLimit: 10
+    statMultiplierIncrease: 0.15
