@@ -44,15 +44,24 @@ public class BlackjackGame : MonoBehaviour
     private int playerWins = 0;
     private int dealerWins = 0;
     private bool matchOver = false;
+    public bool MatchOver => matchOver;
+
 
     readonly List<GameObject> temp = new List<GameObject>(); //optional???
 
-
+    [Header("Audio")]
+    [SerializeField] private AudioSource cardAudioSource;
+    [SerializeField] private AudioClip cardDealClip;
 
     void Awake()
     {
         deck = new Deck(numberOfDecks);
         WireButtons();
+
+        if (cardAudioSource == null)
+        {
+            cardAudioSource = GetComponent<AudioSource>();
+        }
     }
 
 
@@ -81,9 +90,16 @@ public class BlackjackGame : MonoBehaviour
 
         // Initial deal (player, dealer, player, dealer)
         player.Add(deck.Draw());
+        PlayCardSound();
+
         dealer.Add(deck.Draw());
+        PlayCardSound();
+
         player.Add(deck.Draw());
+        PlayCardSound();
+
         dealer.Add(deck.Draw());
+        PlayCardSound();
 
 
         playerTurn = true;
@@ -106,13 +122,22 @@ public class BlackjackGame : MonoBehaviour
     public void OnHit()
     {
         Debug.Log("Hit pressed");
-        if (!playerTurn) return;
+        if (!playerTurn || matchOver) return;
+
         player.Add(deck.Draw());
+        PlayCardSound();
+
         UpdateUI(hideDealerHoleCard: true);
         if (player.IsBust())
         {
             statusText.text = "Player busts! Dealer wins.";
             EndPlayerTurn();
+        }
+        else if (player.Total() == 21)
+        {
+            // ✅ Auto-stand at 21
+            statusText.text = "Player hits 21! Dealer's turn.";
+            EndPlayerTurn();                 // starts DealerPlay()
         }
     }
 
@@ -139,6 +164,8 @@ public class BlackjackGame : MonoBehaviour
         while (dealer.Total() < 17)
         {
             dealer.Add(deck.Draw());
+            PlayCardSound();
+
             UpdateUI(hideDealerHoleCard: false);
             yield return new WaitForSeconds(0.35f);
         }
@@ -309,6 +336,14 @@ public class BlackjackGame : MonoBehaviour
     {
         yield return new WaitForSeconds(s);
         OnRequestClose?.Invoke();   // popup will Hide()
+    }
+
+    void PlayCardSound()
+    {
+        if (cardAudioSource != null && cardDealClip != null)
+        {
+            cardAudioSource.PlayOneShot(cardDealClip);
+        }
     }
 
 

@@ -21,12 +21,24 @@ public class FlipScript : MonoBehaviour
     public float totalFlipTime = 1f;
     public int flips = 3;            // how many times to loop through spinFrames
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [Tooltip("Optional: short sound that plays when the flip starts (whoosh/spin).")]
+    [SerializeField] private AudioClip spinClip;
+    [Tooltip("Sound that plays when the coin lands on the final side.")]
+    [SerializeField] private AudioClip landClip;
+
     bool isFlipping;
 
     void Awake()
     {
         uiImage = GetComponent<Image>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
 
         // Set a safe default sprite at start
         if (sides != null && sides.Length > 0)
@@ -53,6 +65,22 @@ public class FlipScript : MonoBehaviour
             SetSprite(sides[LastResult]);
     }
 
+    private void PlaySpinSound()
+    {
+        if (audioSource != null && spinClip != null)
+        {
+            audioSource.PlayOneShot(spinClip);
+        }
+    }
+
+    private void PlayLandSound()
+    {
+        if (audioSource != null && landClip != null)
+        {
+            audioSource.PlayOneShot(landClip);
+        }
+    }
+
     // Called by GameManager
     public void Flip(bool forceHeads, Action<int> onComplete)
     {
@@ -64,6 +92,8 @@ public class FlipScript : MonoBehaviour
     {
         isFlipping = true;
         SetVisible(true);
+
+        PlaySpinSound();
 
         // --- NEW: use the sprite-sheet frames if we have them ---
         if (spinFrames != null && spinFrames.Length > 0)
@@ -98,6 +128,8 @@ public class FlipScript : MonoBehaviour
 
         if (sides != null && sides.Length > LastResult)
             SetSprite(sides[LastResult]);
+
+        PlayLandSound();
 
         isFlipping = false;
         onComplete?.Invoke(LastResult);
