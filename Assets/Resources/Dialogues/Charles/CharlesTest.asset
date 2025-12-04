@@ -15,22 +15,53 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -87.5
-    y: 167
+    x: 52.166504
+    y: 227.66675
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Charles
-    Text: Think about it. King Grover was old. His health even with the best of doctors
-      had been steadily declining. At most he would have lasted a couple more years.
-      So why murder him, and in such a gruesome way at that? Why not just wait for
-      death to claim him naturally.
+    Text: 'Think about it. King Grover was old. His health even with the best of
+      doctors had been steadily declining. At most he would have lasted a couple
+      more years. '
     CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
   ParentNodes:
   - {fileID: 4063941465283170886}
-  ChildNode: {fileID: 2651870265347701213}
+  ChildNode: {fileID: -5566822222242354776}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-8930803442702143524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 766.6665
+    y: 1150.3336
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 1
+  _sentence:
+    CharacterName: Charles
+    Text: I hope you find the true killer.
+    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+  ParentNodes:
+  - {fileID: 2983682691910107380}
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -50,16 +81,17 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1499.5
-    y: 70
+    x: -2794.833
+    y: -518
     width: 200
     height: 120
   IsDragging: 1
   IsSelected: 0
-  _flagName: minigame.sokoban.win
-  ParentNodes: []
+  _flagName: minigame.sokoban.finish
+  ParentNodes:
+  - {fileID: 1075923603147277670}
   TrueChildNode: {fileID: -2355520360247351113}
-  FalseChildNode: {fileID: 0}
+  FalseChildNode: {fileID: 734112550755117824}
 --- !u!114 &-7479406396232990470
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -75,10 +107,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2786.833
-    y: 549.9999
+    x: -2647.166
+    y: 610.6664
     width: 190
-    height: 175
+    height: 200
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -94,6 +126,33 @@ MonoBehaviour:
   - {fileID: -6361599389147176031}
   - {fileID: 4407265657470502696}
   - {fileID: 6432539645937624382}
+  PanelType: 0
+--- !u!114 &-7122843744178183736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d19e89406c5582438a765fdd212f9da, type: 3}
+  m_Name: Set GameFlag Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.SetGameFlagNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -1032.8335
+    y: 839.66675
+    width: 200
+    height: 120
+  IsDragging: 1
+  IsSelected: 0
+  _flagName: minigame.sokoban.show
+  _removeFlag: 0
+  ParentNodes:
+  - {fileID: 2874441801261562029}
+  ChildNode: {fileID: 0}
 --- !u!114 &-6583929179693516810
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,8 +168,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2629.833
-    y: 3.999878
+    x: -2490.166
+    y: 64.666626
     width: 190
     height: 135
   IsDragging: 1
@@ -141,8 +200,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2546.1665
-    y: 399.66663
+    x: -2406.5
+    y: 460.33337
     width: 190
     height: 135
   IsDragging: 1
@@ -174,8 +233,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2546.1665
-    y: 538.33325
+    x: -2406.5
+    y: 599.0001
     width: 190
     height: 135
   IsDragging: 1
@@ -191,7 +250,7 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-5609889285606500520
+--- !u!114 &-6044815618795102067
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -206,16 +265,51 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1182
-    y: 350
+    x: -4106.3335
+    y: 3.666748
     width: 200
     height: 120
   IsDragging: 1
   IsSelected: 0
-  _flagName: minigame.sokoban.loss
-  ParentNodes: []
+  _flagName: minigame.sokoban.show
+  ParentNodes:
+  - {fileID: 5062585804381860848}
   TrueChildNode: {fileID: 1075923603147277670}
-  FalseChildNode: {fileID: 0}
+  FalseChildNode: {fileID: 734112550755117824}
+--- !u!114 &-5566822222242354776
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 214.66602
+    y: 359.66663
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Charles
+    Text: So why murder him, and in such a gruesome way at that? Why not just wait
+      for death to claim him naturally.
+    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+  ParentNodes:
+  - {fileID: -3497793149760490190}
+  - {fileID: -9182997266056582864}
+  ChildNode: {fileID: 2651870265347701213}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &-5524138455415709277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231,19 +325,51 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 516.5
-    y: 587
+    x: 656.1655
+    y: 647.1666
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Nikolaus
-    Text: "A document\u2026 I should ask Avant about this"
+    Text: "(A document\u2026 I should ask Avant about this)"
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
-  - {fileID: 3803400012888440554}
+  - {fileID: 6888739700403586844}
   ChildNode: {fileID: 2983682691910107380}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-4964479413314843858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 887.3335
+    y: 1031.6669
+    width: 190
+    height: 135
+  IsDragging: 0
+  IsSelected: 0
+  _sentence:
+    CharacterName: Charles
+    Text: You're welcome.
+    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+  ParentNodes:
+  - {fileID: 2983682691910107380}
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -263,8 +389,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2628.8333
-    y: 140.66656
+    x: -2489.1665
+    y: 201.33325
     width: 190
     height: 135
   IsDragging: 1
@@ -295,22 +421,21 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -113.5
-    y: 393.5
+    x: 26.833496
+    y: 454.16687
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: No problem. I apologize for coming off so strong earlier.
-    Text: Think about it. King Grover was old. His health even with the best of doctors
-      had been steadily declining. At most he would have lasted a couple more years.
-      So why murder him, and in such a gruesome way at that? Why not just wait for
-      death to claim him naturally.
+    CharacterName: Charles
+    Text: 'Think about it. King Grover was old. His health even with the best of
+      doctors had been steadily declining. At most he would have lasted a couple
+      more years. '
     CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
   ParentNodes:
   - {fileID: 4063941465283170886}
-  ChildNode: {fileID: 2651870265347701213}
+  ChildNode: {fileID: -5566822222242354776}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -330,8 +455,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3333.1665
-    y: 279.66656
+    x: -3193.499
+    y: 340.33325
     width: 190
     height: 135
   IsDragging: 1
@@ -362,8 +487,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -929.5
-    y: 147.5
+    x: -789.8335
+    y: 208.16675
     width: 190
     height: 135
   IsDragging: 1
@@ -394,8 +519,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1182.5
-    y: 145
+    x: -1042.8335
+    y: 205.66675
     width: 190
     height: 135
   IsDragging: 1
@@ -425,10 +550,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3587.8335
-    y: 568
+    x: -3448.1658
+    y: 628.6666
     width: 190
-    height: 175
+    height: 200
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -438,12 +563,13 @@ MonoBehaviour:
   - I'm doing fine, how about you?
   AnswerKeys: []
   ParentNodes:
-  - {fileID: 5062585804381860848}
+  - {fileID: 734112550755117824}
   ChildNodes:
   - {fileID: -3445654401807756177}
   - {fileID: 1546684205061242809}
   - {fileID: 4747770003170396795}
   - {fileID: 2486643074951911464}
+  PanelType: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -485,12 +611,18 @@ MonoBehaviour:
   - {fileID: 3803400012888440554}
   - {fileID: -5524138455415709277}
   - {fileID: 2983682691910107380}
-  - {fileID: -5609889285606500520}
   - {fileID: 2874441801261562029}
-  - {fileID: 2898888290047341716}
   - {fileID: -3371343915219011342}
   - {fileID: -3497793149760490190}
   - {fileID: 210486850876958543}
+  - {fileID: -7122843744178183736}
+  - {fileID: -6044815618795102067}
+  - {fileID: 734112550755117824}
+  - {fileID: -5566822222242354776}
+  - {fileID: 6888739700403586844}
+  - {fileID: 8832049962653368455}
+  - {fileID: -4964479413314843858}
+  - {fileID: -8930803442702143524}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -512,8 +644,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 608.5
-    y: 199.5
+    x: 748.167
+    y: 260.16675
     width: 190
     height: 135
   IsDragging: 1
@@ -526,6 +658,39 @@ MonoBehaviour:
   ParentNodes:
   - {fileID: 2651870265347701213}
   ChildNode: {fileID: 3803400012888440554}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &734112550755117824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -3510.3325
+    y: 300.66675
+    width: 190
+    height: 135
+  IsDragging: 0
+  IsSelected: 0
+  _sentence:
+    CharacterName: Charles
+    Text: What did you need from me?
+    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+  ParentNodes:
+  - {fileID: -6044815618795102067}
+  - {fileID: -8110570794516188708}
+  ChildNode: {fileID: -427276898007415633}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -545,8 +710,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -864
-    y: 331
+    x: -3323.3323
+    y: -277.33337
     width: 190
     height: 135
   IsDragging: 1
@@ -557,8 +722,8 @@ MonoBehaviour:
     CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
   ParentNodes:
   - {fileID: -8110570794516188708}
-  - {fileID: -5609889285606500520}
-  ChildNode: {fileID: 0}
+  - {fileID: -6044815618795102067}
+  ChildNode: {fileID: -8110570794516188708}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -578,8 +743,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3262.833
-    y: 535.33325
+    x: -3123.1655
+    y: 596.0001
     width: 190
     height: 135
   IsDragging: 1
@@ -611,10 +776,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3020.5
-    y: 81.33319
+    x: -2880.8335
+    y: 142
     width: 190
-    height: 175
+    height: 200
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -630,6 +795,7 @@ MonoBehaviour:
   - {fileID: 3596051953548515286}
   - {fileID: -6583929179693516810}
   - {fileID: -3998835351229838905}
+  PanelType: 0
 --- !u!114 &2486643074951911464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -645,8 +811,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3520.833
-    y: 1174.6665
+    x: -3381.1658
+    y: 1235.3336
     width: 190
     height: 135
   IsDragging: 1
@@ -678,20 +844,19 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 186.5
-    y: 157
+    x: 326.1665
+    y: 217.66675
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Nikolaus
-    Text: Charles does have a point. Though I do not like that he seems to have thought
-      this thoroughly.
+    Text: (Charles does have a point. Though I do not like that he seems to have
+      thought this thoroughly.)
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
-  - {fileID: -9182997266056582864}
-  - {fileID: -3497793149760490190}
+  - {fileID: -5566822222242354776}
   ChildNode: {fileID: 210486850876958543}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -712,8 +877,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1488.5
-    y: 528.5
+    x: -1348.8335
+    y: 590.6669
     width: 190
     height: 135
   IsDragging: 1
@@ -724,37 +889,11 @@ MonoBehaviour:
     CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
   ParentNodes:
   - {fileID: 7601294090109089498}
-  - {fileID: 2898888290047341716}
-  ChildNode: {fileID: 0}
+  ChildNode: {fileID: -7122843744178183736}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &2898888290047341716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 040c7688b61812647b338495939d2824, type: 3}
-  m_Name: GameFlag Condition Node
-  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.GameFlagConditionNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1226
-    y: 525.5
-    width: 200
-    height: 120
-  IsDragging: 1
-  IsSelected: 0
-  _flagName: minigame.sokoban.show
-  ParentNodes: []
-  TrueChildNode: {fileID: 2874441801261562029}
-  FalseChildNode: {fileID: 0}
 --- !u!114 &2983682691910107380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -770,10 +909,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 698.5
-    y: 750
+    x: 420.1665
+    y: 926.00024
     width: 190
-    height: 155
+    height: 180
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -783,7 +922,11 @@ MonoBehaviour:
   AnswerKeys: []
   ParentNodes:
   - {fileID: -5524138455415709277}
-  ChildNodes: []
+  ChildNodes:
+  - {fileID: 8832049962653368455}
+  - {fileID: -4964479413314843858}
+  - {fileID: -8930803442702143524}
+  PanelType: 0
 --- !u!114 &3596051953548515286
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -799,8 +942,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2630.4998
-    y: -153.00012
+    x: -2490.833
+    y: -92.333496
     width: 190
     height: 135
   IsDragging: 1
@@ -831,21 +974,19 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 495.5
-    y: 383
+    x: 634.499
+    y: 443.66687
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Charles
-    Text: "He seemed happy, there was no sign that he felt on edge or threatened\u2026
-      Now that I think about it though, he was a bit adamant about this document..
-      I think he handed it to Avant."
+    Text: "He seemed happy, there was no sign that he felt on edge or threatened\u2026 "
     CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
   ParentNodes:
   - {fileID: 210486850876958543}
-  ChildNode: {fileID: -5524138455415709277}
+  ChildNode: {fileID: 6888739700403586844}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -865,8 +1006,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2630.1665
-    y: -305.66675
+    x: -2490.4995
+    y: -245.00006
     width: 190
     height: 135
   IsDragging: 1
@@ -897,10 +1038,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -395.5
-    y: 150
+    x: -255.83301
+    y: 210.66675
     width: 190
-    height: 135
+    height: 160
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -912,6 +1053,7 @@ MonoBehaviour:
   ChildNodes:
   - {fileID: -9182997266056582864}
   - {fileID: -3497793149760490190}
+  PanelType: 0
 --- !u!114 &4407265657470502696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -927,8 +1069,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2549.4998
-    y: 678.6665
+    x: -2409.833
+    y: 739.3335
     width: 190
     height: 135
   IsDragging: 1
@@ -959,8 +1101,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3240.833
-    y: 784.6665
+    x: -3101.1655
+    y: 845.33325
     width: 190
     height: 135
   IsDragging: 1
@@ -991,18 +1133,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -3861.5
-    y: 579.33325
+    x: -4379.835
+    y: 3
     width: 190
     height: 135
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Charles
-    Text: Hello Nikolaus, how goes it?
+    Text: Hello Nikolaus.
     CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
   ParentNodes: []
-  ChildNode: {fileID: -427276898007415633}
+  ChildNode: {fileID: -6044815618795102067}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -1022,8 +1164,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2547.4998
-    y: 827
+    x: -2407.833
+    y: 887.667
     width: 190
     height: 135
   IsDragging: 1
@@ -1054,8 +1196,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -635.5
-    y: 145
+    x: -495.833
+    y: 205.66675
     width: 190
     height: 135
   IsDragging: 1
@@ -1067,6 +1209,39 @@ MonoBehaviour:
   ParentNodes:
   - {fileID: -3371343915219011342}
   ChildNode: {fileID: 4063941465283170886}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &6888739700403586844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 934
+    y: 541.66675
+    width: 190
+    height: 135
+  IsDragging: 0
+  IsSelected: 0
+  _sentence:
+    CharacterName: Charles
+    Text: Now that I think about it though, he was a bit adamant about this document..
+      I think he handed it to Avant.
+    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+  ParentNodes:
+  - {fileID: 3803400012888440554}
+  ChildNode: {fileID: -5524138455415709277}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -1086,10 +1261,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2126.5
-    y: 600
+    x: -1986.8333
+    y: 660.6666
     width: 190
-    height: 115
+    height: 140
   IsDragging: 0
   IsSelected: 0
   Answers:
@@ -1106,6 +1281,7 @@ MonoBehaviour:
   - {fileID: 3956359589354351607}
   ChildNodes:
   - {fileID: 7601294090109089498}
+  PanelType: 0
 --- !u!114 &7601294090109089498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1121,8 +1297,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1766.5
-    y: 531
+    x: -1626.8335
+    y: 591.6669
     width: 190
     height: 135
   IsDragging: 0
@@ -1136,6 +1312,38 @@ MonoBehaviour:
   ParentNodes:
   - {fileID: 7210290284457381674}
   ChildNode: {fileID: 2874441801261562029}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &8832049962653368455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 848.6665
+    y: 831.66675
+    width: 190
+    height: 135
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Charles
+    Text: You're welcome.
+    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+  ParentNodes:
+  - {fileID: 2983682691910107380}
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 

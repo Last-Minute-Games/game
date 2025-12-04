@@ -68,6 +68,13 @@ public class MinigameController : MonoBehaviour
     [Tooltip("Fade-out duration in seconds.")]
     [SerializeField] float transitionFadeOutDuration = 0.4f;
 
+    [Header("Objects to hide after Sokoban is completed")]
+    [SerializeField] private GameObject[] sokobanShowFlags;
+
+    [Header("Instructions")]
+    [SerializeField] private MinigameInstructions sokobanInstructions;
+
+
     private Coroutine transitionRoutine;
     private bool isTransitionRunning;
 
@@ -339,6 +346,16 @@ public class MinigameController : MonoBehaviour
         sokobanRoot.SetActive(true);
 
         Debug.Log("Sokoban Minigame started.");
+
+        if (sokobanInstructions == null)
+        {
+            // Try to auto-find on children of the Sokoban root
+            sokobanInstructions = sokobanRoot.GetComponentInChildren<MinigameInstructions>(true);
+        }
+        if (sokobanInstructions != null)
+        {
+            sokobanInstructions.OnPopupOpened();
+        }
     }
 
     private void PerformSokobanEnd(bool solved)
@@ -378,7 +395,22 @@ public class MinigameController : MonoBehaviour
 
         ShowHUD();
 
-        GameFlags.SetFlag("minigame.sokoban.finish");
+        if (solved)
+        {
+            // Turn off all the "show" markers for this minigame
+            if (sokobanShowFlags != null)
+            {
+                foreach (GameObject flagObj in sokobanShowFlags)
+                {
+                    if (flagObj != null)
+                    {
+                        flagObj.SetActive(false);
+                    }
+                }
+            }
+
+            GameFlags.SetFlag("minigame.sokoban.finish");
+        }
 
         Debug.Log($"Sokoban Minigame finished. Solved: {solved}");
     }
