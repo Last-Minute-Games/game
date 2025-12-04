@@ -15,6 +15,13 @@ public class ClockTimer : MonoBehaviour
     [Header("Ending Scene")]
     [Tooltip("Scene to load when the game ends (e.g., after day five is completed). If empty, will use nextSceneName.")]
     public string endingSceneName = "";
+    
+    [Header("Day Five Ending")]
+    [Tooltip("EndTransition component to trigger when day.five timer runs out")]
+    public EndTransition endTransition;
+    
+    [Tooltip("Auto-find EndTransition if not assigned")]
+    public bool autoFindEndTransition = true;
 
     [Header("Transition / Fade")]
     public ScreenFader screenFader;
@@ -152,6 +159,16 @@ public class ClockTimer : MonoBehaviour
             grandfatherAudioSource = gameObject.AddComponent<AudioSource>();
             grandfatherAudioSource.playOnAwake = false;
             grandfatherAudioSource.spatialBlend = 0f;
+        }
+        
+        // Find EndTransition if needed
+        if (autoFindEndTransition && endTransition == null)
+        {
+            endTransition = FindObjectOfType<EndTransition>();
+            if (endTransition != null)
+            {
+                Debug.Log("[ClockTimer] Found EndTransition component");
+            }
         }
 
         // DO NOT START TIMER HERE
@@ -492,7 +509,40 @@ public class ClockTimer : MonoBehaviour
             yield return StartCoroutine(screenFader.EyesClosingEffect());
         }
 
-        // Now show "YOU DIED!" message
+        // Check if day five timer ran out - skip "YOU DIED" message and trigger ending immediately
+        if (GameFlags.HasFlag("day.five"))
+        {
+            Debug.Log("[ClockTimer] 🎬 Day five timer ended - triggering ending sequence (skipping death message)");
+            
+            // Stop warning sound before transitioning
+            if (warningAudioSource != null && warningAudioSource.isPlaying)
+                warningAudioSource.Stop();
+            
+            // Set the start.ending flag to allow EndTransition to proceed
+            if (!GameFlags.HasFlag("start.ending"))
+            {
+                Debug.Log("[ClockTimer] Setting start.ending flag for day.five");
+                GameFlags.SetFlag("start.ending");
+            }
+            
+            // Screen stays black (eyes closed) - wait a moment for dramatic effect
+            yield return new WaitForSeconds(1f);
+            
+            // Trigger the ending transition
+            if (endTransition != null)
+            {
+                Debug.Log("[ClockTimer] Triggering EndTransition for day.five");
+                endTransition.TriggerEndTransition();
+                yield break; // EndTransition will handle the scene load
+            }
+            else
+            {
+                Debug.LogError("[ClockTimer] EndTransition component not found! Falling back to normal scene transition.");
+                // Fall through to normal transition as fallback
+            }
+        }
+
+        // For non-day.five deaths: Show "YOU DIED!" message
         if (endMessageText != null)
         {
             endMessageText.gameObject.SetActive(true);
@@ -557,23 +607,8 @@ public class ClockTimer : MonoBehaviour
         if (warningAudioSource != null && warningAudioSource.isPlaying)
             warningAudioSource.Stop();
 
-        // Check if day five is completed - if so, play cutscene instead of normal transition
-        // Only play once by checking if cutscene hasn't been played yet
-        if (GameFlags.HasFlag("day.five") && !GameFlags.HasFlag("dayfive.cutscene.played"))
-        {
-            Debug.Log("[ClockTimer] 🎬 Day five detected - playing cutscene instead of normal transition");
-            GameFlags.SetFlag("dayfive.cutscene.played"); // Mark as played
-            yield return StartCoroutine(PlayDayFiveCutscene());
-            yield break; // Cutscene will handle scene transition
-        }
-
-        // Determine which scene to load (ending scene if day five is completed, otherwise next scene)
+        // Normal transition for other days
         string sceneToLoad = nextSceneName;
-        if (GameFlags.HasFlag("day.five") && !string.IsNullOrEmpty(endingSceneName))
-        {
-            sceneToLoad = endingSceneName;
-            Debug.Log("[ClockTimer] Day five completed - using ending scene instead of next scene");
-        }
 
         // Transition to the next scene - KEEP PANELS CLOSED
         if (string.IsNullOrEmpty(sceneToLoad))
@@ -725,7 +760,7 @@ public class ClockTimer : MonoBehaviour
         Debug.Log($"  - breakEndIndex: {breakEndIndex}");
         Debug.Log($"  - frameCount > breakEndIndex: {frameCount > breakEndIndex}");
         Debug.Log($"  - clockImage: {(clockImage != null ? "not null" : "NULL")}");
-        
+
         // Optional safety check
         if (clockFrames != null && frameCount > breakEndIndex && clockImage != null)
         {
@@ -931,42 +966,4 @@ public class ClockTimer : MonoBehaviour
         var scene = SceneManager.GetActiveScene();
         return "hudshown." + scene.name + "." + scene.buildIndex;
     }
-
-    /// <summary>
-    /// Plays the day five cutscene sequence
-    /// </summary>
-    private IEnumerator PlayDayFiveCutscene()
-    {
-        const string cutsceneSceneName = "DayFiveCutscene";
-        const float delayBeforeCutscene = 2f;
-        const float fadeDuration = 1f;
-        
-        Debug.Log("[ClockTimer] Starting day five cutscene");
-        
-        // Wait a moment
-        yield return new WaitForSeconds(delayBeforeCutscene);
-        
-        // Fade to black using screenFader if available
-        if (screenFader != null)
-        {
-            // Fade to black using screenFader
-            float elapsed = 0f;
-            float startAlpha = screenFader.fadePanel != null ? screenFader.fadePanel.color.a : 0f;
-            
-            while (elapsed < fadeDuration)
-            {
-                elapsed += Time.deltaTime;
-                float targetAlpha = Mathf.Lerp(startAlpha, 1f, elapsed / fadeDuration);
-                screenFader.SetPanelAlpha(targetAlpha);
-                yield return null;
-            }
-            
-            screenFader.SetPanelAlpha(1f);
-        }
-        
-        // Load the cutscene scene
-        Debug.Log($"[ClockTimer] Loading cutscene scene: {cutsceneSceneName}");
-        SceneManager.LoadScene(cutsceneSceneName);
-    }
-
 }

@@ -24,16 +24,27 @@ public class BlackjackEntrance : MonoBehaviour
         if (popup == null || player == null)
             return;
 
+        // Check if any interaction is already in progress
+        if (Systems.InteractionLockManager.IsLocked) return;
+
         // Check distance to player
         float distance = Vector3.Distance(transform.position, player.position);
 
         // If close enough and player presses E
         if (distance <= interactDistance && Input.GetKeyDown(KeyCode.E))
         {
+            // Try to acquire the interaction lock
+            if (!Systems.InteractionLockManager.TryLock())
+            {
+                return; // Another interaction is in progress
+            }
+            
             // Minigame pause will be set in popup.Show()
             GameFlags.SetFlag("InBlackjackMinigame");
 
             popup.Show();
+            
+            // Note: Lock will be released when popup closes in BlackjackPopupController
         }
     }
 }

@@ -99,12 +99,12 @@ public class BlackjackPopupController : MonoBehaviour
             if (blackjackGame.PlayerWonMatch)
             {
                 GameFlags.SetFlag("minigame.blackjack.win");
-                Debug.Log("[Blackjack] Player won the match – setting win flag.");
+                Debug.Log("[Blackjack] Player won the match ï¿½ setting win flag.");
             }
             else if (blackjackGame.DealerWonMatch)
             {
                 GameFlags.SetFlag("minigame.blackjack.lose");
-                Debug.Log("[Blackjack] Player lost the match – setting lose flag.");
+                Debug.Log("[Blackjack] Player lost the match ï¿½ setting lose flag.");
             }
             else
             {
@@ -126,7 +126,7 @@ public class BlackjackPopupController : MonoBehaviour
         }
         else
         {
-            Debug.Log("[Blackjack] Closed early – leaving entrance so player can retry.");
+            Debug.Log("[Blackjack] Closed early ï¿½ leaving entrance so player can retry.");
         }
 
 
@@ -142,6 +142,9 @@ public class BlackjackPopupController : MonoBehaviour
 
         // Hide UI
         HideImmediate();
+        
+        // Release the interaction lock
+        Systems.InteractionLockManager.Unlock();
     }
 
     void HideImmediate()

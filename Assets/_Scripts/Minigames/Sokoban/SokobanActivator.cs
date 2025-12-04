@@ -56,12 +56,13 @@ public class SokobanActivator : MonoBehaviour
 
     private void OnInteract()
     {
-        //get loc
+        // Try to acquire the interaction lock
+        if (!Systems.InteractionLockManager.TryLock())
+        {
+            return; // Another interaction is in progress
+        }
 
-
-        //clock
-
-        GameFlags.SetFlag("InMinigame");//somehting about line 77 in GAmeFlags.cs file
+        GameFlags.SetFlag("InMinigame");
 
         FindObjectOfType<ClockTimer>().PauseTimer(true);   // Pause
 
@@ -77,5 +78,7 @@ public class SokobanActivator : MonoBehaviour
 
         // This is the single function call that starts the minigame
         minigameController.StartSokoban();
+        
+        // Note: Lock will be released when minigame ends in MinigameController
     }
 }
