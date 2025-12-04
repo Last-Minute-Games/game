@@ -575,7 +575,7 @@ namespace cherrydev
             FieldInfo trueChildField = nodeType.GetField("TrueChildNode");
             FieldInfo falseChildField = nodeType.GetField("FalseChildNode");
 
-            Node nextNode = null;
+            Node nextNode;
 
             if (conditionResult)
             {
