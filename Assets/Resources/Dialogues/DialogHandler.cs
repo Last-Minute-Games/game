@@ -38,8 +38,17 @@ namespace Dialogues
             if (_npcController)
                 _npcBrain = GetComponent<NpcBrain2D>();
 
+            // Add null check for dialogBehaviour before subscribing
+            if (dialogBehaviour == null)
+            {
+                Debug.LogError($"[DialogTrigger] '{gameObject.name}' has no DialogBehaviour assigned! Dialog will not trigger GlobalPause.", this);
+                return;
+            }
+
             dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
             dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
+            
+            Debug.Log($"[DialogTrigger] '{gameObject.name}' successfully subscribed to DialogBehaviour events");
         }
 
         private void OnDestroy()
@@ -143,16 +152,22 @@ namespace Dialogues
                 return;
             }
 
-            if (dialogBehaviour && dialogGraph)
+            if (dialogBehaviour == null)
             {
-                // Mark that the NEXT OnDialogStarted/Finished belongs to THIS NPC
-                _isMyConversation = true;
-                dialogBehaviour.StartDialog(dialogGraph);
+                Debug.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogBehaviour is null!", this);
+                return;
             }
-            else
+            
+            if (dialogGraph == null)
             {
-                Debug.LogWarning("DialogTrigger: Missing DialogBehaviour or DialogNodeGraph reference.");
+                Debug.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogGraph is null!", this);
+                return;
             }
+
+            // Mark that the NEXT OnDialogStarted/Finished belongs to THIS NPC
+            _isMyConversation = true;
+            Debug.Log($"[DialogTrigger] '{gameObject.name}' starting dialog (will trigger GlobalPause)");
+            dialogBehaviour.StartDialog(dialogGraph);
         }
     }
 }
