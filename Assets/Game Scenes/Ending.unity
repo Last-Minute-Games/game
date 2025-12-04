@@ -767,9 +767,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EndingCutsceneManager
   endings:
-  - endingName: Good Ending
+  - endingName: asdfasd
     requiredFlags:
-    - ending.killer.found
+    - asdf
     - character.avant.heir
     forbiddenFlags: []
     priority: 100
@@ -793,6 +793,16 @@ MonoBehaviour:
     priority: 0
     endingDialogGraph: {fileID: 11400000, guid: a8f5e75dfd15e3d4cbffa304afe8dace, type: 2}
     backgroundImage: {fileID: 7602184945161523033, guid: 757eb04978fca3c4aaf37a7f73461e31, type: 3}
+    backgroundColor: {r: 1, g: 1, b: 1, a: 1}
+    endingMusic: {fileID: 0}
+  - endingName: WorkingEnding
+    requiredFlags:
+    - ending.killer.found
+    - character.avant.heir
+    forbiddenFlags: []
+    priority: 20
+    endingDialogGraph: {fileID: 11400000, guid: 9e448aeb32cbc9f4db80e0696c6f2e13, type: 2}
+    backgroundImage: {fileID: 2348572458802879445, guid: 8c2ebe9c5f42134479cc039925acb46f, type: 3}
     backgroundColor: {r: 1, g: 1, b: 1, a: 1}
     endingMusic: {fileID: 0}
   dialogBehaviour: {fileID: 1833780133}

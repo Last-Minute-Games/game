@@ -355,6 +355,14 @@ public class EndingCutsceneManager : MonoBehaviour
         // Log current flags for debugging
         LogCurrentFlags();
         
+        // HIDE DIALOG UI IMMEDIATELY - This ensures the background is visible
+        DialogDisplayer dialogDisplayer = FindObjectOfType<DialogDisplayer>();
+        if (dialogDisplayer != null)
+        {
+            dialogDisplayer.DisableDialogPanel();
+            Debug.Log("[EndingCutsceneManager] Dialog panels hidden at start");
+        }
+        
         // First, open eyes if the ScreenFader has them closed
         if (screenFader != null && screenFader.shouldOpenEyesOnSceneLoad)
         {
