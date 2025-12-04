@@ -10,6 +10,9 @@ namespace cherrydev
         [Header("NODE PANELS")]
         [SerializeField] private SentencePanel _dialogSentencePanel;
         [SerializeField] private AnswerPanel _dialogAnswerPanel;
+        [SerializeField] private AnswerPanel _characterSelectionPanel; // NEW: Second panel
+
+        private AnswerPanel _currentAnswerPanel; // NEW: Track which panel is active
 
         private void OnEnable()
         {
@@ -22,15 +25,14 @@ namespace cherrydev
             _dialogBehaviour.DialogTextSkipped += _dialogSentencePanel.ShowFullDialogText;
 
             _dialogBehaviour.SentenceNodeActivated += EnableDialogSentencePanel;
-            _dialogBehaviour.SentenceNodeActivated += DisableDialogAnswerPanel;
+            _dialogBehaviour.SentenceNodeActivated += DisableAllAnswerPanels;
             _dialogBehaviour.SentenceNodeActivated += _dialogSentencePanel.ResetDialogText;
             _dialogBehaviour.SentenceNodeActivatedWithParameter += _dialogSentencePanel.Setup;
 
             _dialogBehaviour.AnswerNodeActivated += EnableDialogAnswerPanel;
             _dialogBehaviour.AnswerNodeActivated += DisableDialogSentencePanel;
 
-            _dialogBehaviour.AnswerNodeActivatedWithParameter += _dialogAnswerPanel.EnableCertainAmountOfButtons;
-            _dialogBehaviour.MaxAmountOfAnswerButtonsCalculated += _dialogAnswerPanel.SetUpButtons;
+            _dialogBehaviour.MaxAmountOfAnswerButtonsCalculated += SetUpAllAnswerPanelButtons;
 
             _dialogBehaviour.AnswerNodeSetUp += SetUpAnswerDialogPanel;
 #if UNITY_LOCALIZATION
@@ -47,15 +49,14 @@ namespace cherrydev
             _dialogBehaviour.DialogTextSkipped -= _dialogSentencePanel.ShowFullDialogText;
 
             _dialogBehaviour.SentenceNodeActivated -= EnableDialogSentencePanel;
-            _dialogBehaviour.SentenceNodeActivated -= DisableDialogAnswerPanel;
+            _dialogBehaviour.SentenceNodeActivated -= DisableAllAnswerPanels;
             _dialogBehaviour.SentenceNodeActivated += _dialogSentencePanel.ResetDialogText;
             _dialogBehaviour.SentenceNodeActivatedWithParameter -= _dialogSentencePanel.Setup;
 
             _dialogBehaviour.AnswerNodeActivated -= EnableDialogAnswerPanel;
             _dialogBehaviour.AnswerNodeActivated -= DisableDialogSentencePanel;
 
-            _dialogBehaviour.AnswerNodeActivatedWithParameter -= _dialogAnswerPanel.EnableCertainAmountOfButtons;
-            _dialogBehaviour.MaxAmountOfAnswerButtonsCalculated -= _dialogAnswerPanel.SetUpButtons;
+            _dialogBehaviour.MaxAmountOfAnswerButtonsCalculated -= SetUpAllAnswerPanelButtons;
 
             _dialogBehaviour.AnswerNodeSetUp -= SetUpAnswerDialogPanel;
 #if UNITY_LOCALIZATION
@@ -68,23 +69,48 @@ namespace cherrydev
         /// </summary>
         public void DisableDialogPanel()
         {
-            DisableDialogAnswerPanel();
+            DisableAllAnswerPanels();
             DisableDialogSentencePanel();
         }
 
         /// <summary>
-        /// Enable dialog answer panel
+        /// Enable the appropriate dialog answer panel based on the current answer node
         /// </summary>
         public void EnableDialogAnswerPanel()
         {
-            ActiveGameObject(_dialogAnswerPanel.gameObject, true);
-            _dialogAnswerPanel.DisableAllButtons();
+            AnswerNode currentAnswerNode = _dialogBehaviour.CurrentAnswerNode;
+            
+            if (currentAnswerNode == null)
+            {
+                Debug.LogWarning("No current answer node found");
+                return;
+            }
+
+            // Determine which panel to use based on the node's PanelType
+            _currentAnswerPanel = currentAnswerNode.PanelType switch
+            {
+                AnswerPanelType.CharacterSelection => _characterSelectionPanel,
+                _ => _dialogAnswerPanel
+            };
+
+            // Disable all panels first
+            DisableAllAnswerPanels();
+
+            // Enable and setup the selected panel
+            ActiveGameObject(_currentAnswerPanel.gameObject, true);
+            _currentAnswerPanel.DisableAllButtons();
+            _currentAnswerPanel.EnableCertainAmountOfButtons(currentAnswerNode.Answers.Count);
         }
 
         /// <summary>
-        /// Disable dialog answer panel
+        /// Disable all answer panels
         /// </summary>
-        public void DisableDialogAnswerPanel() => ActiveGameObject(_dialogAnswerPanel.gameObject, false);
+        private void DisableAllAnswerPanels()
+        {
+            ActiveGameObject(_dialogAnswerPanel.gameObject, false);
+            if (_characterSelectionPanel != null)
+                ActiveGameObject(_characterSelectionPanel.gameObject, false);
+        }
 
         /// <summary>
         /// Enable dialog sentence panel
@@ -118,14 +144,19 @@ namespace cherrydev
         
         /// <summary>
         /// Removing all listeners and Setting up answer button onClick event
-        /// UPDATED: Now uses the new ChildNodes system and passes the button index
         /// </summary>
         /// <param name="index"></param>
         /// <param name="answerNode"></param>
         public void SetUpAnswerButtonsClickEvent(int index, AnswerNode answerNode)
         {
-            _dialogAnswerPanel.GetButtonByIndex(index).onClick.RemoveAllListeners();
-            _dialogAnswerPanel.AddButtonOnClickListener(index, 
+            if (_currentAnswerPanel == null)
+            {
+                Debug.LogWarning("No current answer panel set");
+                return;
+            }
+
+            _currentAnswerPanel.GetButtonByIndex(index).onClick.RemoveAllListeners();
+            _currentAnswerPanel.AddButtonOnClickListener(index, 
                 () => _dialogBehaviour.SetCurrentNodeAndHandleDialogGraph(index));
         }
 
@@ -136,12 +167,29 @@ namespace cherrydev
         /// <param name="answerText"></param>
         public void SetUpAnswerDialogPanel(int index, string answerText)
         {
+            if (_currentAnswerPanel == null)
+            {
+                Debug.LogWarning("No current answer panel set");
+                return;
+            }
+
             AnswerNode currentAnswerNode = _dialogBehaviour.CurrentAnswerNode;
             
             if (currentAnswerNode != null)
-                _dialogAnswerPanel.GetButtonTextByIndex(index).text = currentAnswerNode.GetAnswerText(index);
+                _currentAnswerPanel.GetButtonTextByIndex(index).text = currentAnswerNode.GetAnswerText(index);
             else
-                _dialogAnswerPanel.GetButtonTextByIndex(index).text = answerText;
+                _currentAnswerPanel.GetButtonTextByIndex(index).text = answerText;
+        }
+
+        /// <summary>
+        /// Setup buttons for all answer panels
+        /// </summary>
+        /// <param name="maxAmountOfAnswerButtons"></param>
+        private void SetUpAllAnswerPanelButtons(int maxAmountOfAnswerButtons)
+        {
+            _dialogAnswerPanel.SetUpButtons(maxAmountOfAnswerButtons);
+            if (_characterSelectionPanel != null)
+                _characterSelectionPanel.SetUpButtons(maxAmountOfAnswerButtons);
         }
 
         private void HandleLanguageChanged()
@@ -155,15 +203,18 @@ namespace cherrydev
         /// </summary>
         private void RefreshAnswerButtons()
         {
+            if (_currentAnswerPanel == null)
+                return;
+
             AnswerNode currentAnswerNode = _dialogBehaviour.CurrentAnswerNode;
             
             if (currentAnswerNode != null)
             {
                 for (int i = 0; i < currentAnswerNode.Answers.Count; i++)
                 {
-                    if (i < _dialogAnswerPanel.GetButtonCount() &&
-                        _dialogAnswerPanel.GetButtonByIndex(i).gameObject.activeSelf)
-                        _dialogAnswerPanel.GetButtonTextByIndex(i).text = currentAnswerNode.GetAnswerText(i);
+                    if (i < _currentAnswerPanel.GetButtonCount() &&
+                        _currentAnswerPanel.GetButtonByIndex(i).gameObject.activeSelf)
+                        _currentAnswerPanel.GetButtonTextByIndex(i).text = currentAnswerNode.GetAnswerText(i);
                 }
             }
         }

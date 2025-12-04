@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Exchange
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   itemName: Exchange
-  description: Deal <X> damage, and draw <Y> cards.
+  description: Deal <X> damage TO YOURSELF, and draw <Y> cards.
   artwork: {fileID: -2644645080646993927, guid: 47eb24c6b0215b50ebec14f04beb0b2d, type: 3}
   iconCategory: 3
   effects:
@@ -21,7 +21,7 @@ MonoBehaviour:
     minMultiplier: 1
     maxMultiplier: 1
     operationType: 1
-    baseValue: 3
+    baseValue: 5
     duration: 0
     durationUnit: 0
     delay: 0
@@ -58,3 +58,21 @@ MonoBehaviour:
   strongPrefixColor: {r: 1, g: 0.4, b: 0.4, a: 1}
   unlockFlag: card.exchange
   unlockedByDefault: 0
+  damageRange:
+    min: 1
+    max: 1
+  blockRange:
+    min: 1
+    max: 1
+  healRange:
+    min: 1
+    max: 1
+  energyRange:
+    min: 1
+    max: 1
+  drawRange:
+    min: 1
+    max: 1
+  strengthRange:
+    min: 1
+    max: 1

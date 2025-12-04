@@ -22,6 +22,7 @@ MonoBehaviour:
     randomEnemyPool: []
     minEnemiesPerWave: 0
     maxEnemiesPerWave: 0
+    turnTimeLimit: 15
     statMultiplierIncrease: 0.2
   day2Waves:
   - waveName: Wave 1
@@ -34,6 +35,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
     minEnemiesPerWave: 2
     maxEnemiesPerWave: 2
+    turnTimeLimit: 12
     statMultiplierIncrease: 0
   day3Waves:
   - waveName: Wave 1
@@ -46,6 +48,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
     minEnemiesPerWave: 1
     maxEnemiesPerWave: 2
+    turnTimeLimit: 12
     statMultiplierIncrease: 0.1
   - waveName: Wave 2
     waveMessage: Wave 2!
@@ -58,6 +61,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 69462be35f7d87041b2a7de2a2ff366a, type: 2}
     minEnemiesPerWave: 1
     maxEnemiesPerWave: 1
+    turnTimeLimit: 12
     statMultiplierIncrease: 0.1
   day4Waves:
   - waveName: Wave 1
@@ -70,6 +74,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
     minEnemiesPerWave: 1
     maxEnemiesPerWave: 2
+    turnTimeLimit: 10
     statMultiplierIncrease: 0.1
   - waveName: Wave 2
     waveMessage: Wave 2!
@@ -80,15 +85,15 @@ MonoBehaviour:
     randomEnemyPool: []
     minEnemiesPerWave: 0
     maxEnemiesPerWave: 0
+    turnTimeLimit: 10
     statMultiplierIncrease: 0.2
   - waveName: Boss Round
     waveMessage: Boss Round1!
     delayBeforeWave: 0
     guaranteedEnemies:
     - {fileID: 11400000, guid: 61b0e4e754505bddcb28302876177e51, type: 2}
-    randomEnemyPool:
-    - {fileID: 11400000, guid: 09ac1d1bfbc4d785fbb90ded529d9e06, type: 2}
-    - {fileID: 11400000, guid: 30cc0ed075e9970479592f3a28f70a0b, type: 2}
-    minEnemiesPerWave: 2
-    maxEnemiesPerWave: 2
+    randomEnemyPool: []
+    minEnemiesPerWave: 0
+    maxEnemiesPerWave: 0
+    turnTimeLimit: 15
     statMultiplierIncrease: 0.2

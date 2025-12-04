@@ -105,6 +105,10 @@ jobs:
         run: |
           Get-ChildItem -Path $env:OUT_DIR -Filter "*.log" -Recurse | Remove-Item -Force
           Write-Host "Removed all .log files from build output"
+          
+          # Remove Unity backup folder that shouldn't be shipped
+          Get-ChildItem -Path $env:OUT_DIR -Recurse -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*BackUpThisFolder_ButDontShipItWithYourGame*" } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          Write-Host "Removed Unity backup folder"
 
       # Zip the build folder
       - name: Zip build
@@ -392,6 +396,10 @@ jobs:
         run: |
           Get-ChildItem -Path $env:OUT_DIR -Filter "*.log" -Recurse | Remove-Item -Force
           Write-Host "Removed all .log files from build output"
+          
+          # Remove Unity backup folder that shouldn't be shipped
+          Get-ChildItem -Path $env:OUT_DIR -Recurse -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*BackUpThisFolder_ButDontShipItWithYourGame*" } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          Write-Host "Removed Unity backup folder"
 
       # Zip the build folder
       - name: Zip build
@@ -703,6 +711,10 @@ jobs:
         run: |
           find "$OUT_DIR" -name "*.log" -type f -delete
           echo "Removed all .log files from build output"
+          
+          # Remove Unity backup folder that shouldn't be shipped
+          find "$OUT_DIR" -type d -name "*BackUpThisFolder_ButDontShipItWithYourGame*" -exec rm -rf {} + 2>/dev/null || true
+          echo "Removed Unity backup folder"
 
       # Zip the build folder
       - name: Zip build

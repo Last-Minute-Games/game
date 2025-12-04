@@ -90,6 +90,15 @@ if [ -n "$ARCHITECTURE" ] && [ "$ARCHITECTURE" != "" ]; then
 else
     echo "✅ $BUILD_TARGET build (Universal) completed. Output: $OUT_DIR"
 fi
+
+# Remove Unity backup folder that shouldn't be shipped
+echo ""
+echo "Removing Unity backup folder..."
+find "$OUT_DIR" -type d -name "*BackUpThisFolder_ButDontShipItWithYourGame*" -exec rm -rf {} + 2>/dev/null || true
+if [ $? -eq 0 ]; then
+    echo "✅ Cleaned up backup folder"
+fi
+
 # Also emit the path for CI steps that want to read it
 if [ -n "$GITHUB_WORKSPACE" ]; then
     echo "$OUT_DIR" > "$GITHUB_WORKSPACE/_last_build_dir.txt"
