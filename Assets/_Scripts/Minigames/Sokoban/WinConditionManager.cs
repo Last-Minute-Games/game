@@ -46,6 +46,11 @@ public class WinConditionManager : MonoBehaviour
         {
             Debug.LogWarning("No goals found. The puzzle cannot be solved.");
         }
+
+        if (winPanel != null)
+        {
+            winPanel.SetActive(false);
+        }
     }
 
     public void GoalReached()
@@ -124,7 +129,8 @@ public class WinConditionManager : MonoBehaviour
     private IEnumerator WinSequence()
     {
         // 1) Show a small overlay (optional)
-        if (winPanel != null) winPanel.SetActive(true);
+        if (winPanel != null)
+            winPanel.SetActive(true);
 
         // 2) Freeze Sokoban controls during the delay
         if (controller != null && controller.sokobanPlayerScript != null)
