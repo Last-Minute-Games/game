@@ -612,6 +612,9 @@ namespace Systems.Overworld.Intro
             
             // Apply battle result time adjustment after reconstruction
             CheckAndApplyBattleResultTimeAdjustment();
+            
+            // Check for evidence flags and unlock corresponding cards (every day)
+            CheckAndSetEvidenceCardFlags();
 
             // Get the dialogue for current day
             DialogNodeGraph dialogueGraph = GetDaySpecificWakeUpDialogue();
@@ -754,6 +757,59 @@ namespace Systems.Overworld.Intro
             }
             
             Debug.Log("[OverworldWakeUpCutscene] Day.six ending sequence initiated");
+        }
+        
+        /// <summary>
+        /// Check for evidence flags and set corresponding card flags for the ending.
+        /// This runs every day (days 2-5) so cards are unlocked as evidence is collected.
+        /// </summary>
+        private void CheckAndSetEvidenceCardFlags()
+        {
+            Debug.Log("[OverworldWakeUpCutscene] Checking evidence flags for card unlocks...");
+            
+            // evidence.knife -> card.shield_slash
+            if (GameFlags.HasFlag("evidence.knife"))
+            {
+                if (!GameFlags.HasFlag("card.shield_slash"))
+                {
+                    GameFlags.SetFlag("card.shield_slash");
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: knife found -> Unlocked card: shield_slash");
+                }
+                else
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: knife found (card.shield_slash already unlocked)");
+                }
+            }
+            
+            // evidence.throne -> card.dramatic_exit
+            if (GameFlags.HasFlag("evidence.throne"))
+            {
+                if (!GameFlags.HasFlag("card.dramatic_exit"))
+                {
+                    GameFlags.SetFlag("card.dramatic_exit");
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: throne found -> Unlocked card: dramatic_exit");
+                }
+                else
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: throne found (card.dramatic_exit already unlocked)");
+                }
+            }
+            
+            // evidence.silverware -> card.tariff_strike
+            if (GameFlags.HasFlag("evidence.silverware"))
+            {
+                if (!GameFlags.HasFlag("card.tariff_strike"))
+                {
+                    GameFlags.SetFlag("card.tariff_strike");
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: silverware found -> Unlocked card: tariff_strike");
+                }
+                else
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Evidence: silverware found (card.tariff_strike already unlocked)");
+                }
+            }
+            
+            Debug.Log("[OverworldWakeUpCutscene] Evidence flag check complete");
         }
         
         /// <summary>
