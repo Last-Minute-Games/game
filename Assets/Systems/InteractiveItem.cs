@@ -155,12 +155,9 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         // Only respond if THIS item started the conversation
         if (!isMyConversation) return;
 
-        // Pause the clock timer
-        if (clockTimer != null)
-        {
-            clockTimer.PauseTimer(true);
-            Debug.Log($"[InteractiveItem] {name}: Clock timer paused");
-        }
+        // Pause NPCs and timer via GlobalPause (but not player input or timescale)
+        GlobalPause.SetMinigamePaused(true);
+        Debug.Log($"[InteractiveItem] {name}: GlobalPause minigame pause enabled (NPCs and timer paused)");
 
         if (characterController != null)
             characterController.SetDialogueActive(true);
@@ -189,12 +186,9 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         // Only respond if THIS item started the conversation
         if (!isMyConversation) return;
 
-        // Resume the clock timer
-        if (clockTimer != null)
-        {
-            clockTimer.PauseTimer(false);
-            Debug.Log($"[InteractiveItem] {name}: Clock timer resumed");
-        }
+        // Resume NPCs and timer via GlobalPause
+        GlobalPause.SetMinigamePaused(false);
+        Debug.Log($"[InteractiveItem] {name}: GlobalPause minigame pause disabled (NPCs and timer resumed)");
 
         // Set all flags when dialog finishes
         if (flagsToSet != null && flagsToSet.Count > 0)

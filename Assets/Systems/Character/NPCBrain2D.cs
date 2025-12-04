@@ -97,6 +97,7 @@ public class NpcBrain2D : MonoBehaviour
                 break;
         }
 
+        // Only update motor input if not paused (we already returned early above if paused)
         _motor.SetMoveInput(_desiredMove);
     }
 
@@ -107,6 +108,14 @@ public class NpcBrain2D : MonoBehaviour
 
         while (Vector2.Distance(transform.position, target) > 0.1f)
         {
+            // Check pause conditions in the loop
+            if (_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded || GlobalPause.IsMinigamePaused)
+            {
+                _desiredMove = Vector2.zero;
+                yield return null;
+                continue;
+            }
+            
             var to = (target - (Vector2)transform.position).normalized;
             _desiredMove = to;
             yield return null;
@@ -261,9 +270,17 @@ public class NpcBrain2D : MonoBehaviour
 
                 while (t < walkTime)
                 {
-                    t += Time.deltaTime;
-                    currentDir = Vector2.Lerp(currentDir, targetDir, Time.deltaTime * wanderSettings.wanderTurnSpeed).normalized;
-                    _desiredMove = currentDir;
+                    // Don't update movement while paused
+                    if (!(_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded || GlobalPause.IsMinigamePaused))
+                    {
+                        t += Time.deltaTime;
+                        currentDir = Vector2.Lerp(currentDir, targetDir, Time.deltaTime * wanderSettings.wanderTurnSpeed).normalized;
+                        _desiredMove = currentDir;
+                    }
+                    else
+                    {
+                        _desiredMove = Vector2.zero;
+                    }
                     yield return null;
                 }
             }
@@ -276,9 +293,17 @@ public class NpcBrain2D : MonoBehaviour
 
                 while (t < walkTime)
                 {
-                    t += Time.deltaTime;
-                    currentDir = Vector2.Lerp(currentDir, targetDir, Time.deltaTime * wanderSettings.wanderTurnSpeed).normalized;
-                    _desiredMove = currentDir;
+                    // Don't update movement while paused
+                    if (!(_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded || GlobalPause.IsMinigamePaused))
+                    {
+                        t += Time.deltaTime;
+                        currentDir = Vector2.Lerp(currentDir, targetDir, Time.deltaTime * wanderSettings.wanderTurnSpeed).normalized;
+                        _desiredMove = currentDir;
+                    }
+                    else
+                    {
+                        _desiredMove = Vector2.zero;
+                    }
                     yield return null;
                 }
 
