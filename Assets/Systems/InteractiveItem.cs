@@ -118,7 +118,9 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
         if (isPlayerNear && Input.GetKeyDown(interactKey))
         {
+            // Check both dialogue state and interaction lock
             if (characterController != null && characterController.IsDialogueActive) return;
+            if (Systems.InteractionLockManager.IsLocked) return;
             Interact();
         }
     }
@@ -135,6 +137,12 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         {
             Debug.LogWarning($"{name}: Missing DialogGraph reference.");
             return;
+        }
+
+        // Try to acquire the lock
+        if (!Systems.InteractionLockManager.TryLock())
+        {
+            return; // Another interaction is in progress
         }
 
         // Mark that THIS item is starting the conversation
@@ -227,6 +235,9 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
         // Reset the flag so we don't respond to other conversations
         isMyConversation = false;
+        
+        // Release the interaction lock
+        Systems.InteractionLockManager.Unlock();
     }
 
     private System.Collections.IEnumerator FadeMusic(bool fadeIn)

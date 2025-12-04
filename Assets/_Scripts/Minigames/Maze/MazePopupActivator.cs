@@ -61,6 +61,12 @@ public class MazePopupActivator : MonoBehaviour
 
     private void OnInteract()
     {
+        // Try to acquire the interaction lock
+        if (!Systems.InteractionLockManager.TryLock())
+        {
+            return; // Another interaction is in progress
+        }
+        
         // Set flag
         GameFlags.SetFlag("InMinigame");
 
@@ -80,5 +86,7 @@ public class MazePopupActivator : MonoBehaviour
 
         // This is the single function call that starts the minigame with transitions
         mazePopupController.StartMaze();
+        
+        // Note: Lock will be released when maze ends in MazePopupController
     }
 }
