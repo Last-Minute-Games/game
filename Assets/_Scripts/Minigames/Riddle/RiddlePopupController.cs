@@ -38,6 +38,8 @@ public class RiddlePopupController : MonoBehaviour
     public void Show()
     {
         // Hide HUD
+        GameFlags.SetFlag("minigame.riddle.show");
+
         if (hudGroup != null)
             hudGroup.SetActive(false);
 
@@ -63,7 +65,7 @@ public class RiddlePopupController : MonoBehaviour
     public void Hide()
     {
         // Mark flag so other code knows riddle was seen
-        GameFlags.SetFlag("minigame.riddle.show");
+        //GameFlags.SetFlag("minigame.riddle.show");
 
         // Hide the floor item / flag permanently for this playthrough
         if (riddleShowFlags != null)
