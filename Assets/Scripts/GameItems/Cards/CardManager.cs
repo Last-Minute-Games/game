@@ -24,31 +24,83 @@ namespace GameItems.Cards
         {
             List<CardData> result = new();
 
-            // guarantee that slash, block and heal will be put into the draw pile
-            CardData slash = PullCard(9);
-            if (slash != null && !result.Contains(slash)) {
-                result.Add(slash);
-                result.Add(slash);
+            // please do not change the uniqueID for the cards
+            // TODO: auto-populate these runtime with the actual uniqueIDs
+
+            // BASE CARDS
+            const int BLOCK_ID = 1;
+            const int HEAL_POTION_ID = 6;
+            const int SLASH_ID = 9;
+
+            // SPECIAL CARDS
+            const int DOUBLE_SLASH_ID = 2;
+            const int DRAMATIC_EXIT_ID = 3;
+            const int EXCHANGE_ID = 4;
+            const int TARIFF_STRIKE_ID = 5;
+            const int ENERGY_DRINK_ID = 7;
+            const int SHIELD_SLASH_ID = 8;
+            const int WORKOUT_ID = 10;
+
+            /*
+            process:
+            1) pull every special card into result array, one of each
+            2) pull guaranteed minimum of the base cards
+            3) pull a random 'number' amount of cards in unlockedCardPool excluding certain cards
+            */
+
+            // 1) Exclude base cards using PullCard() to get CardData versions
+            List<CardData> excludeBaseCards = new()
+            {
+                PullCard(BLOCK_ID),
+                PullCard(HEAL_POTION_ID),
+                PullCard(SLASH_ID)
+            };
+            excludeBaseCards.RemoveAll(c => c == null); // clean up nulls
+
+            // Get all special cards (all unlocked, except the base cards)
+            List<CardData> specialCardPool =
+                allCardPool.FindAll(c => IsCardUnlocked(c, excludeBaseCards));
+
+            // Add exactly 1 copy of each special card
+            foreach (var card in specialCardPool)
+            {
+                if (card != null)
+                    result.Add(card);
             }
 
-            CardData block = PullCard(1);
-            if (block != null && !result.Contains(block)) {
-                result.Add(block);
-                result.Add(block);
+            // 2)
+
+            const int MIN_SLASH = 4;
+            const int MIN_BLOCK = 2;
+            const int MIN_HEAL = 2;
+
+            CardData slash = PullCard(SLASH_ID);
+            if (slash != null) {
+                for (int i = 0; i < MIN_SLASH; i++) {
+                    result.Add(slash);
+                }
             }
 
-            CardData heal = PullCard(6);
-            if (block != null && !result.Contains(block)) {
-                result.Add(heal);
+            CardData block = PullCard(BLOCK_ID);
+            if (block != null) {
+                for (int i = 0; i < MIN_BLOCK; i++) {
+                    result.Add(block);
+                }
             }
 
+            CardData heal = PullCard(HEAL_POTION_ID);
+            if (heal != null) {
+                for (int i = 0; i < MIN_HEAL; i++) {
+                    result.Add(heal);
+                }
+            }
 
             // Optional: reduce the amount of random cards so total stays consistent
-            number -= result.Count;
-            if (number < 0) number = 0;
+            // number -= result.Count;
+            // if (number < 0) number = 0;
 
-            // ---- ORIGINAL FUNCTION BELOW ----
-            List<CardData> unlockedPool = allCardPool.FindAll(c => IsCardUnlocked(c)); 
+            // 3)
+            List<CardData> unlockedPool = allCardPool.FindAll(c => IsCardUnlocked(c, specialCardPool)); // for now, only allow one instance of specialcards
             if (unlockedPool.Count == 0)
             {
                 Debug.LogWarning("No unlocked cards available!");
@@ -234,8 +286,11 @@ namespace GameItems.Cards
         }
 
         // Valid card pull checker depending on flag
-        private bool IsCardUnlocked(CardData card)
+        private bool IsCardUnlocked(CardData card, List<CardData> cardExclude = null)
         {
+
+            cardExclude ??= new List<CardData>(); // empty list if field isn't filled
+            
             if (card == null) return false;
 
             // Always unlocked if card is marked default
@@ -244,11 +299,11 @@ namespace GameItems.Cards
             //     return true;
 
             // No unlock flag? Treat as unlocked
-            if (string.IsNullOrEmpty(card.unlockFlag))
-                return true;
+            // if (string.IsNullOrEmpty(card.unlockFlag))
+            //     return true;
 
-            // Otherwise check the flag system
-            return GameFlags.HasFlag(card.unlockFlag);
+            // Check if card has unlock flag, and not in uniqueIDExclude list
+            return (GameFlags.HasFlag(card.unlockFlag) && !cardExclude.Contains(card));
         }
 
         // // -----------------------------------------------------------
