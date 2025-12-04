@@ -39,8 +39,21 @@ public class CoinFlipPopupController : MonoBehaviour
         {
             // Optional: if you're using GameFlags like the other minigames:
             // GameFlags.SetFlag("minigame.coinflip.finish");
+            GameFlags.SetFlag("minigame.coinflip.finish");
 
             Debug.Log("[CoinFlip] Match completed – hiding entrance flag.");
+
+            if (gameManager.PlayerWonMatch)
+            {
+                GameFlags.SetFlag("minigame.coinflip.win");
+                Debug.Log("[CoinFlip] Player won the match – setting win flag.");
+            }
+
+            else if (gameManager.AiWonMatch)
+            {
+                GameFlags.SetFlag("minigame.coinflip.lose");
+                Debug.Log("[CoinFlip] Player lost the match – setting lose flag.");
+            }
 
             if (coinFlipShowFlags != null)
             {

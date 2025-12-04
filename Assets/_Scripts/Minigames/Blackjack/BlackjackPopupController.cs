@@ -90,11 +90,30 @@ public class BlackjackPopupController : MonoBehaviour
 
         bool matchIsOver = (blackjackGame != null && blackjackGame.MatchOver);
 
-        if (matchIsOver)
+        if (matchIsOver && blackjackGame != null)
         {
+            //  Base flag: the Blackjack match is finished
             GameFlags.SetFlag("minigame.blackjack.finish");
-            Debug.Log("[Blackjack] Match over – hiding entrance flag.");
 
+            //  Outcome flags
+            if (blackjackGame.PlayerWonMatch)
+            {
+                GameFlags.SetFlag("minigame.blackjack.win");
+                Debug.Log("[Blackjack] Player won the match – setting win flag.");
+            }
+            else if (blackjackGame.DealerWonMatch)
+            {
+                GameFlags.SetFlag("minigame.blackjack.lose");
+                Debug.Log("[Blackjack] Player lost the match – setting lose flag.");
+            }
+            else
+            {
+                // Optional: if you ever add a tie condition
+                Debug.Log("[Blackjack] Match finished, but no clear winner (tie?).");
+            }
+
+            // Hide the entrance / flag so the minigame can't be replayed
+            
             if (blackjackShowFlags != null)
             {
                 foreach (var obj in blackjackShowFlags)
@@ -103,6 +122,7 @@ public class BlackjackPopupController : MonoBehaviour
                         obj.SetActive(false);
                 }
             }
+            
         }
         else
         {

@@ -42,6 +42,10 @@ public class GameManager : MonoBehaviour
     public bool GameOver => gameOver;
     public bool HasCompletedMatch => hasCompletedMatch;
 
+    public bool PlayerWonMatch => gameOver && playerScore > aiScore;
+    public bool AiWonMatch => gameOver && aiScore > playerScore;
+
+
     void Start()
     {
         HookButtons();
