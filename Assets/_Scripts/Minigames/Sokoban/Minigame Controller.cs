@@ -71,6 +71,10 @@ public class MinigameController : MonoBehaviour
     [Header("Objects to hide after Sokoban is completed")]
     [SerializeField] private GameObject[] sokobanShowFlags;
 
+    [Header("Instructions")]
+    [SerializeField] private MinigameInstructions sokobanInstructions;
+
+
     private Coroutine transitionRoutine;
     private bool isTransitionRunning;
 
@@ -342,6 +346,16 @@ public class MinigameController : MonoBehaviour
         sokobanRoot.SetActive(true);
 
         Debug.Log("Sokoban Minigame started.");
+
+        if (sokobanInstructions == null)
+        {
+            // Try to auto-find on children of the Sokoban root
+            sokobanInstructions = sokobanRoot.GetComponentInChildren<MinigameInstructions>(true);
+        }
+        if (sokobanInstructions != null)
+        {
+            sokobanInstructions.OnPopupOpened();
+        }
     }
 
     private void PerformSokobanEnd(bool solved)
