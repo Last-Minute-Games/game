@@ -53,6 +53,13 @@ namespace Systems.Overworld.Intro
         [Tooltip("Seconds to subtract from clock when player loses a battle")]
         [SerializeField] private float loseTimePenalty = 30f;
         
+        [Header("Day Six Ending")]
+        [Tooltip("EndTransition component to trigger when day.six is detected")]
+        [SerializeField] private EndTransition endTransition;
+        
+        [Tooltip("Auto-find EndTransition if not assigned")]
+        [SerializeField] private bool autoFindEndTransition = true;
+        
         private bool hasPlayed = false;
         
         // Add a flag to determine which sequence to play
@@ -333,6 +340,16 @@ namespace Systems.Overworld.Intro
             {
                 clockTimer = FindObjectOfType<ClockTimer>();
             }
+            
+            // Find EndTransition if needed
+            if (autoFindEndTransition && endTransition == null)
+            {
+                endTransition = FindObjectOfType<EndTransition>();
+                if (endTransition != null)
+                {
+                    Debug.Log("[OverworldWakeUpCutscene] Found EndTransition component");
+                }
+            }
 
             // Check if we should play the cutscene (via PlayerPrefs flag from TutorialScene)
             int playFlag = PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
@@ -365,6 +382,12 @@ namespace Systems.Overworld.Intro
                     Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
                     StartCoroutine(BeginWakeUpSequence());
                 }
+            }
+            // Check if day.six flag is set - trigger ending instead of dialogue
+            else if (GameFlags.HasFlag("day.six"))
+            {
+                Debug.Log("[OverworldWakeUpCutscene] day.six detected - triggering ending sequence");
+                StartCoroutine(HandleDaySixEnding());
             }
             // Check if we should play day-specific wake-up dialogue
             else if (ShouldPlayDaySpecificWakeUpDialogue())
@@ -508,7 +531,8 @@ namespace Systems.Overworld.Intro
                 case "day.two": return "day.three";
                 case "day.three": return "day.four";
                 case "day.four": return "day.five";
-                case "day.five": return null; // No day after five
+                case "day.five": return "day.six"; // day.five leads to day.six
+                case "day.six": return null; // No day after six - game ends
                 default: return null;
             }
         }
@@ -699,6 +723,37 @@ namespace Systems.Overworld.Intro
             }
 
             Debug.Log("[OverworldWakeUpCutscene] Day-specific wake-up dialogue complete");
+        }
+        
+        /// <summary>
+        /// Handle the special day.six ending sequence
+        /// </summary>
+        private IEnumerator HandleDaySixEnding()
+        {
+            Debug.Log("[OverworldWakeUpCutscene] Starting day.six ending sequence");
+            
+            // Pause the environment using GlobalPause
+            GlobalPause.SetMinigamePaused(true);
+            Debug.Log("[OverworldWakeUpCutscene] Environment paused for ending sequence");
+            
+            // Optional: Add a brief delay before triggering ending
+            yield return new WaitForSeconds(1f);
+            
+            // Trigger the ending transition
+            if (endTransition != null)
+            {
+                Debug.Log("[OverworldWakeUpCutscene] Triggering EndTransition for day.six");
+                endTransition.TriggerEndTransition();
+            }
+            else
+            {
+                Debug.LogError("[OverworldWakeUpCutscene] EndTransition component not found! Cannot trigger ending.");
+                
+                // Fallback: unpause if we can't trigger ending
+                GlobalPause.SetMinigamePaused(false);
+            }
+            
+            Debug.Log("[OverworldWakeUpCutscene] Day.six ending sequence initiated");
         }
         
         /// <summary>
