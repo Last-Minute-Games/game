@@ -69,9 +69,9 @@ public class ClockTimer : MonoBehaviour
 
     // Durations for the reconstruct (re-animate) visual: move/scale and repair sequence
     [Tooltip("Duration to move/scale the clock to center and back (seconds)")]
-    public float reconstructMoveDuration = 1.2f;
+    public float reconstructMoveDuration = 1.5f;
     [Tooltip("Total duration for the repair sequence while centered (seconds)")]
-    public float reconstructSequenceDuration = 1.2f;
+    public float reconstructSequenceDuration = 1.5f;
 
     private bool isSpecialAnimating = false;
     private Coroutine specialAnimRoutine;
@@ -154,40 +154,12 @@ public class ClockTimer : MonoBehaviour
             grandfatherAudioSource.spatialBlend = 0f;
         }
 
-        // CHECK IF WE SHOULD SKIP CLOCK RE-ANIMATE (wake-up cutscene is active)
-        int skipReanimate = PlayerPrefs.GetInt("SkipClockReanimate", 0);
-        if (skipReanimate == 1)
-        {
-            Debug.Log("[ClockTimer] SkipClockReanimate flag detected - skipping clock reconstruction animation");
-            
-            // Clear the flag so next time it plays normally
-            PlayerPrefs.SetInt("SkipClockReanimate", 0);
-            PlayerPrefs.Save();
-            
-            // Just start the timer normally without reconstruction
-            StartTimer(totalTime);
-            StartCoroutine(InitialFadeIn()); // fade in at game start
-            return; // Exit early, skip all HUD flag checks and reconstruction
-        }
-
-        // Determine if HUD has been shown before (HudInitializer sets a per-scene flag)
-        string hudFlag = GetCurrentSceneHudFlagName();
-        // Backwards-compat: HudInitializer currently sets a global "hudshown" flag.
-        // Check both the per-scene flag and the legacy/global flag so reconstruction
-        // works whether the initializer used per-scenes or global setting.
-        bool hudShownBefore = GameFlags.HasFlag(hudFlag) || GameFlags.HasFlag("hudshown");
-        Debug.Log($"[ClockTimer] Checking HUD flags: {hudFlag} -> {GameFlags.HasFlag(hudFlag)}, global hudshown -> {GameFlags.HasFlag("hudshown")} -> hudShownBefore={hudShownBefore}");
-        if (hudShownBefore)
-        {
-            // HUD already shown previously — reconstruct clock (19 -> 13 -> 1) then start
-            specialAnimRoutine = StartCoroutine(ReconstructThenStart());
-        }
-        else
-        {
-            // First time — let HUD handle its intro, just start timer
-            StartTimer(totalTime);
-            StartCoroutine(InitialFadeIn()); // fade in at game start
-        }
+        // DO NOT START TIMER HERE
+        // OverworldWakeUpCutscene will call StartTimer() or ReconstructClock() when ready
+        Debug.Log("[ClockTimer] Initialized - waiting for OverworldWakeUpCutscene to start timer");
+        
+        // Only fade in if we're not waiting for a cutscene to control the visuals
+        // StartCoroutine(InitialFadeIn()); // Removed - cutscene will handle this
     }
 
     private void OnEnable()
@@ -727,11 +699,38 @@ public class ClockTimer : MonoBehaviour
         rt.localScale = targetScale;
     }
 
-    private IEnumerator ReconstructThenStart()
+    /// <summary>
+    /// Plays the clock reconstruction animation without starting the timer.
+    /// Call StartTimer() separately after this completes to begin countdown.
+    /// </summary>
+    public IEnumerator ReconstructClock()
     {
+        Debug.Log("[ClockTimer] Starting clock reconstruction (without auto-starting timer)");
+        
+        // PAUSE the timer immediately so it doesn't tick during reconstruction
+        isPaused = true;
+        Debug.Log("[ClockTimer] Timer paused for reconstruction");
+        
+        // Initialize frameCount if it wasn't set (e.g., if Start() returned early)
+        if (frameCount == 0 && clockFrames != null && clockFrames.Length > 0)
+        {
+            frameCount = clockFrames.Length;
+            Debug.Log($"[ClockTimer] Initialized frameCount to {frameCount} (was 0)");
+        }
+        
+        // Debug the condition checks with detailed info
+        Debug.Log($"[ClockTimer] ReconstructClock checks:");
+        Debug.Log($"  - clockFrames: {(clockFrames != null ? $"not null, length={clockFrames.Length}" : "NULL")}");
+        Debug.Log($"  - frameCount: {frameCount}");
+        Debug.Log($"  - breakEndIndex: {breakEndIndex}");
+        Debug.Log($"  - frameCount > breakEndIndex: {frameCount > breakEndIndex}");
+        Debug.Log($"  - clockImage: {(clockImage != null ? "not null" : "NULL")}");
+        
         // Optional safety check
         if (clockFrames != null && frameCount > breakEndIndex && clockImage != null)
         {
+            Debug.Log("[ClockTimer] ✓ All checks passed - starting reconstruction animation");
+
             // Start in the fully broken state (frame 19, which is breakEndIndex)
             clockImage.sprite = clockFrames[breakEndIndex];
 
@@ -801,6 +800,7 @@ public class ClockTimer : MonoBehaviour
                     if (this == null || !this.isActiveAndEnabled || rt == null) 
                     {
                         isSpecialAnimating = false;
+                        isPaused = false; // Restore pause state if aborted
                         yield break;
                     }
                     
@@ -849,6 +849,7 @@ public class ClockTimer : MonoBehaviour
                     if (this == null || !this.isActiveAndEnabled || rt == null) 
                     {
                         isSpecialAnimating = false;
+                        isPaused = false; // Restore pause state if aborted
                         yield break;
                     }
                     
@@ -887,7 +888,8 @@ public class ClockTimer : MonoBehaviour
                 yield return StartCoroutine(PlayClockSequence(breakStartIndex, 1, frameDur, false));
             }
 
-            // Restore player input / movement
+            // Always restore player input/movement after reconstruction
+            Debug.Log("[ClockTimer] Restoring player input/movement after reconstruction");
             if (playerInput != null)
             {
                 playerInput.isInputEnabled = prevInputEnabled;
@@ -896,21 +898,18 @@ public class ClockTimer : MonoBehaviour
             {
                 motor.SetDialogueActive(prevMotorDialogue);
             }
-        }
-
-        // Check if we should skip starting the timer (e.g., for day-specific wake-up dialogue)
-        bool skipTimerStart = PlayerPrefs.GetInt("SkipClockTimerStartAfterReconstruct", 0) == 1;
-        if (skipTimerStart)
-        {
-            Debug.Log("[ClockTimer] Skipping timer start after reconstruction (will be started manually)");
-            PlayerPrefs.SetInt("SkipClockTimerStartAfterReconstruct", 0);
-            PlayerPrefs.Save();
+            
+            // Timer remains paused - caller must call StartTimer() to begin countdown
+            Debug.Log("[ClockTimer] Clock reconstruction complete - timer still paused (caller must start it)");
         }
         else
         {
-            StartTimer(totalTime);
+            Debug.LogWarning($"[ClockTimer] Skipping reconstruction animation - " +
+                $"clockFrames={(clockFrames != null ? "OK" : "NULL")}, " +
+                $"frameCount={frameCount} > breakEndIndex={breakEndIndex} = {frameCount > breakEndIndex}, " +
+                $"clockImage={(clockImage != null ? "OK" : "NULL")}");
+            // Timer remains paused but no animation played
         }
-        // Don't do an additional fade in since eyes opening already revealed the scene
     }
 
     private IEnumerator ClockBreakThenFade()

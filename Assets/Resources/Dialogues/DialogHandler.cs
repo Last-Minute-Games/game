@@ -27,6 +27,7 @@ namespace Dialogues
 
         private bool _isPlayerNear = false;
         private bool _isMyConversation = false; // <-- key flag
+        private bool _dialogActive = false; // <-- NEW: Track if ANY dialog is active
 
         private void Start()
         {
@@ -82,6 +83,8 @@ namespace Dialogues
             // Ignore global start events unless they were initiated by THIS trigger
             if (!_isMyConversation) return;
 
+            _dialogActive = true; // Mark dialog as active
+
             // Pause the clock timer
             if (_clockTimer != null)
             {
@@ -105,6 +108,8 @@ namespace Dialogues
             // Only unfreeze if this NPC was the one talking
             if (!_isMyConversation) return;
 
+            _dialogActive = false; // Mark dialog as no longer active
+
             // Resume the clock timer
             if (_clockTimer != null)
             {
@@ -127,6 +132,9 @@ namespace Dialogues
 
         void Update()
         {
+            // Don't process input if dialog is already active
+            if (_dialogActive) return;
+            
             if (_playerController && _playerController.IsDialogueActive) return;
 
             if (_player)
@@ -140,6 +148,13 @@ namespace Dialogues
 
         private void StartDialogue()
         {
+            // Double-check we're not already in a dialog
+            if (_dialogActive)
+            {
+                Debug.LogWarning("[DialogTrigger] Attempted to start dialog while one is already active");
+                return;
+            }
+
             if (dialogBehaviour && dialogGraph)
             {
                 // Mark that the NEXT OnDialogStarted/Finished belongs to THIS NPC

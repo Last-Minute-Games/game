@@ -7,6 +7,15 @@ using UnityEngine.Localization.Settings;
 
 namespace cherrydev
 {
+    /// <summary>
+    /// Enum to specify which answer panel should be used for an AnswerNode
+    /// </summary>
+    public enum AnswerPanelType
+    {
+        Default = 0,
+        CharacterSelection = 1
+    }
+
     [CreateAssetMenu(menuName = "Scriptable Objects/Node Graph/Nodes/Answer Node", 
         fileName = "New Answer Node")]
     public class AnswerNode : Node
@@ -18,6 +27,9 @@ namespace cherrydev
 
         public List<Node> ParentNodes = new();
         public List<Node> ChildNodes = new();
+
+        // NEW: Specify which answer panel to use
+        public AnswerPanelType PanelType = AnswerPanelType.Default;
 
         private const float LabelFieldSpace = 18f;
         private const float TextFieldWidth = 120f;
@@ -89,10 +101,20 @@ namespace cherrydev
             ParentNodes.RemoveAll(item => item == null);
 
             float additionalHeight = DialogNodeGraph.ShowLocalizationKeys ? _amountOfAnswers * 20f : 0;
+            // Add extra height for panel type dropdown
+            additionalHeight += 25f;
             Rect.size = new Vector2(AnswerNodeWidth, _currentAnswerNodeHeight + additionalHeight);
 
             GUILayout.BeginArea(Rect, nodeStyle);
             EditorGUILayout.LabelField("Answer Node", labelStyle);
+
+            // NEW: Add dropdown to select panel type with proper spacing
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Panel Type:", GUILayout.Width(70));
+            PanelType = (AnswerPanelType)EditorGUILayout.EnumPopup(PanelType, GUILayout.Width(110));
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.Space(3);
 
             for (int i = 0; i < _amountOfAnswers; i++)
             {
