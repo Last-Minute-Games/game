@@ -184,7 +184,39 @@ public class PlayerManager : MonoBehaviour
             switch (effect.operationType)
             {
                 case OperationType.Damage:
-                    if (targetEnemy != null && targetEnemy.data != null)
+                {
+                    // Total damage, same as before
+                    int totalDamage = value + (playerData != null ? playerData.strength : 0);
+
+                    // ───────────────────────────────
+                    // Self-targeting damage (player hurts themselves)
+                    // ───────────────────────────────
+                    if (effect.targetRule == TargetRule.Self)
+                    {
+                        if (playerData != null)
+                        {
+                            // Optional: reuse attack SFX for feedback
+                            var cardFXHelper = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                            if (cardFXHelper != null)
+                            {
+                                cardFXHelper.OnCardAttack();
+                            }
+
+                            // Optional: camera shake for feedback
+                            CameraShake.Shake();
+
+                            playerData.TakeDamage(totalDamage);
+                            Debug.Log($"[PlayerManager] Player took {totalDamage} self-damage from '{cardData.itemName}'. HP: {playerData.currentHealth}/{playerData.maxHealth}");
+                        }
+                        else
+                        {
+                            Debug.LogWarning("[PlayerManager] Self-damage effect but playerData is null");
+                        }
+                    }
+                    // ───────────────────────────────
+                    // Enemy-targeting damage (existing behavior)
+                    // ───────────────────────────────
+                    else if (targetEnemy != null && targetEnemy.data != null)
                     {
                         // Play attack sound effect
                         var cardFXHelper = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
@@ -192,14 +224,13 @@ public class PlayerManager : MonoBehaviour
                         {
                             cardFXHelper.OnCardAttack();
                         }
-                        
+
                         // Camera shake if enemy has block
                         if (targetEnemy.data.block > 0)
                         {
                             CameraShake.Shake();
                         }
-                        
-                        int totalDamage = value + (playerData != null ? playerData.strength : 0);
+
                         targetEnemy.data.TakeDamage(totalDamage);
                         Debug.Log($"[PlayerManager] Dealt {totalDamage} damage ({value} base + {playerData?.strength} strength) to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
 
@@ -221,10 +252,11 @@ public class PlayerManager : MonoBehaviour
                     }
                     else
                     {
-                        Debug.LogWarning("[PlayerManager] Damage effect requires an enemy target");
+                        Debug.LogWarning("[PlayerManager] Damage effect requires a valid target (Self or Enemy)");
                     }
-                    break;
 
+                    break;
+                }
                 case OperationType.AddShield:
                     if (playerData != null)
                     {

@@ -421,22 +421,37 @@ public class MazePopupController : MonoBehaviour
             float height = orthoSize * 2f;
             worldSpaceBackdrop.transform.localScale = new Vector3(width, height, 1f);
             
-            // Make it black
-            SpriteRenderer sr = worldSpaceBackdrop.GetComponent<SpriteRenderer>();
-            if (sr != null)
+            // Make it black - use MeshRenderer approach which works better in builds
+            Renderer renderer = worldSpaceBackdrop.GetComponent<Renderer>();
+            if (renderer != null)
             {
-                sr.color = Color.black;
-                sr.sortingOrder = -1000; // Very low sorting order
-            }
-            else
-            {
-                // If no SpriteRenderer, use Material
-                Renderer renderer = worldSpaceBackdrop.GetComponent<Renderer>();
-                if (renderer != null)
+                // Try to find shader, but handle if it's null (common in builds)
+                Shader shader = Shader.Find("Unlit/Color");
+                if (shader == null)
                 {
-                    Material mat = new Material(Shader.Find("Unlit/Color"));
+                    // Fallback to Sprites/Default which is more reliably included
+                    shader = Shader.Find("Sprites/Default");
+                }
+                if (shader == null)
+                {
+                    // Last resort: use the material's current shader
+                    shader = Shader.Find("Standard");
+                }
+                
+                if (shader != null)
+                {
+                    Material mat = new Material(shader);
                     mat.color = Color.black;
                     renderer.material = mat;
+                }
+                else
+                {
+                    // If all shader lookups fail, just set the existing material's color
+                    if (renderer.material != null)
+                    {
+                        renderer.material.color = Color.black;
+                    }
+                    Debug.LogWarning("[MazePopup] Could not find any suitable shader for backdrop. Using default material.");
                 }
             }
             
