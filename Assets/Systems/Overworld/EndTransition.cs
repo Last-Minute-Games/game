@@ -68,10 +68,24 @@ public class EndTransition : MonoBehaviour
             }
         }
 
-        // Do the eyes closing effect
+        // Check if eyes are already closed - if so, skip the closing effect
+        bool eyesAlreadyClosed = false;
         if (screenFader != null)
         {
+            // Check if split panels exist and are in closed position
+            // This would indicate eyes are already closed from ClockTimer
+            eyesAlreadyClosed = screenFader.ArePanelsClosed();
+        }
+
+        // Do the eyes closing effect (only if not already closed)
+        if (screenFader != null && !eyesAlreadyClosed)
+        {
+            Debug.Log("[EndTransition] Eyes not yet closed - performing eyes closing effect");
             yield return StartCoroutine(screenFader.EyesClosingEffect());
+        }
+        else if (eyesAlreadyClosed)
+        {
+            Debug.Log("[EndTransition] Eyes already closed - skipping closing effect");
         }
         else
         {

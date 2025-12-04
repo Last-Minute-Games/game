@@ -268,6 +268,24 @@ public class ScreenFader : MonoBehaviour
     }
 
     /// <summary>
+    /// Check if the split panels are currently closed (covering the screen)
+    /// </summary>
+    public bool ArePanelsClosed()
+    {
+        if (topPanel == null || bottomPanel == null)
+        {
+            return false; // Panels don't exist, so not closed
+        }
+
+        // Check if panels are in closed position (anchoredPosition.y == 0)
+        // When closed: topPanel.y = 0, bottomPanel.y = 0
+        bool topClosed = Mathf.Abs(topPanel.anchoredPosition.y) < 0.1f;
+        bool bottomClosed = Mathf.Abs(bottomPanel.anchoredPosition.y) < 0.1f;
+
+        return topClosed && bottomClosed;
+    }
+
+    /// <summary>
     /// Eyes opening effect: two black panels slide out to top and bottom
     /// </summary>
     public IEnumerator EyesOpeningEffect()
