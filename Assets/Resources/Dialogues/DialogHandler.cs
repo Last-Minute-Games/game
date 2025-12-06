@@ -4,7 +4,7 @@ using UnityEngine.Events;
 
 namespace Dialogues
 {
-    public class DialogTrigger : MonoBehaviour
+    public class DialogTrigger : MonoBehaviour, IInteractable
     {
         [Header("Dialog Settings")]
         public DialogBehaviour dialogBehaviour; // likely shared UI
@@ -15,7 +15,8 @@ namespace Dialogues
         [Header("Events")]
         public UnityEvent OnDialogCompleted; // 👈 Custom callback
         
-        [Header("Detection Settings")] private readonly float _interactionRange = 1f;
+        [Header("Detection Settings")] 
+        private readonly float _interactionRange = 1f;
 
         private CharacterMotor2D _npcController;
         private NpcBrain2D _npcBrain;
@@ -137,10 +138,12 @@ namespace Dialogues
             if (_player)
                 _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= _interactionRange;
 
-            if (_isPlayerNear && Input.GetKeyDown(interactKey))
-            {
-                StartDialogue();
-            }
+            // Note: Input checking removed - now handled by InteractionDetector for proper priority
+        }
+
+        public void Interact()
+        {
+            StartDialogue();
         }
 
         private void StartDialogue()
@@ -168,6 +171,28 @@ namespace Dialogues
             _isMyConversation = true;
             Debug.Log($"[DialogTrigger] '{gameObject.name}' starting dialog (will trigger GlobalPause)");
             dialogBehaviour.StartDialog(dialogGraph);
+        }
+
+        public int GetInteractionPriority()
+        {
+            // Dialog triggers have second-highest priority (after teleports)
+            return 1;
+        }
+
+        public bool CanInteract()
+        {
+            // Can interact if we have dialog setup, player is near, and no other interaction is in progress
+            if (dialogBehaviour == null || dialogGraph == null) return false;
+            if (_dialogActive) return false;
+            if (_playerController != null && _playerController.IsDialogueActive) return false;
+            if (Systems.InteractionLockManager.IsLocked) return false;
+            return _isPlayerNear;
+        }
+
+        public bool ShowInteractionPrompt()
+        {
+            // NPCs DO show the popup icon
+            return true;
         }
     }
 }

@@ -1,4 +1,4 @@
-    using System.Collections;
+using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Events;
@@ -6,7 +6,7 @@ using UnityEngine.Serialization;
 
 namespace Systems
 {
-    public class TeleportSystem : MonoBehaviour
+    public class TeleportSystem : MonoBehaviour, IInteractable
     {
         public GameObject tptTo;
         public Vector3 direction;
@@ -147,12 +147,35 @@ namespace Systems
             InteractionLockManager.Unlock();
         }
 
-        private void OnEnter()
+        public void Interact()
         {
             _environmentSoundHandler.PlayDoorSound();
             StartCoroutine(TeleportWithFade(_characterCollider2D));
         }
 
+        public int GetInteractionPriority()
+        {
+            // Teleports have highest priority (0)
+            return 0;
+        }
+
+        public bool CanInteract()
+        {
+            // Can teleport if player is near, not already teleporting, no dialog active, and no other interaction in progress
+            if (!tptTo) return false;
+            if (!EnsureTeleportReferencesAreValid()) return false;
+            if (_characterController2D.IsTeleporting) return false;
+            if (_characterController2D.IsDialogueActive) return false;
+            if (InteractionLockManager.IsLocked) return false;
+            return _isPlayerNear;
+        }
+
+        public bool ShowInteractionPrompt()
+        {
+            // Doors/teleports don't show the popup - they're invisible interactions
+            return false;
+        }
+        
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (!tptTo || !other.CompareTag("NPC")) return;
@@ -169,18 +192,16 @@ namespace Systems
                 return;
             }
             
-            // prevent interaction during teleport, dialogue, or if any interaction is in progress
-            if (_characterController2D.IsTeleporting || _characterController2D.IsDialogueActive || InteractionLockManager.IsLocked) return;
-            
+            // Update player near status
             if (_player != null && _tptCollider != null && _characterCollider2D != null)
             {
                 var dist = _tptCollider.Distance(_characterCollider2D);
                 _isPlayerNear = dist.isOverlapped || dist.distance < InteractionRange;
             }
             
-            if (!_isPlayerNear) return;
-            
-            if (Input.GetMouseButtonDown(1)) // 1 = right mouse
+            // Note: Input handling now done by InteractionDetector for proper priority
+            // Right-click interaction is kept for direct mouse interaction
+            if (_isPlayerNear && Input.GetMouseButtonDown(1)) // 1 = right mouse
             {
                 var world = Camera.main!.ScreenToWorldPoint(Input.mousePosition);
                 var p = new Vector2(world.x, world.y);
@@ -190,11 +211,8 @@ namespace Systems
                 
                 if (hit && (hit == _tptCollider || hit == _newCollider))
                 {
-                    OnEnter();
+                    Interact();
                 }
-            } else if (Input.GetKeyDown(KeyCode.E))
-            {
-                OnEnter();
             }
         }
 

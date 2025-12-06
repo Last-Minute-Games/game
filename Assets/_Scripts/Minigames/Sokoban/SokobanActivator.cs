@@ -4,26 +4,13 @@ using UnityEngine;
 /// Activates the Sokoban puzzle when the player is near and presses the 'E' key.
 /// Replaces the old "walk-in" trigger activation.
 /// </summary>
-public class SokobanActivator : MonoBehaviour
+public class SokobanActivator : MinigameActivator
 {
-    [Tooltip("The range within which the player can press 'E' to interact.")]
-    public float interactionRange = 1.5f;
-
-    private GameObject player;
-    private BoxCollider2D triggerCollider;
     private MinigameController minigameController;
 
-    void Start()
+    protected override void Start()
     {
-        // Find the player by tag
-        player = GameObject.FindGameObjectWithTag("Player");
-
-        // Ensure the collider exists and is set as a trigger
-        triggerCollider = GetComponent<BoxCollider2D>();
-        if (triggerCollider != null)
-        {
-            triggerCollider.isTrigger = true;
-        }
+        base.Start();
 
         // Find the controller instance
         minigameController = MinigameController.Instance;
@@ -34,28 +21,16 @@ public class SokobanActivator : MonoBehaviour
         }
     }
 
-    void Update()
+    protected override void Update()
+    {
+        base.Update();
+        // Note: Input handling now done by InteractionDetector for proper priority
+    }
+
+    public override void Interact()
     {
         if (player == null || minigameController == null) return;
 
-        // 1. Check if the player is within the interaction range
-        float distance = Vector3.Distance(transform.position, player.transform.position);
-        bool isPlayerNear = distance < interactionRange;
-
-        // 2. If the player is near AND presses the interaction key ('E')
-        if (isPlayerNear && Input.GetKeyDown(KeyCode.E))
-        {
-            // Optional: You could add a check here to ensure the Overworld movement script 
-            // is currently enabled before allowing the interaction.
-
-            OnInteract();
-        }
-
-        // Optional: Add code here to display an "Press E to Play" prompt when isPlayerNear is true.
-    }
-
-    private void OnInteract()
-    {
         // Try to acquire the interaction lock
         if (!Systems.InteractionLockManager.TryLock())
         {
@@ -64,7 +39,7 @@ public class SokobanActivator : MonoBehaviour
 
         GameFlags.SetFlag("InMinigame");
 
-        FindObjectOfType<ClockTimer>().PauseTimer(true);   // Pause
+        FindObjectOfType<ClockTimer>()?.PauseTimer(true);   // Pause
 
         Vector3 playerCurrentPosition = player.transform.position;
         Vector3 returnPosition = new Vector3(
@@ -80,5 +55,11 @@ public class SokobanActivator : MonoBehaviour
         minigameController.StartSokoban();
         
         // Note: Lock will be released when minigame ends in MinigameController
+    }
+
+    public override bool CanInteract()
+    {
+        // Can only interact if we have a valid minigame controller and base conditions are met
+        return base.CanInteract() && minigameController != null;
     }
 }
