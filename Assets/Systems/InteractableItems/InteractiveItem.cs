@@ -116,13 +116,8 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
         isPlayerNear = Vector3.Distance(transform.position, player.transform.position) <= interactionRange;
 
-        if (isPlayerNear && Input.GetKeyDown(interactKey))
-        {
-            // Check both dialogue state and interaction lock
-            if (characterController != null && characterController.IsDialogueActive) return;
-            if (Systems.InteractionLockManager.IsLocked) return;
-            Interact();
-        }
+        // Note: Individual input checking removed - now handled by InteractionDetector
+        // This prevents duplicate E key checks and ensures proper priority ordering
     }
 
     public void Interact()
@@ -148,6 +143,28 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         // Mark that THIS item is starting the conversation
         isMyConversation = true;
         dialogBehaviour.StartDialog(dialogGraph);
+    }
+
+    public int GetInteractionPriority()
+    {
+        // Dialog interactions have third priority (after teleports and dialog triggers)
+        return 2;
+    }
+
+    public bool CanInteract()
+    {
+        // Can interact if we have dialog setup, player is near, and no other interaction is in progress
+        if (dialogBehaviour == null || dialogGraph == null) return false;
+        if (!isPlayerNear) return false;
+        if (Systems.InteractionLockManager.IsLocked) return false;
+        if (characterController != null && characterController.IsDialogueActive) return false;
+        return true;
+    }
+
+    public bool ShowInteractionPrompt()
+    {
+        // Interactive items DO show the popup icon
+        return true;
     }
 
     void OnDialogStart()
