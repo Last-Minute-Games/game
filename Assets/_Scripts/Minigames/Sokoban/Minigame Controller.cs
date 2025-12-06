@@ -412,6 +412,9 @@ public class MinigameController : MonoBehaviour
             GameFlags.SetFlag("minigame.sokoban.finish");
         }
 
+        // Release the interaction lock
+        Systems.InteractionLockManager.Unlock();
+
         Debug.Log($"Sokoban Minigame finished. Solved: {solved}");
     }
 }

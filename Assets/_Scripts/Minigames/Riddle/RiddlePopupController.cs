@@ -38,6 +38,8 @@ public class RiddlePopupController : MonoBehaviour
     public void Show()
     {
         // Hide HUD
+        //GameFlags.SetFlag("minigame.riddle.show");
+
         if (hudGroup != null)
             hudGroup.SetActive(false);
 
@@ -54,16 +56,18 @@ public class RiddlePopupController : MonoBehaviour
         GlobalPause.SetMinigamePaused(true);
 
         // Unlock and show cursor
+        
         priorLockState = Cursor.lockState;
         wasCursorVisible = Cursor.visible;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        
     }
 
     public void Hide()
     {
         // Mark flag so other code knows riddle was seen
-        GameFlags.SetFlag("minigame.riddle.show");
+       
 
         // Hide the floor item / flag permanently for this playthrough
         if (riddleShowFlags != null)
@@ -79,6 +83,12 @@ public class RiddlePopupController : MonoBehaviour
         if (hudGroup != null)
             hudGroup.SetActive(true);
 
+       
+     
+
+        // Hide()
+        Cursor.lockState = priorLockState;
+        Cursor.visible = wasCursorVisible;
         // Unpause world
         GlobalPause.SetMinigamePaused(false);
 
@@ -86,9 +96,10 @@ public class RiddlePopupController : MonoBehaviour
         foreach (var b in playerControlScripts)
             if (b != null) b.enabled = true;
 
+        GameFlags.SetFlag("minigame.riddle.finish");
         // Restore cursor state
-        Cursor.lockState = priorLockState;
-        Cursor.visible = wasCursorVisible;
+        //Cursor.lockState = priorLockState;
+        //Cursor.visible = wasCursorVisible;
 
         // Finally hide UI
         HideImmediate();

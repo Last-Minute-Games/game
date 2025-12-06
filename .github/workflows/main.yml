@@ -284,7 +284,8 @@ jobs:
             Write-Host "❌ All upload attempts failed. Last exit code: $lastExitCode"
             Write-Host "Full butler output:"
             Get-Content $butlerOutputFile -ErrorAction SilentlyContinue
-            exit 1
+            Write-Host "⚠️ Continuing workflow - GitHub release will still be created"
+            exit 0
           }
           
           Write-Host ""
@@ -575,7 +576,8 @@ jobs:
             Write-Host "❌ All upload attempts failed. Last exit code: $lastExitCode"
             Write-Host "Full butler output:"
             Get-Content $butlerOutputFile -ErrorAction SilentlyContinue
-            exit 1
+            Write-Host "⚠️ Continuing workflow - GitHub release will still be created"
+            exit 0
           }
           
           Write-Host ""
@@ -929,7 +931,8 @@ jobs:
             echo "❌ All upload attempts failed. Last exit code: $last_exit_code"
             echo "Full butler output:"
             cat /tmp/butler-output.log || true
-            exit 1
+            echo "⚠️ Continuing workflow - GitHub release will still be created"
+            exit 0
           fi
           
           echo ""

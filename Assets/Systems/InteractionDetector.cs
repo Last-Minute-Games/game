@@ -58,6 +58,9 @@ public class InteractionDetector : MonoBehaviour
         // Example: press key to interact
         if (nearInteractive && Input.GetKeyDown(KeyCode.E))
         {
+            // Check if any interaction is already in progress
+            if (Systems.InteractionLockManager.IsLocked) return;
+            
             // Trigger NPC dialog or item pickup
             currentTarget.GetComponent<IInteractable>()?.Interact();
         }

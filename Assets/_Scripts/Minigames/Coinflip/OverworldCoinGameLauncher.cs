@@ -102,5 +102,8 @@ public class OverworldCoinGameLauncher : MonoBehaviour
         _lastCloseTime = Time.unscaledTime;
         _canOpen = false;
         StartCoroutine(EnableOpenAfterDelay(sceneOpenDelay)); // brief lockout after close
+        
+        // Release the interaction lock
+        Systems.InteractionLockManager.Unlock();
     }
 }

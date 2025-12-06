@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Jerry
   m_EditorClassIdentifier: Assembly-CSharp::EnemyConfig
   enemyName: Jerry
-  maxHealth: 65
+  maxHealth: 55
   attackPower: 0
   defensePower: 0
   healPower: 5
@@ -21,15 +21,15 @@ MonoBehaviour:
   artwork: {fileID: 7892174264202526986, guid: 3297483253c0d27a791181e2e071b1bf, type: 3}
   actionPattern:
   - intent: 0
-    value: 12
+    value: 11
     actionChance: 0.45
     customName: Cheese Touch
   - intent: 1
-    value: 12
+    value: 11
     actionChance: 0.25
     customName: Rind Guard
   - intent: 2
-    value: 12
+    value: 9
     actionChance: 0.15
     customName: Cheese Snack
   attackRange:
@@ -52,5 +52,5 @@ MonoBehaviour:
   positionOffset: {x: 0, y: 0, z: 0}
   scaleOffset: {x: 1, y: 1, z: 1}
   minMultiplier: 0.8
-  maxMultiplier: 1.294
+  maxMultiplier: 1.1
   uniqueID: 99bae991-0b1e-4fd4-92e3-70d1f2619eca

@@ -92,14 +92,21 @@ public class EndingCutsceneManager : MonoBehaviour
     [Tooltip("Background image")]
     public Image backgroundImage;
     
-    [Header("Credits")]
-    [Tooltip("The CreditsScroller component that handles scrolling credits")]
-    public CreditsScroller creditsScroller;
+    [Header("Credits (MainMenu Style)")]
+    [Tooltip("Parent canvas group of all credits UI")]
+    public CanvasGroup creditsCanvasGroup;
+    [Tooltip("The credits logo to scroll")]
+    public RectTransform creditLogo;
+    [Tooltip("The credits text to scroll")]
+    public RectTransform creditText;
+    [Tooltip("Duration for credits to scroll completely off screen")]
+    public float creditsScrollDuration = 10f;
+    [Tooltip("Scroll speed multiplier (1 = normal)")]
+    public float creditsScrollSpeed = 1f;
     
     [Header("Canvas Groups")]
     public CanvasGroup endingCanvasGroup;
     public CanvasGroup textCanvasGroup;
-    public CanvasGroup creditsCanvasGroup;
     
     [Header("Audio")]
     public AudioSource audioSource;
@@ -122,9 +129,15 @@ public class EndingCutsceneManager : MonoBehaviour
 
     private EndingDefinition _currentEnding;
     private bool _isTyping = false;
-    private bool _textComplete = false;
+    private bool _waitingForAdvance = false;
     private string _currentFullText = "";
     private Coroutine _typingCoroutine;
+    private Sprite _customBackgroundImage; // Optional custom background override
+    
+    // Credits tracking
+    private Vector2 _creditLogoStartPos;
+    private Vector2 _creditTextStartPos;
+    private bool _creditsPlaying = false;
 
     private void Start()
     {
@@ -142,21 +155,25 @@ public class EndingCutsceneManager : MonoBehaviour
             audioSource.loop = true;
         }
         
-        // Subscribe to dialog finished event
+        // Subscribe to dialog events
         if (dialogBehaviour != null)
         {
             dialogBehaviour.OnDialogFinished.AddListener(OnEndingDialogFinished);
             dialogBehaviour.SentenceNodeActivated += OnSentenceNodeActivated;
+            dialogBehaviour.SentenceEnded += OnSentenceTypingEnded;
         }
         else
         {
             Debug.LogError("[EndingCutsceneManager] DialogBehaviour is not assigned!");
         }
         
-        // Validate credits scroller
-        if (creditsScroller == null)
+        // Store initial positions for credits scroll
+        if (creditLogo) _creditLogoStartPos = creditLogo.anchoredPosition;
+        if (creditText) _creditTextStartPos = creditText.anchoredPosition;
+        if (creditsCanvasGroup)
         {
-            Debug.LogWarning("[EndingCutsceneManager] CreditsScroller is not assigned!");
+            creditsCanvasGroup.alpha = 0f;
+            creditsCanvasGroup.gameObject.SetActive(false);
         }
         
         // Initialize canvas groups
@@ -165,16 +182,19 @@ public class EndingCutsceneManager : MonoBehaviour
             textCanvasGroup.alpha = 1f;
         }
         
-        if (creditsCanvasGroup != null)
-        {
-            creditsCanvasGroup.alpha = 0f;
-        }
-        
         // Initialize text
         if (endingText != null)
         {
             endingText.text = "";
             endingText.maxVisibleCharacters = 0;
+        }
+        
+        // Ensure background is visible and ready
+        if (backgroundImage != null)
+        {
+            backgroundImage.color = new Color(1f, 1f, 1f, 1f);
+            backgroundImage.enabled = true;
+            Debug.Log("[EndingCutsceneManager] Background image component initialized");
         }
         
         // Start the ending sequence
@@ -188,13 +208,14 @@ public class EndingCutsceneManager : MonoBehaviour
         {
             dialogBehaviour.OnDialogFinished.RemoveListener(OnEndingDialogFinished);
             dialogBehaviour.SentenceNodeActivated -= OnSentenceNodeActivated;
+            dialogBehaviour.SentenceEnded -= OnSentenceTypingEnded;
         }
     }
 
     private void Update()
     {
         // Handle text advancement
-        if (_isTyping || _textComplete)
+        if (_isTyping || _waitingForAdvance)
         {
             foreach (KeyCode key in advanceKeys)
             {
@@ -205,10 +226,10 @@ public class EndingCutsceneManager : MonoBehaviour
                         // Skip to end of current text
                         SkipTyping();
                     }
-                    else if (_textComplete)
+                    else if (_waitingForAdvance)
                     {
-                        // Advance to next node
-                        AdvanceDialog();
+                        // Advance to next sentence node
+                        AdvanceToNextSentence();
                     }
                     break;
                 }
@@ -224,8 +245,18 @@ public class EndingCutsceneManager : MonoBehaviour
         if (dialogBehaviour.CurrentSentenceNode != null)
         {
             string text = dialogBehaviour.CurrentSentenceNode.GetText();
+            Debug.Log($"[EndingCutsceneManager] New sentence: {text.Substring(0, Mathf.Min(50, text.Length))}...");
             DisplayText(text);
         }
+    }
+    
+    /// <summary>
+    /// Called when sentence typing completes (from DialogBehaviour)
+    /// </summary>
+    private void OnSentenceTypingEnded()
+    {
+        Debug.Log("[EndingCutsceneManager] Sentence typing ended, waiting for player input");
+        _waitingForAdvance = true;
     }
     
     /// <summary>
@@ -234,7 +265,7 @@ public class EndingCutsceneManager : MonoBehaviour
     private void DisplayText(string text)
     {
         _currentFullText = text;
-        _textComplete = false;
+        _waitingForAdvance = false;
         
         if (_typingCoroutine != null)
         {
@@ -264,7 +295,8 @@ public class EndingCutsceneManager : MonoBehaviour
         }
         
         _isTyping = false;
-        _textComplete = true;
+        _waitingForAdvance = true;
+        Debug.Log("[EndingCutsceneManager] Finished typing, waiting for advance input");
     }
     
     /// <summary>
@@ -283,15 +315,16 @@ public class EndingCutsceneManager : MonoBehaviour
         }
         
         _isTyping = false;
-        _textComplete = true;
+        _waitingForAdvance = true;
+        Debug.Log("[EndingCutsceneManager] Skipped typing, waiting for advance input");
     }
     
     /// <summary>
-    /// Advance to next dialog node
+    /// Advance to next sentence node
     /// </summary>
-    private void AdvanceDialog()
+    private void AdvanceToNextSentence()
     {
-        _textComplete = false;
+        _waitingForAdvance = false;
         
         if (dialogBehaviour != null && dialogBehaviour.CurrentSentenceNode != null)
         {
@@ -299,12 +332,15 @@ public class EndingCutsceneManager : MonoBehaviour
             
             if (currentNode.ChildNode != null)
             {
+                Debug.Log($"[EndingCutsceneManager] Advancing to next node: {currentNode.ChildNode.GetType().Name}");
                 dialogBehaviour.SetCurrentNodeAndHandleDialogGraph(currentNode.ChildNode);
             }
             else
             {
-                // No more nodes, dialog is finished
-                Debug.Log("[EndingCutsceneManager] No more dialog nodes");
+                // No more nodes, we've reached the end
+                Debug.Log("[EndingCutsceneManager] No more nodes, dialog complete - triggering ending sequence");
+                // Manually trigger the ending sequence since we've reached the end
+                OnEndingDialogFinished();
             }
         }
     }
@@ -318,6 +354,14 @@ public class EndingCutsceneManager : MonoBehaviour
         
         // Log current flags for debugging
         LogCurrentFlags();
+        
+        // HIDE DIALOG UI IMMEDIATELY - This ensures the background is visible
+        DialogDisplayer dialogDisplayer = FindObjectOfType<DialogDisplayer>();
+        if (dialogDisplayer != null)
+        {
+            dialogDisplayer.DisableDialogPanel();
+            Debug.Log("[EndingCutsceneManager] Dialog panels hidden at start");
+        }
         
         // First, open eyes if the ScreenFader has them closed
         if (screenFader != null && screenFader.shouldOpenEyesOnSceneLoad)
@@ -348,7 +392,12 @@ public class EndingCutsceneManager : MonoBehaviour
         // Start the dialog
         if (dialogBehaviour != null && _currentEnding.endingDialogGraph != null)
         {
-            Debug.Log("[EndingCutsceneManager] Starting ending dialog");
+            Debug.Log("[EndingCutsceneManager] Starting ending dialog graph");
+            
+            // Disable DialogBehaviour's automatic text skipping since we handle it manually
+            dialogBehaviour.IsCanSkippingText = false;
+            dialogBehaviour.IsActive = false; // Prevent DialogBehaviour from handling input
+            
             dialogBehaviour.StartDialog(_currentEnding.endingDialogGraph);
         }
         else
@@ -370,11 +419,11 @@ public class EndingCutsceneManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Called when the ending dialog finishes
+    /// Called when the ending dialog finishes (all nodes processed)
     /// </summary>
     private void OnEndingDialogFinished()
     {
-        Debug.Log("[EndingCutsceneManager] Dialog finished, lingering before credits");
+        Debug.Log("[EndingCutsceneManager] All dialog nodes finished, lingering before credits");
         StartCoroutine(LingerThenShowCredits());
     }
     
@@ -383,23 +432,31 @@ public class EndingCutsceneManager : MonoBehaviour
     /// </summary>
     private IEnumerator LingerThenShowCredits()
     {
-        // Linger on the final text
-        Debug.Log($"[EndingCutsceneManager] Lingering for {lingerDuration} seconds");
-        yield return new WaitForSeconds(lingerDuration);
-        
-        // Fade out text
-        Debug.Log("[EndingCutsceneManager] Fading out text");
+        // CLOSE THE DIALOG - Fade out text first
+        Debug.Log("[EndingCutsceneManager] Dialog complete - closing dialog");
         yield return StartCoroutine(FadeOutText());
         
-        // Show credits
-        if (creditsScroller != null)
+        // Hide the dialog panels using DialogDisplayer if it exists
+        DialogDisplayer dialogDisplayer = FindObjectOfType<DialogDisplayer>();
+        if (dialogDisplayer != null)
         {
-            Debug.Log("[EndingCutsceneManager] Starting credits");
-            yield return StartCoroutine(ShowCredits());
+            dialogDisplayer.DisableDialogPanel();
+            Debug.Log("[EndingCutsceneManager] Dialog panels disabled via DialogDisplayer");
         }
         else
         {
-            Debug.LogWarning("[EndingCutsceneManager] No credits scroller, skipping to menu");
+            Debug.LogWarning("[EndingCutsceneManager] DialogDisplayer not found in scene");
+        }
+        
+        // Show credits using MainMenu-style scrolling
+        if (creditsCanvasGroup != null && creditLogo != null && creditText != null)
+        {
+            Debug.Log("[EndingCutsceneManager] Starting MainMenu-style credits");
+            yield return StartCoroutine(RollCreditsMainMenuStyle());
+        }
+        else
+        {
+            Debug.LogWarning("[EndingCutsceneManager] No credits system configured, skipping to menu");
         }
         
         // Return to menu
@@ -428,37 +485,103 @@ public class EndingCutsceneManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Show and scroll the credits
+    /// Roll credits using MainMenu-style scrolling (smooth, synchronized)
     /// </summary>
-    private IEnumerator ShowCredits()
+    private IEnumerator RollCreditsMainMenuStyle()
     {
-        // Fade in credits
-        if (creditsCanvasGroup != null)
+        if (_creditsPlaying) yield break; // prevent re-entry
+        _creditsPlaying = true;
+        
+        // Fade in the credits canvas
+        creditsCanvasGroup.gameObject.SetActive(true);
+        yield return StartCoroutine(FadeCreditsCanvasGroup(creditsCanvasGroup, 0f, 1f, fadeInDuration));
+        
+        // Scroll the credits completely off-screen
+        Debug.Log("[EndingCutsceneManager] Starting credits scroll");
+        float actualScrollDuration = creditsScrollDuration / creditsScrollSpeed;
+        float timer = 0f;
+        
+        // Calculate end position to be off the top of the screen
+        Canvas parentCanvas = creditsCanvasGroup.GetComponentInParent<Canvas>();
+        float canvasHeight = parentCanvas != null ? parentCanvas.GetComponent<RectTransform>().rect.height : 1080f;
+        
+        // Just need to be slightly above screen top
+        float offScreenY = canvasHeight + 500f;
+        
+        // Compute a shared offset so both elements travel the same distance
+        float minStartY = Mathf.Min(_creditLogoStartPos.y, _creditTextStartPos.y);
+        float sharedOffset = offScreenY - minStartY;
+        
+        Vector2 logoEndPos = _creditLogoStartPos + Vector2.up * sharedOffset;
+        Vector2 textEndPos = _creditTextStartPos + Vector2.up * sharedOffset;
+        
+        // Movement speed in units per second
+        float moveSpeed = sharedOffset / actualScrollDuration;
+        
+        while (timer < actualScrollDuration)
         {
-            float elapsed = 0f;
-            float duration = 1f;
+            float dt = Time.deltaTime;
+            timer += dt;
             
-            while (elapsed < duration)
+            // Move by units per second to keep both elements visually synchronized
+            Vector2 delta = Vector2.up * (moveSpeed * dt);
+            
+            if (creditLogo)
+                creditLogo.anchoredPosition += delta;
+            if (creditText)
+                creditText.anchoredPosition += delta;
+            
+            // If both have reached (or passed) the offscreen target, break early
+            bool logoDone = creditLogo == null || creditLogo.anchoredPosition.y >= logoEndPos.y - 0.5f;
+            bool textDone = creditText == null || creditText.anchoredPosition.y >= textEndPos.y - 0.5f;
+            if (logoDone && textDone)
             {
-                elapsed += Time.deltaTime;
-                creditsCanvasGroup.alpha = Mathf.Lerp(0f, 1f, elapsed / duration);
-                yield return null;
+                // Snap to end positions to avoid tiny remaining movement
+                if (creditLogo) creditLogo.anchoredPosition = logoEndPos;
+                if (creditText) creditText.anchoredPosition = textEndPos;
+                break;
             }
             
-            creditsCanvasGroup.alpha = 1f;
+            yield return null;
         }
         
-        // Start scrolling credits
-        if (creditsScroller != null)
+        // Ensure final positions are set
+        if (creditLogo) creditLogo.anchoredPosition = logoEndPos;
+        if (creditText) creditText.anchoredPosition = textEndPos;
+        
+        Debug.Log("[EndingCutsceneManager] Credits scroll complete - idling for 10 seconds");
+        
+        // IDLE FOR 10 SECONDS - Let the credits sit finished before fading out
+        yield return new WaitForSeconds(10f);
+        
+        Debug.Log("[EndingCutsceneManager] Fading out credits");
+        
+        // Fade out the credits
+        yield return StartCoroutine(FadeCreditsCanvasGroup(creditsCanvasGroup, 1f, 0f, fadeOutDuration));
+        creditsCanvasGroup.gameObject.SetActive(false);
+        
+        // Reset positions for next time
+        if (creditLogo) creditLogo.anchoredPosition = _creditLogoStartPos;
+        if (creditText) creditText.anchoredPosition = _creditTextStartPos;
+        
+        _creditsPlaying = false;
+    }
+    
+    /// <summary>
+    /// Fade credits canvas group helper method
+    /// </summary>
+    private IEnumerator FadeCreditsCanvasGroup(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration)
+    {
+        if (canvasGroup == null) yield break;
+        
+        float elapsed = 0f;
+        while (elapsed < duration)
         {
-            creditsScroller.StartScrolling();
-            
-            // Wait for credits to finish
-            while (creditsScroller.IsScrolling)
-            {
-                yield return null;
-            }
+            elapsed += Time.deltaTime;
+            canvasGroup.alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
+            yield return null;
         }
+        canvasGroup.alpha = endAlpha;
     }
     
     /// <summary>
@@ -476,19 +599,47 @@ public class EndingCutsceneManager : MonoBehaviour
     
     /// <summary>
     /// Setup background and music for the ending
+    /// This takes the backgroundImage sprite from the EndingDefinition and applies it to the Background Image component in the scene
     /// </summary>
     private void SetupEndingVisuals(EndingDefinition ending)
     {
-        // Setup background
+        // Setup background - Apply the sprite from the ending definition to the scene's Background Image component
         if (backgroundImage != null)
         {
-            backgroundImage.sprite = ending.backgroundImage;
-            backgroundImage.color = ending.backgroundColor;
-            Debug.Log($"[EndingCutsceneManager] Set background for {ending.endingName}");
+            if (ending.backgroundImage != null)
+            {
+                // Apply the ending's background sprite to the Image component
+                backgroundImage.sprite = ending.backgroundImage;
+                backgroundImage.color = ending.backgroundColor;
+                backgroundImage.enabled = true;
+                
+                // Ensure the image is set to preserve aspect or stretch to fill
+                if (backgroundImage.GetComponent<AspectRatioFitter>() == null)
+                {
+                    // If no aspect ratio fitter, make sure it fills the screen
+                    RectTransform rectTransform = backgroundImage.GetComponent<RectTransform>();
+                    if (rectTransform != null)
+                    {
+                        rectTransform.anchorMin = Vector2.zero;
+                        rectTransform.anchorMax = Vector2.one;
+                        rectTransform.offsetMin = Vector2.zero;
+                        rectTransform.offsetMax = Vector2.zero;
+                    }
+                }
+                
+                Debug.Log($"[EndingCutsceneManager] Set background for {ending.endingName} - Sprite: {ending.backgroundImage.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"[EndingCutsceneManager] No background image sprite assigned for {ending.endingName}!");
+                // Set to solid color as fallback
+                backgroundImage.sprite = null;
+                backgroundImage.color = ending.backgroundColor;
+            }
         }
         else
         {
-            Debug.LogWarning("[EndingCutsceneManager] Background image is not assigned!");
+            Debug.LogError("[EndingCutsceneManager] Background Image component reference is not assigned in the inspector! Please assign the Background Image from your Canvas.");
         }
         
         // Start music
@@ -658,5 +809,51 @@ public class EndingCutsceneManager : MonoBehaviour
             backgroundColor = Color.black,
             endingDialogGraph = null
         };
+    }
+
+    /// <summary>
+    /// Public method to play a specific ending by name
+    /// </summary>
+    public void PlayEnding(string endingName)
+    {
+        // Stop any ongoing sequences
+        if (_typingCoroutine != null)
+        {
+            StopCoroutine(_typingCoroutine);
+            _typingCoroutine = null;
+        }
+
+        // Explicitly clear current ending
+        _currentEnding = null;
+
+        // Find the ending by name
+        foreach (EndingDefinition ending in endings)
+        {
+            if (ending.endingName == endingName)
+            {
+                _currentEnding = ending;
+                break;
+            }
+        }
+
+        if (_currentEnding == null)
+        {
+            Debug.LogError($"[EndingCutsceneManager] Ending not found: {endingName}");
+            return;
+        }
+
+        Debug.Log($"[EndingCutsceneManager] Playing selected ending: {_currentEnding.endingName}");
+
+        // Setup background image if provided
+        if (_customBackgroundImage != null && backgroundImage != null)
+        {
+            backgroundImage.sprite = _customBackgroundImage;
+            backgroundImage.color = Color.white;
+            backgroundImage.enabled = true;
+            Debug.Log("[EndingCutsceneManager] Custom background image applied");
+        }
+
+        // Start the ending sequence
+        StartCoroutine(PlayAppropriateEnding());
     }
 }

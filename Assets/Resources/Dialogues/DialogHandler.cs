@@ -23,7 +23,6 @@ namespace Dialogues
 
         private GameObject _player;
         private CharacterMotor2D _playerController;
-        private ClockTimer _clockTimer;
 
         private bool _isPlayerNear = false;
         private bool _isMyConversation = false; // <-- key flag
@@ -39,13 +38,17 @@ namespace Dialogues
             if (_npcController)
                 _npcBrain = GetComponent<NpcBrain2D>();
 
-            // Find ClockTimer in the scene
-            _clockTimer = FindObjectOfType<ClockTimer>();
-            if (_clockTimer == null)
-                Debug.LogWarning("[DialogTrigger] No ClockTimer found in scene. Timer pause will not work.");
+            // Add null check for dialogBehaviour before subscribing
+            if (dialogBehaviour == null)
+            {
+                Debug.LogError($"[DialogTrigger] '{gameObject.name}' has no DialogBehaviour assigned! Dialog will not trigger GlobalPause.", this);
+                return;
+            }
 
             dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
             dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
+            
+            Debug.Log($"[DialogTrigger] '{gameObject.name}' successfully subscribed to DialogBehaviour events");
         }
 
         private void OnDestroy()
@@ -85,12 +88,9 @@ namespace Dialogues
 
             _dialogActive = true; // Mark dialog as active
 
-            // Pause the clock timer
-            if (_clockTimer != null)
-            {
-                _clockTimer.PauseTimer(true);
-                Debug.Log("[DialogTrigger] Clock timer paused");
-            }
+            // Use GlobalPause to pause NPCs and timer (but not player input or timescale)
+            GlobalPause.SetMinigamePaused(true);
+            Debug.Log("[DialogTrigger] GlobalPause minigame pause enabled (NPCs and timer paused)");
 
             if (_npcBrain)
             {
@@ -110,12 +110,9 @@ namespace Dialogues
 
             _dialogActive = false; // Mark dialog as no longer active
 
-            // Resume the clock timer
-            if (_clockTimer != null)
-            {
-                _clockTimer.PauseTimer(false);
-                Debug.Log("[DialogTrigger] Clock timer resumed");
-            }
+            // Resume NPCs and timer via GlobalPause
+            GlobalPause.SetMinigamePaused(false);
+            Debug.Log("[DialogTrigger] GlobalPause minigame pause disabled (NPCs and timer resumed)");
 
             if (_npcBrain)
             {
@@ -155,16 +152,22 @@ namespace Dialogues
                 return;
             }
 
-            if (dialogBehaviour && dialogGraph)
+            if (dialogBehaviour == null)
             {
-                // Mark that the NEXT OnDialogStarted/Finished belongs to THIS NPC
-                _isMyConversation = true;
-                dialogBehaviour.StartDialog(dialogGraph);
+                Debug.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogBehaviour is null!", this);
+                return;
             }
-            else
+            
+            if (dialogGraph == null)
             {
-                Debug.LogWarning("DialogTrigger: Missing DialogBehaviour or DialogNodeGraph reference.");
+                Debug.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogGraph is null!", this);
+                return;
             }
+
+            // Mark that the NEXT OnDialogStarted/Finished belongs to THIS NPC
+            _isMyConversation = true;
+            Debug.Log($"[DialogTrigger] '{gameObject.name}' starting dialog (will trigger GlobalPause)");
+            dialogBehaviour.StartDialog(dialogGraph);
         }
     }
 }
