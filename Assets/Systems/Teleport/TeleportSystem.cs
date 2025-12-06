@@ -149,6 +149,7 @@ namespace Systems
 
         public void Interact()
         {
+            Debug.Log($"[TeleportSystem] {name}: Interact() called! Starting teleport...");
             _environmentSoundHandler.PlayDoorSound();
             StartCoroutine(TeleportWithFade(_characterCollider2D));
         }
@@ -162,12 +163,44 @@ namespace Systems
         public bool CanInteract()
         {
             // Can teleport if player is near, not already teleporting, no dialog active, and no other interaction in progress
-            if (!tptTo) return false;
-            if (!EnsureTeleportReferencesAreValid()) return false;
-            if (_characterController2D.IsTeleporting) return false;
-            if (_characterController2D.IsDialogueActive) return false;
-            if (InteractionLockManager.IsLocked) return false;
-            return _isPlayerNear;
+            if (!tptTo)
+            {
+                Debug.LogWarning($"[TeleportSystem] {name}: CanInteract = false (no tptTo assigned)");
+                return false;
+            }
+            
+            if (!EnsureTeleportReferencesAreValid())
+            {
+                Debug.LogWarning($"[TeleportSystem] {name}: CanInteract = false (references invalid)");
+                return false;
+            }
+            
+            if (_characterController2D.IsTeleporting)
+            {
+                Debug.Log($"[TeleportSystem] {name}: CanInteract = false (already teleporting)");
+                return false;
+            }
+            
+            if (_characterController2D.IsDialogueActive)
+            {
+                Debug.Log($"[TeleportSystem] {name}: CanInteract = false (dialogue active)");
+                return false;
+            }
+            
+            if (InteractionLockManager.IsLocked)
+            {
+                Debug.Log($"[TeleportSystem] {name}: CanInteract = false (interaction locked)");
+                return false;
+            }
+            
+            if (!_isPlayerNear)
+            {
+                Debug.Log($"[TeleportSystem] {name}: CanInteract = false (player not near: {_isPlayerNear})");
+                return false;
+            }
+            
+            Debug.Log($"[TeleportSystem] {name}: CanInteract = TRUE! Player can teleport.");
+            return true;
         }
 
         public bool ShowInteractionPrompt()
@@ -178,8 +211,26 @@ namespace Systems
         
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (!tptTo || !other.CompareTag("NPC")) return;
-            other.transform.position = GetTeleportPosition(other);
+            // Handle NPC teleportation
+            if (tptTo && other.CompareTag("NPC"))
+            {
+                other.transform.position = GetTeleportPosition(other);
+                return;
+            }
+            
+            // Notify that player entered (for InteractionDetector)
+            if (other.CompareTag("Player"))
+            {
+                Debug.Log($"[TeleportSystem] {name}: OnTriggerEnter2D - Player entered door trigger!");
+            }
+        }
+        
+        private void OnTriggerExit2D(Collider2D other)
+        {
+            if (other.CompareTag("Player"))
+            {
+                Debug.Log($"[TeleportSystem] {name}: OnTriggerExit2D - Player left door trigger!");
+            }
         }
         
         // Update is called once per frame
@@ -196,7 +247,18 @@ namespace Systems
             if (_player != null && _tptCollider != null && _characterCollider2D != null)
             {
                 var dist = _tptCollider.Distance(_characterCollider2D);
+                bool wasNear = _isPlayerNear;
                 _isPlayerNear = dist.isOverlapped || dist.distance < InteractionRange;
+                
+                // Debug log when player enters/exits range
+                if (_isPlayerNear && !wasNear)
+                {
+                    Debug.Log($"[TeleportSystem] {name}: Player entered range! Distance: {dist.distance}, Overlapped: {dist.isOverlapped}");
+                }
+                else if (!_isPlayerNear && wasNear)
+                {
+                    Debug.Log($"[TeleportSystem] {name}: Player left range. Distance: {dist.distance}");
+                }
             }
             
             // Note: Input handling now done by InteractionDetector for proper priority
@@ -211,6 +273,7 @@ namespace Systems
                 
                 if (hit && (hit == _tptCollider || hit == _newCollider))
                 {
+                    Debug.Log($"[TeleportSystem] {name}: Right-click teleport triggered!");
                     Interact();
                 }
             }

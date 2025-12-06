@@ -23,6 +23,7 @@ public class InteractionDetector : MonoBehaviour
         if (interactable != null && !nearbyInteractables.Contains(interactable))
         {
             nearbyInteractables.Add(interactable);
+            Debug.Log($"[InteractionDetector] Added interactable: {other.gameObject.name} (Type: {interactable.GetType().Name}, Priority: {interactable.GetInteractionPriority()})");
             UpdatePopupVisibility();
         }
     }
@@ -33,6 +34,7 @@ public class InteractionDetector : MonoBehaviour
         if (interactable != null && nearbyInteractables.Contains(interactable))
         {
             nearbyInteractables.Remove(interactable);
+            Debug.Log($"[InteractionDetector] Removed interactable: {other.gameObject.name}");
             UpdatePopupVisibility();
         }
     }
@@ -42,13 +44,27 @@ public class InteractionDetector : MonoBehaviour
         // Get the highest priority valid interactable
         IInteractable bestInteractable = GetBestInteractable();
 
-        if (bestInteractable != null && Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            // Check if any interaction is already in progress
-            if (Systems.InteractionLockManager.IsLocked) return;
+            Debug.Log($"[InteractionDetector] E key pressed! Nearby interactables: {nearbyInteractables.Count}, Best: {(bestInteractable != null ? bestInteractable.GetType().Name : "NONE")}");
             
-            // Trigger the interaction
-            bestInteractable.Interact();
+            if (bestInteractable != null)
+            {
+                // Check if any interaction is already in progress
+                if (Systems.InteractionLockManager.IsLocked)
+                {
+                    Debug.Log($"[InteractionDetector] Cannot interact - lock is held");
+                    return;
+                }
+                
+                Debug.Log($"[InteractionDetector] Calling Interact() on {bestInteractable.GetType().Name}");
+                // Trigger the interaction
+                bestInteractable.Interact();
+            }
+            else
+            {
+                Debug.Log($"[InteractionDetector] No valid interactable found");
+            }
         }
     }
 
