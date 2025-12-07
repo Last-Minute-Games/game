@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using Systems.Overworld;
 
 public class RoomAudioZone : MonoBehaviour
 {
@@ -11,6 +12,13 @@ public class RoomAudioZone : MonoBehaviour
 
     private bool isFadingOut = false;
     private Coroutine fadeCoroutine;
+    
+    private LightOptimizer lightOptimizer;
+    
+    private void Awake()
+    {
+        lightOptimizer = GameObject.Find("Room Areas").GetComponent<LightOptimizer>();
+    }
 
     private void Reset()
     {
@@ -64,6 +72,9 @@ public class RoomAudioZone : MonoBehaviour
         if (ClockTimer.IsTimeEnded) return;
 
         Debug.Log("PLAYER ENTERED zone: " + name);
+        
+        lightOptimizer.EnableLight(name);
+        
         if (roomMusic != null) roomMusic.Play();
     }
 
