@@ -9,15 +9,46 @@ public class InteractionDetector : MonoBehaviour
     public GameObject popupImage; // Assign your PNG UI or world-space sprite
 
     private List<IInteractable> nearbyInteractables = new List<IInteractable>();
+    
+    // Debug: Track last logged position to avoid spam
+    private Vector3 lastLoggedPosition = Vector3.zero;
+    private float lastPositionLogTime = 0f;
 
     private void Start()
     {
         if (popupImage != null)
             popupImage.SetActive(false);
+            
+        // Debug logging to verify setup
+        var collider = GetComponent<Collider2D>();
+        if (collider != null)
+        {
+            Debug.Log($"[InteractionDetector] Setup: Collider={collider.GetType().Name}, IsTrigger={collider.isTrigger}, Layer={LayerMask.LayerToName(gameObject.layer)}");
+            Debug.Log($"[InteractionDetector] GameObject: {gameObject.name}, Parent: {(transform.parent != null ? transform.parent.name : "NONE")}, LocalPosition: {transform.localPosition}, WorldPosition: {transform.position}");
+            Debug.Log($"[InteractionDetector] Collider Bounds: Center={collider.bounds.center}, Size={collider.bounds.size}");
+            
+            // Check if collider is actually enabled
+            if (!collider.enabled)
+            {
+                Debug.LogError($"[InteractionDetector] COLLIDER IS DISABLED! This is why it can't detect anything!");
+            }
+            
+            // Check if this GameObject is active
+            if (!gameObject.activeInHierarchy)
+            {
+                Debug.LogError($"[InteractionDetector] GameObject is INACTIVE! This is why it can't detect anything!");
+            }
+        }
+        else
+        {
+            Debug.LogError($"[InteractionDetector] NO COLLIDER FOUND! InteractionDetector needs a trigger collider to work!");
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log($"[InteractionDetector] OnTriggerEnter2D called! Other: {other.gameObject.name}, Layer: {LayerMask.LayerToName(other.gameObject.layer)}, IsTrigger: {other.isTrigger}");
+        
         // Check if the object has an IInteractable component (no tag required)
         IInteractable interactable = other.GetComponent<IInteractable>();
         if (interactable != null && !nearbyInteractables.Contains(interactable))
@@ -25,6 +56,10 @@ public class InteractionDetector : MonoBehaviour
             nearbyInteractables.Add(interactable);
             Debug.Log($"[InteractionDetector] Added interactable: {other.gameObject.name} (Type: {interactable.GetType().Name}, Priority: {interactable.GetInteractionPriority()})");
             UpdatePopupVisibility();
+        }
+        else if (interactable == null)
+        {
+            Debug.Log($"[InteractionDetector] Object {other.gameObject.name} has no IInteractable component");
         }
     }
 
@@ -41,6 +76,17 @@ public class InteractionDetector : MonoBehaviour
 
     private void Update()
     {
+        // Debug: Log position every 2 seconds to verify detector is moving with player
+        if (Time.time - lastPositionLogTime > 2f)
+        {
+            if (Vector3.Distance(transform.position, lastLoggedPosition) > 0.1f || lastLoggedPosition == Vector3.zero)
+            {
+                Debug.Log($"[InteractionDetector] Position Update: {transform.position}, Nearby: {nearbyInteractables.Count}");
+                lastLoggedPosition = transform.position;
+            }
+            lastPositionLogTime = Time.time;
+        }
+        
         // Get the highest priority valid interactable
         IInteractable bestInteractable = GetBestInteractable();
 

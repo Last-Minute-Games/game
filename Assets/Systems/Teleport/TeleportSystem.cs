@@ -52,7 +52,7 @@ namespace Systems
             // Cinemachine
             _cinemachinePositionComposer = GameObject.Find("CinemachineCamera").GetComponent<CinemachinePositionComposer>();
             
-            // make the new collider
+            // make the new collider for collision detection
             _newCollider = gameObject.AddComponent<BoxCollider2D>();
             _newCollider.isTrigger = false;
             _newCollider.offset = _tptCollider.offset;
@@ -150,7 +150,13 @@ namespace Systems
         public void Interact()
         {
             Debug.Log($"[TeleportSystem] {name}: Interact() called! Starting teleport...");
-            _environmentSoundHandler.PlayDoorSound();
+            
+            // Play door sound if environment sound handler is available
+            if (_environmentSoundHandler != null)
+            {
+                _environmentSoundHandler.PlayDoorSound();
+            }
+            
             StartCoroutine(TeleportWithFade(_characterCollider2D));
         }
 
@@ -162,7 +168,9 @@ namespace Systems
 
         public bool CanInteract()
         {
-            // Can teleport if player is near, not already teleporting, no dialog active, and no other interaction in progress
+            // Can teleport if not already teleporting, no dialog active, and no other interaction in progress
+            // NOTE: We don't check _isPlayerNear here because if the InteractionDetector detected us,
+            // the player IS near. The _isPlayerNear check was causing false negatives.
             if (!tptTo)
             {
                 Debug.LogWarning($"[TeleportSystem] {name}: CanInteract = false (no tptTo assigned)");
@@ -193,12 +201,6 @@ namespace Systems
                 return false;
             }
             
-            if (!_isPlayerNear)
-            {
-                Debug.Log($"[TeleportSystem] {name}: CanInteract = false (player not near: {_isPlayerNear})");
-                return false;
-            }
-            
             Debug.Log($"[TeleportSystem] {name}: CanInteract = TRUE! Player can teleport.");
             return true;
         }
@@ -223,6 +225,13 @@ namespace Systems
             {
                 Debug.Log($"[TeleportSystem] {name}: OnTriggerEnter2D - Player entered door trigger!");
             }
+            
+            // Also check if an InteractionDetector entered (which is how the new system works)
+            var detector = other.GetComponent<InteractionDetector>();
+            if (detector != null)
+            {
+                Debug.Log($"[TeleportSystem] {name}: OnTriggerEnter2D - InteractionDetector entered! This is correct.");
+            }
         }
         
         private void OnTriggerExit2D(Collider2D other)
@@ -230,6 +239,12 @@ namespace Systems
             if (other.CompareTag("Player"))
             {
                 Debug.Log($"[TeleportSystem] {name}: OnTriggerExit2D - Player left door trigger!");
+            }
+            
+            var detector = other.GetComponent<InteractionDetector>();
+            if (detector != null)
+            {
+                Debug.Log($"[TeleportSystem] {name}: OnTriggerExit2D - InteractionDetector left.");
             }
         }
         
@@ -258,23 +273,6 @@ namespace Systems
                 else if (!_isPlayerNear && wasNear)
                 {
                     Debug.Log($"[TeleportSystem] {name}: Player left range. Distance: {dist.distance}");
-                }
-            }
-            
-            // Note: Input handling now done by InteractionDetector for proper priority
-            // Right-click interaction is kept for direct mouse interaction
-            if (_isPlayerNear && Input.GetMouseButtonDown(1)) // 1 = right mouse
-            {
-                var world = Camera.main!.ScreenToWorldPoint(Input.mousePosition);
-                var p = new Vector2(world.x, world.y);
-
-                // Use OverlapPoint (simpler than a ray)
-                var hit = Physics2D.OverlapPoint(p);
-                
-                if (hit && (hit == _tptCollider || hit == _newCollider))
-                {
-                    Debug.Log($"[TeleportSystem] {name}: Right-click teleport triggered!");
-                    Interact();
                 }
             }
         }
