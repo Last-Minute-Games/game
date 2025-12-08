@@ -241,6 +241,8 @@ namespace Systems.Overworld.Intro
 
         private void CreateScaryDialogue(Transform npcTransform)
         {
+            Debug.Log($"[TutorialScene] === Creating scary dialogue for {npcTransform.name} ===");
+            
             var dialogTrigger = npcTransform.gameObject.AddComponent<DialogTrigger>();
             dialogTrigger.dialogBehaviour = dialogBehaviour;
 
@@ -271,8 +273,202 @@ namespace Systems.Overworld.Intro
             }
 
             newGraph.NodesList.Add(newSentenceNode);
+            
+            // CRITICAL: Ensure NPC has a Rigidbody2D for trigger detection to work
+            var npcRigidbody = npcTransform.GetComponent<Rigidbody2D>();
+            if (npcRigidbody == null)
+            {
+                npcRigidbody = npcTransform.gameObject.AddComponent<Rigidbody2D>();
+                npcRigidbody.bodyType = RigidbodyType2D.Kinematic;
+                npcRigidbody.simulated = true;
+                npcRigidbody.sleepMode = RigidbodySleepMode2D.NeverSleep;
+                Debug.Log($"[TutorialScene] Added Rigidbody2D (Kinematic, NeverSleep) to {npcTransform.name} for trigger detection");
+            }
+            else
+            {
+                npcRigidbody.sleepMode = RigidbodySleepMode2D.NeverSleep;
+                npcRigidbody.WakeUp();
+                Debug.Log($"[TutorialScene] {npcTransform.name} already has Rigidbody2D: BodyType={npcRigidbody.bodyType}, SleepMode={npcRigidbody.sleepMode}");
+            }
+            
+            // NPCs need TWO colliders:
+            // 1. A TRIGGER collider for InteractionDetector to detect via OnTriggerEnter2D
+            // 2. A NON-TRIGGER collider for physics (preventing player from walking through)
+            
+            // Check for existing CircleCollider2D (trigger for interaction)
+            var existingCircleCollider = npcTransform.GetComponent<CircleCollider2D>();
+            if (existingCircleCollider != null)
+            {
+                // Ensure the circle collider is a trigger
+                existingCircleCollider.isTrigger = true;
+                existingCircleCollider.enabled = true;
+                
+                // Make it larger if it's too small
+                if (existingCircleCollider.radius < 1.2f)
+                {
+                    existingCircleCollider.radius = 1.2f;
+                    Debug.Log($"[TutorialScene] Increased {npcTransform.name} CircleCollider radius to {existingCircleCollider.radius}");
+                }
+                
+                Debug.Log($"[TutorialScene] Using existing CircleCollider2D on {npcTransform.name} as TRIGGER - radius: {existingCircleCollider.radius}");
+            }
+            
+            // Check for existing BoxCollider2D components
+            var existingBoxColliders = npcTransform.GetComponents<BoxCollider2D>();
+            BoxCollider2D triggerCollider = null;
+            BoxCollider2D physicsCollider = null;
+            
+            // Identify existing box colliders
+            foreach (var col in existingBoxColliders)
+            {
+                if (col.isTrigger)
+                {
+                    // If we already have a circle trigger, we don't need a box trigger
+                    if (existingCircleCollider != null)
+                    {
+                        Debug.Log($"[TutorialScene] Removing redundant BoxCollider2D trigger from {npcTransform.name} (CircleCollider2D is already the trigger)");
+                        Destroy(col);
+                    }
+                    else
+                    {
+                        triggerCollider = col;
+                    }
+                }
+                else
+                {
+                    physicsCollider = col;
+                }
+            }
+            
+            // If no circle collider exists and no box trigger exists, create a box trigger
+            if (existingCircleCollider == null && triggerCollider == null)
+            {
+                triggerCollider = npcTransform.gameObject.AddComponent<BoxCollider2D>();
+                triggerCollider.isTrigger = true;
+                triggerCollider.size = new Vector2(2.5f, 2.5f);
+                triggerCollider.offset = Vector2.zero;
+                Debug.Log($"[TutorialScene] Added TRIGGER BoxCollider2D to {npcTransform.name} - size: {triggerCollider.size}");
+            }
+            else if (triggerCollider != null)
+            {
+                // Ensure existing trigger collider is properly configured
+                triggerCollider.enabled = true;
+                if (triggerCollider.size.x < 2f || triggerCollider.size.y < 2f)
+                {
+                    triggerCollider.size = new Vector2(2.5f, 2.5f);
+                    Debug.Log($"[TutorialScene] Increased {npcTransform.name} trigger BoxCollider size to {triggerCollider.size}");
+                }
+                Debug.Log($"[TutorialScene] Using existing trigger BoxCollider on {npcTransform.name} - size: {triggerCollider.size}");
+            }
+            
+            // Ensure we have a PHYSICS (non-trigger) collider to prevent walking through
+            if (physicsCollider == null)
+            {
+                physicsCollider = npcTransform.gameObject.AddComponent<BoxCollider2D>();
+                physicsCollider.isTrigger = false; // CRITICAL: This must be FALSE
+                physicsCollider.size = new Vector2(1.0f, 1.0f); // Smaller than trigger for natural spacing
+                physicsCollider.offset = Vector2.zero;
+                Debug.Log($"[TutorialScene] Added PHYSICS BoxCollider2D to {npcTransform.name} - size: {physicsCollider.size}, isTrigger: FALSE");
+            }
+            else
+            {
+                // Make absolutely sure the physics collider is NOT a trigger
+                if (physicsCollider.isTrigger)
+                {
+                    Debug.LogWarning($"[TutorialScene] {npcTransform.name} physics collider was incorrectly set as trigger! Fixing...");
+                    physicsCollider.isTrigger = false;
+                }
+                physicsCollider.enabled = true;
+                Debug.Log($"[TutorialScene] Using existing physics BoxCollider on {npcTransform.name} - size: {physicsCollider.size}, isTrigger: {physicsCollider.isTrigger}");
+            }
+            
+            // Log layer info and final setup
+            var currentLayer = npcTransform.gameObject.layer;
+            var currentLayerName = LayerMask.LayerToName(currentLayer);
+            
+            string triggerInfo = existingCircleCollider != null 
+                ? $"CircleCollider(radius={existingCircleCollider.radius})" 
+                : (triggerCollider != null ? $"BoxCollider({triggerCollider.size})" : "NONE");
+            
+            string physicsInfo = physicsCollider != null 
+                ? $"BoxCollider({physicsCollider.size}, isTrigger={physicsCollider.isTrigger})" 
+                : "NONE";
+            
+            Debug.Log($"[TutorialScene] {npcTransform.name} setup complete: Layer={currentLayerName} ({currentLayer}), Position={npcTransform.position}, Trigger={triggerInfo}, Physics={physicsInfo}");
+            
+            // Verify the setup immediately
+            StartCoroutine(VerifyNPCSetup(npcTransform));
         }
-
+        
+        // New method to verify NPC setup after a frame
+        private IEnumerator VerifyNPCSetup(Transform npcTransform)
+        {
+            yield return null; // Wait one frame
+            
+            var rb = npcTransform.GetComponent<Rigidbody2D>();
+            var circleCollider = npcTransform.GetComponent<CircleCollider2D>();
+            var boxColliders = npcTransform.GetComponents<BoxCollider2D>();
+            var trigger = npcTransform.GetComponent<DialogTrigger>();
+            
+            Collider2D triggerCollider = circleCollider; // Prefer circle as trigger
+            BoxCollider2D physicsCollider = null;
+            
+            // If no circle collider, look for a trigger box collider
+            if (triggerCollider == null)
+            {
+                foreach (var col in boxColliders)
+                {
+                    if (col.isTrigger)
+                        triggerCollider = col;
+                    else
+                        physicsCollider = col;
+                }
+            }
+            else
+            {
+                // We have a circle trigger, so find the physics box collider
+                foreach (var col in boxColliders)
+                {
+                    if (!col.isTrigger)
+                    {
+                        physicsCollider = col;
+                        break;
+                    }
+                }
+            }
+            
+            // Verify critical components
+            bool hasCriticalComponents = rb != null && triggerCollider != null && trigger != null;
+            bool triggerEnabled = triggerCollider != null && triggerCollider.enabled;
+            bool hasPhysicsCollider = physicsCollider != null;
+            bool physicsIsNonTrigger = physicsCollider != null && !physicsCollider.isTrigger;
+            
+            if (!hasCriticalComponents)
+            {
+                Debug.LogError($"[TutorialScene] VERIFICATION FAILED for {npcTransform.name}! Rigidbody2D: {rb != null}, TriggerCollider: {triggerCollider != null}, DialogTrigger: {trigger != null}");
+            }
+            else if (!triggerEnabled)
+            {
+                Debug.LogError($"[TutorialScene] VERIFICATION FAILED for {npcTransform.name}! Trigger collider is DISABLED!");
+            }
+            else if (!hasPhysicsCollider)
+            {
+                Debug.LogWarning($"[TutorialScene] WARNING for {npcTransform.name}: No physics collider found. Player may walk through NPC.");
+            }
+            else if (!physicsIsNonTrigger)
+            {
+                Debug.LogError($"[TutorialScene] VERIFICATION FAILED for {npcTransform.name}! Physics collider is incorrectly set as TRIGGER!");
+            }
+            else
+            {
+                string triggerType = circleCollider != null ? "CircleCollider2D" : "BoxCollider2D";
+                string triggerSize = circleCollider != null ? $"radius={circleCollider.radius}" : $"size={((BoxCollider2D)triggerCollider).size}";
+                string physicsSize = physicsCollider != null ? physicsCollider.size.ToString() : "None";
+                
+                Debug.Log($"[TutorialScene] VERIFICATION PASSED for {npcTransform.name}. Trigger: {triggerType}({triggerSize}), Physics: BoxCollider2D({physicsSize}, isTrigger=false)");
+            }
+        }
+        
         private IEnumerator MoveMysteriousHallway()
         {
             var candleWall4 = GameObject.Find("CandleWall 4").GetComponent<Light2D>();
@@ -304,6 +500,55 @@ namespace Systems.Overworld.Intro
         void Start()
         {
             _plrObject = GameObject.FindGameObjectWithTag("Player");
+
+            // DEBUG: Check InteractionDetector setup on player and fix if needed
+            var interactionDetector = _plrObject.GetComponentInChildren<InteractionDetector>();
+            if (interactionDetector != null)
+            {
+                var detectorCollider = interactionDetector.GetComponent<Collider2D>();
+                if (detectorCollider != null)
+                {
+                    Debug.Log($"[TutorialScene] Player InteractionDetector found! Collider type: {detectorCollider.GetType().Name}, IsTrigger: {detectorCollider.isTrigger}");
+                    
+                    // Ensure it's a trigger and properly sized
+                    if (detectorCollider is CircleCollider2D circleCollider)
+                    {
+                        if (circleCollider.radius < 1.5f)
+                        {
+                            Debug.LogWarning($"[TutorialScene] InteractionDetector radius too small ({circleCollider.radius}). Increasing to 1.5f");
+                            circleCollider.radius = 1.5f;
+                        }
+                        if (!circleCollider.isTrigger)
+                        {
+                            Debug.LogWarning("[TutorialScene] InteractionDetector is not a trigger! Fixing...");
+                            circleCollider.isTrigger = true;
+                        }
+                        Debug.Log($"[TutorialScene] InteractionDetector CircleCollider: radius={circleCollider.radius}, isTrigger={circleCollider.isTrigger}");
+                    }
+                    else if (detectorCollider is BoxCollider2D boxCollider)
+                    {
+                        if (boxCollider.size.x < 2f || boxCollider.size.y < 2f)
+                        {
+                            Debug.LogWarning($"[TutorialScene] InteractionDetector box too small ({boxCollider.size}). Increasing to (2, 2)");
+                            boxCollider.size = new Vector2(2f, 2f);
+                        }
+                        if (!boxCollider.isTrigger)
+                        {
+                            Debug.LogWarning("[TutorialScene] InteractionDetector is not a trigger! Fixing...");
+                            boxCollider.isTrigger = true;
+                        }
+                        Debug.Log($"[TutorialScene] InteractionDetector BoxCollider: size={boxCollider.size}, isTrigger={boxCollider.isTrigger}");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("[TutorialScene] InteractionDetector has NO COLLIDER! This is why it can't detect NPCs.");
+                }
+            }
+            else
+            {
+                Debug.LogError("[TutorialScene] NO InteractionDetector found on player or children!");
+            }
 
             _blackScreen = GameObject.Find("Blackout");
             _corruptScreen = GameObject.Find("CorruptScreen");
@@ -564,6 +809,13 @@ namespace Systems.Overworld.Intro
 
         public void ActivateDoorInstructions()
         {
+            // Try to acquire the interaction lock to prevent conflicts
+            if (!InteractionLockManager.TryLock())
+            {
+                Debug.LogWarning("[TutorialScene] Cannot activate door instructions - interaction already in progress");
+                return;
+            }
+            
             var tutorialDoorGraph = Resources.Load<DialogNodeGraph>("Dialogues/Nikolaus/TutorialMonologueDoor");
             
             _plrInput.isInputEnabled = false;
@@ -577,9 +829,21 @@ namespace Systems.Overworld.Intro
             void OpenJournalDoorTutorial()
             {
                 SwitchJournalPage("Door");
-                StartCoroutine(OpenJournal());
+                // Only call OpenJournalAndReleaseLock - it handles both opening the journal AND releasing the lock
+                StartCoroutine(OpenJournalAndReleaseLock());
                 dialogBehaviour.OnDialogFinished.RemoveListener(OpenJournalDoorTutorial);
             }
+        }
+        
+        private IEnumerator OpenJournalAndReleaseLock()
+        {
+            yield return StartCoroutine(OpenJournal());
+            
+            // The journal will be closed when the user clicks Continue
+            // We need to wait for CloseJournal to finish, then release the lock
+            // For now, release the lock immediately after opening since the journal
+            // doesn't block other interactions (it's a tutorial UI)
+            InteractionLockManager.Unlock();
         }
 
         private IEnumerator BleedingKingHead()

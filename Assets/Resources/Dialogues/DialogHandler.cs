@@ -31,13 +31,31 @@ namespace Dialogues
 
         private void Start()
         {
-            _player = GameObject.FindGameObjectWithTag("Player");
-            _playerController = _player.GetComponent<CharacterMotor2D>();
+            InitializeReferences();
+        }
+        
+        private void InitializeReferences()
+        {
+            if (_player == null)
+            {
+                _player = GameObject.FindGameObjectWithTag("Player");
+                if (_player != null)
+                {
+                    _playerController = _player.GetComponent<CharacterMotor2D>();
+                    Debug.Log($"[DialogTrigger] '{gameObject.name}' found player reference");
+                }
+                else
+                {
+                    Debug.LogWarning($"[DialogTrigger] '{gameObject.name}' could not find player!");
+                }
+            }
 
-            _npcController = GetComponent<CharacterMotor2D>();
-
-            if (_npcController)
-                _npcBrain = GetComponent<NpcBrain2D>();
+            if (_npcController == null)
+            {
+                _npcController = GetComponent<CharacterMotor2D>();
+                if (_npcController)
+                    _npcBrain = GetComponent<NpcBrain2D>();
+            }
 
             // Add null check for dialogBehaviour before subscribing
             if (dialogBehaviour == null)
@@ -46,6 +64,9 @@ namespace Dialogues
                 return;
             }
 
+            // Only subscribe once
+            dialogBehaviour.OnDialogStarted.RemoveListener(OnDialogStart);
+            dialogBehaviour.OnDialogFinished.RemoveListener(OnDialogFinished);
             dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
             dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
             
@@ -130,15 +151,31 @@ namespace Dialogues
 
         void Update()
         {
+            // Lazy-initialize player reference if it wasn't set in Start
+            if (_player == null)
+            {
+                InitializeReferences();
+                return; // Skip this frame
+            }
+            
             // Don't process input if dialog is already active
             if (_dialogActive) return;
             
             if (_playerController && _playerController.IsDialogueActive) return;
 
-            if (_player)
-                _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= _interactionRange;
-
-            // Note: Input checking removed - now handled by InteractionDetector for proper priority
+            // Update player near status
+            bool wasNear = _isPlayerNear;
+            _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= _interactionRange;
+            
+            // Debug log when player enters/exits range
+            if (_isPlayerNear && !wasNear)
+            {
+                Debug.Log($"[DialogTrigger] '{gameObject.name}' player entered range!");
+            }
+            else if (!_isPlayerNear && wasNear)
+            {
+                Debug.Log($"[DialogTrigger] '{gameObject.name}' player left range");
+            }
         }
 
         public void Interact()
