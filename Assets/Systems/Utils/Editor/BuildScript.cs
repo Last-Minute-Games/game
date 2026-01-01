@@ -103,13 +103,23 @@ public static class BuildScript
             throw new System.Exception("macOS build target is not supported. Please install macOS Build Support (Mono) module in Unity Hub.");
         }
         
+        // WORKAROUND: Disable custom cursor to prevent X11 crash on Linux headless builds
+        // Unity tries to initialize cursors even in -nographics mode, causing SIGSEGV
+        // See: https://issuetracker.unity3d.com/issues/linux-crash-when-building-macos-in-batchmode
+        bool isLinuxHost = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+            System.Runtime.InteropServices.OSPlatform.Linux);
+        
+        if (isLinuxHost)
+        {
+            UnityEngine.Debug.Log("[BuildScript] Linux host detected - clearing custom cursor to prevent X11 crash");
+            PlayerSettings.defaultCursor = null;
+        }
+        
         var standaloneTarget = NamedBuildTarget.Standalone;
         var currentBackend = PlayerSettings.GetScriptingBackend(standaloneTarget);
         UnityEngine.Debug.Log($"[BuildScript] Current scripting backend: {currentBackend}");
         
         // Detect if we're running on Linux (cross-compiling)
-        bool isLinuxHost = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
-            System.Runtime.InteropServices.OSPlatform.Linux);
         
         if (isLinuxHost)
         {
