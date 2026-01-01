@@ -106,13 +106,16 @@ LOG_FILE="$OUT_DIR/unity-build-$BUILD_TARGET-$ARCHITECTURE.log"
 # Temporarily disable exit on error to capture Unity's exit code
 set +e
 
-# Run Unity build with architecture parameter
+# Note: We intentionally do NOT pass -buildTarget here when cross-compiling
+# The BuildScript will handle the target switch internally
+# Passing -buildTarget can cause crashes when the platform support isn't fully loaded
+
+# Run Unity build - let the C# build script handle platform switching
 "$UNITY" \
     -batchmode \
     -nographics \
     -quit \
     -projectPath "$PROJECT_PATH" \
-    -buildTarget "$UNITY_BUILD_TARGET" \
     -logFile "$LOG_FILE" \
     -stackTraceLogType Full \
     -executeMethod "$BUILD_METHOD" \

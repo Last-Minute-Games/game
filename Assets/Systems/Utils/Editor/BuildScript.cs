@@ -99,7 +99,8 @@ public static class BuildScript
         if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX))
         {
             UnityEngine.Debug.LogError("[BuildScript] macOS build support is not installed!");
-            throw new System.Exception("macOS build target is not supported. Please install macOS Build Support module in Unity Hub.");
+            UnityEngine.Debug.LogError("[BuildScript] Install it via Unity Hub: Installs > Your Version > Add Modules > Mac Build Support (Mono)");
+            throw new System.Exception("macOS build target is not supported. Please install macOS Build Support (Mono) module in Unity Hub.");
         }
         
         var standaloneTarget = NamedBuildTarget.Standalone;
@@ -122,6 +123,19 @@ public static class BuildScript
             // On macOS, we can use IL2CPP for better performance
             UnityEngine.Debug.Log("[BuildScript] Detected macOS host - using IL2CPP backend");
             PlayerSettings.SetScriptingBackend(standaloneTarget, ScriptingImplementation.IL2CPP);
+        }
+        
+        // Switch to macOS build target if not already on it
+        if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneOSX)
+        {
+            UnityEngine.Debug.Log("[BuildScript] Switching build target to StandaloneOSX...");
+            bool switched = EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX);
+            if (!switched)
+            {
+                UnityEngine.Debug.LogError("[BuildScript] Failed to switch to macOS build target!");
+                throw new System.Exception("Failed to switch to macOS build target. Is macOS Build Support (Mono) installed?");
+            }
+            UnityEngine.Debug.Log("[BuildScript] Successfully switched to StandaloneOSX");
         }
         
         // Build universal binary (Intel 64-bit + Apple Silicon)
