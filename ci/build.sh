@@ -1,5 +1,5 @@
 #!/bin/bash
-# macOS build script for Unity projects
+# macOS build script for Unity projects (runs on Linux, cross-compiles to macOS)
 
 set -e
 
@@ -11,13 +11,36 @@ BUILD_TARGET="${4:-macOS}"
 VERSION="${5:-}"
 ARCHITECTURE="${6:-x64}"
 
-# Unity installation path (macOS)
-UNITY="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
+# Detect OS and set Unity path accordingly
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    UNITY="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
+else
+    # Linux (cross-compile to macOS)
+    UNITY="$HOME/Unity/Hub/Editor/${UNITY_VERSION}/Editor/Unity"
+    # Alternative paths to check
+    if [ ! -f "$UNITY" ]; then
+        UNITY="/opt/unity/Editor/${UNITY_VERSION}/Editor/Unity"
+    fi
+    if [ ! -f "$UNITY" ]; then
+        UNITY="/usr/share/unity/Editor/${UNITY_VERSION}/Editor/Unity"
+    fi
+fi
 
 if [ ! -f "$UNITY" ]; then
-    echo "❌ Unity not found at $UNITY"
+    echo "❌ Unity not found. Checked paths:"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "   /Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
+    else
+        echo "   $HOME/Unity/Hub/Editor/${UNITY_VERSION}/Editor/Unity"
+        echo "   /opt/unity/Editor/${UNITY_VERSION}/Editor/Unity"
+        echo "   /usr/share/unity/Editor/${UNITY_VERSION}/Editor/Unity"
+    fi
     exit 1
 fi
+
+echo "Using Unity at: $UNITY"
+echo "Host OS: $OSTYPE"
 
 # Determine build method and target based on platform
 # Convert to lowercase for comparison (compatible with bash 3.2 on macOS)

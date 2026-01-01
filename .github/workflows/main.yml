@@ -1,7 +1,7 @@
 name: Build Multi-Platform (self-hosted)
 
 # Windows and Linux builds run on Windows runners using PowerShell
-# macOS builds run on macOS runners using bash
+# macOS builds run on Linux X64 runners using bash (Unity cross-compiles)
 
 on:
   push:
@@ -614,14 +614,14 @@ jobs:
   build-macos:
     needs: [tag]
     if: always()
-    runs-on: [self-hosted, macOS, X64]
+    runs-on: [self-hosted, Linux, X64]
     environment: main
     defaults:
       run:
         shell: bash
     name: Build macOS (Universal)
-    # macOS builds run on macOS runners using bash
-    # Build universal binary that works on both Intel 64-bit and Apple Silicon
+    # macOS builds run on Linux x86 runners using bash
+    # Unity cross-compiles to build universal binary that works on both Intel 64-bit and Apple Silicon
 
     env:
       UNITY_VERSION: "6000.2.2f1"
@@ -658,9 +658,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Library
-          key: Library-macOS-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
+          key: Library-Linux-macOS-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
           restore-keys: |
-            Library-macOS-${{ env.UNITY_VERSION }}-
+            Library-Linux-macOS-${{ env.UNITY_VERSION }}-
+            Library-Linux-macOS-
             Library-macOS-
           enableCrossOsArchive: true
 
@@ -801,7 +802,7 @@ jobs:
             while [ $download_attempt -lt $max_download_attempts ]; do
               download_attempt=$((download_attempt + 1))
               echo "Downloading butler (attempt $download_attempt/$max_download_attempts)..."
-              if curl -L --fail --retry 3 --retry-delay 5 "https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default" -o "$butlerZip"; then
+              if curl -L --fail --retry 3 --retry-delay 5 "https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default" -o "$butlerZip"; then
                 download_success=true
                 break
               else
@@ -944,14 +945,20 @@ jobs:
           logs="$RUNNER_TEMP/unity-logs-macOS"
           mkdir -p "$logs"
 
-          # Editor logs (macOS)
-          editor="$HOME/Library/Logs/Unity/Editor.log"
+          # Editor logs (Linux)
+          editor="$HOME/.config/unity3d/Editor.log"
           if [ -f "$editor" ]; then
             cp "$editor" "$logs/"
           fi
 
-          # UPM logs (macOS)
-          upm="$HOME/Library/Logs/Unity/cache/upm/logs"
+          # Alternative editor log location
+          editor2="$HOME/.local/share/unity3d/Unity/Editor.log"
+          if [ -f "$editor2" ]; then
+            cp "$editor2" "$logs/Editor-alt.log"
+          fi
+
+          # UPM logs (Linux)
+          upm="$HOME/.config/unity3d/cache/upm/logs"
           if [ -d "$upm" ]; then
             cp -r "$upm" "$logs/"
           fi
