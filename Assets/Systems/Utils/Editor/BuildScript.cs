@@ -99,18 +99,44 @@ public static class BuildScript
         if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX))
         {
             UnityEngine.Debug.LogError("[BuildScript] macOS build support is not installed!");
-            throw new System.Exception("macOS build target is not supported. Please install macOS Build Support module in Unity Hub.");
+            UnityEngine.Debug.LogError("[BuildScript] Install it via Unity Hub: Installs > Your Version > Add Modules > Mac Build Support (Mono)");
+            throw new System.Exception("macOS build target is not supported. Please install macOS Build Support (Mono) module in Unity Hub.");
         }
         
-        // CRITICAL: macOS MUST use IL2CPP or Mono with proper runtime included
-        // Setting IL2CPP explicitly ensures the runtime is properly bundled
         var standaloneTarget = NamedBuildTarget.Standalone;
         var currentBackend = PlayerSettings.GetScriptingBackend(standaloneTarget);
         UnityEngine.Debug.Log($"[BuildScript] Current scripting backend: {currentBackend}");
         
-        // Force IL2CPP for macOS builds to ensure runtime is included
-        PlayerSettings.SetScriptingBackend(standaloneTarget, ScriptingImplementation.IL2CPP);
-        UnityEngine.Debug.Log("[BuildScript] Set scripting backend to IL2CPP for macOS build");
+        // Detect if we're running on Linux (cross-compiling)
+        bool isLinuxHost = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+            System.Runtime.InteropServices.OSPlatform.Linux);
+        
+        if (isLinuxHost)
+        {
+            // When cross-compiling from Linux, we MUST use Mono
+            // IL2CPP requires Xcode/macOS toolchain which isn't available on Linux
+            UnityEngine.Debug.Log("[BuildScript] Detected Linux host - using Mono backend for macOS cross-compilation");
+            PlayerSettings.SetScriptingBackend(standaloneTarget, ScriptingImplementation.Mono2x);
+        }
+        else
+        {
+            // On macOS, we can use IL2CPP for better performance
+            UnityEngine.Debug.Log("[BuildScript] Detected macOS host - using IL2CPP backend");
+            PlayerSettings.SetScriptingBackend(standaloneTarget, ScriptingImplementation.IL2CPP);
+        }
+        
+        // Switch to macOS build target if not already on it
+        if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneOSX)
+        {
+            UnityEngine.Debug.Log("[BuildScript] Switching build target to StandaloneOSX...");
+            bool switched = EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX);
+            if (!switched)
+            {
+                UnityEngine.Debug.LogError("[BuildScript] Failed to switch to macOS build target!");
+                throw new System.Exception("Failed to switch to macOS build target. Is macOS Build Support (Mono) installed?");
+            }
+            UnityEngine.Debug.Log("[BuildScript] Successfully switched to StandaloneOSX");
+        }
         
         // Build universal binary (Intel 64-bit + Apple Silicon)
         // According to Unity docs: 0 = None, 1 = ARM64, 2 = Universal
