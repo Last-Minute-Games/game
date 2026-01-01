@@ -1,5 +1,5 @@
 #!/bin/bash
-# macOS build script for Unity projects (runs on Linux, cross-compiles to macOS)
+# macOS build script for Unity projects (runs on Linux or macOS, cross-compiles to macOS)
 
 set -e
 
@@ -16,14 +16,30 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     UNITY="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
 else
-    # Linux (cross-compile to macOS)
+    # Linux - use the launcher script which properly sets up the Mono environment
     UNITY="$HOME/Unity/Hub/Editor/${UNITY_VERSION}/Editor/Unity"
+    
     # Alternative paths to check
     if [ ! -f "$UNITY" ]; then
         UNITY="/opt/unity/Editor/${UNITY_VERSION}/Editor/Unity"
     fi
     if [ ! -f "$UNITY" ]; then
         UNITY="/usr/share/unity/Editor/${UNITY_VERSION}/Editor/Unity"
+    fi
+    
+    # If direct binary exists, we need to run it through the Unity script/launcher
+    # Unity on Linux requires specific environment setup
+    if [ -f "$UNITY" ]; then
+        UNITY_DIR="$(dirname "$UNITY")"
+        
+        # Set up Unity's Mono environment
+        export UNITY_MONO_PATH="$UNITY_DIR/Data/MonoBleedingEdge"
+        export LD_LIBRARY_PATH="$UNITY_DIR:$UNITY_DIR/Data/MonoBleedingEdge/lib:${LD_LIBRARY_PATH:-}"
+        export MONO_PATH="$UNITY_MONO_PATH/lib/mono/unityjit-linux"
+        
+        echo "Setting up Mono environment:"
+        echo "  UNITY_MONO_PATH=$UNITY_MONO_PATH"
+        echo "  LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
     fi
 fi
 
@@ -39,8 +55,17 @@ if [ ! -f "$UNITY" ]; then
     exit 1
 fi
 
-echo "Using Unity at: $UNITY"
-echo "Host OS: $OSTYPE"
+echo "============================================="
+echo "Unity Build Script"
+echo "============================================="
+echo "Unity path:    $UNITY"
+echo "Host OS:       $OSTYPE"
+echo "Build target:  $BUILD_TARGET"
+echo "Architecture:  $ARCHITECTURE"
+echo "Project path:  $PROJECT_PATH"
+echo "Output dir:    $OUT_DIR"
+echo "Version:       $VERSION"
+echo "============================================="
 
 # Determine build method and target based on platform
 # Convert to lowercase for comparison (compatible with bash 3.2 on macOS)
@@ -75,6 +100,12 @@ fi
 
 echo "Starting Unity $BUILD_TARGET build ($ARCHITECTURE) to $OUT_DIR"
 
+# Define log file path
+LOG_FILE="$OUT_DIR/unity-build-$BUILD_TARGET-$ARCHITECTURE.log"
+
+# Temporarily disable exit on error to capture Unity's exit code
+set +e
+
 # Run Unity build with architecture parameter
 "$UNITY" \
     -batchmode \
@@ -82,7 +113,7 @@ echo "Starting Unity $BUILD_TARGET build ($ARCHITECTURE) to $OUT_DIR"
     -quit \
     -projectPath "$PROJECT_PATH" \
     -buildTarget "$UNITY_BUILD_TARGET" \
-    -logFile "$OUT_DIR/unity-build-$BUILD_TARGET-$ARCHITECTURE.log" \
+    -logFile "$LOG_FILE" \
     -stackTraceLogType Full \
     -executeMethod "$BUILD_METHOD" \
     -customBuildPath "$OUT_DIR" \
@@ -91,19 +122,40 @@ echo "Starting Unity $BUILD_TARGET build ($ARCHITECTURE) to $OUT_DIR"
 
 EXIT_CODE=$?
 
+# Re-enable exit on error
+set -e
+
 if [ $EXIT_CODE -ne 0 ]; then
     if [ -n "$ARCHITECTURE" ] && [ "$ARCHITECTURE" != "" ]; then
         echo "❌ Unity $BUILD_TARGET build ($ARCHITECTURE) failed with exit code: $EXIT_CODE"
     else
         echo "❌ Unity $BUILD_TARGET build (Universal) failed with exit code: $EXIT_CODE"
     fi
-    echo "Waiting 10 seconds for log file to be written..."
-    sleep 10
+    
+    # Check if it was a segfault (exit code 139 = 128 + 11 SIGSEGV)
+    if [ $EXIT_CODE -eq 139 ]; then
+        echo ""
+        echo "⚠️  Unity crashed with SIGSEGV (Segmentation fault)"
+        echo "This usually indicates missing dependencies or library issues."
+        echo ""
+        echo "=== Checking Unity dependencies ==="
+        ldd "$UNITY" 2>&1 | grep -i "not found" || echo "All libraries found"
+    fi
+    
+    echo ""
+    echo "Waiting 5 seconds for log file to be written..."
+    sleep 5
+    
     if [ -f "$LOG_FILE" ]; then
-        echo "Tail of log:"
+        echo ""
+        echo "=== Last 120 lines of Unity log ==="
         tail -n 120 "$LOG_FILE"
     else
         echo "Log file not found at: $LOG_FILE"
+        echo ""
+        echo "=== Checking for crash logs ==="
+        find /tmp -name "crash*.log" -mmin -5 2>/dev/null | head -5
+        find "$HOME" -name "crash*.log" -mmin -5 2>/dev/null | head -5
     fi
     exit $EXIT_CODE
 fi

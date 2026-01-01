@@ -1,7 +1,7 @@
 name: Build Multi-Platform (self-hosted)
 
 # Windows and Linux builds run on Windows runners using PowerShell
-# macOS builds run on Linux X64 runners using bash (Unity cross-compiles)
+# macOS builds run on Linux X64 runners using bash (Unity cross-compiles to macOS)
 
 on:
   push:
@@ -701,6 +701,60 @@ jobs:
           if [ -f "$lock" ]; then
             rm -f "$lock"
           fi
+
+      # Verify Unity installation and dependencies
+      - name: Verify Unity installation
+        run: |
+          echo "=== Checking Unity installation ==="
+          UNITY="$HOME/Unity/Hub/Editor/$UNITY_VERSION/Editor/Unity"
+          UNITY_DIR="$(dirname "$UNITY")"
+          
+          if [ ! -f "$UNITY" ]; then
+            echo "Unity not found at: $UNITY"
+            echo "Checking alternative paths..."
+            
+            # List what's actually installed
+            echo "Contents of $HOME/Unity/Hub/Editor/:"
+            ls -la "$HOME/Unity/Hub/Editor/" 2>/dev/null || echo "Directory not found"
+            
+            if [ -d "$HOME/Unity/Hub/Editor/$UNITY_VERSION" ]; then
+              echo "Contents of $HOME/Unity/Hub/Editor/$UNITY_VERSION/:"
+              ls -la "$HOME/Unity/Hub/Editor/$UNITY_VERSION/" 2>/dev/null || echo "Directory not found"
+            fi
+            exit 1
+          fi
+          
+          echo "Unity found at: $UNITY"
+          echo "File info:"
+          file "$UNITY"
+          
+          echo ""
+          echo "=== Setting up Mono environment ==="
+          export UNITY_MONO_PATH="$UNITY_DIR/Data/MonoBleedingEdge"
+          export LD_LIBRARY_PATH="$UNITY_DIR:$UNITY_DIR/Data/MonoBleedingEdge/lib:${LD_LIBRARY_PATH:-}"
+          echo "UNITY_MONO_PATH=$UNITY_MONO_PATH"
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          
+          # Check Mono exists
+          if [ -d "$UNITY_MONO_PATH" ]; then
+            echo "✅ Mono directory found"
+            ls -la "$UNITY_MONO_PATH/" | head -10
+          else
+            echo "❌ Mono directory NOT found at $UNITY_MONO_PATH"
+          fi
+          
+          echo ""
+          echo "=== Checking library dependencies ==="
+          ldd "$UNITY" 2>&1 | grep -i "not found" || echo "✅ All libraries found"
+          
+          echo ""
+          echo "=== System info ==="
+          uname -a
+          cat /etc/os-release 2>/dev/null || echo "No os-release file"
+          
+          echo ""
+          echo "=== Testing Unity version ==="
+          "$UNITY" -version 2>&1 || echo "Unity -version exited with code: $?"
 
       # Run your bash build script (build universal binary)
       - name: Build (macOS Universal)
