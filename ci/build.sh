@@ -134,16 +134,26 @@ echo ""
 # Disable exit on error to capture Unity's exit code
 set +e
 
-"$UNITY" \
-    -batchmode \
-    -nographics \
-    -quit \
-    -projectPath "$PROJECT_PATH" \
-    -logFile "$LOG_FILE" \
-    -stackTraceLogType Full \
-    -executeMethod "$BUILD_METHOD" \
-    -customBuildPath "$OUT_DIR" \
-    -buildVersion "${VERSION:-}"
+# Build the command arguments
+UNITY_ARGS=(
+    -batchmode
+    -nographics
+    -quit
+    -projectPath "$PROJECT_PATH"
+    -logFile "$LOG_FILE"
+    -executeMethod "$BUILD_METHOD"
+    -customBuildPath "$OUT_DIR"
+)
+
+# Only add buildVersion if it's not empty
+if [ -n "$VERSION" ]; then
+    UNITY_ARGS+=(-buildVersion "$VERSION")
+fi
+
+echo "Running: $UNITY ${UNITY_ARGS[*]}"
+echo ""
+
+"$UNITY" "${UNITY_ARGS[@]}"
 
 EXIT_CODE=$?
 
