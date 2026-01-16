@@ -1,6 +1,7 @@
 using cherrydev;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace Dialogues
 {
@@ -15,8 +16,8 @@ namespace Dialogues
         [Header("Events")]
         public UnityEvent OnDialogCompleted; // 👈 Custom callback
         
-        [Header("Detection Settings")] 
-        private readonly float _interactionRange = 1f;
+        [FormerlySerializedAs("_interactionRange")] [Header("Detection Settings")] 
+        public float interactionRange = 1f;
 
         private CharacterMotor2D _npcController;
         private NpcBrain2D _npcBrain;
@@ -136,7 +137,7 @@ namespace Dialogues
             if (_playerController && _playerController.IsDialogueActive) return;
 
             if (_player)
-                _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= _interactionRange;
+                _isPlayerNear = Vector3.Distance(transform.position, _player.transform.position) <= interactionRange;
 
             // Note: Input checking removed - now handled by InteractionDetector for proper priority
         }
@@ -181,10 +182,18 @@ namespace Dialogues
 
         public bool CanInteract()
         {
+            // Debug.Log("[DialogTrigger] Checking CanInteract()");
             // Can interact if we have dialog setup, player is near, and no other interaction is in progress
-            if (dialogBehaviour == null || dialogGraph == null) return false;
+            if (dialogBehaviour == null || dialogGraph == null)
+            {
+                // Debug.Log("[DialogTrigger] Cannot interact - dialogBehaviour or dialogGraph is null");
+                return false;
+            }
+            
             if (_dialogActive) return false;
+            
             if (_playerController != null && _playerController.IsDialogueActive) return false;
+            
             if (Systems.InteractionLockManager.IsLocked) return false;
             return _isPlayerNear;
         }
