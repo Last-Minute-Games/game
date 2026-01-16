@@ -13,8 +13,8 @@ using UnityEditor;
 public class InteractiveItem : MonoBehaviour, IInteractable
 {
     [Header("Dialog Settings")]
-    [SerializeField] private DialogBehaviour dialogBehaviour;
-    [SerializeField] private DialogNodeGraph dialogGraph;
+    public DialogBehaviour dialogBehaviour;
+    public DialogNodeGraph dialogGraph;
 
     [Header("Interaction Settings")]
     [SerializeField] private KeyCode interactKey = KeyCode.E;

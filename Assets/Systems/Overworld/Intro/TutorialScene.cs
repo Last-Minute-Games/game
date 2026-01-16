@@ -32,6 +32,7 @@ namespace Systems.Overworld.Intro
         public List<Light2D> meltingLights = new List<Light2D>();
         public float meltingDimDuration = 7f;
 
+        private GameObject _plrPrefab;
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
         private CharacterMotor2D _plrMotor2D;
@@ -130,6 +131,9 @@ namespace Systems.Overworld.Intro
 
             foreach (Transform npcTransform in _charactersGroup.transform)
             {
+                var rigidBody2D = npcTransform.gameObject.GetComponent<Rigidbody2D>();
+                rigidBody2D.simulated = false;
+                
                 var spriteRenderer = npcTransform.gameObject.GetComponent<SpriteRenderer>();
                 var sinkDistance = spriteRenderer.transform.localScale.z * 2;
 
@@ -247,6 +251,8 @@ namespace Systems.Overworld.Intro
             var newGraph = ScriptableObject.CreateInstance<DialogNodeGraph>();
             dialogTrigger.dialogGraph = newGraph;
 
+            dialogTrigger.interactionRange = 1f;
+
             dialogTrigger.OnDialogCompleted = new UnityEvent();
             dialogTrigger.OnDialogCompleted.AddListener(ActivateMeltingSequence);
 
@@ -304,6 +310,7 @@ namespace Systems.Overworld.Intro
         void Start()
         {
             _plrObject = GameObject.FindGameObjectWithTag("Player");
+            _plrPrefab = GameObject.Find("MAIN PLAYER");
 
             _blackScreen = GameObject.Find("Blackout");
             _corruptScreen = GameObject.Find("CorruptScreen");
@@ -470,15 +477,21 @@ namespace Systems.Overworld.Intro
             var grandfatherStroke = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/GrandfatherBell");
             var grandfatherSource = _environmentSoundHandler.CreateCustomSource("GrandfatherSource");
             
-            grandfatherSource.clip = grandfatherStroke;
-            grandfatherSource.volume = 0.5f;
-
-            _aspectBars.SetActive(true);
+            var aspectBarsCanvas = _aspectBars.transform.GetChild(0).GetComponent<Canvas>();
+            var topBar = aspectBarsCanvas.transform.GetChild(0).GetComponent<RectTransform>();
+            var bottomBar = aspectBarsCanvas.transform.GetChild(1).GetComponent<RectTransform>();
             
             var plrSpriteRenderer = _plrObject.GetComponent<SpriteRenderer>();
             var sleepingPlrRenderer = GameObject.Find("SleepingMain").GetComponent<SpriteRenderer>();
 
             var cinemachineBrain = _plrMainCamera.GetComponent<CinemachineBrain>();
+            
+            _plrPrefab.transform.position = new Vector3(-96.98f, 70.71f, 0f);
+            
+            grandfatherSource.clip = grandfatherStroke;
+            grandfatherSource.volume = 0.5f;
+
+            _aspectBars.SetActive(true);
 
             _plrMainCamera.gameObject.SetActive(true);
             // _spawnRoomCamera.gameObject.SetActive(true);
@@ -524,10 +537,6 @@ namespace Systems.Overworld.Intro
             _fadeCanvasGroup.DOFade(1f, 3f).SetEase(Ease.InOutQuad);
 
             yield return new WaitForSeconds(5f);
-            
-            var aspectBarsCanvas = _aspectBars.transform.GetChild(0).GetComponent<Canvas>();
-            var topBar = aspectBarsCanvas.transform.GetChild(0).GetComponent<RectTransform>();
-            var bottomBar = aspectBarsCanvas.transform.GetChild(1).GetComponent<RectTransform>();
             
             topBar.DOAnchorPosY(67.5f, 3f).SetEase(Ease.Linear);
             bottomBar.DOAnchorPosY(-67.5f, 3f).SetEase(Ease.Linear);

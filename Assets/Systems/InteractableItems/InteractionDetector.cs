@@ -20,6 +20,7 @@ public class InteractionDetector : MonoBehaviour
     {
         // Check if the object has an IInteractable component (no tag required)
         IInteractable interactable = other.GetComponent<IInteractable>();
+        
         if (interactable != null && !nearbyInteractables.Contains(interactable))
         {
             nearbyInteractables.Add(interactable);
