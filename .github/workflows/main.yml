@@ -754,26 +754,27 @@ jobs:
       # Upload to itch.io using Butler (skip in artifact-only mode)
       - name: Upload to itch.io (macOS Universal)
         if: ${{ github.ref == 'refs/heads/main' }}
-        shell: bash
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
           set -e
           
-          # Check if butler is installed and in PATH
-          if ! command -v butler &> /dev/null; then
-            echo "❌ Butler not found in PATH"
-            echo "PATH=$PATH"
-            echo "Please install butler on the self-hosted runner and add it to PATH."
+          # Butler is installed at /usr/bin/butler/butler
+          BUTLER_PATH="/usr/bin/butler/butler"
+          
+          # Check if butler exists
+          if [ ! -f "$BUTLER_PATH" ]; then
+            echo "❌ Butler not found at: $BUTLER_PATH"
+            echo "Please install butler on the self-hosted runner."
             echo "Download from: https://itch.io/docs/butler/installing.html"
             exit 1
           fi
           
-          echo "Found butler in PATH: $(which butler)"
+          echo "Found butler at: $BUTLER_PATH"
           
           # Verify butler is working
           echo "Verifying butler installation..."
-          if ! butler --version; then
+          if ! "$BUTLER_PATH" --version; then
             echo "❌ Butler verification failed"
             exit 1
           fi
@@ -827,7 +828,7 @@ jobs:
             fi
             
             # Run butler and capture output
-            butler push "$OUT_DIR" "$itchTarget" \
+            "$BUTLER_PATH" push "$OUT_DIR" "$itchTarget" \
               --userversion "$VERSION" \
               --fix-permissions \
               --verbose 2>&1 | tee /tmp/butler-output.log
