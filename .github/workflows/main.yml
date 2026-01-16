@@ -140,60 +140,20 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           
-          # Install butler if not present
-          $butlerPath = "$env:LOCALAPPDATA\Butler\butler.exe"
-          if (-not (Test-Path $butlerPath)) {
-            Write-Host "Installing butler..."
-            $butlerZip = "$env:TEMP\butler.zip"
-            $butlerDir = "$env:LOCALAPPDATA\Butler"
-            
-            # Download butler with retry
-            $maxDownloadAttempts = 3
-            $downloadAttempt = 0
-            $downloadSuccess = $false
-            
-            while ($downloadAttempt -lt $maxDownloadAttempts) {
-              $downloadAttempt++
-              Write-Host "Downloading butler (attempt $downloadAttempt/$maxDownloadAttempts)..."
-              try {
-                Invoke-WebRequest -Uri "https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default" `
-                  -OutFile $butlerZip -UseBasicParsing -RetryCount 3 -RetryIntervalSec 5
-                $downloadSuccess = $true
-                break
-              } catch {
-                Write-Host "Download failed" $_
-                if ($downloadAttempt -lt $maxDownloadAttempts) {
-                  Write-Host "Retrying in 10 seconds..."
-                  Start-Sleep -Seconds 10
-                }
-              }
-            }
-            
-            if (-not $downloadSuccess) {
-              Write-Host "❌ Failed to download butler after $maxDownloadAttempts attempts"
-              exit 1
-            }
-            
-            # Extract
-            Write-Host "Extracting butler..."
-            try {
-              New-Item -ItemType Directory -Force -Path $butlerDir | Out-Null
-              Expand-Archive -Path $butlerZip -DestinationPath $butlerDir -Force
-              Remove-Item $butlerZip -Force
-              Write-Host "✅ Butler installed to $butlerDir"
-            } catch {
-              Write-Host "❌ Failed to extract butler" $_
-              if (Test-Path $butlerZip) { Remove-Item $butlerZip -Force }
-              exit 1
-            }
-          } else {
-            Write-Host "Butler already installed at $butlerPath"
+          # Check if butler is installed and in PATH
+          if (-not (Get-Command butler -ErrorAction SilentlyContinue)) {
+            Write-Host "❌ Butler not found in PATH"
+            Write-Host "Please install butler on the self-hosted runner and add it to PATH."
+            Write-Host "Download from: https://itch.io/docs/butler/installing.html"
+            exit 1
           }
+          
+          Write-Host "Found butler in PATH"
           
           # Verify butler is working
           Write-Host "Verifying butler installation..."
           try {
-            & $butlerPath --version | Out-Null
+            butler --version | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "Butler version check failed" }
           } catch {
             Write-Host "❌ Butler verification failed" $_
@@ -249,7 +209,7 @@ jobs:
             
             # Run butler and capture output
             try {
-              & $butlerPath push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION" --verbose *> $butlerOutputFile
+              butler push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION" --verbose *> $butlerOutputFile
               $lastExitCode = $LASTEXITCODE
               
               if ($lastExitCode -eq 0) {
@@ -432,60 +392,20 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           
-          # Install butler if not present
-          $butlerPath = "$env:LOCALAPPDATA\Butler\butler.exe"
-          if (-not (Test-Path $butlerPath)) {
-            Write-Host "Installing butler..."
-            $butlerZip = "$env:TEMP\butler.zip"
-            $butlerDir = "$env:LOCALAPPDATA\Butler"
-            
-            # Download butler with retry
-            $maxDownloadAttempts = 3
-            $downloadAttempt = 0
-            $downloadSuccess = $false
-            
-            while ($downloadAttempt -lt $maxDownloadAttempts) {
-              $downloadAttempt++
-              Write-Host "Downloading butler (attempt $downloadAttempt/$maxDownloadAttempts)..."
-              try {
-                Invoke-WebRequest -Uri "https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default" `
-                  -OutFile $butlerZip -UseBasicParsing -RetryCount 3 -RetryIntervalSec 5
-                $downloadSuccess = $true
-                break
-              } catch {
-                Write-Host "Download failed" $_
-                if ($downloadAttempt -lt $maxDownloadAttempts) {
-                  Write-Host "Retrying in 10 seconds..."
-                  Start-Sleep -Seconds 10
-                }
-              }
-            }
-            
-            if (-not $downloadSuccess) {
-              Write-Host "❌ Failed to download butler after $maxDownloadAttempts attempts"
-              exit 1
-            }
-            
-            # Extract
-            Write-Host "Extracting butler..."
-            try {
-              New-Item -ItemType Directory -Force -Path $butlerDir | Out-Null
-              Expand-Archive -Path $butlerZip -DestinationPath $butlerDir -Force
-              Remove-Item $butlerZip -Force
-              Write-Host "✅ Butler installed to $butlerDir"
-            } catch {
-              Write-Host "❌ Failed to extract butler" $_
-              if (Test-Path $butlerZip) { Remove-Item $butlerZip -Force }
-              exit 1
-            }
-          } else {
-            Write-Host "Butler already installed at $butlerPath"
+          # Check if butler is installed and in PATH
+          if (-not (Get-Command butler -ErrorAction SilentlyContinue)) {
+            Write-Host "❌ Butler not found in PATH"
+            Write-Host "Please install butler on the self-hosted runner and add it to PATH."
+            Write-Host "Download from: https://itch.io/docs/butler/installing.html"
+            exit 1
           }
+          
+          Write-Host "Found butler in PATH"
           
           # Verify butler is working
           Write-Host "Verifying butler installation..."
           try {
-            & $butlerPath --version | Out-Null
+            butler --version | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "Butler version check failed" }
           } catch {
             Write-Host "❌ Butler verification failed" $_
@@ -541,7 +461,7 @@ jobs:
             
             # Run butler with --fix-permissions for Linux and capture output
             try {
-              & $butlerPath push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION" --fix-permissions --verbose *> $butlerOutputFile
+              butler push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION" --fix-permissions --verbose *> $butlerOutputFile
               $lastExitCode = $LASTEXITCODE
               
               if ($lastExitCode -eq 0) {
@@ -839,59 +759,21 @@ jobs:
         run: |
           set -e
           
-          # Install butler if not present
+          # Check if butler is installed
           butlerPath="$HOME/.local/share/itch/butler"
           if [ ! -f "$butlerPath" ]; then
-            echo "Installing butler..."
-            butlerZip="$TMPDIR/butler.zip"
-            butlerDir="$HOME/.local/share/itch"
-            
-            mkdir -p "$butlerDir"
-            
-            # Download butler (macOS) with retry
-            max_download_attempts=3
-            download_attempt=0
-            download_success=false
-            
-            while [ $download_attempt -lt $max_download_attempts ]; do
-              download_attempt=$((download_attempt + 1))
-              echo "Downloading butler (attempt $download_attempt/$max_download_attempts)..."
-              if curl -L --fail --retry 3 --retry-delay 5 "https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default" -o "$butlerZip"; then
-                download_success=true
-                break
-              else
-                if [ $download_attempt -lt $max_download_attempts ]; then
-                  echo "Download failed, retrying in 10 seconds..."
-                  sleep 10
-                fi
-              fi
-            done
-            
-            if [ "$download_success" = false ]; then
-              echo "❌ Failed to download butler after $max_download_attempts attempts"
-              exit 1
-            fi
-            
-            # Extract
-            echo "Extracting butler..."
-            if ! unzip -q "$butlerZip" -d "$butlerDir"; then
-              echo "❌ Failed to extract butler"
-              rm -f "$butlerZip"
-              exit 1
-            fi
-            rm -f "$butlerZip"
-            
-            # Make executable
-            chmod +x "$butlerPath"
-            
-            echo "✅ Butler installed to $butlerDir"
-          else
-            echo "Butler already installed at $butlerPath"
+            echo "❌ Butler not found at: $butlerPath"
+            echo "Please install butler on the self-hosted runner."
+            echo "Download from: https://itch.io/docs/butler/installing.html"
+            exit 1
           fi
+          
+          echo "Found butler at: $butlerPath"
           
           # Verify butler is executable and working
           if [ ! -x "$butlerPath" ]; then
             echo "❌ Butler is not executable: $butlerPath"
+            echo "Run: chmod +x $butlerPath"
             exit 1
           fi
           
