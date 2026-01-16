@@ -759,26 +759,19 @@ jobs:
         run: |
           set -e
           
-          # Check if butler is installed
-          butlerPath="$HOME/.local/share/itch/butler"
-          if [ ! -f "$butlerPath" ]; then
-            echo "❌ Butler not found at: $butlerPath"
-            echo "Please install butler on the self-hosted runner."
+          # Check if butler is installed and in PATH
+          if ! command -v butler &> /dev/null; then
+            echo "❌ Butler not found in PATH"
+            echo "Please install butler on the self-hosted runner and add it to PATH."
             echo "Download from: https://itch.io/docs/butler/installing.html"
             exit 1
           fi
           
-          echo "Found butler at: $butlerPath"
+          echo "Found butler in PATH"
           
-          # Verify butler is executable and working
-          if [ ! -x "$butlerPath" ]; then
-            echo "❌ Butler is not executable: $butlerPath"
-            echo "Run: chmod +x $butlerPath"
-            exit 1
-          fi
-          
+          # Verify butler is working
           echo "Verifying butler installation..."
-          if ! "$butlerPath" --version; then
+          if ! butler --version; then
             echo "❌ Butler verification failed"
             exit 1
           fi
@@ -832,7 +825,7 @@ jobs:
             fi
             
             # Run butler and capture output
-            "$butlerPath" push "$OUT_DIR" "$itchTarget" \
+            butler push "$OUT_DIR" "$itchTarget" \
               --userversion "$VERSION" \
               --fix-permissions \
               --verbose 2>&1 | tee /tmp/butler-output.log
