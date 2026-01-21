@@ -139,6 +139,7 @@ UNITY_ARGS=(
     -batchmode
     -nographics
     -quit
+    -buildTarget StandaloneOSX
     -projectPath "$PROJECT_PATH"
     -logFile "$LOG_FILE"
     -executeMethod "$BUILD_METHOD"
@@ -153,9 +154,25 @@ fi
 echo "Running: $UNITY ${UNITY_ARGS[*]}"
 echo ""
 
-"$UNITY" "${UNITY_ARGS[@]}"
+# Retry logic for Unity crashes (common on Linux in batch mode)
+MAX_ATTEMPTS=3
+ATTEMPT=1
+EXIT_CODE=139  # Start with segfault code to enter loop
 
-EXIT_CODE=$?
+while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ $EXIT_CODE -eq 139 ]; do
+    if [ $ATTEMPT -gt 1 ]; then
+        echo ""
+        echo "⚠️  Attempt $((ATTEMPT-1)) failed with SIGSEGV (Unity crash)"
+        echo "    Retrying... (attempt $ATTEMPT of $MAX_ATTEMPTS)"
+        echo ""
+        sleep 2
+    fi
+    
+    "$UNITY" "${UNITY_ARGS[@]}"
+    EXIT_CODE=$?
+    
+    ATTEMPT=$((ATTEMPT + 1))
+done
 
 # Re-enable exit on error
 set -e
