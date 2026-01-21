@@ -139,6 +139,8 @@ public static class BuildScript
         if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneOSX)
         {
             UnityEngine.Debug.Log("[BuildScript] Switching build target to StandaloneOSX...");
+            UnityEngine.Debug.LogWarning("[BuildScript] WARNING: Build target should be set via -buildTarget flag, not programmatically!");
+            UnityEngine.Debug.LogWarning("[BuildScript] Programmatic switching can be unreliable in batch mode.");
             bool switched = EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX);
             if (!switched)
             {
@@ -146,6 +148,10 @@ public static class BuildScript
                 throw new System.Exception("Failed to switch to macOS build target. Is macOS Build Support (Mono) installed?");
             }
             UnityEngine.Debug.Log("[BuildScript] Successfully switched to StandaloneOSX");
+        }
+        else
+        {
+            UnityEngine.Debug.Log("[BuildScript] Already on StandaloneOSX build target - proceeding with build");
         }
         
         // Build universal binary (Intel 64-bit + Apple Silicon)
