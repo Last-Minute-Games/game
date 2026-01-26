@@ -1,5 +1,5 @@
 param(
-  [string]$UnityVersion = "6000.2.2f1",
+  [string]$UnityVersion = "6000.3.5f1",
   [string]$ProjectPath = (Resolve-Path "$PSScriptRoot\..").Path,
   [string]$OutDir      = $null,    # <-- NEW: explicit output dir from CI (optional)
   [string]$BuildTarget = "Windows", # <-- NEW: Windows or Linux

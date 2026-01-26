@@ -38,7 +38,7 @@ jobs:
 
     # Windows builds run on Windows runners using PowerShell
     env:
-      UNITY_VERSION: "6000.2.2f1"
+      UNITY_VERSION: "6000.3.5f1"
       PROJECT_PATH:  ${{ github.workspace }}
       BUILDS_ROOT:   "C:\\Builds"
 
@@ -290,7 +290,7 @@ jobs:
     name: Build Linux
     # Linux builds run on Windows runners using PowerShell (Unity cross-compiles)
     env:
-      UNITY_VERSION: "6000.2.2f1"
+      UNITY_VERSION: "6000.3.5f1"
       PROJECT_PATH:  ${{ github.workspace }}
       BUILDS_ROOT:   "C:\\Builds"
 
@@ -544,7 +544,7 @@ jobs:
     # Unity cross-compiles to build universal binary that works on both Intel 64-bit and Apple Silicon
 
     env:
-      UNITY_VERSION: "6000.2.2f1"
+      UNITY_VERSION: "6000.3.5f1"
       PROJECT_PATH: ${{ github.workspace }}
       BUILDS_ROOT: "$HOME/Builds"
 
