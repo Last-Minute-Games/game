@@ -9,7 +9,13 @@
 #
 # Requirements:
 #   - Unity Editor for Linux with "Mac Build Support (Mono)" module installed
+#   - Xvfb (virtual framebuffer) for headless Unity - auto-installed if missing
 #   - .NET SDK 6.0+ (for building the updater)
+#
+# Workarounds for Unity Linux headless crashes:
+#   - Uses Xvfb to provide virtual display (prevents SIGSEGV in headless mode)
+#   - Removed -nographics flag (known regression in some Unity versions)
+#   - Auto-installs missing system libraries Unity depends on
 # =============================================================================
 
 set -e
@@ -125,6 +131,43 @@ fi
 echo "✅ macOS Build Support (Mono) verified"
 
 # =============================================================================
+# Install Xvfb (Virtual Framebuffer X Server)
+# =============================================================================
+echo ""
+echo "Checking for Xvfb (required for headless Unity on Linux)..."
+
+if ! command -v xvfb-run &> /dev/null; then
+    echo "⚠️  Xvfb not found. Installing..."
+    sudo apt-get update -qq
+    sudo apt-get install -y xvfb
+    echo "✅ Xvfb installed"
+else
+    echo "✅ Xvfb already installed"
+fi
+
+# =============================================================================
+# Check for Missing System Libraries
+# =============================================================================
+echo ""
+echo "Checking Unity dependencies..."
+
+MISSING_LIBS=$(ldd "$UNITY" 2>&1 | grep "not found" || true)
+if [ -n "$MISSING_LIBS" ]; then
+    echo "⚠️  Missing system libraries detected:"
+    echo "$MISSING_LIBS"
+    echo ""
+    echo "Installing common Unity dependencies..."
+    sudo apt-get install -y \
+        libx11-6 libxrandr2 libxi6 libxext6 libxrender1 \
+        libglib2.0-0 libgtk-3-0 libnss3 libasound2 \
+        libgconf-2-4 libglu1-mesa libcanberra-gtk-module \
+        2>&1 | grep -v "is already the newest version" || true
+    echo "✅ Dependencies installed"
+else
+    echo "✅ No missing libraries detected"
+fi
+
+# =============================================================================
 # Run Unity Build
 # =============================================================================
 echo ""
@@ -137,7 +180,6 @@ set +e
 # Build the command arguments
 UNITY_ARGS=(
     -batchmode
-    -nographics
     -quit
     -buildTarget StandaloneOSX
     -projectPath "$PROJECT_PATH"
@@ -146,12 +188,16 @@ UNITY_ARGS=(
     -customBuildPath "$OUT_DIR"
 )
 
+# Note: Removed -nographics to avoid Unity regression crashes on Linux
+# Xvfb provides the display backend Unity needs even in batch mode
+
 # Only add buildVersion if it's not empty
 if [ -n "$VERSION" ]; then
     UNITY_ARGS+=(-buildVersion "$VERSION")
 fi
 
-echo "Running: $UNITY ${UNITY_ARGS[*]}"
+echo "Running Unity under Xvfb (virtual display):"
+echo "  xvfb-run -a $UNITY ${UNITY_ARGS[*]}"
 echo ""
 
 # Retry logic for Unity crashes (common on Linux in batch mode)
@@ -168,7 +214,9 @@ while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ $EXIT_CODE -eq 139 ]; do
         sleep 2
     fi
     
-    "$UNITY" "${UNITY_ARGS[@]}"
+    # Run Unity under Xvfb to provide virtual display backend
+    # -a: automatically picks a free display number
+    xvfb-run -a "$UNITY" "${UNITY_ARGS[@]}"
     EXIT_CODE=$?
     
     ATTEMPT=$((ATTEMPT + 1))
@@ -190,13 +238,16 @@ if [ $EXIT_CODE -ne 0 ]; then
         echo "⚠️  Unity crashed with SIGSEGV (Segmentation fault)"
         echo ""
         echo "Common causes:"
-        echo "  1. macOS Build Support module not properly installed"
-        echo "  2. Missing system libraries"
-        echo "  3. Unity bug with specific project configuration"
+        echo "  1. Unity version regression (try different patch/LTS)"
+        echo "  2. macOS Build Support module not properly installed"
+        echo "  3. Missing system libraries (check above for library warnings)"
+        echo "  4. Incompatible cross-build configuration"
         echo ""
-        echo "Try:"
+        echo "Troubleshooting:"
+        echo "  - Try Unity 6000.0.x LTS or 2022.3.x LTS (more stable for CI)"
         echo "  - Reinstall Mac Build Support (Mono) via Unity Hub"
-        echo "  - Check: ldd $UNITY | grep 'not found'"
+        echo "  - Check native backtrace in full log for exact crash location"
+        echo "  - For production builds, consider using a macOS runner"
     fi
     
     echo ""
