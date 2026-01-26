@@ -100,24 +100,6 @@ fi
 echo ""
 echo "Cleaning cross-platform files..."
 
-# Remove Windows-specific files from macOS build
-find "$BUILD_OUTPUT_DIR" -name "*.exe" -type f ! -name "CastleOfTime.exe" -exec rm -f {} \; -print | while read file; do
-    echo "  Removed: $(basename "$file")"
-done
-
-find "$BUILD_OUTPUT_DIR" -name "*.dll" -type f -exec rm -f {} \; -print | while read file; do
-    echo "  Removed: $(basename "$file")"
-done
-
-# Remove Linux-specific files from macOS build
-find "$BUILD_OUTPUT_DIR" -name "*.so*" -type f -exec rm -f {} \; -print | while read file; do
-    echo "  Removed: $(basename "$file")"
-done
-
-find "$BUILD_OUTPUT_DIR" -name "*.x86_64" -type f -exec rm -f {} \; -print | while read file; do
-    echo "  Removed: $(basename "$file")"
-done
-
 # 4. Remove Unity 'Do Not Ship' folders
 echo ""
 echo "Removing Unity 'Do Not Ship' folders..."
