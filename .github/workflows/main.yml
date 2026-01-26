@@ -58,12 +58,17 @@ jobs:
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
-          path: Library
-          key: Library-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
+          path: |
+            Library
+            !Library/ShaderCache
+            !Library/Artifacts
+            !Library/il2cpp_cache
+            !Library/Bee
+            !Library/PackageCache
+          key: Library-${{ runner.os }}-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
           restore-keys: |
-            Library-${{ env.UNITY_VERSION }}-
-            Library-
-          enableCrossOsArchive: true
+            Library-${{ runner.os }}-${{ env.UNITY_VERSION }}-
+            Library-${{ runner.os }}-
 
       # Make a unique output dir for this run and expose it to later steps
       - name: Compute output dir
