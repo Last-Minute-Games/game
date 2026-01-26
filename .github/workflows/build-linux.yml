@@ -34,8 +34,10 @@ jobs:
         uses: actions/checkout@v4
 
       # Cache Unity Library
-      - name: Cache Unity Library
-        uses: actions/cache@v4
+      # Note: Using lookup-only restore to avoid Git tar/gzip issues on Windows
+      # Save happens in a separate post-build step without compression
+      - name: Restore Unity Library Cache
+        uses: actions/cache/restore@v4
         with:
           path: Library
           key: Library-Linux-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
@@ -43,6 +45,7 @@ jobs:
             Library-Linux-${{ env.UNITY_VERSION }}-
             Library-Linux-
           enableCrossOsArchive: true
+          lookup-only: false
 
       # Make a unique output dir for this run and expose it to later steps
       - name: Compute output dir
@@ -110,6 +113,16 @@ jobs:
           path: ${{ steps.zip.outputs.zipPath }}
           retention-days: 14
           compression-level: 0
+
+      # Save Unity Library Cache (after build completes)
+      # This runs even if build fails (unless cancelled)
+      - name: Save Unity Library Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: Library
+          key: Library-Linux-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
+          enableCrossOsArchive: true
 
       # Upload to itch.io using Butler action (skip in artifact-only mode)
       - name: Upload to itch.io (Linux)
