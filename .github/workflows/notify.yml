@@ -1,0 +1,131 @@
+name: Send Notification
+
+on:
+  workflow_call:
+    inputs:
+      windows_result:
+        required: true
+        type: string
+      linux_result:
+        required: true
+        type: string
+      macos_result:
+        required: true
+        type: string
+
+jobs:
+  notify:
+    name: Send Discord Notification
+    runs-on: [self-hosted, Linux, ARM64]
+    environment: main
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Send webhook notification
+        run: |
+          windowsStatus="${{ inputs.windows_result }}"
+          linuxStatus="${{ inputs.linux_result }}"
+          macosStatus="${{ inputs.macos_result }}"
+          
+          if [ "$windowsStatus" = "success" ] && [ "$linuxStatus" = "success" ] && [ "$macosStatus" = "success" ]; then
+            overallStatus="success"
+          else
+            overallStatus="failure"
+          fi
+          
+          status="$overallStatus"
+          runUrl="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          artifactUrl="$runUrl#artifacts"
+          
+          webhook="${{ secrets.DISCORD_WEBHOOK_URL }}"
+          if [ -z "$webhook" ]; then
+            echo "No webhook URL configured, skipping notification"
+            exit 0
+          fi
+          
+          if [ "$status" = "success" ]; then
+            color="3066993"
+            emoji="✅ Build"
+          else
+            color="15158332"
+            emoji="❌ Failed Build"
+          fi
+          
+          commitShort="${GITHUB_SHA:0:7}"
+          commitUrl="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          
+          itchUrl="https://playlastminutegames.itch.io/castle-of-time"
+          
+          timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+          
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            description="Multi-platform build $status (artifact only - skipped itch.io)"
+          else
+            description="Multi-platform build $status and uploaded to itch.io"
+          fi
+          
+          platformsStatus="Windows: $windowsStatus | Linux: $linuxStatus | macOS: $macosStatus"
+          
+          # Build JSON payload
+          json=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "$emoji CastleOfTime Build #${{ github.run_number }}",
+              "description": "$description",
+              "url": "$itchUrl",
+              "color": $color,
+              "fields": [
+                {
+                  "name": "Status",
+                  "value": "$status",
+                  "inline": true
+                },
+                {
+                  "name": "Platforms",
+                  "value": "Windows + Linux + macOS (x64 + ARM64)",
+                  "inline": true
+                },
+                {
+                  "name": "Platform Status",
+                  "value": "$platformsStatus",
+                  "inline": false
+                },
+                {
+                  "name": "Commit",
+                  "value": "[$commitShort]($commitUrl)",
+                  "inline": true
+                },
+                {
+                  "name": "Play on itch.io",
+                  "value": "$itchUrl",
+                  "inline": false
+                },
+                {
+                  "name": "Download Artifacts",
+                  "value": "[View Artifacts]($artifactUrl)",
+                  "inline": false
+                }
+              ],
+              "timestamp": "$timestamp",
+              "footer": {
+                "text": "Castle of Time • Last Minute Games"
+              }
+            }]
+          }
+          EOF
+          )
+          
+          response=$(curl -s -w "\n%{http_code}" -X POST "$webhook" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "$json")
+          
+          http_code=$(echo "$response" | tail -n1)
+          if [ "$http_code" = "200" ] || [ "$http_code" = "204" ]; then
+            echo "Webhook sent successfully"
+          else
+            echo "Failed to send webhook (HTTP $http_code)"
+            echo "$response" | head -n-1
+            exit 1
+          fi

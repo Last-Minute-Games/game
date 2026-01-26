@@ -1,0 +1,380 @@
+name: Build macOS
+
+on:
+  workflow_call:
+    inputs:
+      unity_version:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build macOS (Universal)
+    runs-on: [self-hosted, Linux, X64]
+    environment: main
+    defaults:
+      run:
+        shell: bash
+
+    # macOS builds run on Linux x86 runners using bash
+    # Unity cross-compiles to build universal binary that works on both Intel 64-bit and Apple Silicon
+    env:
+      UNITY_VERSION: ${{ inputs.unity_version }}
+      PROJECT_PATH: ${{ github.workspace }}
+      BUILDS_ROOT: "$HOME/Builds"
+      VERSION: ${{ inputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Expand $HOME in BUILDS_ROOT
+      - name: Expand environment variables
+        run: |
+          # Expand $HOME in BUILDS_ROOT if it contains $HOME
+          if [[ "$BUILDS_ROOT" == *'$HOME'* ]]; then
+            BUILDS_ROOT_EXPANDED="${BUILDS_ROOT/\$HOME/$HOME}"
+            echo "BUILDS_ROOT=$BUILDS_ROOT_EXPANDED" >> $GITHUB_ENV
+            echo "BUILDS_ROOT = $BUILDS_ROOT_EXPANDED (expanded from $BUILDS_ROOT)"
+          else
+            echo "BUILDS_ROOT = $BUILDS_ROOT (no expansion needed)"
+          fi
+
+      # Cache Unity Library
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-Linux-macOS-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
+          restore-keys: |
+            Library-Linux-macOS-${{ env.UNITY_VERSION }}-
+            Library-Linux-macOS-
+            Library-macOS-
+          enableCrossOsArchive: true
+
+      # Make a unique output dir for this run and expose it to later steps
+      - name: Compute output dir
+        id: paths
+        run: |
+          outDir="$BUILDS_ROOT/CastleOfTime-$VERSION-macOS"
+          echo "OUT_DIR=$outDir" >> $GITHUB_ENV
+          echo "OUT_DIR = $outDir"
+          echo "BUILDS_ROOT = $BUILDS_ROOT"
+
+      # (Optional) Ensure the output root exists
+      - name: Ensure builds root exists
+        run: mkdir -p "$BUILDS_ROOT"
+
+      # Build the updater executables before Unity builds (build both architectures for updater)
+      - name: Build updater
+        run: |
+          echo "Building auto-updater for macOS (both x64 and ARM64)..."
+          if ! command -v dotnet &> /dev/null; then
+            echo "❌ .NET SDK not found. Install .NET 6.0+ to build the updater."
+            exit 1
+          fi
+          chmod +x ./Updater/build-updater.sh
+          # Build both architectures for the updater
+          ./Updater/build-updater.sh Release macOS x64
+          ./Updater/build-updater.sh Release macOS ARM64
+          echo "✅ Updater built successfully for both architectures"
+
+      # (Optional) Preflight: make sure no GUI editor is locking the project
+      - name: Kill stray Unity processes / clear lock
+        run: |
+          pkill -x Unity 2>/dev/null || true
+          pkill -x UnityPackageManager 2>/dev/null || true
+          lock="$PROJECT_PATH/Temp/UnityLockfile"
+          if [ -f "$lock" ]; then
+            rm -f "$lock"
+          fi
+
+      # Verify Unity installation and dependencies
+      - name: Verify Unity installation
+        run: |
+          echo "=== Checking Unity installation ==="
+          UNITY="$HOME/Unity/Hub/Editor/$UNITY_VERSION/Editor/Unity"
+          UNITY_DIR="$(dirname "$UNITY")"
+          
+          if [ ! -f "$UNITY" ]; then
+            echo "Unity not found at: $UNITY"
+            echo "Checking alternative paths..."
+            
+            # List what's actually installed
+            echo "Contents of $HOME/Unity/Hub/Editor/:"
+            ls -la "$HOME/Unity/Hub/Editor/" 2>/dev/null || echo "Directory not found"
+            
+            if [ -d "$HOME/Unity/Hub/Editor/$UNITY_VERSION" ]; then
+              echo "Contents of $HOME/Unity/Hub/Editor/$UNITY_VERSION/:"
+              ls -la "$HOME/Unity/Hub/Editor/$UNITY_VERSION/" 2>/dev/null || echo "Directory not found"
+            fi
+            exit 1
+          fi
+          
+          echo "Unity found at: $UNITY"
+          echo "File info:"
+          file "$UNITY"
+          
+          echo ""
+          echo "=== Setting up Mono environment ==="
+          export UNITY_MONO_PATH="$UNITY_DIR/Data/MonoBleedingEdge"
+          export LD_LIBRARY_PATH="$UNITY_DIR:$UNITY_DIR/Data/MonoBleedingEdge/lib:${LD_LIBRARY_PATH:-}"
+          echo "UNITY_MONO_PATH=$UNITY_MONO_PATH"
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+          
+          # Check Mono exists
+          if [ -d "$UNITY_MONO_PATH" ]; then
+            echo "✅ Mono directory found"
+            ls -la "$UNITY_MONO_PATH/" | head -10
+          else
+            echo "❌ Mono directory NOT found at $UNITY_MONO_PATH"
+          fi
+          
+          echo ""
+          echo "=== Checking library dependencies ==="
+          ldd "$UNITY" 2>&1 | grep -i "not found" || echo "✅ All libraries found"
+          
+          echo ""
+          echo "=== System info ==="
+          uname -a
+          cat /etc/os-release 2>/dev/null || echo "No os-release file"
+          
+          echo ""
+          echo "=== Testing Unity version ==="
+          "$UNITY" -version 2>&1 || echo "Unity -version exited with code: $?"
+
+      # Run your bash build script (build universal binary)
+      - name: Build (macOS Universal)
+        run: |
+          chmod +x ./ci/build.sh
+          # Don't pass architecture - build universal binary
+          ./ci/build.sh "$UNITY_VERSION" "$PROJECT_PATH" "$OUT_DIR" "macOS" "$VERSION"
+
+      # Clean up log files from build output
+      - name: Clean up logs
+        run: |
+          find "$OUT_DIR" -name "*.log" -type f -delete
+          echo "Removed all .log files from build output"
+          
+          # Remove Unity backup folder that shouldn't be shipped
+          find "$OUT_DIR" -type d -name "*BackUpThisFolder_ButDontShipItWithYourGame*" -exec rm -rf {} + 2>/dev/null || true
+          echo "Removed Unity backup folder"
+
+      # Zip the build folder
+      - name: Zip build
+        id: zip
+        run: |
+          # Expand $HOME in BUILDS_ROOT if it contains $HOME (bash parameter expansion)
+          if [[ "$BUILDS_ROOT" == *'$HOME'* ]]; then
+            BUILDS_ROOT="${BUILDS_ROOT/\$HOME/$HOME}"
+            echo "Expanded BUILDS_ROOT to: $BUILDS_ROOT"
+          fi
+          
+          # Ensure the builds root directory exists
+          echo "Creating directory: $BUILDS_ROOT"
+          mkdir -p "$BUILDS_ROOT"
+          
+          zipPath="$BUILDS_ROOT/CastleOfTime-$VERSION-macOS.zip"
+          echo "Zip path: $zipPath"
+          
+          if [ -f "$zipPath" ]; then
+            rm -f "$zipPath"
+          fi
+          
+          # Ensure the directory containing the zip file exists (should be same as BUILDS_ROOT, but just in case)
+          zipDir=$(dirname "$zipPath")
+          echo "Zip directory: $zipDir"
+          mkdir -p "$zipDir"
+          
+          # Verify OUT_DIR exists before trying to zip
+          if [ ! -d "$OUT_DIR" ]; then
+            echo "❌ Error: OUT_DIR does not exist: $OUT_DIR"
+            exit 1
+          fi
+          
+          echo "Changing to OUT_DIR: $OUT_DIR"
+          cd "$OUT_DIR"
+          
+          echo "Creating zip file: $zipPath"
+          zip -r "$zipPath" .
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Zip created successfully"
+          else
+            echo "❌ Zip creation failed"
+            exit 1
+          fi
+          
+          echo "ZIP_PATH=$zipPath" >> $GITHUB_ENV
+          echo "ZIP_PATH = $zipPath"
+          echo "zipPath=$zipPath" >> $GITHUB_OUTPUT
+
+      # Upload the zipped build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CastleOfTime-${{ env.VERSION }}-macOS
+          path: ${{ steps.zip.outputs.zipPath }}
+          retention-days: 14
+          compression-level: 0
+
+      # Upload to itch.io using Butler (skip in artifact-only mode)
+      - name: Upload to itch.io (macOS Universal)
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          set -e
+          
+          # Butler is installed at /usr/bin/butler/butler
+          BUTLER_PATH="/usr/bin/butler/butler"
+          
+          # Check if butler exists
+          if [ ! -f "$BUTLER_PATH" ]; then
+            echo "❌ Butler not found at: $BUTLER_PATH"
+            echo "Please install butler on the self-hosted runner."
+            echo "Download from: https://itch.io/docs/butler/installing.html"
+            exit 1
+          fi
+          
+          echo "Found butler at: $BUTLER_PATH"
+          
+          # Verify butler is working
+          echo "Verifying butler installation..."
+          if ! "$BUTLER_PATH" --version; then
+            echo "❌ Butler verification failed"
+            exit 1
+          fi
+          
+          # Verify BUTLER_API_KEY is set
+          if [ -z "$BUTLER_API_KEY" ]; then
+            echo "❌ BUTLER_API_KEY is not set"
+            exit 1
+          fi
+          
+          # Verify build directory exists
+          if [ ! -d "$OUT_DIR" ]; then
+            echo "❌ Build directory does not exist: $OUT_DIR"
+            exit 1
+          fi
+          
+          # Calculate build size for logging
+          build_size=$(du -sh "$OUT_DIR" | cut -f1)
+          file_count=$(find "$OUT_DIR" -type f | wc -l | tr -d ' ')
+          echo "Build info:"
+          echo "  Size: $build_size"
+          echo "  Files: $file_count"
+          
+          # Upload to itch.io - push the build folder directly (not zip)
+          channel="macos"
+          itchTarget="playlastminutegames/castle-of-time:$channel"
+          
+          echo "Uploading to itch.io: $itchTarget"
+          echo "  Build folder: $OUT_DIR"
+          echo "  Version: $VERSION"
+          echo "  Architecture: Universal (Intel 64-bit + Apple Silicon)"
+          
+          # Retry logic with exponential backoff
+          # Disable exit on error for the retry loop
+          set +e
+          max_attempts=3
+          attempt=0
+          upload_success=false
+          last_exit_code=0
+          
+          while [ $attempt -lt $max_attempts ]; do
+            attempt=$((attempt + 1))
+            echo ""
+            echo "=== Upload attempt $attempt of $max_attempts ==="
+            
+            # Calculate backoff delay (0s, 30s, 60s)
+            if [ $attempt -gt 1 ]; then
+              backoff=$((30 * (attempt - 1)))
+              echo "Waiting ${backoff}s before retry..."
+              sleep $backoff
+            fi
+            
+            # Run butler and capture output
+            "$BUTLER_PATH" push "$OUT_DIR" "$itchTarget" \
+              --userversion "$VERSION" \
+              --fix-permissions \
+              --verbose 2>&1 | tee /tmp/butler-output.log
+            last_exit_code=${PIPESTATUS[0]}
+            
+            if [ $last_exit_code -eq 0 ]; then
+              upload_success=true
+              echo "✅ Upload succeeded on attempt $attempt"
+              break
+            else
+              echo "❌ Upload failed on attempt $attempt with exit code $last_exit_code"
+              
+              # Check for specific error patterns
+              if grep -q "Use of idled network connection" /tmp/butler-output.log 2>/dev/null; then
+                echo "  Error: Network connection timeout/idle"
+              elif grep -q "timeout" /tmp/butler-output.log 2>/dev/null; then
+                echo "  Error: Request timeout"
+              elif grep -q "connection" /tmp/butler-output.log 2>/dev/null; then
+                echo "  Error: Network connection issue"
+              fi
+              
+              # Show last 50 lines of output for debugging
+              echo "Last 50 lines of butler output:"
+              tail -n 50 /tmp/butler-output.log || true
+            fi
+          done
+          
+          # Re-enable exit on error
+          set -e
+          
+          if [ "$upload_success" = false ]; then
+            echo ""
+            echo "❌ All upload attempts failed. Last exit code: $last_exit_code"
+            echo "Full butler output:"
+            cat /tmp/butler-output.log || true
+            echo "⚠️ Continuing workflow - GitHub release will still be created"
+            exit 0
+          fi
+          
+          echo ""
+          echo "✅ Successfully uploaded to itch.io!"
+
+      - name: Collect logs
+        if: always()
+        run: |
+          logs="$RUNNER_TEMP/unity-logs-macOS"
+          mkdir -p "$logs"
+
+          # Editor logs (Linux)
+          editor="$HOME/.config/unity3d/Editor.log"
+          if [ -f "$editor" ]; then
+            cp "$editor" "$logs/"
+          fi
+
+          # Alternative editor log location
+          editor2="$HOME/.local/share/unity3d/Unity/Editor.log"
+          if [ -f "$editor2" ]; then
+            cp "$editor2" "$logs/Editor-alt.log"
+          fi
+
+          # UPM logs (Linux)
+          upm="$HOME/.config/unity3d/cache/upm/logs"
+          if [ -d "$upm" ]; then
+            cp -r "$upm" "$logs/"
+          fi
+
+          # Build output logs only (no build files)
+          if [ -d "$OUT_DIR" ]; then
+            find "$OUT_DIR" -name "*.log" -type f -exec cp {} "$logs/" \;
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Logs-${{ github.run_number }}-macOS
+          path: ${{ runner.temp }}/unity-logs-macOS
+          retention-days: 14
+          compression-level: 6

@@ -1,0 +1,51 @@
+name: Create GitHub Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: [self-hosted, Linux, ARM64]
+    environment: main
+    defaults:
+      run:
+        shell: bash
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: CastleOfTime-*-*
+          merge-multiple: true
+          path: release-files
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version }}
+          name: Castle of Time ${{ inputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: release-files/*
+          body: |
+            ## Castle of Time ${{ inputs.version }}
+            
+            ### Download Options
+            
+            **For itch.io users:** The itch.io app will automatically download and install this update.
+            
+            **For standalone installs:** Download the appropriate zip file for your platform:
+            - Windows: `CastleOfTime-${{ inputs.version }}-Windows.zip`
+            - Linux: `CastleOfTime-${{ inputs.version }}-Linux.zip`
+            - macOS Universal (Intel 64-bit + Apple Silicon): `CastleOfTime-${{ inputs.version }}-macOS.zip`
+            
+            The included launcher will automatically check for and download future updates from GitHub Releases.
