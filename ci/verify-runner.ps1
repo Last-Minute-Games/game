@@ -8,17 +8,17 @@ $allGood = $true
 
 # 1. Check Unity
 Write-Host "Checking Unity..." -ForegroundColor Yellow
-$unityPath = "C:\Program Files\Unity\Hub\Editor\6000.2.2f1\Editor\Unity.exe"
+$unityPath = "C:\Program Files\Unity\Hub\Editor\6000.3.5f1\Editor\Unity.exe"
 if (Test-Path $unityPath) {
-    Write-Host "  ✅ Unity 6000.2.2f1 found" -ForegroundColor Green
+    Write-Host "  ✅ Unity 6000.3.5f1 found" -ForegroundColor Green
 } else {
-    Write-Host "  ❌ Unity 6000.2.2f1 NOT found at expected path" -ForegroundColor Red
+    Write-Host "  ❌ Unity 6000.3.5f1 NOT found at expected path" -ForegroundColor Red
     Write-Host "     Expected: $unityPath" -ForegroundColor Gray
     $allGood = $false
 }
 
 # Check Unity modules
-$unityModulesPath = "C:\Program Files\Unity\Hub\Editor\6000.2.2f1\Editor\Data\PlaybackEngines"
+$unityModulesPath = "C:\Program Files\Unity\Hub\Editor\6000.3.5f1\Editor\Data\PlaybackEngines"
 if (Test-Path $unityModulesPath) {
     $hasWindows = Test-Path "$unityModulesPath\WindowsStandaloneSupport"
     $hasLinux = Test-Path "$unityModulesPath\LinuxStandaloneSupport"
