@@ -51,44 +51,6 @@ if (Test-Path $updaterSrc) {
     exit 1
 }
 
-# 3. Clean up cross-platform files
-Write-Host "`nCleaning cross-platform files..." -ForegroundColor Cyan
-
-if ($Platform -eq "Windows") {
-    # Remove Linux-specific files from Windows build
-    $linuxUpdater = Join-Path $BuildOutputDir "CastleOfTimeUpdater"
-    if (Test-Path $linuxUpdater) {
-        Remove-Item $linuxUpdater -Force
-        Write-Host "  Removed Linux updater from Windows build" -ForegroundColor Gray
-    }
-    
-    # Remove .so files (Linux shared libraries)
-    Get-ChildItem -Path $BuildOutputDir -Recurse -Filter "*.so*" | ForEach-Object {
-        Remove-Item $_.FullName -Force
-        Write-Host "  Removed: $($_.Name)" -ForegroundColor Gray
-    }
-    
-    # Remove Linux executables
-    Get-ChildItem -Path $BuildOutputDir -Recurse -Filter "*.x86_64" | ForEach-Object {
-        Remove-Item $_.FullName -Force
-        Write-Host "  Removed: $($_.Name)" -ForegroundColor Gray
-    }
-}
-elseif ($Platform -eq "Linux") {
-    # Remove Windows-specific files from Linux build
-    $windowsUpdater = Join-Path $BuildOutputDir "CastleOfTimeUpdater.exe"
-    if (Test-Path $windowsUpdater) {
-        Remove-Item $windowsUpdater -Force
-        Write-Host "  Removed Windows updater from Linux build" -ForegroundColor Gray
-    }
-    
-    # Note: Unity should not include .dll/.exe in Linux builds by default
-    # But we'll clean them just in case
-    Get-ChildItem -Path $BuildOutputDir -Recurse -Filter "*.exe" | Where-Object { $_.Name -ne "CastleOfTime.exe" } | ForEach-Object {
-        Remove-Item $_.FullName -Force
-        Write-Host "  Removed: $($_.Name)" -ForegroundColor Gray
-    }
-}
 Write-Host "\nRemoving Unity 'Do Not Ship' folders..." -ForegroundColor Cyan
 
 # Common Unity debug/backup folders that should not be shipped

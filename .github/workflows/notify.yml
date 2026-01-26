@@ -15,7 +15,6 @@ on:
 
 jobs:
   notify:
-    name: Send Discord Notification
     runs-on: [self-hosted, Linux, ARM64]
     environment: main
     defaults:

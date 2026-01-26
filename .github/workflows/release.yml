@@ -9,7 +9,6 @@ on:
 
 jobs:
   release:
-    name: Create GitHub Release
     runs-on: [self-hosted, Linux, ARM64]
     environment: main
     defaults:

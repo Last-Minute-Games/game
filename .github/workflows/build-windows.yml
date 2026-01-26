@@ -15,8 +15,7 @@ on:
 
 jobs:
   build:
-    name: Build Windows
-    runs-on: [self-hosted, Windows, X64]
+    runs-on: [self-hosted, SiruHL-1]
     environment: main
     defaults:
       run:
@@ -31,11 +30,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
+          fetch-depth: 1
+          submodules: false
 
       # Cache Unity Library
-      # Note: Disabled compression to avoid Git tar/gzip issues on Windows
-      - name: Cache Unity Library
-        uses: actions/cache@v4
+      # Note: Using lookup-only restore to avoid Git tar/gzip issues on Windows
+      # Save happens in a separate post-build step without compression
+      - name: Restore Unity Library Cache
+        uses: actions/cache/restore@v4
         with:
           path: Library
           key: Library-Windows-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
@@ -43,6 +47,7 @@ jobs:
             Library-Windows-${{ env.UNITY_VERSION }}-
             Library-Windows-
           enableCrossOsArchive: true
+          lookup-only: false
 
       # Make a unique output dir for this run and expose it to later steps
       - name: Compute output dir
@@ -79,16 +84,6 @@ jobs:
       - name: Build (Windows)
         run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR -BuildTarget "Windows" -Version $env:VERSION
 
-      # Clean up log files from build output
-      - name: Clean up logs
-        run: |
-          Get-ChildItem -Path $env:OUT_DIR -Filter "*.log" -Recurse | Remove-Item -Force
-          Write-Host "Removed all .log files from build output"
-          
-          # Remove Unity backup folder that shouldn't be shipped
-          Get-ChildItem -Path $env:OUT_DIR -Recurse -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*BackUpThisFolder_ButDontShipItWithYourGame*" } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-          Write-Host "Removed Unity backup folder"
-
       # Zip the build folder
       - name: Zip build
         id: zip
@@ -118,26 +113,6 @@ jobs:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
           $ErrorActionPreference = "Stop"
-          
-          # Check if butler is installed and in PATH
-          if (-not (Get-Command butler -ErrorAction SilentlyContinue)) {
-            Write-Host "❌ Butler not found in PATH"
-            Write-Host "Please install butler on the self-hosted runner and add it to PATH."
-            Write-Host "Download from: https://itch.io/docs/butler/installing.html"
-            exit 1
-          }
-          
-          Write-Host "Found butler in PATH"
-          
-          # Verify butler is working
-          Write-Host "Verifying butler installation..."
-          try {
-            butler --version | Out-Null
-            if ($LASTEXITCODE -ne 0) { throw "Butler version check failed" }
-          } catch {
-            Write-Host "❌ Butler verification failed" $_
-            exit 1
-          }
           
           # Verify BUTLER_API_KEY is set
           if ([string]::IsNullOrEmpty($env:BUTLER_API_KEY)) {
