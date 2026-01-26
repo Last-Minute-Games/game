@@ -75,12 +75,3 @@ jobs:
       linux_result: ${{ needs.build-linux.result }}
       macos_result: ${{ needs.build-macos.result }}
     secrets: inherit
-  notify:
-    needs: [build-windows, build-linux, build-macos]
-    if: always()
-    uses: ./.github/workflows/notify.yml
-    with:
-      windows_result: ${{ needs.build-windows.result }}
-      linux_result: ${{ needs.build-linux.result }}
-      macos_result: ${{ needs.build-macos.result }}
-    secrets: inherit
