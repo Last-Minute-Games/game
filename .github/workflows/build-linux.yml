@@ -1,0 +1,259 @@
+name: Build Linux
+
+on:
+  workflow_call:
+    inputs:
+      unity_version:
+        required: true
+        type: string
+      builds_root:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build Linux
+    runs-on: [self-hosted, Windows, X64]
+    environment: main
+    defaults:
+      run:
+        shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
+
+    # Linux builds run on Windows runners using PowerShell (Unity cross-compiles)
+    env:
+      UNITY_VERSION: ${{ inputs.unity_version }}
+      PROJECT_PATH: ${{ github.workspace }}
+      BUILDS_ROOT: ${{ inputs.builds_root }}
+      VERSION: ${{ inputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Cache Unity Library
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-Linux-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
+          restore-keys: |
+            Library-Linux-${{ env.UNITY_VERSION }}-
+            Library-Linux-
+          enableCrossOsArchive: true
+
+      # Make a unique output dir for this run and expose it to later steps
+      - name: Compute output dir
+        id: paths
+        run: |
+          $outDir = Join-Path $env:BUILDS_ROOT "CastleOfTime-$env:VERSION-Linux"
+          "OUT_DIR=$outDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "OUT_DIR = $outDir"
+
+      # (Optional) Ensure the output root exists
+      - name: Ensure builds root exists
+        run: New-Item -ItemType Directory -Force -Path $env:BUILDS_ROOT | Out-Null
+
+      # Build the updater executables before Unity builds
+      - name: Build updater
+        run: |
+          Write-Host "Building auto-updater for Linux..."
+          if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+            Write-Host "❌ .NET SDK not found. Install .NET 6.0+ to build the updater."
+            exit 1
+          }
+          .\Updater\build-updater.ps1 -Platform "Linux"
+          Write-Host "✅ Updater built successfully"
+
+      # (Optional) Preflight: make sure no GUI editor is locking the project
+      - name: Kill stray Unity processes / clear lock
+        run: |
+          Get-Process -Name "Unity" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          Get-Process -Name "UnityPackageManager" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          $lock = Join-Path $env:PROJECT_PATH "Temp\UnityLockfile"
+          if (Test-Path $lock) { Remove-Item $lock -Force -ErrorAction SilentlyContinue }
+
+      # Run your PowerShell build
+      - name: Build (Linux)
+        run: .\ci\build.ps1 -UnityVersion $env:UNITY_VERSION -ProjectPath $env:PROJECT_PATH -OutDir $env:OUT_DIR -BuildTarget "Linux" -Version $env:VERSION
+
+      # Clean up log files from build output
+      - name: Clean up logs
+        run: |
+          Get-ChildItem -Path $env:OUT_DIR -Filter "*.log" -Recurse | Remove-Item -Force
+          Write-Host "Removed all .log files from build output"
+          
+          # Remove Unity backup folder that shouldn't be shipped
+          Get-ChildItem -Path $env:OUT_DIR -Recurse -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*BackUpThisFolder_ButDontShipItWithYourGame*" } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          Write-Host "Removed Unity backup folder"
+
+      # Zip the build folder
+      - name: Zip build
+        id: zip
+        run: |
+          $zipPath = Join-Path $env:BUILDS_ROOT "CastleOfTime-$env:VERSION-Linux.zip"
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Compress-Archive -Path "$env:OUT_DIR\*" -DestinationPath $zipPath
+          "ZIP_PATH=$zipPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "ZIP_PATH = $zipPath"
+          
+          # Also output for later job consumption
+          "zipPath=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      # Upload the zipped build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CastleOfTime-${{ env.VERSION }}-Linux
+          path: ${{ steps.zip.outputs.zipPath }}
+          retention-days: 14
+          compression-level: 0
+
+      # Upload to itch.io using Butler action (skip in artifact-only mode)
+      - name: Upload to itch.io (Linux)
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          
+          # Check if butler is installed and in PATH
+          if (-not (Get-Command butler -ErrorAction SilentlyContinue)) {
+            Write-Host "❌ Butler not found in PATH"
+            Write-Host "Please install butler on the self-hosted runner and add it to PATH."
+            Write-Host "Download from: https://itch.io/docs/butler/installing.html"
+            exit 1
+          }
+          
+          Write-Host "Found butler in PATH"
+          
+          # Verify butler is working
+          Write-Host "Verifying butler installation..."
+          try {
+            butler --version | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "Butler version check failed" }
+          } catch {
+            Write-Host "❌ Butler verification failed" $_
+            exit 1
+          }
+          
+          # Verify BUTLER_API_KEY is set
+          if ([string]::IsNullOrEmpty($env:BUTLER_API_KEY)) {
+            Write-Host "❌ BUTLER_API_KEY is not set"
+            exit 1
+          }
+          
+          # Verify build directory exists
+          if (-not (Test-Path $env:OUT_DIR -PathType Container)) {
+            Write-Host "❌ Build directory does not exist: $env:OUT_DIR"
+            exit 1
+          }
+          
+          # Calculate build size for logging
+          $buildSize = (Get-ChildItem -Path $env:OUT_DIR -Recurse -File | Measure-Object -Property Length -Sum).Sum
+          $buildSizeMB = [math]::Round($buildSize / 1MB, 2)
+          $fileCount = (Get-ChildItem -Path $env:OUT_DIR -Recurse -File).Count
+          Write-Host "Build info:"
+          Write-Host "  Size: $buildSizeMB MB"
+          Write-Host "  Files: $fileCount"
+          
+          # Upload to itch.io - push the build folder directly (not zip)
+          $channel = "linux"
+          $itchTarget = "playlastminutegames/castle-of-time:$channel"
+          
+          Write-Host "Uploading to itch.io: $itchTarget"
+          Write-Host "  Build folder: $env:OUT_DIR"
+          Write-Host "  Version: $env:VERSION"
+          
+          # Retry logic with exponential backoff
+          $maxAttempts = 3
+          $attempt = 0
+          $uploadSuccess = $false
+          $lastExitCode = 0
+          $butlerOutputFile = "$env:TEMP\butler-output.log"
+          
+          while ($attempt -lt $maxAttempts) {
+            $attempt++
+            Write-Host ""
+            Write-Host "=== Upload attempt $attempt of $maxAttempts ==="
+            
+            # Calculate backoff delay (0s, 30s, 60s)
+            if ($attempt -gt 1) {
+              $backoff = 30 * ($attempt - 1)
+              Write-Host "Waiting ${backoff}s before retry..."
+              Start-Sleep -Seconds $backoff
+            }
+            
+            # Run butler with --fix-permissions for Linux and capture output
+            try {
+              butler push "$env:OUT_DIR" $itchTarget --userversion "$env:VERSION" --fix-permissions --verbose *> $butlerOutputFile
+              $lastExitCode = $LASTEXITCODE
+              
+              if ($lastExitCode -eq 0) {
+                $uploadSuccess = $true
+                Write-Host "✅ Upload succeeded on attempt $attempt"
+                break
+              } else {
+                Write-Host "❌ Upload failed on attempt $attempt with exit code $lastExitCode"
+                
+                # Check for specific error patterns
+                $output = Get-Content $butlerOutputFile -Raw -ErrorAction SilentlyContinue
+                if ($output -match "Use of idled network connection") {
+                  Write-Host "  Error: Network connection timeout/idle"
+                } elseif ($output -match "timeout") {
+                  Write-Host "  Error: Request timeout"
+                } elseif ($output -match "connection") {
+                  Write-Host "  Error: Network connection issue"
+                }
+                
+                # Show last 50 lines of output for debugging
+                Write-Host "Last 50 lines of butler output:"
+                Get-Content $butlerOutputFile -Tail 50 -ErrorAction SilentlyContinue
+              }
+            } catch {
+              $lastExitCode = 1
+              Write-Host "❌ Upload exception on attempt $attempt" $_
+            }
+          }
+          
+          if (-not $uploadSuccess) {
+            Write-Host ""
+            Write-Host "❌ All upload attempts failed. Last exit code: $lastExitCode"
+            Write-Host "Full butler output:"
+            Get-Content $butlerOutputFile -ErrorAction SilentlyContinue
+            Write-Host "⚠️ Continuing workflow - GitHub release will still be created"
+            exit 0
+          }
+          
+          Write-Host ""
+          Write-Host "✅ Successfully uploaded to itch.io!"
+
+      - name: Collect logs
+        if: always()
+        run: |
+          $logs = Join-Path $env:RUNNER_TEMP "unity-logs-Linux"
+          New-Item -ItemType Directory -Force -Path $logs | Out-Null
+
+          # Editor & UPM logs (Windows)
+          $editor = Join-Path $env:LOCALAPPDATA "Unity\Editor\Editor.log"
+          if (Test-Path $editor) { Copy-Item $editor $logs -Force }
+
+          $upm = Join-Path $env:LOCALAPPDATA "Unity\cache\upm\logs"
+          if (Test-Path $upm) { Copy-Item $upm $logs -Recurse -Force }
+
+          # Build output logs only (no build files)
+          $buildLogs = Join-Path $env:OUT_DIR "*.log"
+          if (Test-Path $buildLogs) { 
+            Get-ChildItem -Path $env:OUT_DIR -Filter "*.log" | Copy-Item -Destination $logs -Force
+          }
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Logs-${{ github.run_number }}-Linux
+          path: ${{ runner.temp }}/unity-logs-Linux
+          retention-days: 14
+          compression-level: 6
