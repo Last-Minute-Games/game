@@ -42,18 +42,38 @@ public class CardRender : MonoBehaviour,
     private CardFXHelper _fxHelper;
     private bool _isDragging;
     private PlayerManager _playerManager;
+    
+    // Performance: Cached references
+    private Camera _mainCamera;
+    private DeckViewer _handViewer;
+    private RoundManager _roundManager;
+    private Collider2D[] _colliderBuffer = new Collider2D[10]; // Reusable buffer for NonAlloc
 
     private void Awake()
     {
+        // Performance: Cache Camera.main (with fallback support for engine upgrades)
+        _mainCamera = Camera.main;
+        
+        // Performance: Cache manager references once
         _playerManager = FindFirstObjectByType<PlayerManager>();
+        _roundManager = FindFirstObjectByType<RoundManager>();
+        _handViewer = FindFirstObjectByType<DeckViewer>();
+        
         if (_playerManager != null && _playerManager.playerData != null)
             _playerManager.playerData.OnStatsChanged += UpdateVisuals;
 
-        if (cardBackground == null) cardBackground = FindChildByName<SpriteRenderer>("CardBackground");
-        if (cardIcon == null) cardIcon = FindChildByName<SpriteRenderer>("CardIcon");
-        if (energyCost == null) energyCost = FindChildByName<TMP_Text>("EnergyCost");
-        if (cardName == null) cardName = FindChildByName<TMP_Text>("CardName");
-        if (descriptionText == null) descriptionText = FindChildByName<TMP_Text>("DescriptionText");
+        // Performance: Optimize GetComponentsInChildren - get all once, then search
+        if (cardBackground == null || cardIcon == null || energyCost == null || cardName == null || descriptionText == null)
+        {
+            var spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+            var tmpTexts = GetComponentsInChildren<TMP_Text>(true);
+            
+            if (cardBackground == null) cardBackground = FindInArray(spriteRenderers, "CardBackground");
+            if (cardIcon == null) cardIcon = FindInArray(spriteRenderers, "CardIcon");
+            if (energyCost == null) energyCost = FindInArray(tmpTexts, "EnergyCost");
+            if (cardName == null) cardName = FindInArray(tmpTexts, "CardName");
+            if (descriptionText == null) descriptionText = FindInArray(tmpTexts, "DescriptionText");
+        }
 
         _iconLibrary = Resources.Load<CardIconLibrary>("Nether/StatusIcons/DefaultCardIconLibrary");
 
@@ -100,6 +120,14 @@ public class CardRender : MonoBehaviour,
             if (_fxHelper.animHelper.arrowHelper == null)
                 _fxHelper.animHelper.arrowHelper = gameObject.AddComponent<BezierCardArrowHelper>();
         }
+    }
+
+    // Performance: Helper to get camera with fallback (handles engine upgrade timing issues)
+    private Camera GetCamera()
+    {
+        if (_mainCamera == null)
+            _mainCamera = Camera.main;
+        return _mainCamera;
     }
 
     private void OnDestroy()
@@ -259,7 +287,8 @@ public class CardRender : MonoBehaviour,
 
             if (rule == TargetRule.Enemy)
             {
-                Camera cam = Camera.main;
+                // Performance: Use cached camera with fallback
+                Camera cam = GetCamera();
                 if (cam != null)
                 {
                     Vector3 cardScreenPos = cam.WorldToScreenPoint(transform.position);
@@ -285,9 +314,9 @@ public class CardRender : MonoBehaviour,
             {
                 _fxHelper.OnCardRelease(this, validTarget: false);
 
-                var handViewer = FindFirstObjectByType<DeckViewer>();
-                if (handViewer != null)
-                    handViewer.RebuildSmart();
+                // Performance: Use cached hand viewer
+                if (_handViewer != null)
+                    _handViewer.RebuildSmart();
 
                 return;
             }
@@ -319,10 +348,10 @@ public class CardRender : MonoBehaviour,
             if (validTarget)
             {
                 Debug.Log("[CardRender] Valid target confirmed, attempting to play card");
-                var playerManager = FindFirstObjectByType<PlayerManager>();
-                if (playerManager != null)
+                // Performance: Use cached player manager
+                if (_playerManager != null)
                 {
-                    bool cardPlayed = playerManager.PlayCard(Data, Instance, targetEnemy);
+                    bool cardPlayed = _playerManager.PlayCard(Data, Instance, targetEnemy);
                     if (!cardPlayed)
                     {
                         Debug.LogWarning("[CardRender] PlayCard returned false - card was not played");
@@ -339,9 +368,9 @@ public class CardRender : MonoBehaviour,
 
                         if (!cardHasEndTurn)
                         {
-                            var roundManager = FindFirstObjectByType<RoundManager>();
-                            if (roundManager != null && roundManager.handViewer != null)
-                                roundManager.handViewer.RebuildSmart();
+                            // Performance: Use cached round manager
+                            if (_roundManager != null && _roundManager.handViewer != null)
+                                _roundManager.handViewer.RebuildSmart();
                         }
                     }
                 }
@@ -357,16 +386,17 @@ public class CardRender : MonoBehaviour,
             bool hasEndTurn = CheckForEndTurnEffect();
             if (!hasEndTurn)
             {
-                var handViewer = FindFirstObjectByType<DeckViewer>();
-                if (handViewer != null)
-                    handViewer.RebuildSmart();
+                // Performance: Use cached hand viewer
+                if (_handViewer != null)
+                    _handViewer.RebuildSmart();
             }
         }
     }
 
     private EnemyRender GetEnemyOnMouse(Vector2 screenPosition)
     {
-        Camera cam = Camera.main;
+        // Performance: Use cached camera with fallback
+        Camera cam = GetCamera();
         if (cam == null)
         {
             Debug.LogWarning("[CardRender] Camera.main is null, cannot check enemy collision.");
@@ -378,11 +408,13 @@ public class CardRender : MonoBehaviour,
 
         Debug.Log($"[CardRender] Checking for enemy at screen pos: {screenPosition}, world pos: {worldPos}");
 
-        Collider2D[] colliders = Physics2D.OverlapPointAll(new Vector2(worldPos.x, worldPos.y));
-        Debug.Log($"[CardRender] Found {colliders.Length} colliders at mouse position");
+        // Performance: Use NonAlloc version to avoid garbage
+        int count = Physics2D.OverlapPointNonAlloc(new Vector2(worldPos.x, worldPos.y), _colliderBuffer);
+        Debug.Log($"[CardRender] Found {count} colliders at mouse position");
 
-        foreach (var collider in colliders)
+        for (int i = 0; i < count; i++)
         {
+            var collider = _colliderBuffer[i];
             if (collider == null) continue;
 
             if (collider.gameObject == gameObject || collider.transform.IsChildOf(transform))
@@ -465,6 +497,18 @@ public class CardRender : MonoBehaviour,
         if (cardIcon == null) return;
         cardIcon.sprite = sprite;
         cardIcon.enabled = sprite != null;
+    }
+
+    // Performance: Optimized array search helper
+    private T FindInArray<T>(T[] array, string contains) where T : Component
+    {
+        string search = contains.ToLowerInvariant();
+        foreach (var item in array)
+        {
+            if (item.name.ToLowerInvariant().Contains(search))
+                return item;
+        }
+        return null;
     }
 
     private T FindChildByName<T>(string containsName) where T : Component

@@ -6,6 +6,10 @@ using UnityEngine.SceneManagement;
 
 public class ClockTimer : MonoBehaviour
 {
+    [Header("Debug Logging")]
+    [Tooltip("Enable debug logs for ClockTimer (Editor only - logs are stripped from builds)")]
+    public bool enableDebugLogs = false;
+    
     [Header("Clock Setup")]
     public Image clockImage;
     public Sprite[] clockFrames;
@@ -167,13 +171,13 @@ public class ClockTimer : MonoBehaviour
             endTransition = FindObjectOfType<EndTransition>();
             if (endTransition != null)
             {
-                Debug.Log("[ClockTimer] Found EndTransition component");
+                LogDebug("Found EndTransition component");
             }
         }
 
         // DO NOT START TIMER HERE
         // OverworldWakeUpCutscene will call StartTimer() or ReconstructClock() when ready
-        Debug.Log("[ClockTimer] Initialized - waiting for OverworldWakeUpCutscene to start timer");
+        LogDebug("Initialized - waiting for OverworldWakeUpCutscene to start timer");
         
         // Only fade in if we're not waiting for a cutscene to control the visuals
         // StartCoroutine(InitialFadeIn()); // Removed - cutscene will handle this
@@ -205,14 +209,14 @@ public class ClockTimer : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log($"[ClockTimer] Scene loaded: {scene.name}. Resetting timer state for loop.");
+        LogDebug($"Scene loaded: {scene.name}. Resetting timer state for loop.");
 
         // Try to find a ScreenFader in the newly loaded scene if we don't have one
         if (screenFader == null)
         {
             screenFader = FindObjectOfType<ScreenFader>();
             if (screenFader != null)
-                Debug.Log("[ClockTimer] Found ScreenFader in new scene during OnSceneLoaded.");
+                LogDebug("Found ScreenFader in new scene during OnSceneLoaded.");
         }
 
         // Reset states so the death sequence plays again on the next run
@@ -263,12 +267,12 @@ public class ClockTimer : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.K))
             {
                 RemoveTime(10f);
-                Debug.Log($"[ClockTimer] DEBUG: Removed 10 seconds (K pressed). Time left: {timeLeft:F2}s");
+                LogDebug($"DEBUG: Removed 10 seconds (K pressed). Time left: {timeLeft:F2}s");
             }
             if (Input.GetKeyDown(KeyCode.L))
             {
                 AddTime(10f);
-                Debug.Log($"[ClockTimer] DEBUG: Added 10 seconds (L pressed). Time left: {timeLeft:F2}s");
+                LogDebug($"DEBUG: Added 10 seconds (L pressed). Time left: {timeLeft:F2}s");
             }
         }
 
@@ -295,7 +299,7 @@ public class ClockTimer : MonoBehaviour
                     if (grandfatherAudioSource != null)
                     {
                         grandfatherAudioSource.PlayOneShot(grandfatherClip, grandfatherVolume);
-                        Debug.Log($"[ClockTimer] Played grandfather clock sound at {grandfatherThreshold}s");
+                        LogDebug($"Played grandfather clock sound at {grandfatherThreshold}s");
                     }
                 }
 
@@ -320,7 +324,7 @@ public class ClockTimer : MonoBehaviour
                     }
 
                     // Start the breaking sequence (no ticks)
-                    Debug.Log($"[ClockTimer] Starting break sequence at {timeLeft:F2}s, duration: {breakSequenceDuration}s, frameDur: {calculatedFrameDur:F3}s");
+                    LogDebug($"Starting break sequence at {timeLeft:F2}s, duration: {breakSequenceDuration}s, frameDur: {calculatedFrameDur:F3}s");
                     specialAnimRoutine = StartCoroutine(PlayClockSequence(breakStartIndex, breakEndIndex, calculatedFrameDur, false));
                 }
                 else
@@ -356,7 +360,7 @@ public class ClockTimer : MonoBehaviour
                         {
                             clockImage.sprite = clockFrames[normalFrameIndex];
                             lastFrameIndex = normalFrameIndex;
-                            Debug.Log($"[ClockTimer] Frame changed: {normalFrameIndex}/{normalFrameCount - 1} | Time left: {timeLeft:F2}s");
+                            LogDebug($"Frame changed: {normalFrameIndex}/{normalFrameCount - 1} | Time left: {timeLeft:F2}s");
 
                             // Play tick sound
                             PlayTickSound();
@@ -369,7 +373,7 @@ public class ClockTimer : MonoBehaviour
             int currentSecond = Mathf.FloorToInt(timeLeft);
             if (currentSecond != lastWholeSecond)
             {
-                Debug.Log($"[ClockTimer] Time left: {timeLeft:F1}s");
+                LogDebug($"Time left: {timeLeft:F1}s");
                 lastWholeSecond = currentSecond;
             }
 
@@ -410,7 +414,7 @@ public class ClockTimer : MonoBehaviour
             {
                 hasEnded = true;
                 IsTimeEnded = true;
-                Debug.Log("[ClockTimer] Timer reached 0! Starting death sequence...");
+                LogDebug("Timer reached 0! Starting death sequence...");
                 StartCoroutine(FadeMessageThenTransition());
             }
         }
@@ -436,7 +440,7 @@ public class ClockTimer : MonoBehaviour
         if (endMessageText != null)
             endMessageText.alpha = 0f;
 
-        Debug.Log($"[ClockTimer] Timer started: {totalTime}s");
+        LogDebug($"Timer started: {totalTime}s");
     }
 
     public void PauseTimer(bool pause) => isPaused = pause;
@@ -446,7 +450,7 @@ public class ClockTimer : MonoBehaviour
         if (seconds <= 0f) return;
         timeLeft += seconds;
         totalTime += seconds;
-        Debug.Log($"[ClockTimer] Added {seconds}s. Time left: {timeLeft:F2}s");
+        LogDebug($"Added {seconds}s. Time left: {timeLeft:F2}s");
     }
 
     public void RemoveTime(float seconds)
@@ -454,7 +458,7 @@ public class ClockTimer : MonoBehaviour
         if (seconds <= 0f) return;
         timeLeft = Mathf.Max(0f, timeLeft - seconds);
         totalTime = Mathf.Max(0.01f, totalTime - seconds);
-        Debug.Log($"[ClockTimer] Removed {seconds}s. Time left: {timeLeft:F2}s");
+        LogDebug($"Removed {seconds}s. Time left: {timeLeft:F2}s");
 
         if (timeLeft <= 0f && !hasEnded)
         {
@@ -479,7 +483,7 @@ public class ClockTimer : MonoBehaviour
     {
         timeLeft = Mathf.Max(0f, time);
         totalTime = Mathf.Max(timeLeft, totalTime);
-        Debug.Log($"[ClockTimer] Time restored to: {timeLeft:F2}s");
+        LogDebug($"Time restored to: {timeLeft:F2}s");
     }
 
     private IEnumerator InitialFadeIn()
@@ -496,7 +500,7 @@ public class ClockTimer : MonoBehaviour
             screenFader = FindObjectOfType<ScreenFader>();
             if (screenFader != null)
             {
-                Debug.Log("[ClockTimer] Found ScreenFader during death sequence");
+                LogDebug("Found ScreenFader during death sequence");
             }
         }
 
@@ -512,7 +516,7 @@ public class ClockTimer : MonoBehaviour
         // Check if day five timer ran out - skip "YOU DIED" message and trigger ending immediately
         if (GameFlags.HasFlag("day.five"))
         {
-            Debug.Log("[ClockTimer] 🎬 Day five timer ended - triggering ending sequence (skipping death message)");
+            LogDebug("🎬 Day five timer ended - triggering ending sequence (skipping death message)");
             
             // Stop warning sound before transitioning
             if (warningAudioSource != null && warningAudioSource.isPlaying)
@@ -521,7 +525,7 @@ public class ClockTimer : MonoBehaviour
             // Set the start.ending flag to allow EndTransition to proceed
             if (!GameFlags.HasFlag("start.ending"))
             {
-                Debug.Log("[ClockTimer] Setting start.ending flag for day.five");
+                LogDebug("Setting start.ending flag for day.five");
                 GameFlags.SetFlag("start.ending");
             }
             
@@ -531,7 +535,7 @@ public class ClockTimer : MonoBehaviour
             // Trigger the ending transition
             if (endTransition != null)
             {
-                Debug.Log("[ClockTimer] Triggering EndTransition for day.five");
+                LogDebug("Triggering EndTransition for day.five");
                 endTransition.TriggerEndTransition();
                 yield break; // EndTransition will handle the scene load
             }
@@ -617,18 +621,18 @@ public class ClockTimer : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"[ClockTimer] Preparing transition to scene '{sceneToLoad}'. ScreenFader assigned: {screenFader != null}");
+        LogDebug($"Preparing transition to scene '{sceneToLoad}'. ScreenFader assigned: {screenFader != null}");
 
         if (screenFader != null)
         {
             // Use ScreenFader transition coroutine
             screenFader.shouldOpenEyesOnSceneLoad = true;
-            Debug.Log($"[ClockTimer] Calling ScreenFader.TransitionToSceneKeepPanelsClosed('{sceneToLoad}')");
+            LogDebug($"Calling ScreenFader.TransitionToSceneKeepPanelsClosed('{sceneToLoad}')");
             yield return StartCoroutine(screenFader.TransitionToSceneKeepPanelsClosed(sceneToLoad));
-            Debug.Log($"[ClockTimer] Returned from ScreenFader.TransitionToSceneKeepPanelsClosed('{sceneToLoad}')");
+            LogDebug($"Returned from ScreenFader.TransitionToSceneKeepPanelsClosed('{sceneToLoad}')");
 
             // Note: if the scene did not change, check build settings and logs.
-            Debug.Log($"[ClockTimer] Current active scene after ScreenFader call: {SceneManager.GetActiveScene().name} (expected: {sceneToLoad})");
+            LogDebug($"Current active scene after ScreenFader call: {SceneManager.GetActiveScene().name} (expected: {sceneToLoad})");
         }
         else
         {
@@ -640,11 +644,11 @@ public class ClockTimer : MonoBehaviour
                 yield break;
             }
 
-            Debug.Log($"[ClockTimer] Started direct async load for '{sceneToLoad}'. allowSceneActivation={asyncLoad.allowSceneActivation}");
+            LogDebug($"Started direct async load for '{sceneToLoad}'. allowSceneActivation={asyncLoad.allowSceneActivation}");
             asyncLoad.allowSceneActivation = true;
             while (!asyncLoad.isDone)
                 yield return null;
-            Debug.Log($"[ClockTimer] Direct async load finished for '{sceneToLoad}'. Active scene is now: {SceneManager.GetActiveScene().name}");
+            LogDebug($"Direct async load finished for '{sceneToLoad}'. Active scene is now: {SceneManager.GetActiveScene().name}");
         }
     }
 
@@ -669,7 +673,7 @@ public class ClockTimer : MonoBehaviour
         int step = startIndex <= endIndex ? 1 : -1;
         int index = startIndex;
 
-        Debug.Log($"[ClockTimer] PlayClockSequence START: {startIndex} -> {endIndex}, frameDuration={frameDuration:F3}s, step={step}");
+        LogDebug($"PlayClockSequence START: {startIndex} -> {endIndex}, frameDuration={frameDuration:F3}s, step={step}");
 
         while (true)
         {
@@ -696,13 +700,13 @@ public class ClockTimer : MonoBehaviour
             if (index == endIndex)
                 break;
 
-            Debug.Log($"[ClockTimer] Playing frame {displayIndex}, waiting {frameDuration:F3}s");
+            LogDebug($"Playing frame {displayIndex}, waiting {frameDuration:F3}s");
 
             index += step;
             yield return new WaitForSeconds(frameDuration);
         }
 
-        Debug.Log($"[ClockTimer] PlayClockSequence COMPLETE: reached {endIndex}");
+        LogDebug($"PlayClockSequence COMPLETE: reached {endIndex}");
         isSpecialAnimating = false;
         specialAnimRoutine = null;
     }
@@ -740,31 +744,31 @@ public class ClockTimer : MonoBehaviour
     /// </summary>
     public IEnumerator ReconstructClock()
     {
-        Debug.Log("[ClockTimer] Starting clock reconstruction (without auto-starting timer)");
+        LogDebug("Starting clock reconstruction (without auto-starting timer)");
         
         // PAUSE the timer immediately so it doesn't tick during reconstruction
         isPaused = true;
-        Debug.Log("[ClockTimer] Timer paused for reconstruction");
+        LogDebug("Timer paused for reconstruction");
         
         // Initialize frameCount if it wasn't set (e.g., if Start() returned early)
         if (frameCount == 0 && clockFrames != null && clockFrames.Length > 0)
         {
             frameCount = clockFrames.Length;
-            Debug.Log($"[ClockTimer] Initialized frameCount to {frameCount} (was 0)");
+            LogDebug($"Initialized frameCount to {frameCount} (was 0)");
         }
         
         // Debug the condition checks with detailed info
-        Debug.Log($"[ClockTimer] ReconstructClock checks:");
-        Debug.Log($"  - clockFrames: {(clockFrames != null ? $"not null, length={clockFrames.Length}" : "NULL")}");
-        Debug.Log($"  - frameCount: {frameCount}");
-        Debug.Log($"  - breakEndIndex: {breakEndIndex}");
-        Debug.Log($"  - frameCount > breakEndIndex: {frameCount > breakEndIndex}");
-        Debug.Log($"  - clockImage: {(clockImage != null ? "not null" : "NULL")}");
+        LogDebug($"ReconstructClock checks:");
+        LogDebug($"  - clockFrames: {(clockFrames != null ? $"not null, length={clockFrames.Length}" : "NULL")}");
+        LogDebug($"  - frameCount: {frameCount}");
+        LogDebug($"  - breakEndIndex: {breakEndIndex}");
+        LogDebug($"  - frameCount > breakEndIndex: {frameCount > breakEndIndex}");
+        LogDebug($"  - clockImage: {(clockImage != null ? "not null" : "NULL")}");
 
         // Optional safety check
         if (clockFrames != null && frameCount > breakEndIndex && clockImage != null)
         {
-            Debug.Log("[ClockTimer] ✓ All checks passed - starting reconstruction animation");
+            LogDebug("✓ All checks passed - starting reconstruction animation");
 
             // Start in the fully broken state (frame 19, which is breakEndIndex)
             clockImage.sprite = clockFrames[breakEndIndex];
@@ -797,7 +801,7 @@ public class ClockTimer : MonoBehaviour
             // First, play the eyes opening animation if panels are closed
             if (screenFader != null && screenFader.shouldOpenEyesOnSceneLoad)
             {
-                Debug.Log("[ClockTimer] Playing eyes opening before clock reconstruction");
+                LogDebug("Playing eyes opening before clock reconstruction");
                 screenFader.shouldOpenEyesOnSceneLoad = false;
                 yield return StartCoroutine(screenFader.EyesOpeningEffect());
             }
@@ -821,7 +825,7 @@ public class ClockTimer : MonoBehaviour
                 // Ensure we're showing frame 19 and set isSpecialAnimating to prevent Update() from changing frames
                 clockImage.sprite = clockFrames[breakEndIndex];
                 isSpecialAnimating = true;
-                Debug.Log($"[ClockTimer] Starting zoom-in animation with frame {breakEndIndex} locked");
+                LogDebug($"Starting zoom-in animation with frame {breakEndIndex} locked");
 
                 // Animate to center/scale (while frame 19 stays visible)
                 float moveDur = Mathf.Clamp(reconstructMoveDuration, 0.2f, 5f);
@@ -853,7 +857,7 @@ public class ClockTimer : MonoBehaviour
                 rt.localScale = targetScale;
                 clockImage.sprite = clockFrames[breakEndIndex];
 
-                Debug.Log("[ClockTimer] Zoom-in complete, starting repair sequence");
+                LogDebug("Zoom-in complete, starting repair sequence");
 
                 // NOW play repair sequence in two parts: 19->13 then 13->1
                 // Calculate total steps and per-frame duration so the whole sequence fits reconstructSequenceDuration
@@ -869,7 +873,7 @@ public class ClockTimer : MonoBehaviour
                 // Play 13 -> 1 (clock whole)
                 yield return StartCoroutine(PlayClockSequence(breakStartIndex, 1, frameDur, false));
 
-                Debug.Log("[ClockTimer] Repair sequence complete, zooming back out");
+                LogDebug("Repair sequence complete, zooming back out");
 
                 // Animate back to original position/scale
                 startPos = rt.anchoredPosition;
@@ -924,7 +928,7 @@ public class ClockTimer : MonoBehaviour
             }
 
             // Always restore player input/movement after reconstruction
-            Debug.Log("[ClockTimer] Restoring player input/movement after reconstruction");
+            LogDebug("Restoring player input/movement after reconstruction");
             if (playerInput != null)
             {
                 playerInput.isInputEnabled = prevInputEnabled;
@@ -935,7 +939,7 @@ public class ClockTimer : MonoBehaviour
             }
             
             // Timer remains paused - caller must call StartTimer() to begin countdown
-            Debug.Log("[ClockTimer] Clock reconstruction complete - timer still paused (caller must start it)");
+            LogDebug("Clock reconstruction complete - timer still paused (caller must start it)");
         }
         else
         {
@@ -953,7 +957,7 @@ public class ClockTimer : MonoBehaviour
         // Wait for it to complete if still running
         if (specialAnimRoutine != null && isSpecialAnimating)
         {
-            Debug.Log("[ClockTimer] Waiting for break sequence to complete...");
+            LogDebug("Waiting for break sequence to complete...");
             yield return specialAnimRoutine;
         }
 
@@ -965,5 +969,13 @@ public class ClockTimer : MonoBehaviour
     {
         var scene = SceneManager.GetActiveScene();
         return "hudshown." + scene.name + "." + scene.buildIndex;
+    }
+    
+    // Debug logging wrapper - only logs in Editor when enableDebugLogs is true
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+            Debug.Log($"[ClockTimer] {message}");
     }
 }

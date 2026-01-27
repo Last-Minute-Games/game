@@ -1,4 +1,4 @@
-﻿﻿using UnityEngine;
+﻿using UnityEngine;
 
 namespace GameItems.Cards.Helpers
 {
@@ -21,11 +21,13 @@ namespace GameItems.Cards.Helpers
         [Tooltip("Offset from card position where arrow originates (in world units)")]
         public Vector3 arrowAnchorOffset = new Vector3(0f, 0.5f, 0f);
 
+        // Performance: Cached camera reference
         private Camera _mainCamera;
         private bool _isDrawing;
 
         private void Awake()
         {
+            // Performance: Cache Camera.main
             _mainCamera = Camera.main;
 
             // Auto-setup BezierArrow if not assigned
@@ -87,6 +89,10 @@ namespace GameItems.Cards.Helpers
         /// <param name="isHoveringValidTarget">Whether the cursor is hovering over a valid target</param>
         public void UpdateArrow(Vector3 cardWorldPosition, Vector2 cursorScreenPosition, bool isHoveringValidTarget = false)
         {
+            // Performance: Fallback for camera if it wasn't available during Awake
+            if (_mainCamera == null)
+                _mainCamera = Camera.main;
+                
             if (bezierArrow == null || !_isDrawing || _mainCamera == null)
                 return;
 

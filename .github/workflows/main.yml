@@ -21,7 +21,7 @@ jobs:
       - name: Create and compute version tag
         id: compute_version
         run: |
-          tag="v1.0.${{ github.run_number }}"
+          tag="${{ github.run_number }}"
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git tag -a "$tag" -m "Automated release $tag"
