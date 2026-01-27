@@ -261,22 +261,8 @@ namespace Systems
                 }
             }
             
-            // Note: Input handling now done by InteractionDetector for proper priority
-            // Right-click interaction is kept for direct mouse interaction
-            if (_isPlayerNear && Input.GetMouseButtonDown(1)) // 1 = right mouse
-            {
-                var world = Camera.main!.ScreenToWorldPoint(Input.mousePosition);
-                var p = new Vector2(world.x, world.y);
-
-                // Use OverlapPoint (simpler than a ray)
-                var hit = Physics2D.OverlapPoint(p);
-                
-                if (hit && (hit == _tptCollider || hit == _newCollider))
-                {
-                    Debug.Log($"[TeleportSystem] {name}: Right-click teleport triggered!");
-                    Interact();
-                }
-            }
+            // Note: Right-click interaction now handled by InteractionDetector
+            // which allows clicking anywhere when near a door
         }
 
         private bool EnsureTeleportReferencesAreValid()
