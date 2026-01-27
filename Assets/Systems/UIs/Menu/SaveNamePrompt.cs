@@ -9,6 +9,10 @@ using System.Collections;
 [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
 public class SaveNamePrompt : MonoBehaviour
 {
+    [Header("Debug")]
+    [Tooltip("Enable debug logs (Editor only)")]
+    public bool enableDebugLogs = false;
+    
     [Header("UI References")]
     [SerializeField] private CanvasGroup promptCanvasGroup;
     [SerializeField] private TMP_InputField saveNameInput;
@@ -250,70 +254,15 @@ public class SaveNamePrompt : MonoBehaviour
         // Only run when prompt is visible
         if (!_isVisible) return;
         
-        // Debug: Log mouse clicks to see if they're being registered
-        if (Input.GetMouseButtonDown(0))
+        #if UNITY_EDITOR
+        // Debug: Log mouse clicks to see if they're being registered (EDITOR ONLY)
+        if (Input.GetMouseButtonDown(0) && enableDebugLogs)
         {
-            Debug.Log("[SaveNamePrompt] ========== MOUSE CLICK DETECTED ==========");
-            
-            // Check what's currently selected
-            if (UnityEngine.EventSystems.EventSystem.current != null)
-            {
-                var currentSelected = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
-                Debug.Log($"[SaveNamePrompt] Currently selected object: {(currentSelected != null ? currentSelected.name : "NULL")}");
-                
-                // Check pointer over what UI element
-                var pointerData = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current);
-                pointerData.position = Input.mousePosition;
-                
-                var results = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
-                UnityEngine.EventSystems.EventSystem.current.RaycastAll(pointerData, results);
-                
-                Debug.Log($"[SaveNamePrompt] Raycast found {results.Count} UI elements under cursor:");
-                foreach (var result in results)
-                {
-                    // Get the canvas sort order if available
-                    Canvas resultCanvas = result.gameObject.GetComponentInParent<Canvas>();
-                    int sortOrder = resultCanvas != null && resultCanvas.overrideSorting ? resultCanvas.sortingOrder : 0;
-                    bool hasOverride = resultCanvas != null && resultCanvas.overrideSorting;
-                    
-                    Debug.Log($"  - {result.gameObject.name} (layer: {result.gameObject.layer}, canvas sortOrder: {sortOrder}, override: {hasOverride})");
-                }
-            }
-            
-            // Check button states
-            if (confirmButton != null)
-                Debug.Log($"[SaveNamePrompt] Confirm button: interactable={confirmButton.interactable}, activeInHierarchy={confirmButton.gameObject.activeInHierarchy}");
-            else
-                Debug.LogError("[SaveNamePrompt] Confirm button is NULL!");
-                
-            if (cancelButton != null)
-                Debug.Log($"[SaveNamePrompt] Cancel button: interactable={cancelButton.interactable}, activeInHierarchy={cancelButton.gameObject.activeInHierarchy}");
-            else
-                Debug.LogError("[SaveNamePrompt] Cancel button is NULL!");
-                
-            // Check canvas group state
-            if (promptCanvasGroup != null)
-                Debug.Log($"[SaveNamePrompt] Canvas Group: alpha={promptCanvasGroup.alpha}, interactable={promptCanvasGroup.interactable}, blocksRaycasts={promptCanvasGroup.blocksRaycasts}");
-                
-            // Check canvas sort order
-            if (_canvas != null)
-                Debug.Log($"[SaveNamePrompt] Canvas: overrideSorting={_canvas.overrideSorting}, sortingOrder={_canvas.sortingOrder}");
-                
-            // Check background
-            if (manualBackground != null)
-            {
-                Debug.Log($"[SaveNamePrompt] Manual BG active: {manualBackground.activeSelf}, siblingIndex: {manualBackground.transform.GetSiblingIndex()}");
-                Image img = manualBackground.GetComponent<Image>();
-                if (img != null)
-                    Debug.Log($"[SaveNamePrompt] Manual BG Image raycastTarget: {img.raycastTarget}");
-            }
-            else if (_autoBackgroundBlocker != null)
-            {
-                Debug.Log($"[SaveNamePrompt] Auto BG active: {_autoBackgroundBlocker.activeSelf}, siblingIndex: {_autoBackgroundBlocker.transform.GetSiblingIndex()}");
-            }
+            LogMouseClickDebug();
         }
+        #endif
         
-        // Allow Enter to confirm if input is valid
+        // Production input handling
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
             if (confirmButton != null && confirmButton.interactable)
@@ -322,13 +271,80 @@ public class SaveNamePrompt : MonoBehaviour
             }
         }
         
-        // Allow Escape to cancel
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             OnCancelClicked();
         }
     }
-    
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// Debug logging for mouse clicks (Editor only - stripped from builds)
+    /// </summary>
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogMouseClickDebug()
+    {
+        Debug.Log("[SaveNamePrompt] ========== MOUSE CLICK DETECTED ==========");
+        
+        // Check what's currently selected
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            var currentSelected = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+            Debug.Log($"[SaveNamePrompt] Currently selected object: {(currentSelected != null ? currentSelected.name : "NULL")}");
+            
+            // Check pointer over what UI element
+            var pointerData = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current);
+            pointerData.position = Input.mousePosition;
+            
+            var results = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+            UnityEngine.EventSystems.EventSystem.current.RaycastAll(pointerData, results);
+            
+            Debug.Log($"[SaveNamePrompt] Raycast found {results.Count} UI elements under cursor:");
+            foreach (var result in results)
+            {
+                // Get the canvas sort order if available
+                Canvas resultCanvas = result.gameObject.GetComponentInParent<Canvas>();
+                int sortOrder = resultCanvas != null && resultCanvas.overrideSorting ? resultCanvas.sortingOrder : 0;
+                bool hasOverride = resultCanvas != null && resultCanvas.overrideSorting;
+                
+                Debug.Log($"  - {result.gameObject.name} (layer: {result.gameObject.layer}, canvas sortOrder: {sortOrder}, override: {hasOverride})");
+            }
+        }
+        
+        // Check button states
+        if (confirmButton != null)
+            Debug.Log($"[SaveNamePrompt] Confirm button: interactable={confirmButton.interactable}, activeInHierarchy={confirmButton.gameObject.activeInHierarchy}");
+        else
+            Debug.LogError("[SaveNamePrompt] Confirm button is NULL!");
+            
+        if (cancelButton != null)
+            Debug.Log($"[SaveNamePrompt] Cancel button: interactable={cancelButton.interactable}, activeInHierarchy={cancelButton.gameObject.activeInHierarchy}");
+        else
+            Debug.LogError("[SaveNamePrompt] Cancel button is NULL!");
+            
+        // Check canvas group state
+        if (promptCanvasGroup != null)
+            Debug.Log($"[SaveNamePrompt] Canvas Group: alpha={promptCanvasGroup.alpha}, interactable={promptCanvasGroup.interactable}, blocksRaycasts={promptCanvasGroup.blocksRaycasts}");
+            
+        // Check canvas sort order
+        if (_canvas != null)
+            Debug.Log($"[SaveNamePrompt] Canvas: overrideSorting={_canvas.overrideSorting}, sortingOrder={_canvas.sortingOrder}");
+            
+        // Check background
+        if (manualBackground != null)
+        {
+            Debug.Log($"[SaveNamePrompt] Manual BG active: {manualBackground.activeSelf}, siblingIndex: {manualBackground.transform.GetSiblingIndex()}");
+            Image img = manualBackground.GetComponent<Image>();
+            if (img != null)
+                Debug.Log($"[SaveNamePrompt] Manual BG Image raycastTarget: {img.raycastTarget}");
+        }
+        else if (_autoBackgroundBlocker != null)
+        {
+            Debug.Log($"[SaveNamePrompt] Auto BG active: {_autoBackgroundBlocker.activeSelf}, siblingIndex: {_autoBackgroundBlocker.transform.GetSiblingIndex()}");
+        }
+    }
+#endif
+
     /// <summary>
     /// Show the save name prompt with callbacks
     /// </summary>
