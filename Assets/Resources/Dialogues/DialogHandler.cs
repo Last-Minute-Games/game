@@ -7,6 +7,10 @@ namespace Dialogues
 {
     public class DialogTrigger : MonoBehaviour, IInteractable
     {
+        [Header("Debug")]
+        [Tooltip("Enable debug logs (Editor only)")]
+        public bool enableDebugLogs = false;
+        
         [Header("Dialog Settings")]
         public DialogBehaviour dialogBehaviour; // likely shared UI
         
@@ -50,7 +54,7 @@ namespace Dialogues
             dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
             dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
             
-            Debug.Log($"[DialogTrigger] '{gameObject.name}' successfully subscribed to DialogBehaviour events");
+            LogDebug($"'{gameObject.name}' successfully subscribed to DialogBehaviour events");
         }
 
         private void OnDestroy()
@@ -92,7 +96,7 @@ namespace Dialogues
 
             // Use GlobalPause to pause NPCs and timer (but not player input or timescale)
             GlobalPause.SetMinigamePaused(true);
-            Debug.Log("[DialogTrigger] GlobalPause minigame pause enabled (NPCs and timer paused)");
+            LogDebug("GlobalPause minigame pause enabled (NPCs and timer paused)");
 
             if (_npcBrain)
             {
@@ -114,7 +118,7 @@ namespace Dialogues
 
             // Resume NPCs and timer via GlobalPause
             GlobalPause.SetMinigamePaused(false);
-            Debug.Log("[DialogTrigger] GlobalPause minigame pause disabled (NPCs and timer resumed)");
+            LogDebug("GlobalPause minigame pause disabled (NPCs and timer resumed)");
 
             if (_npcBrain)
             {
@@ -149,10 +153,9 @@ namespace Dialogues
 
         private void StartDialogue()
         {
-            // Double-check we're not already in a dialog
             if (_dialogActive)
             {
-                Debug.LogWarning("[DialogTrigger] Attempted to start dialog while one is already active");
+                if (enableDebugLogs) Debug.LogWarning("[DialogTrigger] Attempted to start dialog while one is already active");
                 return;
             }
 
@@ -168,9 +171,8 @@ namespace Dialogues
                 return;
             }
 
-            // Mark that the NEXT OnDialogStarted/Finished belongs to THIS NPC
             _isMyConversation = true;
-            Debug.Log($"[DialogTrigger] '{gameObject.name}' starting dialog (will trigger GlobalPause)");
+            LogDebug($"'{gameObject.name}' starting dialog (will trigger GlobalPause)");
             dialogBehaviour.StartDialog(dialogGraph);
         }
 
@@ -202,6 +204,13 @@ namespace Dialogues
         {
             // NPCs DO show the popup icon
             return true;
+        }
+        
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private void LogDebug(string message)
+        {
+            if (enableDebugLogs)
+                Debug.Log($"[DialogTrigger] {message}");
         }
     }
 }

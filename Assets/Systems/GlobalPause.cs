@@ -7,6 +7,14 @@ using UnityEngine;
 /// </summary>
 public static class GlobalPause
 {
+    [System.Serializable]
+    public class DebugSettings
+    {
+        public bool enableDebugLogs = false;
+    }
+    
+    private static DebugSettings _debugSettings = new DebugSettings();
+
     public static event Action<bool> OnPausedChanged;
     public static event Action<bool> OnMinigamePausedChanged;
 
@@ -51,7 +59,7 @@ public static class GlobalPause
 
         OnPausedChanged?.Invoke(pause);
 
-        Debug.Log($"[GlobalPause] Paused set to {pause}");
+        LogDebug($"Paused set to {pause}");
     }
 
     public static void Toggle()
@@ -75,11 +83,15 @@ public static class GlobalPause
         {
             try { clock.PauseTimer(pause); } catch { }
         }
-
-        // Note: NPCs will check IsMinigamePaused in their Update() methods
-        // We don't pause Time.timeScale or player input here
         
         OnMinigamePausedChanged?.Invoke(pause);
-        Debug.Log($"[GlobalPause] Minigame paused set to {pause} (NPCs and Timer paused, player input still active)");
+        LogDebug($"Minigame paused set to {pause} (NPCs and Timer paused, player input still active)");
+    }
+    
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private static void LogDebug(string message)
+    {
+        if (_debugSettings.enableDebugLogs)
+            Debug.Log($"[GlobalPause] {message}");
     }
 }

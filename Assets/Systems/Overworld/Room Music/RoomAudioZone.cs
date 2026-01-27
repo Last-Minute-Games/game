@@ -3,6 +3,10 @@ using System.Collections;
 
 public class RoomAudioZone : MonoBehaviour
 {
+    [Header("Debug")]
+    [Tooltip("Enable debug logs (Editor only)")]
+    public bool enableDebugLogs = false;
+    
     public AudioSource roomMusic;
 
     [Header("Death Fade Settings")]
@@ -56,24 +60,24 @@ public class RoomAudioZone : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("OnTriggerEnter2D with: " + other.name);
+        LogDebug("OnTriggerEnter2D with: " + other.name);
 
         if (!other.CompareTag("Player")) return;
 
         // Don't start audio if time has already ended
         if (ClockTimer.IsTimeEnded) return;
 
-        Debug.Log("PLAYER ENTERED zone: " + name);
+        LogDebug("PLAYER ENTERED zone: " + name);
         if (roomMusic != null) roomMusic.Play();
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        Debug.Log("OnTriggerExit2D with: " + other.name);
+        LogDebug("OnTriggerExit2D with: " + other.name);
 
         if (!other.CompareTag("Player")) return;
 
-        Debug.Log("PLAYER EXITED zone: " + name);
+        LogDebug("PLAYER EXITED zone: " + name);
         if (roomMusic != null) roomMusic.Stop();
     }
 
@@ -86,5 +90,13 @@ public class RoomAudioZone : MonoBehaviour
             fadeCoroutine = null;
         }
         isFadingOut = false;
+    }
+    
+    // Debug logging wrapper - only logs in Editor when enableDebugLogs is true
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+            Debug.Log(message);
     }
 }

@@ -7,6 +7,10 @@ namespace Systems.Overworld.Intro
 {
     public class TutorialTrigger : MonoBehaviour
     {
+        [Header("Debug")]
+        [Tooltip("Enable debug logs (Editor only)")]
+        public bool enableDebugLogs = false;
+        
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         private BoxCollider2D _boxCollider;
         private TutorialScene _tutorialScene;
@@ -38,22 +42,19 @@ namespace Systems.Overworld.Intro
 
         void Start()
         {
-            // _boxCollider = gameObject.AddComponent<BoxCollider2D>();
-            // _boxCollider.isTrigger = true;
-
             _tutorialScene = FindFirstObjectByType<TutorialScene>();
             
             // Auto-generate flag name if not specified
             if (useFlagSystem && string.IsNullOrEmpty(flagName))
             {
                 flagName = $"tutorial.trigger.{gameObject.name}";
-                Debug.Log($"[TutorialTrigger] Auto-generated flag name: {flagName}");
+                LogDebug($"Auto-generated flag name: {flagName}");
             }
             
             // Check if this trigger has already been activated
             if (useFlagSystem && GameFlags.HasFlag(flagName))
             {
-                Debug.Log($"[TutorialTrigger] Flag '{flagName}' already set - disabling trigger");
+                LogDebug($"Flag '{flagName}' already set - disabling trigger");
                 gameObject.SetActive(false);
             }
         }
@@ -63,13 +64,13 @@ namespace Systems.Overworld.Intro
         {
             if (!other.CompareTag("Player")) return;
 
-            Debug.Log($"[TutorialTrigger] Player entered the tutorial trigger area: {gameObject.name}");
+            LogDebug($"Player entered the tutorial trigger area: {gameObject.name}");
             
             // Set flag if using flag system
             if (useFlagSystem && !string.IsNullOrEmpty(flagName))
             {
                 GameFlags.SetFlag(flagName);
-                Debug.Log($"[TutorialTrigger] Set flag: {flagName}");
+                LogDebug($"Set flag: {flagName}");
             }
 
             if (OnTriggerEnter != null && OnTriggerEnter.GetPersistentEventCount() > 0)
@@ -99,6 +100,13 @@ namespace Systems.Overworld.Intro
             }
 
             if (onlyTriggerOnce) transform.gameObject.SetActive(false);
+        }
+        
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private void LogDebug(string message)
+        {
+            if (enableDebugLogs)
+                Debug.Log($"[TutorialTrigger] {message}");
         }
     }
 }

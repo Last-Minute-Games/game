@@ -8,10 +8,12 @@ using UnityEngine.Events;
 using UnityEditor;
 #endif
 
-// Removed RequireComponent to allow flexible setup
-// Runtime check will warn if collider is missing
 public class InteractiveItem : MonoBehaviour, IInteractable
 {
+    [Header("Debug")]
+    [Tooltip("Enable debug logs (Editor only)")]
+    public bool enableDebugLogs = false;
+    
     [Header("Dialog Settings")]
     public DialogBehaviour dialogBehaviour;
     public DialogNodeGraph dialogGraph;
@@ -332,7 +334,15 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         Gizmos.DrawWireSphere(transform.position, interactionRange);
     }
 #endif
+    
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+            Debug.Log($"[InteractiveItem] {message}");
+    }
 }
+
 
 /// <summary>
 /// Simple attribute so the field is visible but not editable in the Inspector (runtime-safe).

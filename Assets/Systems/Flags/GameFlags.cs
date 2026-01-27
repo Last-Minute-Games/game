@@ -10,6 +10,10 @@ using UnityEngine;
 /// </summary>
 public class GameFlags : PersistentSingleton<GameFlags>
 {
+    [Header("Debug")]
+    [Tooltip("Enable debug logs (Editor only)")]
+    public bool enableDebugLogs = false;
+    
     private HashSet<string> _activeFlags = new HashSet<string>();
     
     // PlayerPrefs key for saving flags (legacy support)
@@ -710,6 +714,13 @@ public class GameFlags : PersistentSingleton<GameFlags>
     public void Remove(string flagName)
     {
         RemoveFlag(flagName);
+    }
+    
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+            Debug.Log($"[GameFlags] {message}");
     }
 }
 

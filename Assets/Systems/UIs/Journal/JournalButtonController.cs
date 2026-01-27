@@ -5,6 +5,10 @@ using System.Collections;
 
 public class JournalUI : MonoBehaviour
 {
+    [Header("Debug")]
+    [Tooltip("Enable debug logs (Editor only)")]
+    public bool enableDebugLogs = false;
+    
     [Header("Refs")]
     public Button journalButton;         // hook your JournalButton here
     public CanvasGroup journalPanel;     // the content panel that appears when open
@@ -262,4 +266,11 @@ public class JournalUI : MonoBehaviour
     /// Public property to check if journal is currently open
     /// </summary>
     public bool IsOpen => isOpen;
+    
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+            Debug.Log($"[JournalUI] {message}");
+    }
 }

@@ -5,6 +5,10 @@ using System.Linq;
 
 public class InteractionDetector : MonoBehaviour
 {
+    [Header("Debug")]
+    [Tooltip("Enable debug logs (Editor only)")]
+    public bool enableDebugLogs = false;
+    
     [Header("Popup Settings")]
     public GameObject popupImage; // Assign your PNG UI or world-space sprite
 
@@ -17,8 +21,15 @@ public class InteractionDetector : MonoBehaviour
     public Texture2D defaultCursor;
     [Tooltip("Cursor hotspot for the default cursor")]
     public Vector2 defaultCursorHotspot = Vector2.zero;
+    
+    [Header("Hover Detection Settings")]
+    [Tooltip("Enable hover detection for NPCs and items (Stardew Valley style)")]
+    public bool enableHoverDetection = true;
+    [Tooltip("Radius around interactable to check for mouse hover (fallback for objects without precise colliders)")]
+    public float hoverCheckRadius = 0.5f;
 
     private List<IInteractable> nearbyInteractables = new List<IInteractable>();
+    private IInteractable hoveredInteractable = null;
     private Camera _mainCamera;
 
     private void Start()
@@ -28,6 +39,10 @@ public class InteractionDetector : MonoBehaviour
             
         // Cache main camera reference for performance
         _mainCamera = Camera.main;
+        if (_mainCamera == null)
+        {
+            Debug.LogWarning("[InteractionDetector] Main Camera not found! Mouse hover detection will not work.");
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -37,7 +52,7 @@ public class InteractionDetector : MonoBehaviour
         if (interactable != null && !nearbyInteractables.Contains(interactable))
         {
             nearbyInteractables.Add(interactable);
-            Debug.Log($"[InteractionDetector] Added interactable: {other.gameObject.name} (Type: {interactable.GetType().Name}, Priority: {interactable.GetInteractionPriority()})");
+            LogDebug($"Added interactable: {other.gameObject.name} (Type: {interactable.GetType().Name}, Priority: {interactable.GetInteractionPriority()})");
             UpdatePopupVisibility();
         }
     }
@@ -48,33 +63,47 @@ public class InteractionDetector : MonoBehaviour
         if (interactable != null && nearbyInteractables.Contains(interactable))
         {
             nearbyInteractables.Remove(interactable);
-            Debug.Log($"[InteractionDetector] Removed interactable: {other.gameObject.name}");
+            LogDebug($"Removed interactable: {other.gameObject.name}");
+            
+            // Clear hover if we're leaving the hovered interactable
+            if (interactable == hoveredInteractable)
+            {
+                hoveredInteractable = null;
+                UpdateCursor();
+            }
+            
             UpdatePopupVisibility();
         }
     }
 
     private void Update()
     {
+        // Update mouse hover detection
+        if (enableHoverDetection)
+        {
+            UpdateMouseHover();
+        }
+
         // Handle E key (keyboard interaction)
         if (Input.GetKeyDown(KeyCode.E))
         {
             IInteractable bestInteractable = GetBestInteractable();
-            Debug.Log($"[InteractionDetector] E key pressed! Nearby interactables: {nearbyInteractables.Count}, Best: {(bestInteractable != null ? bestInteractable.GetType().Name : "NONE")}");
+            LogDebug($"E key pressed! Nearby interactables: {nearbyInteractables.Count}, Best: {(bestInteractable != null ? bestInteractable.GetType().Name : "NONE")}");
             
             if (bestInteractable != null)
             {
                 if (Systems.InteractionLockManager.IsLocked)
                 {
-                    Debug.Log($"[InteractionDetector] Cannot interact - lock is held");
+                    LogDebug($"Cannot interact - lock is held");
                     return;
                 }
                 
-                Debug.Log($"[InteractionDetector] Calling Interact() on {bestInteractable.GetType().Name}");
+                LogDebug($"Calling Interact() on {bestInteractable.GetType().Name}");
                 bestInteractable.Interact();
             }
             else
             {
-                Debug.Log($"[InteractionDetector] No valid interactable found");
+                LogDebug($"No valid interactable found");
             }
         }
 
@@ -85,28 +114,140 @@ public class InteractionDetector : MonoBehaviour
         }
     }
 
+    private void UpdateMouseHover()
+    {
+        if (_mainCamera == null) return;
+        
+        // Get mouse position in world space
+        Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        
+        IInteractable newHovered = null;
+        float closestDistance = float.MaxValue;
+        
+        // Check all nearby interactables
+        foreach (var interactable in nearbyInteractables)
+        {
+            if (interactable == null) continue;
+            
+            // Skip if can't interact
+            if (!interactable.CanInteract()) continue;
+            
+            // Only check hover for items that show prompts (NPCs, items, minigames)
+            // Doors/teleports don't need hover (they work anywhere when in range)
+            if (!interactable.ShowInteractionPrompt()) continue;
+            
+            MonoBehaviour mb = interactable as MonoBehaviour;
+            if (mb == null) continue;
+            
+            bool isMouseOver = false;
+            float distance = float.MaxValue;
+            
+            // Method 1: Check if mouse is over any collider on this object
+            Collider2D[] colliders = mb.GetComponents<Collider2D>();
+            foreach (var collider in colliders)
+            {
+                if (collider != null && collider.enabled && collider.OverlapPoint(mouseWorldPos))
+                {
+                    isMouseOver = true;
+                    distance = Vector2.Distance(mouseWorldPos, mb.transform.position);
+                    break;
+                }
+            }
+            
+            // Method 2: Fallback - Check distance from center (for objects without precise colliders)
+            if (!isMouseOver)
+            {
+                float distanceToCenter = Vector2.Distance(mouseWorldPos, mb.transform.position);
+                if (distanceToCenter <= hoverCheckRadius)
+                {
+                    isMouseOver = true;
+                    distance = distanceToCenter;
+                }
+            }
+            
+            // If mouse is over this interactable, check if it's the best one
+            if (isMouseOver)
+            {
+                // Prefer higher priority (lower number) or closer distance if same priority
+                if (newHovered == null || 
+                    interactable.GetInteractionPriority() < newHovered.GetInteractionPriority() ||
+                    (interactable.GetInteractionPriority() == newHovered.GetInteractionPriority() && distance < closestDistance))
+                {
+                    newHovered = interactable;
+                    closestDistance = distance;
+                }
+            }
+        }
+        
+        // Update cursor if hover state changed
+        if (newHovered != hoveredInteractable)
+        {
+            hoveredInteractable = newHovered;
+            UpdateCursor();
+        }
+    }
+
+    private void UpdateCursor()
+    {
+        // Only change cursor for items that show prompts (not doors/teleports)
+        if (hoveredInteractable != null && hoveredInteractable.ShowInteractionPrompt())
+        {
+            if (interactCursor != null)
+            {
+                Cursor.SetCursor(interactCursor, interactCursorHotspot, CursorMode.Auto);
+                LogDebug($"Cursor changed - hovering over: {(hoveredInteractable as MonoBehaviour)?.gameObject.name}");
+            }
+        }
+        else
+        {
+            // Reset to default cursor
+            if (defaultCursor != null)
+            {
+                Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.Auto);
+            }
+            else
+            {
+                Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            }
+        }
+    }
+
     private void HandleRightClick()
     {
-        Debug.Log($"[InteractionDetector] Right-click detected!");
+        LogDebug($"Right-click detected!");
         
-        // Just get the best interactable in range and interact with it
-        // This works for both NPCs and doors - no hover required!
+        // Priority 1: If hovering over a specific item/NPC with cursor, interact with that
+        if (enableHoverDetection && hoveredInteractable != null && hoveredInteractable.ShowInteractionPrompt())
+        {
+            if (Systems.InteractionLockManager.IsLocked)
+            {
+                LogDebug($"Cannot interact - lock is held");
+                return;
+            }
+            
+            LogDebug($"Right-click on hovered item: {hoveredInteractable.GetType().Name}");
+            hoveredInteractable.Interact();
+            return;
+        }
+        
+        // Priority 2: Fallback - interact with best interactable in range
+        // (Doors work this way, or if hover detection is disabled)
         IInteractable bestInteractable = GetBestInteractable();
         
         if (bestInteractable != null)
         {
             if (Systems.InteractionLockManager.IsLocked)
             {
-                Debug.Log($"[InteractionDetector] Cannot interact - lock is held");
+                LogDebug($"Cannot interact - lock is held");
                 return;
             }
             
-            Debug.Log($"[InteractionDetector] Right-click interacting with: {bestInteractable.GetType().Name}");
+            LogDebug($"Right-click interacting with: {bestInteractable.GetType().Name}");
             bestInteractable.Interact();
             return;
         }
         
-        Debug.Log($"[InteractionDetector] Right-click found nothing to interact with");
+        LogDebug($"Right-click found nothing to interact with");
     }
 
     private IInteractable GetBestInteractable()
@@ -136,7 +277,6 @@ public class InteractionDetector : MonoBehaviour
 
     private void OnDisable()
     {
-        // Reset cursor when disabled
         if (defaultCursor != null)
         {
             Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.Auto);
@@ -146,4 +286,39 @@ public class InteractionDetector : MonoBehaviour
             Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         }
     }
+    
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+            Debug.Log($"[InteractionDetector] {message}");
+    }
+    
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        // Visualize hover check radius for nearby interactables
+        if (nearbyInteractables == null || !enableHoverDetection) return;
+        
+        foreach (var interactable in nearbyInteractables)
+        {
+            if (interactable == null) continue;
+            if (!interactable.ShowInteractionPrompt()) continue; // Only show for items that can be hovered
+            
+            MonoBehaviour mb = interactable as MonoBehaviour;
+            if (mb == null) continue;
+            
+            // Draw yellow circle around interactables that show prompts
+            Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
+            Gizmos.DrawWireSphere(mb.transform.position, hoverCheckRadius);
+            
+            // Draw filled circle if this is currently hovered
+            if (interactable == hoveredInteractable)
+            {
+                Gizmos.color = new Color(0f, 1f, 0f, 0.5f);
+                Gizmos.DrawSphere(mb.transform.position, hoverCheckRadius);
+            }
+        }
+    }
+#endif
 }

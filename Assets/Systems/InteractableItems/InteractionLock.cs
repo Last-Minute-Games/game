@@ -8,6 +8,7 @@ namespace Systems
     public static class InteractionLockManager
     {
         private static bool _isLocked = false;
+        private static bool _enableDebugLogs = false; // Toggle via code or debugger
 
         /// <summary>
         /// Try to acquire the interaction lock. Returns true if successful, false if already locked.
@@ -16,12 +17,12 @@ namespace Systems
         {
             if (_isLocked)
             {
-                Debug.Log("[InteractionLock] Interaction blocked - another interaction is already in progress.");
+                LogDebug("Interaction blocked - another interaction is already in progress.");
                 return false;
             }
 
             _isLocked = true;
-            Debug.Log("[InteractionLock] Lock acquired.");
+            LogDebug("Lock acquired.");
             return true;
         }
 
@@ -31,13 +32,20 @@ namespace Systems
         public static void Unlock()
         {
             _isLocked = false;
-            Debug.Log("[InteractionLock] Lock released.");
+            LogDebug("Lock released.");
         }
 
         /// <summary>
         /// Check if the lock is currently active.
         /// </summary>
         public static bool IsLocked => _isLocked;
+        
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private static void LogDebug(string message)
+        {
+            if (_enableDebugLogs)
+                UnityEngine.Debug.Log($"[InteractionLock] {message}");
+        }
     }
 }
 
