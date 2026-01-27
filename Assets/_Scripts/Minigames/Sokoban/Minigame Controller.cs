@@ -81,6 +81,9 @@ public class MinigameController : MonoBehaviour
     // References for internal logic
     private GameObject player;
     private WinConditionManager winManager;
+    
+    // Cache for optimization
+    private Camera _mainCamera;
 
     void Awake()
     {
@@ -105,8 +108,12 @@ public class MinigameController : MonoBehaviour
             }
         }
 
-        winManager = sokobanRoot.GetComponentInChildren<WinConditionManager>();
-        if (winManager == null) { Debug.LogError("WinConditionManager not found inside the Sokoban Root."); }
+        // Cache WinConditionManager once in Awake instead of searching when needed
+        if (sokobanRoot != null)
+        {
+            winManager = sokobanRoot.GetComponentInChildren<WinConditionManager>();
+            if (winManager == null) { Debug.LogError("WinConditionManager not found inside the Sokoban Root."); }
+        }
 
         if (hudRoot != null)
         {
@@ -114,9 +121,11 @@ public class MinigameController : MonoBehaviour
             hudWasActive = hudRoot.activeSelf;
         }
 
-        if (Camera.main != null)
+        // Cache Camera.main once in Awake
+        _mainCamera = Camera.main;
+        if (_mainCamera != null)
         {
-            overworldCameraSize = Camera.main.orthographicSize;
+            overworldCameraSize = _mainCamera.orthographicSize;
         }
 
         if (cmCamera != null)
@@ -188,15 +197,17 @@ public class MinigameController : MonoBehaviour
     public void ResetPuzzle()
     {
         // 1. Reset all boxes and the player (if they have the InitialPosition script)
+        // NOTE: FindObjectsOfType is acceptable here since it's only called on user button click
         InitialPosition[] allResettableObjects = FindObjectsOfType<InitialPosition>();
         foreach (InitialPosition resettable in allResettableObjects)
         {
             resettable.ResetPosition();
         }
 
-        // 2. Reset the goal counter on the WinConditionManager
+        // 2. Reset the goal counter on the WinConditionManager (using cached reference)
         winManager?.ForceResetGoals();
 
+        // NOTE: FindObjectsOfType is acceptable here since it's only called on user button click
         foreach (Goal g in FindObjectsOfType<Goal>())
             g.ResetVisual();   // calls UpdateVisual(false)
 
