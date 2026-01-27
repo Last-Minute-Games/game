@@ -214,25 +214,24 @@ public class EndingCutsceneManager : MonoBehaviour
 
     private void Update()
     {
-        // Handle text advancement
-        if (_isTyping || _waitingForAdvance)
+        // Early exit if not active - no need to check input
+        if (!_isTyping && !_waitingForAdvance)
+            return;
+        
+        // Check for any advance key
+        foreach (KeyCode key in advanceKeys)
         {
-            foreach (KeyCode key in advanceKeys)
+            if (Input.GetKeyDown(key))
             {
-                if (Input.GetKeyDown(key))
+                if (_isTyping)
                 {
-                    if (_isTyping)
-                    {
-                        // Skip to end of current text
-                        SkipTyping();
-                    }
-                    else if (_waitingForAdvance)
-                    {
-                        // Advance to next sentence node
-                        AdvanceToNextSentence();
-                    }
-                    break;
+                    SkipTyping();
                 }
+                else if (_waitingForAdvance)
+                {
+                    AdvanceToNextSentence();
+                }
+                break; // Exit loop after first key detected
             }
         }
     }
