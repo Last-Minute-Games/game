@@ -267,12 +267,12 @@ public class ClockTimer : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.K))
             {
                 RemoveTime(10f);
-                DebugLogger.LogClockTimer($"DEBUG: Removed 10 seconds (K pressed). Time left: {timeLeft:F2}s");
+                LogDebug($"DEBUG: Removed 10 seconds (K pressed). Time left: {timeLeft:F2}s");
             }
             if (Input.GetKeyDown(KeyCode.L))
             {
                 AddTime(10f);
-                DebugLogger.LogClockTimer($"DEBUG: Added 10 seconds (L pressed). Time left: {timeLeft:F2}s");
+                LogDebug($"DEBUG: Added 10 seconds (L pressed). Time left: {timeLeft:F2}s");
             }
         }
 
@@ -976,6 +976,6 @@ public class ClockTimer : MonoBehaviour
     private void LogDebug(string message)
     {
         if (enableDebugLogs)
-            LogDebug($"{message}");
+            Debug.Log($"[ClockTimer] {message}");
     }
 }

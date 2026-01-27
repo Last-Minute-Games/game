@@ -30,19 +30,26 @@ public class InteractionDetector : MonoBehaviour
 
     private List<IInteractable> nearbyInteractables = new List<IInteractable>();
     private IInteractable hoveredInteractable = null;
+    
+    // Performance: Cached camera reference
     private Camera _mainCamera;
+    
+    // Performance: Track last mouse position to avoid unnecessary checks
+    private Vector3 _lastMousePosition;
 
     private void Start()
     {
         if (popupImage != null)
             popupImage.SetActive(false);
             
-        // Cache main camera reference for performance
+        // Performance: Cache Camera.main
         _mainCamera = Camera.main;
         if (_mainCamera == null)
         {
             Debug.LogWarning("[InteractionDetector] Main Camera not found! Mouse hover detection will not work.");
         }
+        
+        _lastMousePosition = Input.mousePosition;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -78,10 +85,15 @@ public class InteractionDetector : MonoBehaviour
 
     private void Update()
     {
-        // Update mouse hover detection
+        // Performance: Only update hover when mouse actually moves
         if (enableHoverDetection)
         {
-            UpdateMouseHover();
+            Vector3 currentMousePos = Input.mousePosition;
+            if ((currentMousePos - _lastMousePosition).sqrMagnitude > 0.01f)
+            {
+                UpdateMouseHover();
+                _lastMousePosition = currentMousePos;
+            }
         }
 
         // Handle E key (keyboard interaction)
@@ -116,6 +128,10 @@ public class InteractionDetector : MonoBehaviour
 
     private void UpdateMouseHover()
     {
+        // Performance: Fallback for camera if it wasn't available at Start
+        if (_mainCamera == null)
+            _mainCamera = Camera.main;
+            
         if (_mainCamera == null) return;
         
         // Get mouse position in world space
