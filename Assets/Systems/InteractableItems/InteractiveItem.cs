@@ -67,7 +67,7 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         // Runtime validation for collider
         if (GetComponent<Collider2D>() == null)
         {
-            Debug.LogWarning($"[InteractiveItem] {name} is missing a Collider2D component! " +
+            DebugLogger.LogWarning($"[InteractiveItem] {name} is missing a Collider2D component! " +
                            "Add a BoxCollider2D, CircleCollider2D, or other 2D collider for player interaction to work.");
         }
 
@@ -78,7 +78,7 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         // Find ClockTimer in the scene
         clockTimer = FindObjectOfType<ClockTimer>();
         if (clockTimer == null)
-            Debug.LogWarning($"[InteractiveItem] {name}: No ClockTimer found in scene. Timer pause will not work.");
+            DebugLogger.LogWarning($"[InteractiveItem] {name}: No ClockTimer found in scene. Timer pause will not work.");
 
         if (dialogBehaviour != null)
         {
@@ -95,11 +95,11 @@ public class InteractiveItem : MonoBehaviour, IInteractable
             conversationAudioSource.playOnAwake = false;
             conversationAudioSource.volume = 0f;
             conversationAudioSource.spatialBlend = 0f; // 2D audio
-            Debug.Log($"[InteractiveItem] {name}: Audio source created with clip '{conversationMusic.name}'");
+            DebugLogger.LogInteractiveItem($"Audio source created with clip '{conversationMusic.name}'", name);
         }
         else
         {
-            Debug.Log($"[InteractiveItem] {name}: No conversation music assigned");
+            DebugLogger.LogInteractiveItem("No conversation music assigned", name);
         }
 
         // Find all room audio zones for ducking
@@ -126,13 +126,13 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     {
         if (!dialogBehaviour)
         {
-            Debug.LogWarning($"{name}: Missing DialogBehaviour reference.");
+            DebugLogger.LogWarning($"{name}: Missing DialogBehaviour reference.");
             return;
         }
 
         if (dialogGraph == null)
         {
-            Debug.LogWarning($"{name}: Missing DialogGraph reference.");
+            DebugLogger.LogWarning($"{name}: Missing DialogGraph reference.");
             return;
         }
 
@@ -176,7 +176,7 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
         // Pause NPCs and timer via GlobalPause (but not player input or timescale)
         GlobalPause.SetMinigamePaused(true);
-        Debug.Log($"[InteractiveItem] {name}: GlobalPause minigame pause enabled (NPCs and timer paused)");
+        DebugLogger.LogInteractiveItem("GlobalPause minigame pause enabled (NPCs and timer paused)", name);
 
         if (characterController != null)
             characterController.SetDialogueActive(true);
@@ -187,11 +187,11 @@ public class InteractiveItem : MonoBehaviour, IInteractable
             if (fadeCoroutine != null)
                 StopCoroutine(fadeCoroutine);
             fadeCoroutine = StartCoroutine(FadeMusic(true));
-            Debug.Log($"[InteractiveItem] {name}: Starting conversation music '{conversationMusic.name}'");
+            DebugLogger.LogInteractiveItem($"Starting conversation music '{conversationMusic.name}'", name);
         }
         else
         {
-            Debug.Log($"[InteractiveItem] {name}: Cannot start music - AudioSource: {(conversationAudioSource != null ? "OK" : "NULL")}, Clip: {(conversationMusic != null ? "OK" : "NULL")}");
+            DebugLogger.LogInteractiveItem($"Cannot start music - AudioSource: {(conversationAudioSource != null ? "OK" : "NULL")}, Clip: {(conversationMusic != null ? "OK" : "NULL")}", name);
         }
 
         // Duck room audio
@@ -207,7 +207,7 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
         // Resume NPCs and timer via GlobalPause
         GlobalPause.SetMinigamePaused(false);
-        Debug.Log($"[InteractiveItem] {name}: GlobalPause minigame pause disabled (NPCs and timer resumed)");
+        DebugLogger.LogInteractiveItem("GlobalPause minigame pause disabled (NPCs and timer resumed)", name);
 
         // Set all flags when dialog finishes
         if (flagsToSet != null && flagsToSet.Count > 0)
@@ -217,13 +217,13 @@ public class InteractiveItem : MonoBehaviour, IInteractable
                 if (!string.IsNullOrEmpty(flag))
                 {
                     GameFlags.SetFlag(flag);
-                    Debug.Log($"[InteractiveItem] {name}: Set flag '{flag}'");
+                    DebugLogger.LogInteractiveItem($"Set flag '{flag}'", name);
                 }
             }
         }
         else
         {
-            Debug.Log($"[InteractiveItem] {name}: No flags to set (flagsToSet is empty)");
+            DebugLogger.LogInteractiveItem("No flags to set (flagsToSet is empty)", name);
         }
 
         if (characterController != null)
@@ -235,7 +235,7 @@ public class InteractiveItem : MonoBehaviour, IInteractable
             if (fadeCoroutine != null)
                 StopCoroutine(fadeCoroutine);
             fadeCoroutine = StartCoroutine(FadeMusic(false));
-            Debug.Log($"[InteractiveItem] {name}: Stopping conversation music");
+            DebugLogger.LogInteractiveItem("Stopping conversation music", name);
         }
 
         // Restore room audio
@@ -323,7 +323,7 @@ public class InteractiveItem : MonoBehaviour, IInteractable
             }
         }
 
-        Debug.Log($"[InteractiveItem] {name}: Room audio {(duck ? "ducked to " + roomAudioDuckVolume : "restored")}");
+        DebugLogger.LogInteractiveItem($"Room audio {(duck ? "ducked to " + roomAudioDuckVolume : "restored")}", name);
         roomAudioFadeCoroutine = null;
     }
 

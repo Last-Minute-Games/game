@@ -23,6 +23,11 @@ public static class DebugLogger
         public bool npcBrain = false;
         public bool tutorials = false;
         public bool settingsUI = false;
+        public bool interactiveItems = false; // For InteractiveItem.cs
+        public bool pagination = false; // For JournalPaginationController
+        public bool settingsManager = false; // For SettingsManager
+        public bool cutscenes = false; // For OverworldWakeUpCutscene, EndingCutsceneManager
+        public bool dialogBehaviour = false; // For DialogBehaviour plugin
         public bool general = false;
     }
     
@@ -109,6 +114,30 @@ public static class DebugLogger
             Debug.Log($"[Journal] {message}");
     }
     
+    // Journal UI logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogJournalUI(string message)
+    {
+        if (_settings.journal)
+            Debug.Log($"[JournalUI] {message}");
+    }
+    
+    // Journal Named UI logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogJournalNamed(string message)
+    {
+        if (_settings.journal)
+            Debug.Log($"[JournalUI_Named] {message}");
+    }
+    
+    // Pagination logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogPagination(string message)
+    {
+        if (_settings.pagination)
+            Debug.Log($"[Pagination] {message}");
+    }
+    
     // Global Pause logs
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     public static void LogGlobalPause(string message)
@@ -144,6 +173,59 @@ public static class DebugLogger
     {
         if (_settings.settingsUI)
             Debug.Log($"[Settings] {message}");
+    }
+    
+    // Settings Manager logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogSettingsManager(string message)
+    {
+        if (_settings.settingsManager)
+            Debug.Log($"[SettingsManager] {message}");
+    }
+    
+    // Interactive Items logs (for InteractiveItem.cs)
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogInteractiveItem(string message, string itemName = "")
+    {
+        if (_settings.interactiveItems)
+        {
+            if (!string.IsNullOrEmpty(itemName))
+                Debug.Log($"[InteractiveItem] {itemName}: {message}");
+            else
+                Debug.Log($"[InteractiveItem] {message}");
+        }
+    }
+    
+    // Cutscene logs (for OverworldWakeUpCutscene, EndingCutsceneManager)
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogCutscene(string message)
+    {
+        if (_settings.cutscenes)
+            Debug.Log($"[Cutscene] {message}");
+    }
+    
+    // OverworldWakeUpCutscene logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogWakeUpCutscene(string message)
+    {
+        if (_settings.cutscenes)
+            Debug.Log($"[OverworldWakeUpCutscene] {message}");
+    }
+    
+    // DialogBehaviour logs (plugin)
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogDialogBehaviour(string message)
+    {
+        if (_settings.dialogBehaviour)
+            Debug.Log($"[DialogBehaviour] {message}");
+    }
+    
+    // Game Bootstrapper logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogBootstrapper(string message)
+    {
+        if (_settings.general) // Use general toggle for bootstrapper
+            Debug.Log($"[GameBootstrapper] {message}");
     }
     
     // General logs
