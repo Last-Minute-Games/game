@@ -14,6 +14,10 @@ public class EndTransition : MonoBehaviour
     [Header("Flag Settings")]
     [Tooltip("The flag that must exist to trigger the transition")]
     public string requiredFlagName = "start.ending";
+    
+    // Cache references to avoid repeated FindObjectOfType calls
+    private ClockTimer _clockTimer;
+    private JournalUI _journalUI;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -27,6 +31,10 @@ public class EndTransition : MonoBehaviour
                 Debug.LogWarning("[EndTransition] ScreenFader not found in scene. Transition will use direct load.");
             }
         }
+        
+        // Cache references once at start
+        _clockTimer = FindObjectOfType<ClockTimer>();
+        _journalUI = FindObjectOfType<JournalUI>();
     }
 
     /// <summary>
@@ -133,6 +141,7 @@ public class EndTransition : MonoBehaviour
 
     /// <summary>
     /// Pause or unpause the player and environment (clock timer, player input, etc.)
+    /// Uses cached references to avoid repeated FindObjectOfType calls
     /// </summary>
     private void PauseEnvironmentAndPlayer(bool pause)
     {
@@ -157,19 +166,17 @@ public class EndTransition : MonoBehaviour
             }
         }
 
-        // Find and pause/unpause clock timer
-        ClockTimer clockTimer = FindObjectOfType<ClockTimer>();
-        if (clockTimer != null)
+        // Use cached clock timer reference
+        if (_clockTimer != null)
         {
-            clockTimer.PauseTimer(pause);
+            _clockTimer.PauseTimer(pause);
             Debug.Log($"[EndTransition] Clock timer paused: {pause}");
         }
 
-        // Disable journal UI input
-        JournalUI journal = FindObjectOfType<JournalUI>();
-        if (journal != null)
+        // Use cached journal UI reference
+        if (_journalUI != null)
         {
-            journal.SetInputEnabled(!pause);
+            _journalUI.SetInputEnabled(!pause);
             Debug.Log($"[EndTransition] Journal input enabled: {!pause}");
         }
     }

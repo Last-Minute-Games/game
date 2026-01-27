@@ -1,29 +1,60 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
-public class OverworldRiddleItem : MonoBehaviour
+public class OverworldRiddleItem : MonoBehaviour, IInteractable
 {
+    [Header("Debug")]
+    [Tooltip("Enable debug logs (Editor only)")]
+    public bool enableDebugLogs = false;
+    
+    [Header("Riddle Settings")]
     [Tooltip("The popup controller that shows the riddle page.")]
     [SerializeField] private RiddlePopupController riddlePopup;
 
-    [Tooltip("Key to press to read the riddle.")]
-    [SerializeField] private KeyCode interactKey = KeyCode.E;
+    [Header("Interaction Settings")]
+    [Tooltip("Range within which the player can interact")]
+    [SerializeField] private float interactionRange = 1.5f;
+    
+    [Tooltip("Interaction priority (lower = higher priority). Teleports=0, Dialogs=1-2, Riddles=5")]
+    [SerializeField] private int interactionPriority = 5;
 
-    private bool playerInRange = false;
+    private GameObject _player;
+    private bool _isPlayerNear = false;
 
     private void Reset()
     {
         // Make sure this collider behaves as a trigger
         var col = GetComponent<Collider2D>();
-        col.isTrigger = true;
+        if (col != null)
+            col.isTrigger = true;
+    }
+    
+    private void Start()
+    {
+        _player = GameObject.FindGameObjectWithTag("Player");
+        if (_player == null)
+        {
+            Debug.LogWarning($"[OverworldRiddleItem] {name}: Player not found!");
+        }
+        
+        // Ensure collider is set as trigger
+        var col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+        }
+        else
+        {
+            Debug.LogWarning($"[OverworldRiddleItem] {name}: No Collider2D found! Add a BoxCollider2D or CircleCollider2D.");
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            playerInRange = true;
-            // TODO: optionally show "Press E" prompt here
+            _isPlayerNear = true;
+            LogDebug($"Player entered range of {name}");
         }
     }
 
@@ -31,19 +62,83 @@ public class OverworldRiddleItem : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            playerInRange = false;
-            // TODO: hide prompt here if you added one
+            _isPlayerNear = false;
+            LogDebug($"Player left range of {name}");
+        }
+    }
+    
+    private void Update()
+    {
+        // Update player near status (fallback if trigger events don't work)
+        if (_player != null)
+        {
+            float distance = Vector3.Distance(transform.position, _player.transform.position);
+            _isPlayerNear = distance <= interactionRange;
         }
     }
 
-    private void Update()
+    // IInteractable Implementation
+    public void Interact()
     {
-        if (playerInRange && Input.GetKeyDown(interactKey))
+        if (riddlePopup != null)
         {
-            if (riddlePopup != null)
-            {
-                riddlePopup.Show();
-            }
+            LogDebug($"Showing riddle popup for {name}");
+            riddlePopup.Show();
         }
+        else
+        {
+            Debug.LogWarning($"[OverworldRiddleItem] {name}: RiddlePopupController is not assigned!");
+        }
+    }
+
+    public int GetInteractionPriority()
+    {
+        return interactionPriority;
+    }
+
+    public bool CanInteract()
+    {
+        // Can interact if player is near and no other interaction is in progress
+        if (!_isPlayerNear)
+        {
+            LogDebug($"Cannot interact - player not in range");
+            return false;
+        }
+        
+        if (Systems.InteractionLockManager.IsLocked)
+        {
+            LogDebug($"Cannot interact - interaction locked");
+            return false;
+        }
+        
+        if (riddlePopup == null)
+        {
+            LogDebug($"Cannot interact - riddle popup not assigned");
+            return false;
+        }
+        
+        return true;
+    }
+
+    public bool ShowInteractionPrompt()
+    {
+        // Riddles DO show the popup icon (E to interact)
+        return true;
+    }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        // Visualize interaction range
+        Gizmos.color = new Color(1f, 0.5f, 0f, 0.3f); // Orange
+        Gizmos.DrawWireSphere(transform.position, interactionRange);
+    }
+#endif
+    
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void LogDebug(string message)
+    {
+        if (enableDebugLogs)
+            Debug.Log($"[OverworldRiddleItem] {message}");
     }
 }

@@ -49,8 +49,21 @@ public class NpcBrain2D : MonoBehaviour
     private Coroutine _wanderRoutine;
     private Coroutine _patrolRoutine;
     private bool _isPatrolIdling;
+    
+    // Cache for optimization
+    private bool _isPaused;
+    private float _chaseDistanceSqr;
+    private float _stopDistanceSqr;
+    private float _waypointReachDistanceSqr;
 
-    void Awake() => _motor = GetComponent<CharacterMotor2D>();
+    void Awake()
+    {
+        _motor = GetComponent<CharacterMotor2D>();
+        
+        // Pre-calculate squared distances for optimization
+        _chaseDistanceSqr = chaseDistance * chaseDistance;
+        _stopDistanceSqr = stopDistance * stopDistance;
+    }
 
     void OnEnable()
     {
@@ -68,7 +81,10 @@ public class NpcBrain2D : MonoBehaviour
 
     void Update()
     {
-        if (_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded || GlobalPause.IsMinigamePaused)
+        // Cache pause state once per frame instead of checking multiple times
+        _isPaused = _motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded || GlobalPause.IsMinigamePaused;
+        
+        if (_isPaused)
         {
             _motor.SetMoveInput(Vector2.zero);
             return;
@@ -90,9 +106,13 @@ public class NpcBrain2D : MonoBehaviour
 
             case NpcMode.Wander:
                 // _desiredMove is set by WanderLoop; we may also switch to Follow if close enough
-                if (followTarget != null && Vector2.Distance(transform.position, followTarget.position) < chaseDistance)
+                if (followTarget != null)
                 {
-                    FollowTick();
+                    Vector2 offset = (Vector2)followTarget.position - (Vector2)transform.position;
+                    if (offset.sqrMagnitude < _chaseDistanceSqr)
+                    {
+                        FollowTick();
+                    }
                 }
                 break;
         }
@@ -106,8 +126,15 @@ public class NpcBrain2D : MonoBehaviour
         if (_motor.IsDialogueActive || _motor.IsTeleporting)
             yield break;
 
-        while (Vector2.Distance(transform.position, target) > 0.1f)
+        const float stopDistanceSqr = 0.01f; // 0.1f * 0.1f
+        Vector2 offset;
+        
+        while (true)
         {
+            offset = target - (Vector2)transform.position;
+            if (offset.sqrMagnitude <= stopDistanceSqr)
+                break;
+                
             // Check pause conditions in the loop
             if (_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded || GlobalPause.IsMinigamePaused)
             {
@@ -116,8 +143,7 @@ public class NpcBrain2D : MonoBehaviour
                 continue;
             }
             
-            var to = (target - (Vector2)transform.position).normalized;
-            _desiredMove = to;
+            _desiredMove = offset.normalized;
             yield return null;
         }
 
@@ -127,6 +153,9 @@ public class NpcBrain2D : MonoBehaviour
     private void StartPatrol()
     {
         if (_patrolRoutine != null) StopCoroutine(_patrolRoutine);
+        
+        // Pre-calculate squared distance for waypoint reach checks
+        _waypointReachDistanceSqr = patrolSettings.waypointReachDistance * patrolSettings.waypointReachDistance;
 
         if (patrolSettings.pattern == PatrolSettings.PatrolPattern.IdleThenWalk)
         {
@@ -140,6 +169,13 @@ public class NpcBrain2D : MonoBehaviour
 
     private void PatrolTick()
     {
+        // Early exit if no waypoints
+        if (waypoints == null || waypoints.Length == 0)
+        {
+            _desiredMove = Vector2.zero;
+            return;
+        }
+        
         // For IdleThenWalk pattern, movement is handled in coroutine
         if (patrolSettings.pattern == PatrolSettings.PatrolPattern.IdleThenWalk)
         {
@@ -150,12 +186,6 @@ public class NpcBrain2D : MonoBehaviour
             else
             {
                 // Move towards current waypoint
-                if (waypoints == null || waypoints.Length == 0)
-                {
-                    _desiredMove = Vector2.zero;
-                    return;
-                }
-
                 var target = waypoints[_currentWp].position;
                 var to = (Vector2)(target - transform.position);
                 _desiredMove = to.normalized;
@@ -164,15 +194,10 @@ public class NpcBrain2D : MonoBehaviour
         else
         {
             // For WalkThenIdle pattern, use the original logic
-            if (waypoints == null || waypoints.Length == 0)
-            {
-                _desiredMove = Vector2.zero;
-                return;
-            }
-
             var target = waypoints[_currentWp].position;
             var to = (Vector2)(target - transform.position);
-            if (to.magnitude <= patrolSettings.waypointReachDistance)
+            
+            if (to.sqrMagnitude <= _waypointReachDistanceSqr)
             {
                 _desiredMove = Vector2.zero;
                 if (_patrolRoutine == null) // Only start coroutine if not already running
@@ -190,10 +215,12 @@ public class NpcBrain2D : MonoBehaviour
     private IEnumerator PatrolWalkThenIdle()
     {
         // Original behavior: walk to waypoint, idle, then move to next
+        if (waypoints == null || waypoints.Length == 0) yield break;
+        
         while (true)
         {
-            // Wait until we reach the waypoint (this is checked in PatrolTick)
-            while (Vector2.Distance(transform.position, waypoints[_currentWp].position) > patrolSettings.waypointReachDistance)
+            // Wait until we reach the waypoint (checked with sqrMagnitude)
+            while (((Vector2)transform.position - (Vector2)waypoints[_currentWp].position).sqrMagnitude > _waypointReachDistanceSqr)
             {
                 yield return null;
             }
@@ -209,6 +236,8 @@ public class NpcBrain2D : MonoBehaviour
     private IEnumerator PatrolIdleThenWalk()
     {
         // New behavior: idle, then walk to next waypoint
+        if (waypoints == null || waypoints.Length == 0) yield break;
+        
         while (true)
         {
             // Start by idling
@@ -218,8 +247,8 @@ public class NpcBrain2D : MonoBehaviour
             // Then walk to waypoint
             _isPatrolIdling = false;
 
-            // Wait until we reach the waypoint
-            while (Vector2.Distance(transform.position, waypoints[_currentWp].position) > patrolSettings.waypointReachDistance)
+            // Wait until we reach the waypoint (checked with sqrMagnitude)
+            while (((Vector2)transform.position - (Vector2)waypoints[_currentWp].position).sqrMagnitude > _waypointReachDistanceSqr)
             {
                 yield return null;
             }
@@ -244,10 +273,16 @@ public class NpcBrain2D : MonoBehaviour
             _desiredMove = Vector2.zero;
             return;
         }
+        
         var to = (Vector2)(followTarget.position - transform.position);
-        if (to.magnitude <= stopDistance) _desiredMove = Vector2.zero;
-        else if (to.magnitude <= chaseDistance) _desiredMove = to.normalized;
-        else _desiredMove = Vector2.zero; // outside chase range
+        float distSqr = to.sqrMagnitude;
+        
+        if (distSqr <= _stopDistanceSqr) 
+            _desiredMove = Vector2.zero;
+        else if (distSqr <= _chaseDistanceSqr) 
+            _desiredMove = to.normalized;
+        else 
+            _desiredMove = Vector2.zero; // outside chase range
     }
 
     private IEnumerator WanderLoop()
@@ -270,8 +305,8 @@ public class NpcBrain2D : MonoBehaviour
 
                 while (t < walkTime)
                 {
-                    // Don't update movement while paused
-                    if (!(_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded || GlobalPause.IsMinigamePaused))
+                    // Use cached pause state
+                    if (!_isPaused)
                     {
                         t += Time.deltaTime;
                         currentDir = Vector2.Lerp(currentDir, targetDir, Time.deltaTime * wanderSettings.wanderTurnSpeed).normalized;
@@ -293,8 +328,8 @@ public class NpcBrain2D : MonoBehaviour
 
                 while (t < walkTime)
                 {
-                    // Don't update movement while paused
-                    if (!(_motor.IsDialogueActive || _motor.IsTeleporting || ClockTimer.IsTimeEnded || GlobalPause.IsMinigamePaused))
+                    // Use cached pause state
+                    if (!_isPaused)
                     {
                         t += Time.deltaTime;
                         currentDir = Vector2.Lerp(currentDir, targetDir, Time.deltaTime * wanderSettings.wanderTurnSpeed).normalized;
