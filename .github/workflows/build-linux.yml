@@ -36,19 +36,6 @@ jobs:
           fetch-depth: 1
           submodules: false
 
-      # Cache Unity Library
-      # Note: Using lookup-only restore to avoid Git tar/gzip issues on Windows
-      # Save happens in a separate post-build step without compression
-      - name: Restore Unity Library Cache
-        uses: actions/cache/restore@v4
-        with:
-          path: Library
-          key: Library-Linux-${{ env.UNITY_VERSION }}-${{ hashFiles('Packages/manifest.json') }}
-          restore-keys: |
-            Library-Linux-${{ env.UNITY_VERSION }}-
-            Library-Linux-
-          enableCrossOsArchive: true
-          lookup-only: false
 
       # Make a unique output dir for this run and expose it to later steps
       - name: Compute output dir
