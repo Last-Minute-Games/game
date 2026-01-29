@@ -56,7 +56,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
                 // Auto-create GameFlags if it doesn't exist
                 GameObject go = new GameObject("GameFlags");
                 go.AddComponent<GameFlags>();
-                Debug.Log("[GameFlags] Auto-created instance");
+                DebugLogger.LogGameFlags("Auto-created instance");
             }
             return PersistentSingleton<GameFlags>.Instance;
         }
@@ -72,7 +72,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
         
         // Notify listeners that initialization is complete
         OnInitialized?.Invoke();
-        Debug.Log("[GameFlags] Initialization complete - reset to defaults (use LoadFromSaveFile() or LoadFromPlayerPrefs() to load saved data)");
+        DebugLogger.LogGameFlags("Initialization complete - reset to defaults (use LoadFromSaveFile() or LoadFromPlayerPrefs() to load saved data)");
     }
 
     private void Update()
@@ -108,12 +108,12 @@ public class GameFlags : PersistentSingleton<GameFlags>
             "minigame.maze.show"
         };
 
-        Debug.Log("[GameFlags] DEBUG: Adding all card flags (P pressed)");
+        DebugLogger.LogGameFlags("DEBUG: Adding all card flags (P pressed)");
         foreach (string flag in cardFlags)
         {
             SetFlag(flag);
         }
-        Debug.Log($"[GameFlags] DEBUG: Added {cardFlags.Length} card flags");
+        DebugLogger.LogGameFlags($"DEBUG: Added {cardFlags.Length} card flags");
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     /// </summary>
     private void InitializeDefaultFlags()
     {
-        Debug.Log("[GameFlags] Setting default character flags");
+        DebugLogger.LogGameFlags("Setting default character flags");
         
         // Base character flags - these are ALWAYS available from game start
         _activeFlags.Add("character.marco");
@@ -141,7 +141,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
         _activeFlags.Add("card.block");
         _activeFlags.Add("card.heal_potion");
 
-        Debug.Log($"[GameFlags] Default flags initialized ({_activeFlags.Count} total flags)");
+        DebugLogger.LogGameFlags($"Default flags initialized ({_activeFlags.Count} total flags)");
     }
 
     // ========== SAVE/LOAD SYSTEM ==========
@@ -154,7 +154,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Cannot save flags.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Cannot save flags.");
             return;
         }
 
@@ -178,7 +178,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Cannot load flags.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Cannot load flags.");
             return false;
         }
 
@@ -199,7 +199,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Cannot save flags.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Cannot save flags.");
             return false;
         }
 
@@ -216,7 +216,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Cannot load flags.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Cannot load flags.");
             return false;
         }
 
@@ -252,18 +252,18 @@ public class GameFlags : PersistentSingleton<GameFlags>
             try
             {
                 File.Delete(filePath);
-                Debug.Log($"[GameFlags] Save file deleted: {filePath}");
+                DebugLogger.LogGameFlags($"Save file deleted: {filePath}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[GameFlags] Failed to delete save file: {ex.Message}");
+                DebugLogger.LogError($"[GameFlags] Failed to delete save file: {ex.Message}");
                 return false;
             }
         }
         else
         {
-            Debug.Log($"[GameFlags] Save file does not exist: {filePath}");
+            DebugLogger.LogGameFlags($"Save file does not exist: {filePath}");
             return false;
         }
     }
@@ -278,11 +278,11 @@ public class GameFlags : PersistentSingleton<GameFlags>
         {
             PlayerPrefs.DeleteKey(SAVE_KEY);
             PlayerPrefs.Save();
-            Debug.Log("[GameFlags] Saved flag data deleted from PlayerPrefs");
+            DebugLogger.LogGameFlags("Saved flag data deleted from PlayerPrefs");
         }
         else
         {
-            Debug.Log("[GameFlags] No saved flag data to delete");
+            DebugLogger.LogGameFlags("No saved flag data to delete");
         }
     }
 
@@ -316,11 +316,11 @@ public class GameFlags : PersistentSingleton<GameFlags>
             PlayerPrefs.SetString(SAVE_KEY, json);
             PlayerPrefs.Save();
 
-            Debug.Log($"[GameFlags] Saved {_activeFlags.Count} flags to PlayerPrefs");
+            DebugLogger.LogGameFlags($"Saved {_activeFlags.Count} flags to PlayerPrefs");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[GameFlags] Failed to save flags to PlayerPrefs: {ex.Message}");
+            DebugLogger.LogError($"[GameFlags] Failed to save flags to PlayerPrefs: {ex.Message}");
         }
     }
 
@@ -331,7 +331,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (!PlayerPrefs.HasKey(SAVE_KEY))
         {
-            Debug.Log("[GameFlags] No saved flag data found in PlayerPrefs");
+            DebugLogger.LogGameFlags("No saved flag data found in PlayerPrefs");
             return false;
         }
 
@@ -345,7 +345,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
             
             if (saveData == null || saveData.flags == null)
             {
-                Debug.LogWarning("[GameFlags] Save data from PlayerPrefs was invalid or empty");
+                DebugLogger.LogWarning("[GameFlags] Save data from PlayerPrefs was invalid or empty");
                 return false;
             }
 
@@ -358,12 +358,12 @@ public class GameFlags : PersistentSingleton<GameFlags>
                 }
             }
 
-            Debug.Log($"[GameFlags] Loaded {saveData.flags.Count} flags from PlayerPrefs (total: {_activeFlags.Count})");
+            DebugLogger.LogGameFlags($"Loaded {saveData.flags.Count} flags from PlayerPrefs (total: {_activeFlags.Count})");
             return true;
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[GameFlags] Failed to load flags from PlayerPrefs: {ex.Message}");
+            DebugLogger.LogError($"[GameFlags] Failed to load flags from PlayerPrefs: {ex.Message}");
             return false;
         }
     }
@@ -406,12 +406,12 @@ public class GameFlags : PersistentSingleton<GameFlags>
             // Write to file
             File.WriteAllText(filePath, json);
 
-            Debug.Log($"[GameFlags] Saved {_activeFlags.Count} flags to file: {filePath} (clockTime: {clockTimeLeft:F2}s, day: {currentDay})");
+            DebugLogger.LogGameFlags($"Saved {_activeFlags.Count} flags to file: {filePath} (clockTime: {clockTimeLeft:F2}s, day: {currentDay})");
             return true;
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[GameFlags] Failed to save flags to file: {ex.Message}");
+            DebugLogger.LogError($"[GameFlags] Failed to save flags to file: {ex.Message}");
             return false;
         }
     }
@@ -425,7 +425,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
         
         if (!File.Exists(filePath))
         {
-            Debug.Log($"[GameFlags] No save file found at: {filePath}");
+            DebugLogger.LogGameFlags($"No save file found at: {filePath}");
             return false;
         }
 
@@ -439,7 +439,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
             
             if (saveData == null || saveData.flags == null)
             {
-                Debug.LogWarning("[GameFlags] Save file data was invalid or empty");
+                DebugLogger.LogWarning("[GameFlags] Save file data was invalid or empty");
                 return false;
             }
 
@@ -459,24 +459,24 @@ public class GameFlags : PersistentSingleton<GameFlags>
                 if (saveData.clockTimeLeft > 0)
                 {
                     clockTimer.RestoreTimeLeft(saveData.clockTimeLeft);
-                    Debug.Log($"[GameFlags] ? Restored clock time from save: {saveData.clockTimeLeft:F2}s");
+                    DebugLogger.LogGameFlags($"? Restored clock time from save: {saveData.clockTimeLeft:F2}s");
                 }
                 else
                 {
-                    Debug.LogWarning($"[GameFlags] Save data has invalid clock time: {saveData.clockTimeLeft}s - using default");
+                    DebugLogger.LogWarning($"[GameFlags] Save data has invalid clock time: {saveData.clockTimeLeft}s - using default");
                 }
             }
             else
             {
-                Debug.LogWarning("[GameFlags] ClockTimer not found in scene - clock time not restored (will be set when ClockTimer initializes)");
+                DebugLogger.LogWarning("[GameFlags] ClockTimer not found in scene - clock time not restored (will be set when ClockTimer initializes)");
             }
 
-            Debug.Log($"[GameFlags] ? Loaded {saveData.flags.Count} flags from file: {filePath} (total: {_activeFlags.Count}, day: {saveData.currentDay})");
+            DebugLogger.LogGameFlags($"? Loaded {saveData.flags.Count} flags from file: {filePath} (total: {_activeFlags.Count}, day: {saveData.currentDay})");
             return true;
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[GameFlags] Failed to load flags from file: {ex.Message}");
+            DebugLogger.LogError($"[GameFlags] Failed to load flags from file: {ex.Message}");
             return false;
         }
     }
@@ -507,13 +507,13 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (string.IsNullOrEmpty(flagName))
         {
-            Debug.LogWarning("[GameFlags] Attempted to set flag with null or empty name");
+            DebugLogger.LogWarning("[GameFlags] Attempted to set flag with null or empty name");
             return;
         }
 
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
             return;
         }
 
@@ -521,12 +521,12 @@ public class GameFlags : PersistentSingleton<GameFlags>
         {
             Instance._activeFlags.Add(flagName);
             Instance.OnFlagChanged?.Invoke(flagName);
-            Debug.Log($"[GameFlags] Set flag: {flagName}");
+            DebugLogger.LogGameFlags($"Set flag: {flagName}");
             
             // AUTO-SAVE for day progression flags using current save name
             if (IsDayFlag(flagName))
             {
-                Debug.Log($"[GameFlags] Day flag detected - auto-saving game progress");
+                DebugLogger.LogGameFlags($"Day flag detected - auto-saving game progress");
                 // Use GameFlagsManager to save to current save slot
                 GameFlagsManager.SaveCurrentGame();
             }
@@ -557,7 +557,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
 
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
             return false;
         }
 
@@ -575,14 +575,14 @@ public class GameFlags : PersistentSingleton<GameFlags>
 
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
             return;
         }
 
         if (Instance._activeFlags.Remove(flagName))
         {
             Instance.OnFlagChanged?.Invoke(flagName);
-            Debug.Log($"[GameFlags] Removed flag: {flagName}");
+            DebugLogger.LogGameFlags($"Removed flag: {flagName}");
         }
     }
 
@@ -593,12 +593,12 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
             return;
         }
 
         Instance._activeFlags.Clear();
-        Debug.Log("[GameFlags] Cleared all flags");
+        DebugLogger.LogGameFlags("Cleared all flags");
         
         // Reinitialize defaults after clearing
         Instance.InitializeDefaultFlags();
@@ -620,7 +620,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
             return 0;
         }
 
@@ -634,7 +634,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
             return new HashSet<string>();
         }
 
@@ -648,20 +648,20 @@ public class GameFlags : PersistentSingleton<GameFlags>
     {
         if (Instance == null)
         {
-            Debug.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
+            DebugLogger.LogError("[GameFlags] Instance is null! Make sure GameFlags exists in the scene.");
             return;
         }
 
         if (Instance._activeFlags.Count == 0)
         {
-            Debug.Log("[GameFlags] No flags are currently set");
+            DebugLogger.LogGameFlags("No flags are currently set");
             return;
         }
 
-        Debug.Log($"[GameFlags] Active flags ({Instance._activeFlags.Count}):");
+        DebugLogger.LogGameFlags($"Active flags ({Instance._activeFlags.Count}):");
         foreach (string flag in Instance._activeFlags)
         {
-            Debug.Log($"  - {flag}");
+            DebugLogger.LogGameFlags($"  - {flag}");
         }
     }
 
@@ -685,7 +685,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[GameFlags] Failed to read save metadata: {ex.Message}");
+            DebugLogger.LogError($"[GameFlags] Failed to read save metadata: {ex.Message}");
             return null;
         }
     }
@@ -720,7 +720,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     private void LogDebug(string message)
     {
         if (enableDebugLogs)
-            Debug.Log($"[GameFlags] {message}");
+            DebugLogger.LogGameFlags($"[GameFlags] {message}");
     }
 }
 

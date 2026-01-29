@@ -47,7 +47,7 @@ namespace Dialogues
             // Add null check for dialogBehaviour before subscribing
             if (dialogBehaviour == null)
             {
-                Debug.LogError($"[DialogTrigger] '{gameObject.name}' has no DialogBehaviour assigned! Dialog will not trigger GlobalPause.", this);
+                DebugLogger.LogError($"[DialogTrigger] '{gameObject.name}' has no DialogBehaviour assigned! Dialog will not trigger GlobalPause.");
                 return;
             }
 
@@ -155,19 +155,19 @@ namespace Dialogues
         {
             if (_dialogActive)
             {
-                if (enableDebugLogs) Debug.LogWarning("[DialogTrigger] Attempted to start dialog while one is already active");
+                LogDebug("Attempted to start dialog while one is already active");
                 return;
             }
 
             if (dialogBehaviour == null)
             {
-                Debug.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogBehaviour is null!", this);
+                DebugLogger.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogBehaviour is null!");
                 return;
             }
             
             if (dialogGraph == null)
             {
-                Debug.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogGraph is null!", this);
+                DebugLogger.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogGraph is null!");
                 return;
             }
 
@@ -210,7 +210,7 @@ namespace Dialogues
         private void LogDebug(string message)
         {
             if (enableDebugLogs)
-                Debug.Log($"[DialogTrigger] {message}");
+                DebugLogger.LogDialogue(message);
         }
     }
 }

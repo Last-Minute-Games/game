@@ -67,7 +67,7 @@ namespace Systems.Overworld.Intro
         
         private IEnumerator BeginWakeUpSequence()
         {
-            Debug.Log("[OverworldWakeUpCutscene] BeginWakeUpSequence started");
+            DebugLogger.LogCutscene("BeginWakeUpSequence started");
             
             if (hasPlayed) yield break;
             hasPlayed = true;
@@ -82,59 +82,59 @@ namespace Systems.Overworld.Intro
             if (clockTimer != null)
             {
                 clockTimer.PauseTimer(true);
-                Debug.Log("[OverworldWakeUpCutscene] Clock timer paused");
+                DebugLogger.LogCutscene("Clock timer paused");
             }
             else
             {
-                Debug.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found in scene");
+                DebugLogger.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found in scene");
             }
             
             // Enable SleepingMain sprite renderer
             if (sleepingMainSpriteRenderer != null)
             {
                 sleepingMainSpriteRenderer.enabled = true;
-                Debug.Log("[OverworldWakeUpCutscene] SleepingMain sprite renderer enabled");
+                DebugLogger.LogCutscene("SleepingMain sprite renderer enabled");
             }
             
             // Disable MainCharacter sprite renderer
             if (mainCharSpriteRenderer != null)
             {
                 mainCharSpriteRenderer.enabled = false;
-                Debug.Log("[OverworldWakeUpCutscene] MainCharacter sprite renderer disabled");
+                DebugLogger.LogCutscene("MainCharacter sprite renderer disabled");
             }
             
             // Disable MainCharacter shadow caster
             if (mainCharShadowCaster != null)
             {
                 mainCharShadowCaster.enabled = false;
-                Debug.Log("[OverworldWakeUpCutscene] MainCharacter ShadowCaster2D disabled");
+                DebugLogger.LogCutscene("MainCharacter ShadowCaster2D disabled");
             }
             
             // Disable CinemachineBrain and set camera position
             if (cinemachineBrain != null)
             {
                 cinemachineBrain.enabled = false;
-                Debug.Log("[OverworldWakeUpCutscene] CinemachineBrain disabled");
+                DebugLogger.LogCutscene("CinemachineBrain disabled");
             }
             
             if (mainCamera != null)
             {
                 Vector3 sleepingPosition = sleepingMain.transform.position;
                 mainCamera.transform.position = new Vector3(sleepingPosition.x, sleepingPosition.y, -10f);
-                Debug.Log($"[OverworldWakeUpCutscene] Main camera position set to {mainCamera.transform.position}");
+                DebugLogger.LogCutscene($"Main camera position set to {mainCamera.transform.position}");
             }
             
             // Disable player input during cutscene
             if (playerInput != null)
             {
                 playerInput.isInputEnabled = false;
-                Debug.Log("[OverworldWakeUpCutscene] Player input disabled");
+                DebugLogger.LogCutscene("Player input disabled");
             }
             
             yield return new WaitForSeconds(1.5f);
             
             // Use ScreenFader's eyes opening effect instead of regular fade
-            Debug.Log("[OverworldWakeUpCutscene] Opening eyes (using ScreenFader)");
+            DebugLogger.LogCutscene("Opening eyes (using ScreenFader)");
             ScreenFader screenFader = FindFirstObjectByType<ScreenFader>();
             if (screenFader != null)    
             {
@@ -143,17 +143,17 @@ namespace Systems.Overworld.Intro
             else
             {
                 // Fallback to DOTween fade if ScreenFader is not found
-                Debug.LogWarning("[OverworldWakeUpCutscene] ScreenFader not found, using fallback fade");
+                DebugLogger.LogWarning("[OverworldWakeUpCutscene] ScreenFader not found, using fallback fade");
                 fadeCanvasGroup.DOFade(0f, 3f).SetEase(Ease.InOutQuad).OnComplete(() =>
                 {
                     fadeCanvasGroup.blocksRaycasts = false;
-                    Debug.Log("[OverworldWakeUpCutscene] Fade complete");
+                    DebugLogger.LogCutscene("Fade complete");
                 });
                 yield return new WaitForSeconds(3.5f);
             }
             
             // Change sprite to awake
-            Debug.Log("[OverworldWakeUpCutscene] Changing sprite to awake");
+            DebugLogger.LogCutscene("Changing sprite to awake");
             if (sleepingMainSpriteRenderer != null && nikolausAwakeSprite != null)
             {
                 sleepingMainSpriteRenderer.sprite = nikolausAwakeSprite;
@@ -162,7 +162,7 @@ namespace Systems.Overworld.Intro
             yield return new WaitForSeconds(1.5f);
             
             // Start dialogue when eyes open
-            Debug.Log("[OverworldWakeUpCutscene] Starting dialogue after waking");
+            DebugLogger.LogCutscene("Starting dialogue after waking");
             
             bool dialogueFinished = false;
             
@@ -185,11 +185,11 @@ namespace Systems.Overworld.Intro
             }
             else
             {
-                Debug.Log("Nikolaus: Was that... just a dream?");
+                DebugLogger.LogCutscene("Nikolaus: Was that... just a dream?");
                 yield return new WaitForSeconds(2f); // Fallback wait time
             }
             
-            Debug.Log("[OverworldWakeUpCutscene] Dialogue finished, starting transition");
+            DebugLogger.LogCutscene("Dialogue finished, starting transition");
             
             // Fade to black
             fadeCanvasGroup.blocksRaycasts = true;
@@ -201,28 +201,28 @@ namespace Systems.Overworld.Intro
             if (sleepingMainSpriteRenderer != null)
             {
                 sleepingMainSpriteRenderer.enabled = false;
-                Debug.Log("[OverworldWakeUpCutscene] SleepingMain sprite renderer disabled");
+                DebugLogger.LogCutscene("SleepingMain sprite renderer disabled");
             }
             
             // Re-enable MainCharacter sprite renderer
             if (mainCharSpriteRenderer != null)
             {
                 mainCharSpriteRenderer.enabled = true;
-                Debug.Log("[OverworldWakeUpCutscene] MainCharacter sprite renderer enabled");
+                DebugLogger.LogCutscene("MainCharacter sprite renderer enabled");
             }
             
             // Re-enable MainCharacter shadow caster
             if (mainCharShadowCaster != null)
             {
                 mainCharShadowCaster.enabled = true;
-                Debug.Log("[OverworldWakeUpCutscene] MainCharacter ShadowCaster2D enabled");
+                DebugLogger.LogCutscene("MainCharacter ShadowCaster2D enabled");
             }
             
             // Re-enable CinemachineBrain
             if (cinemachineBrain != null)
             {
                 cinemachineBrain.enabled = true;
-                Debug.Log("[OverworldWakeUpCutscene] CinemachineBrain enabled");
+                DebugLogger.LogCutscene("CinemachineBrain enabled");
             }
             
             yield return new WaitForSeconds(0.5f);
@@ -231,13 +231,13 @@ namespace Systems.Overworld.Intro
             fadeCanvasGroup.DOFade(0f, 0.5f).SetEase(Ease.InOutQuad).OnComplete(() =>
             {
                 fadeCanvasGroup.blocksRaycasts = false;
-                Debug.Log("[OverworldWakeUpCutscene] Fade complete - character out of bed");
+                DebugLogger.LogCutscene("Fade complete - character out of bed");
                 
                 // Re-enable player input immediately after fade completes
                 if (playerInput != null)
                 {
                     playerInput.isInputEnabled = true;
-                    Debug.Log("[OverworldWakeUpCutscene] Player input enabled");
+                    DebugLogger.LogCutscene("Player input enabled");
                 }
             });
             
@@ -248,7 +248,7 @@ namespace Systems.Overworld.Intro
             if (clockTimer != null)
             {
                 clockTimer.StartTimer(clockTimer.totalTime);
-                Debug.Log("[OverworldWakeUpCutscene] Clock timer started after cutscene");
+                DebugLogger.LogCutscene("Clock timer started after cutscene");
             }
             
             yield return new WaitForSeconds(2f); // Wait for HUD animation to play
@@ -257,11 +257,11 @@ namespace Systems.Overworld.Intro
             // This will automatically trigger a save because day flags auto-save
             if (!GameFlags.HasFlag("day.one"))
             {
-                Debug.Log("[OverworldWakeUpCutscene] Setting day.one flag (game start)");
+                DebugLogger.LogCutscene("Setting day.one flag (game start)");
                 GameFlags.SetFlag("day.one");
             }
             
-            Debug.Log("[OverworldWakeUpCutscene] Complete");
+            DebugLogger.LogCutscene("Complete");
             yield return null;
         }
         
@@ -272,7 +272,7 @@ namespace Systems.Overworld.Intro
         
         void Start()
         {
-            Debug.Log("[OverworldWakeUpCutscene] Start() called");
+            DebugLogger.LogCutscene("Start() called");
 
             // Find main character components first
             var mainChar = GameObject.Find("MainCharacter");
@@ -281,11 +281,11 @@ namespace Systems.Overworld.Intro
                 playerInput = mainChar.GetComponent<PlayerInput2D>();
                 mainCharSpriteRenderer = mainChar.GetComponent<SpriteRenderer>();
                 mainCharShadowCaster = mainChar.GetComponent<UnityEngine.Rendering.Universal.ShadowCaster2D>();
-                Debug.Log("[OverworldWakeUpCutscene] Found MainCharacter for input control, sprite renderer, and shadow caster");
+                DebugLogger.LogCutscene("Found MainCharacter for input control, sprite renderer, and shadow caster");
             }
             else
             {
-                Debug.LogError("[OverworldWakeUpCutscene] MainCharacter not found!");
+                DebugLogger.LogError("[OverworldWakeUpCutscene] MainCharacter not found!");
             }
             
             // Find MainCamera and CinemachineBrain
@@ -293,11 +293,11 @@ namespace Systems.Overworld.Intro
             if (mainCamera != null)
             {
                 cinemachineBrain = mainCamera.GetComponent<CinemachineBrain>();
-                Debug.Log("[OverworldWakeUpCutscene] Found MainCamera and CinemachineBrain");
+                DebugLogger.LogCutscene("Found MainCamera and CinemachineBrain");
             }
             else
             {
-                Debug.LogError("[OverworldWakeUpCutscene] MainCamera not found!");
+                DebugLogger.LogError("[OverworldWakeUpCutscene] MainCamera not found!");
             }
             
             // Set up SleepingMain sprite renderer
@@ -310,23 +310,23 @@ namespace Systems.Overworld.Intro
                 if (sleepingMainSpriteRenderer != null && nikolausSleepSprite != null)
                 {
                     sleepingMainSpriteRenderer.sprite = nikolausSleepSprite;
-                    Debug.Log("[OverworldWakeUpCutscene] Set SleepingMain sprite to sleeping");
+                    DebugLogger.LogCutscene("Set SleepingMain sprite to sleeping");
                 }
             }
             else
             {
-                Debug.LogError("[OverworldWakeUpCutscene] SleepingMain GameObject not assigned!");
+                DebugLogger.LogError("[OverworldWakeUpCutscene] SleepingMain GameObject not assigned!");
             }
             
             // Find fade canvas
             fadeCanvasGroup = GameObject.Find("FadeCanvasGroup")?.GetComponent<CanvasGroup>();
             if (fadeCanvasGroup != null)
             {
-                Debug.Log("[OverworldWakeUpCutscene] Found FadeCanvasGroup");
+                DebugLogger.LogCutscene("Found FadeCanvasGroup");
             }
             else
             {
-                Debug.LogError("[OverworldWakeUpCutscene] FadeCanvasGroup not found!");
+                DebugLogger.LogError("[OverworldWakeUpCutscene] FadeCanvasGroup not found!");
             }
             
             // Find dialogue system if not assigned
@@ -347,13 +347,13 @@ namespace Systems.Overworld.Intro
                 endTransition = FindObjectOfType<EndTransition>();
                 if (endTransition != null)
                 {
-                    Debug.Log("[OverworldWakeUpCutscene] Found EndTransition component");
+                    DebugLogger.LogCutscene("Found EndTransition component");
                 }
             }
 
             // Check if we should play the cutscene (via PlayerPrefs flag from TutorialScene)
             int playFlag = PlayerPrefs.GetInt("PlayWakeUpCutscene", 0);
-            Debug.Log($"[OverworldWakeUpCutscene] PlayWakeUpCutscene flag value: {playFlag}");
+            DebugLogger.LogCutscene($"PlayWakeUpCutscene flag value: {playFlag}");
 
             if (playFlag == 1)
             {
@@ -361,13 +361,13 @@ namespace Systems.Overworld.Intro
                 PlayerPrefs.SetInt("PlayWakeUpCutscene", 0);
                 PlayerPrefs.Save();
                 
-                Debug.Log("[OverworldWakeUpCutscene] Setting up full wake-up cutscene...");
+                DebugLogger.LogCutscene("Setting up full wake-up cutscene...");
                 
                 // Set up ScreenFader with eyes ALREADY closed at start (player is waking up)
                 ScreenFader screenFader = FindFirstObjectByType<ScreenFader>();
                 if (screenFader != null)
                 {
-                    Debug.Log("[OverworldWakeUpCutscene] Setting up eyes closed position (player waking up)");
+                    DebugLogger.LogCutscene("Setting up eyes closed position (player waking up)");
                     StartCoroutine(SetupEyesAlreadyClosedState(screenFader));
                 }
                 else
@@ -376,17 +376,17 @@ namespace Systems.Overworld.Intro
                     if (fadeCanvasGroup != null)
                     {
                         fadeCanvasGroup.alpha = 1f; // Start opaque (black screen)
-                        Debug.Log("[OverworldWakeUpCutscene] Fade canvas set to black (fallback)");
+                        DebugLogger.LogCutscene("Fade canvas set to black (fallback)");
                     }
                     
-                    Debug.Log("[OverworldWakeUpCutscene] Starting cutscene coroutine");
+                    DebugLogger.LogCutscene("Starting cutscene coroutine");
                     StartCoroutine(BeginWakeUpSequence());
                 }
             }
             // Check if day.six flag is set - trigger ending instead of dialogue
             else if (GameFlags.HasFlag("day.six"))
             {
-                Debug.Log("[OverworldWakeUpCutscene] day.six detected - triggering ending sequence");
+                DebugLogger.LogCutscene("day.six detected - triggering ending sequence");
                 StartCoroutine(HandleDayEndingSequence("day.six"));
             }
             // NOTE: day.five does NOT trigger ending here - it triggers at END of day via ClockTimer
@@ -394,12 +394,12 @@ namespace Systems.Overworld.Intro
             else if (ShouldPlayDaySpecificWakeUpDialogue())
             {
                 string currentDay = GetCurrentDay();
-                Debug.Log($"[OverworldWakeUpCutscene] Day-specific wake-up dialogue detected for {currentDay}, starting...");
+                DebugLogger.LogCutscene($"Day-specific wake-up dialogue detected for {currentDay}, starting...");
                 StartCoroutine(PlayDaySpecificWakeUpDialogue());
             }
             else
             {
-                Debug.Log("[OverworldWakeUpCutscene] No cutscene to play, component will remain inactive");
+                DebugLogger.LogCutscene("No cutscene to play, component will remain inactive");
             }
         }
         
@@ -424,7 +424,7 @@ namespace Systems.Overworld.Intro
                 fadeCanvasGroup.alpha = 0f;
             }
             
-            Debug.Log("[OverworldWakeUpCutscene] Eyes already closed state set up, starting cutscene");
+            DebugLogger.LogCutscene("Eyes already closed state set up, starting cutscene");
             yield return null; // Wait one frame for everything to be set up
             StartCoroutine(BeginWakeUpSequence());
         }
@@ -434,7 +434,7 @@ namespace Systems.Overworld.Intro
         /// </summary>
         public void TriggerFullWakeUpCutscene()
         {
-            Debug.Log("[OverworldWakeUpCutscene] TriggerFullWakeUpCutscene() called");
+            DebugLogger.LogCutscene("TriggerFullWakeUpCutscene() called");
             shouldPlayFullWakeUpCutscene = true;
         }
         
@@ -443,10 +443,10 @@ namespace Systems.Overworld.Intro
         /// </summary>
         public static void TriggerWakeUpCutscene()
         {
-            Debug.Log("[OverworldWakeUpCutscene] TriggerWakeUpCutscene() static method called - setting PlayerPrefs flag");
+            DebugLogger.LogCutscene("TriggerWakeUpCutscene() static method called - setting PlayerPrefs flag");
             PlayerPrefs.SetInt("PlayWakeUpCutscene", 1);
             PlayerPrefs.Save();
-            Debug.Log($"[OverworldWakeUpCutscene] Flag set to: {PlayerPrefs.GetInt("PlayWakeUpCutscene")}");
+            DebugLogger.LogCutscene($"Flag set to: {PlayerPrefs.GetInt("PlayWakeUpCutscene")}");
         }
         
         /// <summary>
@@ -477,7 +477,7 @@ namespace Systems.Overworld.Intro
                     // If there's no next day flag, just check if current day is set
                     if (string.IsNullOrEmpty(nextDayFlag) || !GameFlags.HasFlag(nextDayFlag))
                     {
-                        Debug.Log($"[OverworldWakeUpCutscene] {dayDialogue.dayFlag} wake-up dialogue available");
+                        DebugLogger.LogCutscene($"{dayDialogue.dayFlag} wake-up dialogue available");
                         return true;
                     }
                 }
@@ -578,7 +578,7 @@ namespace Systems.Overworld.Intro
         /// </summary>
         private IEnumerator PlayDaySpecificWakeUpDialogue()
         {
-            Debug.Log("[OverworldWakeUpCutscene] Starting day-specific wake-up dialogue sequence");
+            DebugLogger.LogCutscene("Starting day-specific wake-up dialogue sequence");
             
             // Find clock timer
             if (clockTimer == null)
@@ -588,7 +588,7 @@ namespace Systems.Overworld.Intro
             
             if (clockTimer == null)
             {
-                Debug.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot continue");
+                DebugLogger.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot continue");
                 yield break;
             }
 
@@ -598,18 +598,18 @@ namespace Systems.Overworld.Intro
             if (currentDay == "day.one")
             {
                 // Day.one: Just start timer normally (no reconstruction needed)
-                Debug.Log("[OverworldWakeUpCutscene] Day.one - starting timer normally without reconstruction");
+                DebugLogger.LogCutscene("Day.one - starting timer normally without reconstruction");
                 clockTimer.StartTimer(clockTimer.totalTime);
                 yield break;
             }
             
             // Days 2-5: Call clock reconstruction directly (without starting timer)
-            Debug.Log($"[OverworldWakeUpCutscene] {currentDay} detected - calling clock reconstruction");
+            DebugLogger.LogCutscene($"{currentDay} detected - calling clock reconstruction");
             
             // Call the clock reconstruction coroutine directly and wait for it to complete
             yield return StartCoroutine(clockTimer.ReconstructClock());
             
-            Debug.Log("[OverworldWakeUpCutscene] Clock reconstruction complete");
+            DebugLogger.LogCutscene("Clock reconstruction complete");
             
             // Apply battle result time adjustment after reconstruction
             CheckAndApplyBattleResultTimeAdjustment();
@@ -626,37 +626,37 @@ namespace Systems.Overworld.Intro
                 dialogBehaviour = FindFirstObjectByType<DialogBehaviour>();
                 if (dialogBehaviour != null)
                 {
-                    Debug.Log("[OverworldWakeUpCutscene] Found DialogBehaviour via FindFirstObjectByType");
+                    DebugLogger.LogCutscene("Found DialogBehaviour via FindFirstObjectByType");
                 }
             }
             
             if (dialogueGraph == null)
             {
-                Debug.LogWarning("[OverworldWakeUpCutscene] Cannot play day-specific dialogue - dialogueGraph is null");
+                DebugLogger.LogWarning("[OverworldWakeUpCutscene] Cannot play day-specific dialogue - dialogueGraph is null");
                 
                 // Start timer manually if dialogue won't play
                 if (clockTimer != null)
                 {
                     clockTimer.StartTimer(clockTimer.totalTime);
-                    Debug.Log("[OverworldWakeUpCutscene] Started clock timer manually (no dialogue to play)");
+                    DebugLogger.LogCutscene("Started clock timer manually (no dialogue to play)");
                 }
                 yield break;
             }
             
             if (dialogBehaviour == null)
             {
-                Debug.LogWarning("[OverworldWakeUpCutscene] Cannot play day-specific dialogue - dialogBehaviour is null");
+                DebugLogger.LogWarning("[OverworldWakeUpCutscene] Cannot play day-specific dialogue - dialogBehaviour is null");
                 
                 // Start timer manually if dialogue won't play
                 if (clockTimer != null)
                 {
                     clockTimer.StartTimer(clockTimer.totalTime);
-                    Debug.Log("[OverworldWakeUpCutscene] Started clock timer manually (no dialogBehaviour)");
+                    DebugLogger.LogCutscene("Started clock timer manually (no dialogBehaviour)");
                 }
                 yield break;
             }
             
-            Debug.Log($"[OverworldWakeUpCutscene] Dialogue graph found: {dialogueGraph.name}, DialogBehaviour found: {dialogBehaviour.name}");
+            DebugLogger.LogCutscene($"Dialogue graph found: {dialogueGraph.name}, DialogBehaviour found: {dialogBehaviour.name}");
 
             // Set player dialogue state
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -667,38 +667,38 @@ namespace Systems.Overworld.Intro
                 if (playerMotor != null)
                 {
                     playerMotor.SetDialogueActive(true);
-                    Debug.Log("[OverworldWakeUpCutscene] Player dialogue state set to active");
+                    DebugLogger.LogCutscene("Player dialogue state set to active");
                 }
             }
 
             // Wait for dialogue to finish
             bool dialogueFinished = false;
-            UnityEngine.Events.UnityAction onFinished = () => { dialogueFinished = true; Debug.Log("[OverworldWakeUpCutscene] Dialogue finished callback triggered"); };
+            UnityEngine.Events.UnityAction onFinished = () => { dialogueFinished = true; DebugLogger.LogCutscene("Dialogue finished callback triggered"); };
             dialogBehaviour.OnDialogFinished.AddListener(onFinished);
             
             // Also listen for when dialogue starts
             bool dialogueStarted = false;
-            UnityEngine.Events.UnityAction onStarted = () => { dialogueStarted = true; Debug.Log("[OverworldWakeUpCutscene] Dialogue started callback triggered"); };
+            UnityEngine.Events.UnityAction onStarted = () => { dialogueStarted = true; DebugLogger.LogCutscene("Dialogue started callback triggered"); };
             dialogBehaviour.OnDialogStarted.AddListener(onStarted);
             
-            Debug.Log($"[OverworldWakeUpCutscene] Starting day-specific wake-up dialogue: {dialogueGraph.name} (DialogBehaviour: {dialogBehaviour.name})");
-            Debug.Log($"[OverworldWakeUpCutscene] DialogBehaviour enabled: {dialogBehaviour.enabled}, gameObject active: {dialogBehaviour.gameObject.activeInHierarchy}");
+            DebugLogger.LogCutscene($"Starting day-specific wake-up dialogue: {dialogueGraph.name} (DialogBehaviour: {dialogBehaviour.name})");
+            DebugLogger.LogCutscene($"DialogBehaviour enabled: {dialogBehaviour.enabled}, gameObject active: {dialogBehaviour.gameObject.activeInHierarchy}");
             
             try
             {
                 dialogBehaviour.StartDialog(dialogueGraph);
-                Debug.Log("[OverworldWakeUpCutscene] StartDialog() called successfully");
+                DebugLogger.LogCutscene("StartDialog() called successfully");
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[OverworldWakeUpCutscene] Error starting dialogue: {ex.Message}\n{ex.StackTrace}");
+                DebugLogger.LogError($"[OverworldWakeUpCutscene] Error starting dialogue: {ex.Message}\n{ex.StackTrace}");
             }
             
             // Wait a moment to see if dialogue starts
             yield return new WaitForSeconds(0.5f);
             if (!dialogueStarted)
             {
-                Debug.LogWarning("[OverworldWakeUpCutscene] Dialogue did not start within 0.5 seconds - may be an issue with dialogue system");
+                DebugLogger.LogWarning("[OverworldWakeUpCutscene] Dialogue did not start within 0.5 seconds - may be an issue with dialogue system");
             }
             
             while (!dialogueFinished)
@@ -719,14 +719,14 @@ namespace Systems.Overworld.Intro
             if (clockTimer != null)
             {
                 clockTimer.StartTimer(clockTimer.totalTime);
-                Debug.Log("[OverworldWakeUpCutscene] Clock timer started after day-specific dialogue completed");
+                DebugLogger.LogCutscene("Clock timer started after day-specific dialogue completed");
             }
             else
             {
-                Debug.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot start timer!");
+                DebugLogger.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot start timer!");
             }
 
-            Debug.Log("[OverworldWakeUpCutscene] Day-specific wake-up dialogue complete");
+            DebugLogger.LogCutscene("Day-specific wake-up dialogue complete");
         }
         
         /// <summary>
@@ -734,11 +734,11 @@ namespace Systems.Overworld.Intro
         /// </summary>
         private IEnumerator HandleDayEndingSequence(string dayFlag)
         {
-            Debug.Log($"[OverworldWakeUpCutscene] Starting ending sequence for {dayFlag}");
+            DebugLogger.LogCutscene($"Starting ending sequence for {dayFlag}");
             
             // Pause the environment using GlobalPause
             GlobalPause.SetMinigamePaused(true);
-            Debug.Log("[OverworldWakeUpCutscene] Environment paused for ending sequence");
+            DebugLogger.LogCutscene("Environment paused for ending sequence");
             
             // Optional: Add a brief delay before triggering ending
             yield return new WaitForSeconds(1f);
@@ -746,25 +746,25 @@ namespace Systems.Overworld.Intro
             // Set the start.ending flag to trigger the ending
             if (!GameFlags.HasFlag("start.ending"))
             {
-                Debug.Log($"[OverworldWakeUpCutscene] Setting start.ending flag for {dayFlag}");
+                DebugLogger.LogCutscene($"Setting start.ending flag for {dayFlag}");
                 GameFlags.SetFlag("start.ending");
             }
             
             // Trigger the ending transition
             if (endTransition != null)
             {
-                Debug.Log($"[OverworldWakeUpCutscene] Triggering EndTransition for {dayFlag}");
+                DebugLogger.LogCutscene($"Triggering EndTransition for {dayFlag}");
                 endTransition.TriggerEndTransition();
             }
             else
             {
-                Debug.LogError("[OverworldWakeUpCutscene] EndTransition component not found! Cannot trigger ending.");
+                DebugLogger.LogError("[OverworldWakeUpCutscene] EndTransition component not found! Cannot trigger ending.");
                 
                 // Fallback: unpause if we can't trigger ending
                 GlobalPause.SetMinigamePaused(false);
             }
             
-            Debug.Log($"[OverworldWakeUpCutscene] Ending sequence initiated for {dayFlag}");
+            DebugLogger.LogCutscene($"Ending sequence initiated for {dayFlag}");
         }
         
         /// <summary>
@@ -773,7 +773,7 @@ namespace Systems.Overworld.Intro
         /// </summary>
         private void CheckAndSetEvidenceCardFlags()
         {
-            Debug.Log("[OverworldWakeUpCutscene] Checking evidence flags for card unlocks...");
+            DebugLogger.LogCutscene("Checking evidence flags for card unlocks...");
             
             // evidence.knife -> card.shield_slash
             if (GameFlags.HasFlag("evidence.knife"))
@@ -781,11 +781,11 @@ namespace Systems.Overworld.Intro
                 if (!GameFlags.HasFlag("card.shield_slash"))
                 {
                     GameFlags.SetFlag("card.shield_slash");
-                    Debug.Log("[OverworldWakeUpCutscene] Evidence: knife found -> Unlocked card: shield_slash");
+                    DebugLogger.LogCutscene("Evidence: knife found -> Unlocked card: shield_slash");
                 }
                 else
                 {
-                    Debug.Log("[OverworldWakeUpCutscene] Evidence: knife found (card.shield_slash already unlocked)");
+                    DebugLogger.LogCutscene("Evidence: knife found (card.shield_slash already unlocked)");
                 }
             }
             
@@ -795,11 +795,11 @@ namespace Systems.Overworld.Intro
                 if (!GameFlags.HasFlag("card.dramatic_exit"))
                 {
                     GameFlags.SetFlag("card.dramatic_exit");
-                    Debug.Log("[OverworldWakeUpCutscene] Evidence: throne found -> Unlocked card: dramatic_exit");
+                    DebugLogger.LogCutscene("Evidence: throne found -> Unlocked card: dramatic_exit");
                 }
                 else
                 {
-                    Debug.Log("[OverworldWakeUpCutscene] Evidence: throne found (card.dramatic_exit already unlocked)");
+                    DebugLogger.LogCutscene("Evidence: throne found (card.dramatic_exit already unlocked)");
                 }
             }
             
@@ -809,15 +809,15 @@ namespace Systems.Overworld.Intro
                 if (!GameFlags.HasFlag("card.tariff_strike"))
                 {
                     GameFlags.SetFlag("card.tariff_strike");
-                    Debug.Log("[OverworldWakeUpCutscene] Evidence: silverware found -> Unlocked card: tariff_strike");
+                    DebugLogger.LogCutscene("Evidence: silverware found -> Unlocked card: tariff_strike");
                 }
                 else
                 {
-                    Debug.Log("[OverworldWakeUpCutscene] Evidence: silverware found (card.tariff_strike already unlocked)");
+                    DebugLogger.LogCutscene("Evidence: silverware found (card.tariff_strike already unlocked)");
                 }
             }
             
-            Debug.Log("[OverworldWakeUpCutscene] Evidence flag check complete");
+            DebugLogger.LogCutscene("Evidence flag check complete");
         }
         
         /// <summary>
@@ -834,7 +834,7 @@ namespace Systems.Overworld.Intro
             
             if (clockTimer == null)
             {
-                Debug.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot apply battle result time adjustment");
+                DebugLogger.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot apply battle result time adjustment");
                 return;
             }
             
@@ -843,32 +843,32 @@ namespace Systems.Overworld.Intro
             // Check for win flag
             if (GameFlags.HasFlag("nether.win"))
             {
-                Debug.Log($"[OverworldWakeUpCutscene] ? Battle won! Adding {winTimeBonus} seconds to clock timer");
+                DebugLogger.LogCutscene($"? Battle won! Adding {winTimeBonus} seconds to clock timer");
                 clockTimer.AddTime(winTimeBonus);
                 GameFlags.RemoveFlag("nether.win");
-                Debug.Log("[OverworldWakeUpCutscene] Cleared nether.win flag");
+                DebugLogger.LogCutscene("Cleared nether.win flag");
                 timeWasAdjusted = true;
             }
             // Check for lose flag
             else if (GameFlags.HasFlag("nether.lose"))
             {
-                Debug.Log($"[OverworldWakeUpCutscene] ? Battle lost! Subtracting {loseTimePenalty} seconds from clock timer");
+                DebugLogger.LogCutscene($"? Battle lost! Subtracting {loseTimePenalty} seconds from clock timer");
                 clockTimer.RemoveTime(loseTimePenalty);
                 GameFlags.RemoveFlag("nether.lose");
-                Debug.Log("[OverworldWakeUpCutscene] Cleared nether.lose flag");
+                DebugLogger.LogCutscene("Cleared nether.lose flag");
                 timeWasAdjusted = true;
             }
             else
             {
-                Debug.Log("[OverworldWakeUpCutscene] No battle result flags detected (nether.win or nether.lose)");
+                DebugLogger.LogCutscene("No battle result flags detected (nether.win or nether.lose)");
             }
             
             // Save the game if time was adjusted to persist the new clock time
             if (timeWasAdjusted)
             {
-                Debug.Log("[OverworldWakeUpCutscene] Saving game after clock time adjustment...");
+                DebugLogger.LogCutscene("Saving game after clock time adjustment...");
                 GameFlagsManager.SaveCurrentGame();
-                Debug.Log("[OverworldWakeUpCutscene] Game saved successfully with new clock time");
+                DebugLogger.LogCutscene("Game saved successfully with new clock time");
             }
         }
     }

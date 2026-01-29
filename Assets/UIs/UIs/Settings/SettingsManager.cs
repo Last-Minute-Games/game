@@ -39,7 +39,7 @@ public class SettingsManager : MonoBehaviour
             var go = new GameObject("SettingsManager");
             I = go.AddComponent<SettingsManager>();
             DontDestroyOnLoad(go);
-            Debug.Log("[SettingsManager] Auto-created instance");
+            DebugLogger.LogSettings("Auto-created instance");
         }
         return I;
     }

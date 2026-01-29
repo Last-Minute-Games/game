@@ -45,30 +45,30 @@ public class JournalUI_Named : MonoBehaviour
         // Initialize journal manager AFTER GameFlags has time to initialize
         if (journalManager != null)
         {
-            Debug.Log($"[JournalUI_Named] Initializing JournalManager: {journalManager.name}");
+            DebugLogger.LogJournal($"[JournalUI_Named] Initializing JournalManager: {journalManager.name}");
             journalManager.Initialize();
         }
         else
         {
-            Debug.LogError("[JournalUI_Named] JournalManager reference is missing! Please assign it in the Inspector.");
+            DebugLogger.LogError("[JournalUI_Named] JournalManager reference is missing! Please assign it in the Inspector.");
             
             // Try to find it as a fallback
             journalManager = Resources.Load<JournalManager>("JournalManager");
             if (journalManager != null)
             {
-                Debug.Log("[JournalUI_Named] Found JournalManager in Resources, initializing...");
+                DebugLogger.LogJournal("[JournalUI_Named] Found JournalManager in Resources, initializing...");
                 journalManager.Initialize();
             }
             else
             {
-                Debug.LogError("[JournalUI_Named] Could not find JournalManager in Resources either!");
+                DebugLogger.LogError("[JournalUI_Named] Could not find JournalManager in Resources either!");
             }
         }
 
         // Find the EnvironmentSoundHandler
         _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler")?.GetComponent<EnvironmentSoundHandler>();
         if (_environmentSoundHandler == null)
-            Debug.LogWarning("[JournalUI_Named] EnvironmentSoundHandler not found in scene");
+            DebugLogger.LogWarning("[JournalUI_Named] EnvironmentSoundHandler not found in scene");
         
         // Hide tutorial overlay initially
         if (tutorialOverlay != null)
@@ -81,7 +81,7 @@ public class JournalUI_Named : MonoBehaviour
         {
             tutorialCloseButton.onClick.RemoveAllListeners();
             tutorialCloseButton.onClick.AddListener(CloseTutorial);
-            Debug.Log("[JournalUI_Named] Tutorial close button wired up");
+            DebugLogger.LogJournal("[JournalUI_Named] Tutorial close button wired up");
         }
 
         // Disable keyboard navigation/selection for all journal buttons to prevent Space/Submit activation
@@ -144,7 +144,7 @@ public class JournalUI_Named : MonoBehaviour
 
     void ShowTutorial()
     {
-        Debug.Log("[JournalUI_Named] Showing journal tutorial for first time");
+        DebugLogger.LogJournal("[JournalUI_Named] Showing journal tutorial for first time");
         
         // Hide all pages
         foreach (var p in allPages)
@@ -172,7 +172,7 @@ public class JournalUI_Named : MonoBehaviour
         {
             tutorialOverlay.SetActive(false);
             isTutorialActive = false;
-            Debug.Log("[JournalUI_Named] Tutorial closed");
+            DebugLogger.LogJournal("[JournalUI_Named] Tutorial closed");
             
             // Set the flag NOW when the player dismisses it
             GameFlags.SetFlag(tutorialShownFlagName);
@@ -221,7 +221,7 @@ public class JournalUI_Named : MonoBehaviour
         }
         catch (System.Exception ex)
         {
-            Debug.LogWarning($"[JournalUI_Named] Failed to play tab sound: {ex.Message}");
+            DebugLogger.LogWarning($"[JournalUI_Named] Failed to play tab sound: {ex.Message}");
         }
     }
 }

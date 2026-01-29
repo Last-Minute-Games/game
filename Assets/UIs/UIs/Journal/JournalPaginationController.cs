@@ -82,7 +82,7 @@ public class JournalPaginationController : MonoBehaviour
         {
             allEntries.Clear();
             allEntries.AddRange(entriesContainer.GetComponentsInChildren<JournalEntry>(true));
-            Debug.Log($"[Pagination] Auto-detected {allEntries.Count} entries in {gameObject.name}");
+            DebugLogger.LogPagination($"Auto-detected {allEntries.Count} entries in {gameObject.name}");
         }
         
         // Auto-find CanvasGroup if not assigned
@@ -111,7 +111,7 @@ public class JournalPaginationController : MonoBehaviour
         // Find the EnvironmentSoundHandler
         _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler")?.GetComponent<EnvironmentSoundHandler>();
         if (_environmentSoundHandler == null)
-            Debug.LogWarning("[JournalPaginationController] EnvironmentSoundHandler not found in scene");
+            DebugLogger.LogWarning("[JournalPaginationController] EnvironmentSoundHandler not found in scene");
         
         isInitialized = true;
         
@@ -156,7 +156,7 @@ public class JournalPaginationController : MonoBehaviour
         
         if (journalManager == null)
         {
-            Debug.LogWarning("[Pagination] No JournalManager assigned!");
+            DebugLogger.LogWarning("[Pagination] No JournalManager assigned!");
             return;
         }
         
@@ -376,7 +376,7 @@ public class JournalPaginationController : MonoBehaviour
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"[JournalPaginationController] Failed to play page turn sound: {ex.Message}");
+                DebugLogger.LogWarning($"[JournalPaginationController] Failed to play page turn sound: {ex.Message}");
             }
         }
     }

@@ -11,6 +11,6 @@ public class GameBootstrapper : MonoBehaviour
     {
         // Force GameFlags to initialize before any scene loads
         var flags = GameFlags.Instance;
-        Debug.Log("[GameBootstrapper] GameFlags initialized at startup");
+        DebugLogger.LogGameFlags("GameFlags initialized at startup");
     }
 }

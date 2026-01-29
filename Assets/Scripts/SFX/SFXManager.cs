@@ -48,7 +48,7 @@ public class SFXManager : MonoBehaviour
             audioSources.Add(src);
         }
         
-        Debug.Log($"[SFXManager] Initialized {audioSources.Count} audio sources");
+        DebugLogger.LogSFX($"Initialized {audioSources.Count} audio sources");
     }
 
     /// <summary>
@@ -58,29 +58,29 @@ public class SFXManager : MonoBehaviour
     {
         if (cue == null)
         {
-            Debug.LogWarning("[SFXManager] Play called with null cue!");
+            DebugLogger.LogWarning("[SFXManager] Play called with null cue!");
             return;
         }
 
-        Debug.Log($"[SFXManager] Play called with cue: {cue.cueName}");
+        DebugLogger.LogSFX($"Play called with cue: {cue.cueName}");
 
         AudioClip clip = cue.GetRandomClip();
         if (clip == null)
         {
-            Debug.LogWarning($"[SFXManager] No audio clip found in cue: {cue.cueName}");
+            DebugLogger.LogWarning($"[SFXManager] No audio clip found in cue: {cue.cueName}");
             return;
         }
 
-        Debug.Log($"[SFXManager] Got clip: {clip.name}, length: {clip.length}s");
+        DebugLogger.LogSFX($"Got clip: {clip.name}, length: {clip.length}s");
 
         AudioSource source = GetAvailableSource();
         if (source == null)
         {
-            Debug.LogWarning("[SFXManager] No available audio sources!");
+            DebugLogger.LogWarning("[SFXManager] No available audio sources!");
             return;
         }
 
-        Debug.Log($"[SFXManager] Using audio source: {source.name}, volume: {cue.volume}");
+        DebugLogger.LogSFX($"Using audio source: {source.name}, volume: {cue.volume}");
 
         source.clip = clip;
         source.volume = cue.volume;
@@ -88,7 +88,7 @@ public class SFXManager : MonoBehaviour
         source.spatialBlend = 0f;
         source.Play();
         
-        Debug.Log($"[SFXManager] Audio source is playing: {source.isPlaying}");
+        DebugLogger.LogSFX($"Audio source is playing: {source.isPlaying}");
     }
 
     /// <summary>

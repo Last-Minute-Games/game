@@ -23,6 +23,12 @@ public static class DebugLogger
         public bool npcBrain = false;
         public bool tutorials = false;
         public bool settingsUI = false;
+        public bool cutscenes = false;
+        public bool interactiveItems = false;
+        public bool pagination = false;
+        public bool music = false;
+        public bool sfx = false;
+        public bool minigames = false;
         public bool general = false;
     }
     
@@ -144,6 +150,64 @@ public static class DebugLogger
     {
         if (_settings.settingsUI)
             Debug.Log($"[Settings] {message}");
+    }
+    
+    // Cutscene logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogCutscene(string message)
+    {
+        if (_settings.cutscenes)
+            Debug.Log($"[OverworldWakeUpCutscene] {message}");
+    }
+    
+    // Interactive Item logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogInteractiveItem(string message, string itemName = "")
+    {
+        if (_settings.interactiveItems)
+        {
+            if (!string.IsNullOrEmpty(itemName))
+                Debug.Log($"[InteractiveItem] {itemName}: {message}");
+            else
+                Debug.Log($"[InteractiveItem] {message}");
+        }
+    }
+    
+    // Pagination logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogPagination(string message)
+    {
+        if (_settings.pagination)
+            Debug.Log($"[Pagination] {message}");
+    }
+    
+    // Music Manager logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogMusic(string message)
+    {
+        if (_settings.music)
+            Debug.Log($"[MusicManager] {message}");
+    }
+    
+    // SFX logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogSFX(string message)
+    {
+        if (_settings.sfx)
+            Debug.Log($"[SFXManager] {message}");
+    }
+    
+    // Minigame logs
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void LogMinigame(string message, string minigameName = "")
+    {
+        if (_settings.minigames)
+        {
+            if (!string.IsNullOrEmpty(minigameName))
+                Debug.Log($"[{minigameName}] {message}");
+            else
+                Debug.Log($"[Minigame] {message}");
+        }
     }
     
     // General logs
