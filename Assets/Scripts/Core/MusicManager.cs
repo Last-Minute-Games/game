@@ -53,7 +53,7 @@ public class MusicManager : MonoBehaviour
         }
 
         // This code will execute once the audio has finished playing
-        Debug.Log("Audio has finished playing! Executing action...");
+        DebugLogger.LogMusic("Audio has finished playing! Executing action...");
         // Place your desired action here, e.g.,
         source.clip = defaultLoop;
         source.loop = true;

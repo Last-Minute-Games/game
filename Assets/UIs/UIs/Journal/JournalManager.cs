@@ -44,7 +44,7 @@ public class JournalManager : ScriptableObject
         hasCheckedInitialFlags = false;
         currentFlags = null;
         unlockedEntries.Clear();
-        Debug.Log("[Journal] OnEnable - Reset state for new play session");
+        DebugLogger.LogJournal("OnEnable - Reset state for new play session");
 #endif
     }
     
@@ -62,7 +62,7 @@ public class JournalManager : ScriptableObject
         if (hasCheckedInitialFlags) return;
         hasCheckedInitialFlags = true;
         
-        Debug.Log("[Journal] GameFlags initialization complete - checking existing flags");
+        DebugLogger.LogJournal("GameFlags initialization complete - checking existing flags");
         CheckExistingFlags();
     }
 
@@ -74,38 +74,38 @@ public class JournalManager : ScriptableObject
         // Allow re-initialization if we never successfully hooked to GameFlags
         if (isInitialized && currentFlags != null)
         {
-            Debug.Log("[Journal] Already initialized and hooked, skipping");
+            DebugLogger.LogJournal("Already initialized and hooked, skipping");
             return;
         }
         
-        Debug.Log($"[Journal] Initialize() called on {name}");
+        DebugLogger.LogJournal($"Initialize() called on {name}");
         
         if (GameFlags.Instance != null)
         {
-            Debug.Log($"[Journal] GameFlags.Instance found, hooking...");
+            DebugLogger.LogJournal($"GameFlags.Instance found, hooking...");
             Hook(GameFlags.Instance);
             isInitialized = true;
         }
         else
         {
-            Debug.LogError("[Journal] GameFlags singleton not found during initialization! This shouldn't happen.");
+            DebugLogger.LogError("[Journal] GameFlags singleton not found during initialization! This shouldn't happen.");
             isInitialized = false; // Allow retry
         }
         
-        Debug.Log($"[Journal] Initialization complete. isInitialized={isInitialized}, hooked={currentFlags != null}");
+        DebugLogger.LogJournal($"Initialization complete. isInitialized={isInitialized}, hooked={currentFlags != null}");
     }
 
     public void Hook(GameFlags flags)
     {
         if (flags == null)
         {
-            Debug.LogWarning("[Journal] Tried to hook with null GameFlags.");
+            DebugLogger.LogWarning("[Journal] Tried to hook with null GameFlags.");
             return;
         }
 
         if (currentFlags != null)
         {
-            Debug.Log("[Journal] Unhooking from previous GameFlags instance");
+            DebugLogger.LogJournal("Unhooking from previous GameFlags instance");
             currentFlags.OnFlagChanged -= HandleFlagChanged;
             currentFlags.OnInitialized -= OnGameFlagsInitialized;
         }
@@ -114,19 +114,19 @@ public class JournalManager : ScriptableObject
         currentFlags.OnFlagChanged += HandleFlagChanged;
         currentFlags.OnInitialized += OnGameFlagsInitialized;
 
-        Debug.Log($"[Journal] Hooked into GameFlags. Current flags count: {GameFlags.GetFlagCount()}");
+        DebugLogger.LogJournal($"Hooked into GameFlags. Current flags count: {GameFlags.GetFlagCount()}");
         
         // IMMEDIATE CHECK: Always check flags when hooking
         // GameFlags Awake() runs before this, so flags are already loaded
         if (!hasCheckedInitialFlags)
         {
             hasCheckedInitialFlags = true;
-            Debug.Log("[Journal] Immediately checking existing flags after hook");
+            DebugLogger.LogJournal("Immediately checking existing flags after hook");
             CheckExistingFlags();
         }
         else
         {
-            Debug.Log("[Journal] Already checked initial flags, skipping");
+            DebugLogger.LogJournal("Already checked initial flags, skipping");
         }
     }
 
@@ -134,7 +134,7 @@ public class JournalManager : ScriptableObject
     {
         if (currentFlags == null) return;
         
-        Debug.Log($"[Journal] CheckExistingFlags called - useAutoMapping: {useAutoMapping}, mappings.Count: {mappings.Count}");
+        DebugLogger.LogJournal($"CheckExistingFlags called - useAutoMapping: {useAutoMapping}, mappings.Count: {mappings.Count}");
         
         // If using custom mappings, process them
         if (mappings.Count > 0)
@@ -153,14 +153,14 @@ public class JournalManager : ScriptableObject
         else if (useAutoMapping)
         {
             var allFlags = GameFlags.GetAllFlags();
-            Debug.Log($"[Journal] Auto-mapping {allFlags.Count} flags to entries");
+            DebugLogger.LogJournal($"Auto-mapping {allFlags.Count} flags to entries");
             
             foreach (string flag in allFlags)
             {
                 // Automatically unlock entry with matching ID
                 AddEntry(flag);
             }
-            Debug.Log($"[Journal] Auto-mapped {allFlags.Count} flags to entries");
+            DebugLogger.LogJournal($"Auto-mapped {allFlags.Count} flags to entries");
         }
     }
 
@@ -194,7 +194,7 @@ public class JournalManager : ScriptableObject
             return; // Already unlocked
 
         unlockedEntries.Add(entryId);
-        Debug.Log($"[Journal] Unlocked entry: {entryId}");
+        DebugLogger.LogJournal($"Unlocked entry: {entryId}");
         OnEntryUnlocked?.Invoke(entryId);
     }
 
@@ -220,7 +220,7 @@ public class JournalManager : ScriptableObject
     public void ClearAllEntries()
     {
         unlockedEntries.Clear();
-        Debug.Log("[Journal] Cleared all unlocked entries");
+        DebugLogger.LogJournal("Cleared all unlocked entries");
     }
 
 #if UNITY_EDITOR
@@ -228,14 +228,14 @@ public class JournalManager : ScriptableObject
     private void TestSetFlag()
     {
         GameFlags.SetFlag("character.allistair.lies");
-        Debug.Log("[JournalManager] Test: Set flag 'character.allistair.lies'");
+        DebugLogger.LogJournal("Test: Set flag 'character.allistair.lies'");
     }
     
     [ContextMenu("Test: Remove Flag 'character.allistair.lies'")]
     private void TestRemoveFlag()
     {
         GameFlags.RemoveFlag("character.allistair.lies");
-        Debug.Log("[JournalManager] Test: Removed flag 'character.allistair.lies'");
+        DebugLogger.LogJournal("Test: Removed flag 'character.allistair.lies'");
     }
     
     [ContextMenu("Print All Active Flags")]

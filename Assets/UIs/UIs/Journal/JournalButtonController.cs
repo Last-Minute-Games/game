@@ -45,12 +45,12 @@ public class JournalUI : MonoBehaviour
         // Find the ClockTimer in the scene
         _clockTimer = FindFirstObjectByType<ClockTimer>();
         if (_clockTimer == null)
-            Debug.LogWarning("[JournalUI] ClockTimer not found in scene");
+            DebugLogger.LogWarning("[JournalUI] ClockTimer not found in scene");
         
         // Find the SimplePauseMenu in the scene
         _pauseMenu = FindFirstObjectByType<SimplePauseMenu>();
         if (_pauseMenu == null)
-            Debug.LogWarning("[JournalUI] SimplePauseMenu not found in scene");
+            DebugLogger.LogWarning("[JournalUI] SimplePauseMenu not found in scene");
         
         // Get animator from journalRoot if assigned, otherwise try this GameObject
         if (journalRoot)
@@ -58,31 +58,31 @@ public class JournalUI : MonoBehaviour
         else
             anim = GetComponent<Animator>();
         
-        Debug.Log("[JournalUI] Awake called.");
-        Debug.Log($"[JournalUI] GameObject.activeInHierarchy: {gameObject.activeInHierarchy}");
-        Debug.Log($"[JournalUI] Component enabled: {enabled}");
-        Debug.Log($"[JournalUI] GameObject name: {gameObject.name}");
-        Debug.Log($"[JournalUI] Toggle key set to: {toggleKey}");
-        Debug.Log($"[JournalUI] Script type: {GetType().Name}");
+        DebugLogger.LogJournal("Awake called.");
+        DebugLogger.LogJournal($"GameObject.activeInHierarchy: {gameObject.activeInHierarchy}");
+        DebugLogger.LogJournal($"Component enabled: {enabled}");
+        DebugLogger.LogJournal($"GameObject name: {gameObject.name}");
+        DebugLogger.LogJournal($"Toggle key set to: {toggleKey}");
+        DebugLogger.LogJournal($"Script type: {GetType().Name}");
 
         if (journalButton)
         {
             journalButton.onClick.AddListener(Toggle);
-            Debug.Log("[JournalUI] Journal button listener attached.");
+            DebugLogger.LogJournal("Journal button listener attached.");
         }
         else
         {
-            Debug.LogWarning("[JournalUI] Journal button reference not assigned!");
+            DebugLogger.LogWarning("[JournalUI] Journal button reference not assigned!");
         }
 
         SetOpen(false, instant: true);
         
-        Debug.Log("[JournalUI] Awake complete - Update() should start running now");
+        DebugLogger.LogJournal("Awake complete - Update() should start running now");
     }
 
     void Start()
     {
-        Debug.Log("[JournalUI] Start() called - component is definitely active");
+        DebugLogger.LogJournal("Start() called - component is definitely active");
     }
 
     void Update()
@@ -120,19 +120,19 @@ public class JournalUI : MonoBehaviour
         // Check if Q is pressed
         if (Input.GetKeyDown(toggleKey))
         {
-            Debug.Log($"[JournalUI] {toggleKey} key pressed - Toggle() will be called");
+            DebugLogger.LogJournal($"{toggleKey} key pressed - Toggle() will be called");
             Toggle();
         }
     }
 
     public void Toggle()
     {
-        Debug.Log($"[JournalUI] Toggle pressed. Current state: {(isOpen ? "Open" : "Closed")}");
+        DebugLogger.LogJournal($"Toggle pressed. Current state: {(isOpen ? "Open" : "Closed")}");
         
         // Prevent toggling if input is disabled, paused, or in dialogue
         if (!isInputEnabled || (_pauseMenu != null && _pauseMenu.IsPaused) || (_playerMotor != null && _playerMotor.IsDialogueActive))
         {
-            Debug.Log("[JournalUI] Toggle blocked - input disabled, game paused, or dialogue active");
+            DebugLogger.LogJournal("Toggle blocked - input disabled, game paused, or dialogue active");
             return;
         }
         
@@ -141,12 +141,12 @@ public class JournalUI : MonoBehaviour
 
     public void Open()
     {
-        Debug.Log("[JournalUI] Open() called.");
+        DebugLogger.LogJournal("Open() called.");
         
         // Prevent opening if input is disabled, paused, or in dialogue
         if (!isInputEnabled || (_pauseMenu != null && _pauseMenu.IsPaused) || (_playerMotor != null && _playerMotor.IsDialogueActive))
         {
-            Debug.Log("[JournalUI] Open blocked - input disabled, game paused, or dialogue active");
+            DebugLogger.LogJournal("Open blocked - input disabled, game paused, or dialogue active");
             return;
         }
         
@@ -160,19 +160,19 @@ public class JournalUI : MonoBehaviour
     /// </summary>
     public void ForceOpen()
     {
-        Debug.Log("[JournalUI] ForceOpen() called - bypassing input checks for tutorial/scripted sequence");
+        DebugLogger.LogJournal("ForceOpen() called - bypassing input checks for tutorial/scripted sequence");
         SetOpen(true, playSound: true);
     }
 
     public void Close()
     {
-        Debug.Log("[JournalUI] Close() called.");
+        DebugLogger.LogJournal("Close() called.");
         SetOpen(false, playSound: true);
     }
 
     void SetOpen(bool value, bool instant = false, bool playSound = true)
     {
-        Debug.Log($"[JournalUI] SetOpen called. Target state: {(value ? "Open" : "Closed")}, Instant: {instant}, PlaySound: {playSound}");
+        DebugLogger.LogJournal($"SetOpen called. Target state: {(value ? "Open" : "Closed")}, Instant: {instant}, PlaySound: {playSound}");
 
         // Play sound only if explicitly requested
         if (playSound)
@@ -182,11 +182,11 @@ public class JournalUI : MonoBehaviour
                 if (_environmentSoundHandler != null)
                     _environmentSoundHandler.PlayJournalSound(value);
                 else
-                    Debug.LogWarning("[JournalUI] EnvironmentSoundHandler is null - skipping sound");
+                    DebugLogger.LogWarning("[JournalUI] EnvironmentSoundHandler is null - skipping sound");
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"[JournalUI] Failed to play journal sound: {ex.Message}");
+                DebugLogger.LogWarning($"[JournalUI] Failed to play journal sound: {ex.Message}");
             }
         }
         
@@ -196,32 +196,32 @@ public class JournalUI : MonoBehaviour
         if (EventSystem.current != null)
         {
             EventSystem.current.SetSelectedGameObject(null);
-            Debug.Log("[JournalUI] Cleared EventSystem selection");
+            DebugLogger.LogJournal("Cleared EventSystem selection");
         }
 
         // Pause/unpause the clock timer
         if (_clockTimer != null)
         {
             _clockTimer.PauseTimer(isOpen);
-            Debug.Log($"[JournalUI] ClockTimer paused: {isOpen}");
+            DebugLogger.LogJournal($"ClockTimer paused: {isOpen}");
         }
 
         // Disable/enable player input
         if (_playerInput != null)
         {
             _playerInput.isInputEnabled = !isOpen;
-            Debug.Log($"[JournalUI] Player input enabled: {_playerInput.isInputEnabled}");
+            DebugLogger.LogJournal($"Player input enabled: {_playerInput.isInputEnabled}");
         }
 
         if (anim != null)
         {
             anim.SetBool("Open", isOpen);
-            Debug.Log($"[JournalUI] Animator parameter 'Open' set to {isOpen}");
+            DebugLogger.LogJournal($"Animator parameter 'Open' set to {isOpen}");
         }
 
         if (!journalPanel)
         {
-            Debug.LogWarning("[JournalUI] No journalPanel assigned, skipping fade.");
+            DebugLogger.LogWarning("[JournalUI] No journalPanel assigned, skipping fade.");
             return;
         }
 
@@ -231,7 +231,7 @@ public class JournalUI : MonoBehaviour
 
     IEnumerator FadePanel(bool show, float dur)
     {
-        Debug.Log($"[JournalUI] FadePanel started. Show: {show}, Duration: {dur}");
+        DebugLogger.LogJournal($"FadePanel started. Show: {show}, Duration: {dur}");
 
         journalPanel.blocksRaycasts = show;
         journalPanel.interactable = show;
@@ -250,7 +250,7 @@ public class JournalUI : MonoBehaviour
         }
 
         journalPanel.alpha = end;
-        Debug.Log($"[JournalUI] Fade complete. Final alpha={journalPanel.alpha:F2}");
+        DebugLogger.LogJournal($"Fade complete. Final alpha={journalPanel.alpha:F2}");
     }
 
     /// <summary>
@@ -259,7 +259,7 @@ public class JournalUI : MonoBehaviour
     public void SetInputEnabled(bool enabled)
     {
         isInputEnabled = enabled;
-        Debug.Log($"[JournalUI] Input enabled set to: {enabled}");
+        DebugLogger.LogJournal($"Input enabled set to: {enabled}");
     }
 
     /// <summary>
@@ -271,6 +271,6 @@ public class JournalUI : MonoBehaviour
     private void LogDebug(string message)
     {
         if (enableDebugLogs)
-            Debug.Log($"[JournalUI] {message}");
+            DebugLogger.LogJournal(message);
     }
 }

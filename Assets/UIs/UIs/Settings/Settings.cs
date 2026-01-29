@@ -111,7 +111,7 @@ public class Settings : MonoBehaviour
         var S = SettingsManager.I ?? SettingsManager.GetOrCreate();
         if (S == null)
         {
-            Debug.LogError("[Settings] Failed to get or create SettingsManager!");
+            DebugLogger.LogError("[Settings] Failed to get or create SettingsManager!");
             yield break;
         }
 
@@ -166,7 +166,7 @@ public class Settings : MonoBehaviour
             masterSlider.onValueChanged.AddListener(v => S.ApplyMaster(v));
         }
 
-        Debug.Log("[Settings] UI bound successfully");
+        DebugLogger.LogSettings("UI bound successfully");
     }
 
     /// <summary>
@@ -174,7 +174,7 @@ public class Settings : MonoBehaviour
     /// </summary>
     public void OnApplyClicked()
     {
-        Debug.Log($"[Settings] Apply clicked");
+        DebugLogger.LogSettings($"Apply clicked");
 
         if (_isMainMenu)
         {
@@ -230,7 +230,7 @@ public class Settings : MonoBehaviour
             mainMenuRaycaster.enabled = true;
 
         _settingsPlaying = false;
-        Debug.Log("[Settings] Returned to main menu");
+        DebugLogger.LogSettings("Returned to main menu");
     }
 
     private IEnumerator FadeCoroutine(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration)
@@ -256,7 +256,7 @@ public class Settings : MonoBehaviour
         if (settingsPanel != null)
         {
             settingsPanel.SetActive(show);
-            Debug.Log($"[Settings] Panel {(show ? "shown" : "hidden")}");
+            DebugLogger.LogSettings($"Panel {(show ? "shown" : "hidden")}");
         }
     }
 
@@ -265,7 +265,7 @@ public class Settings : MonoBehaviour
     /// </summary>
     public void ShowSettings()
     {
-        Debug.Log("[Settings] ShowSettings called");
+        DebugLogger.LogSettings("ShowSettings called");
 
         if (_isMainMenu)
         {
@@ -284,7 +284,7 @@ public class Settings : MonoBehaviour
     /// </summary>
     public void HideSettings()
     {
-        Debug.Log("[Settings] HideSettings called");
+        DebugLogger.LogSettings("HideSettings called");
         Show(false);
     }
 
@@ -322,6 +322,6 @@ public class Settings : MonoBehaviour
         if (mainMenuRaycaster) mainMenuRaycaster.enabled = true;
 
         _settingsPlaying = false;
-        Debug.Log("[Settings] Opened in main menu with fade");
+        DebugLogger.LogSettings("Opened in main menu with fade");
     }
 }

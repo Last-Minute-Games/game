@@ -11,7 +11,7 @@ public class BlackjackEntrance : MinigameActivator
         
         if (popup == null)
         {
-            Debug.LogError($"[BlackjackEntrance] {name}: BlackjackPopupController not assigned! This entrance will not work. Please assign the popup in the Inspector.");
+            DebugLogger.LogError($"[BlackjackEntrance] {name}: BlackjackPopupController not assigned! This entrance will not work. Please assign the popup in the Inspector.");
         }
     }
 
@@ -26,24 +26,24 @@ public class BlackjackEntrance : MinigameActivator
         // Check for popup BEFORE acquiring lock
         if (popup == null)
         {
-            Debug.LogError($"[BlackjackEntrance] {name}: Cannot interact - popup is not assigned!");
+            DebugLogger.LogError($"[BlackjackEntrance] {name}: Cannot interact - popup is not assigned!");
             return;
         }
         
         if (player == null)
         {
-            Debug.LogError($"[BlackjackEntrance] {name}: Cannot interact - player reference is null!");
+            DebugLogger.LogError($"[BlackjackEntrance] {name}: Cannot interact - player reference is null!");
             return;
         }
 
         // Try to acquire the interaction lock
         if (!Systems.InteractionLockManager.TryLock())
         {
-            Debug.Log($"[BlackjackEntrance] {name}: Cannot interact - lock is already held");
+            DebugLogger.LogMinigame($"{name}: Cannot interact - lock is already held", "BlackjackEntrance");
             return; // Another interaction is in progress
         }
         
-        Debug.Log($"[BlackjackEntrance] {name}: Opening Blackjack minigame!");
+        DebugLogger.LogMinigame($"{name}: Opening Blackjack minigame!", "BlackjackEntrance");
         
         // Minigame pause will be set in popup.Show()
         GameFlags.SetFlag("InBlackjackMinigame");
@@ -61,7 +61,7 @@ public class BlackjackEntrance : MinigameActivator
         
         if (!hasPopup && baseCanInteract)
         {
-            Debug.LogWarning($"[BlackjackEntrance] {name}: In range but popup is not assigned!");
+            DebugLogger.LogWarning($"[BlackjackEntrance] {name}: In range but popup is not assigned!");
         }
         
         return baseCanInteract && hasPopup;
