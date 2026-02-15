@@ -210,7 +210,14 @@ namespace Dialogues
             roomAudioFadeCoroutine = StartCoroutine(FadeRoomAudio(false));
 
             _isMyConversation = false; // reset
-            
+
+            // Mark this NPC as "met" so it appears on the map
+            var mapTracker = GetComponent<NPCMapTracker>();
+            if (mapTracker != null && !string.IsNullOrEmpty(mapTracker.DisplayName))
+            {
+                GameFlags.SetFlag(mapTracker.MetFlagKey);
+            }
+
             OnDialogCompleted?.Invoke();
         }
 

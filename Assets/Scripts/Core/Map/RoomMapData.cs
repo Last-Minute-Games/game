@@ -25,6 +25,13 @@ public class RoomMapData : ScriptableObject
 
         [Tooltip("IDs of rooms this room connects to (bidirectional doors).")]
         public List<string> connectedRoomIds = new List<string>();
+
+        [Header("World Bounds (for real-time map tracking)")]
+        [Tooltip("Centre of the room trigger zone in world space.")]
+        public Vector2 worldCenter;
+
+        [Tooltip("Radius of the room trigger zone in world space.")]
+        public float worldRadius = 20f;
     }
 
     [Header("Rooms")]
@@ -39,5 +46,81 @@ public class RoomMapData : ScriptableObject
                 return rooms[i];
         }
         return null;
+    }
+
+    /// <summary>
+    /// Convert a world-space position to a normalised map position (0-1).
+    /// Finds the room whose world circle contains the point, then maps
+    /// the position proportionally within that room's rectangle on the map.
+    /// Falls back to the closest room if the point is outside all zones.
+    /// </summary>
+    public Vector2 WorldToMapPosition(Vector3 worldPos)
+    {
+        Vector2 wp = new Vector2(worldPos.x, worldPos.y);
+
+        // Phase 1: Find rooms that actually contain this point (inside their radius)
+        Room bestContainingRoom = null;
+        float bestContainedDist = float.MaxValue;
+
+        for (int i = 0; i < rooms.Count; i++)
+        {
+            var room = rooms[i];
+            if (room.worldRadius <= 0f) continue;
+
+            float dist = Vector2.Distance(wp, room.worldCenter);
+            
+            // Is the point inside this room's circle?
+            if (dist <= room.worldRadius)
+            {
+                // Pick the room where the point is most centered
+                if (dist < bestContainedDist)
+                {
+                    bestContainedDist = dist;
+                    bestContainingRoom = room;
+                }
+            }
+        }
+
+        // If we found a room that contains the point, use it
+        Room targetRoom = bestContainingRoom;
+
+        // Phase 2: Fallback if point is outside all rooms - find closest
+        if (targetRoom == null)
+        {
+            float closestDist = float.MaxValue;
+            for (int i = 0; i < rooms.Count; i++)
+            {
+                var room = rooms[i];
+                if (room.worldRadius <= 0f) continue;
+
+                float dist = Vector2.Distance(wp, room.worldCenter);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    targetRoom = room;
+                }
+            }
+        }
+
+        if (targetRoom == null) return Vector2.one * 0.5f; // centre fallback
+
+        // Normalise position within the room's world circle → -1..1
+        Vector2 localOffset = wp - targetRoom.worldCenter;
+        Vector2 normalised = targetRoom.worldRadius > 0f
+            ? localOffset / targetRoom.worldRadius
+            : Vector2.zero;
+
+        // Clamp to unit circle (only matters for fallback case)
+        if (normalised.sqrMagnitude > 1f)
+            normalised = normalised.normalized;
+
+        // Map from -1..1 to the room's rectangle on the map
+        // Room rectangle spans mapPosition ± mapSize/2
+        Vector2 mapPos = targetRoom.mapPosition + new Vector2(
+            normalised.x * targetRoom.mapSize.x * 0.45f,  // 0.45 keeps dot inside border
+            normalised.y * targetRoom.mapSize.y * 0.45f
+        );
+
+        return mapPos;
     }
 }

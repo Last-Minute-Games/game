@@ -5,15 +5,17 @@ using UnityEngine.UI;
 /// <summary>
 /// Full-screen room-map overlay for the Overworld scene.
 /// Press M (configurable) to toggle the map on/off.
-/// Shows every room as a labelled rectangle with connection lines
-/// and highlights the room the player is currently in.
+/// Shows every room as a labelled rectangle with connection lines,
+/// highlights the room the player is currently in, and displays
+/// real-time position markers for the player and discovered NPCs.
 ///
 /// Setup:
 ///   1. Create a RoomMapData asset (Assets → Create → Castle of Time → Room Map Data)
-///      and fill in the rooms, positions, sizes, and connections.
+///      and fill in the rooms, positions, sizes, connections, and world bounds.
 ///   2. Add this script to a GameObject in the Overworld scene.
 ///   3. Assign the RoomMapData asset.
-///   4. Play — press M to open/close the map.
+///   4. Attach NPCMapTracker to every named NPC in the scene.
+///   5. Play — press M to open/close the map.
 /// </summary>
 public class RoomMapUI : MonoBehaviour
 {
@@ -24,6 +26,7 @@ public class RoomMapUI : MonoBehaviour
 
     [Header("Input")]
     [SerializeField] private KeyCode toggleKey = KeyCode.M;
+    [SerializeField] private KeyCode debugRevealKey = KeyCode.R;
 
     [Header("Overlay Appearance")]
     [Tooltip("Background colour of the overlay.")]
@@ -45,6 +48,11 @@ public class RoomMapUI : MonoBehaviour
     [SerializeField] private float playerDotSize  = 16f;
     [SerializeField] private float pulseSpeed     = 2.5f;
     [SerializeField] private float pulseScale     = 1.35f;
+
+    [Header("NPC Indicators")]
+    [SerializeField] private float npcDotSize     = 12f;
+    [SerializeField] private int   npcLabelSize   = 12;
+    [SerializeField] private Color npcLabelColor   = new Color(0.9f, 0.85f, 0.75f, 0.9f);
 
     [Header("Labels")]
     [SerializeField] private int   fontSize  = 18;
@@ -68,6 +76,17 @@ public class RoomMapUI : MonoBehaviour
     private RectTransform _playerDot;
     private Image _playerDotImage;
 
+    // NPC tracking
+    private readonly Dictionary<NPCMapTracker, RectTransform> _npcDots   = new();
+    private readonly Dictionary<NPCMapTracker, Text>          _npcLabels = new();
+    private RectTransform _legendPanel;
+    private readonly Dictionary<NPCMapTracker, GameObject> _legendEntries = new();
+
+    // Player ref
+    private Transform _playerTransform;
+    private Sprite _circleSprite;
+    // Debug
+    private bool _debugRevealAllNPCs = false;
     // ─────────────────── Lifecycle ───────────────────
 
     void Start()
@@ -78,6 +97,14 @@ public class RoomMapUI : MonoBehaviour
             enabled = false;
             return;
         }
+
+        _circleSprite = MakeCircleSprite(64);
+
+        var player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null) _playerTransform = player.transform;
+
+        // Auto-populate world bounds from the scene's RoomZoneTags
+        PopulateWorldBoundsFromScene();
 
         BuildCanvas();
         BuildOverlay();
@@ -92,9 +119,20 @@ public class RoomMapUI : MonoBehaviour
             if (!_isOpen && GlobalPause.IsPaused) return;
             ToggleMap();
         }
+// Debug: Toggle reveal all NPCs (works when map is open)
+        if (_isOpen && Input.GetKeyDown(debugRevealKey))
+        {
+            _debugRevealAllNPCs = !_debugRevealAllNPCs;
+            Debug.Log($"[RoomMapUI] Debug reveal all NPCs: {(_debugRevealAllNPCs ? "ON" : "OFF")}");
+        }
 
+        
         if (_isOpen)
+        {
+            UpdatePlayerDot();
+            UpdateNPCDots();
             AnimatePlayerDot();
+        }
     }
 
     void OnDestroy()
@@ -112,11 +150,41 @@ public class RoomMapUI : MonoBehaviour
         if (_isOpen)
         {
             GlobalPause.SetPaused(true);
+
+            // Ensure we have the player reference
+            if (_playerTransform == null)
+            {
+                var player = GameObject.FindGameObjectWithTag("Player");
+                if (player != null) _playerTransform = player.transform;
+            }
+
             RefreshHighlight();
+            // Immediately position dots
+            UpdatePlayerDot();
+            UpdateNPCDots();
         }
         else
         {
             GlobalPause.SetPaused(false);
+        }
+    }
+
+    // ─────────────────── Auto-Populate World Bounds ───────────────────
+
+    /// <summary>
+    /// Reads every RoomZoneTag in the scene and copies its world-space
+    /// centre + radius into the matching RoomMapData.Room entry.
+    /// Runs once at Start so the map just works — no editor steps needed.
+    /// </summary>
+    private void PopulateWorldBoundsFromScene()
+    {
+        foreach (var zone in RoomZoneTag.AllZones)
+        {
+            var room = mapData.GetRoom(zone.roomId);
+            if (room == null) continue;
+
+            room.worldCenter = zone.WorldCenter;
+            room.worldRadius = zone.WorldRadius;
         }
     }
 
@@ -196,15 +264,18 @@ public class RoomMapUI : MonoBehaviour
         foreach (var room in mapData.rooms)
             DrawRoom(room);
 
-        // ── Player dot (on top) ──
+        // ── Player dot (on top of rooms) ──
         var dotGO = MakeUIObject("PlayerDot", _mapArea);
         _playerDot = dotGO.GetComponent<RectTransform>();
         _playerDot.sizeDelta = new Vector2(playerDotSize, playerDotSize);
 
         _playerDotImage = dotGO.AddComponent<Image>();
-        _playerDotImage.sprite = MakeCircleSprite(64);
+        _playerDotImage.sprite = _circleSprite;
         _playerDotImage.color = playerDotColor;
         _playerDotImage.raycastTarget = false;
+
+        // ── NPC Legend panel (right edge) ──
+        BuildLegendPanel();
     }
 
     // ─────────────────── Draw Room ───────────────────
@@ -336,19 +407,231 @@ public class RoomMapUI : MonoBehaviour
             _roomBgs[room.roomId].color     = isCurrent ? currentRoomColor  : roomColor;
             _roomBorders[room.roomId].color  = isCurrent ? currentBorderColor : roomBorderColor;
         }
+    }
 
-        // Move player dot
-        var roomEntry = mapData.GetRoom(current);
-        if (roomEntry != null)
-        {
-            _playerDot.gameObject.SetActive(true);
-            _playerDot.anchorMin = _playerDot.anchorMax = roomEntry.mapPosition;
-            _playerDot.anchoredPosition = Vector2.zero;
-        }
-        else
+    // ─────────────────── Real-Time Player Tracking ───────────────────
+
+    private void UpdatePlayerDot()
+    {
+        if (_playerTransform == null)
         {
             _playerDot.gameObject.SetActive(false);
+            return;
         }
+
+        _playerDot.gameObject.SetActive(true);
+        Vector2 mapPos = mapData.WorldToMapPosition(_playerTransform.position);
+        _playerDot.anchorMin = _playerDot.anchorMax = mapPos;
+        _playerDot.anchoredPosition = Vector2.zero;
+    }
+
+    // ─────────────────── Real-Time NPC Tracking ───────────────────
+
+    private void UpdateNPCDots()
+    {
+        // Mark existing dots for potential cleanup
+        var staleTrackers = new HashSet<NPCMapTracker>(_npcDots.Keys);
+
+        foreach (var tracker in NPCMapTracker.AllTrackers)
+        {
+            staleTrackers.Remove(tracker);
+
+            // Only show NPCs the player has interacted with (unless debug reveal is active)
+            bool shouldShow = tracker.IsDiscovered || _debugRevealAllNPCs;
+            
+            if (!shouldShow)
+            {
+                if (_npcDots.ContainsKey(tracker))
+                {
+                    _npcDots[tracker].gameObject.SetActive(false);
+                    if (_legendEntries.ContainsKey(tracker))
+                        _legendEntries[tracker].SetActive(false);
+                    if (_npcLabels.ContainsKey(tracker))
+                        _npcLabels[tracker].gameObject.SetActive(false);
+                }
+                continue;
+            }
+
+            // Create dot if we haven't yet
+            if (!_npcDots.ContainsKey(tracker))
+                CreateNPCDot(tracker);
+
+            // Position the dot
+            var dot = _npcDots[tracker];
+            dot.gameObject.SetActive(true);
+            Vector2 mapPos = mapData.WorldToMapPosition(tracker.WorldPosition);
+            dot.anchorMin = dot.anchorMax = mapPos;
+            dot.anchoredPosition = Vector2.zero;
+
+            // Position the label above the dot
+            if (_npcLabels.TryGetValue(tracker, out var label))
+            {
+                label.gameObject.SetActive(true);
+                var labelRT = label.GetComponent<RectTransform>();
+                labelRT.anchorMin = labelRT.anchorMax = mapPos;
+                labelRT.anchoredPosition = new Vector2(0, npcDotSize * 0.5f + 2f);
+            }
+
+            // Show legend entry
+            if (_legendEntries.ContainsKey(tracker))
+                _legendEntries[tracker].SetActive(true);
+        }
+
+        // Clean up dots for trackers that are gone (destroyed NPC, etc.)
+        foreach (var stale in staleTrackers)
+        {
+            if (_npcDots.TryGetValue(stale, out var dot))
+            {
+                Destroy(dot.gameObject);
+                _npcDots.Remove(stale);
+            }
+            if (_npcLabels.TryGetValue(stale, out var label))
+            {
+                Destroy(label.gameObject);
+                _npcLabels.Remove(stale);
+            }
+            if (_legendEntries.TryGetValue(stale, out var entry))
+            {
+                Destroy(entry);
+                _legendEntries.Remove(stale);
+            }
+        }
+    }
+
+    private void CreateNPCDot(NPCMapTracker tracker)
+    {
+        // Dot
+        var dotGO = MakeUIObject("NPC_" + tracker.DisplayName, _mapArea);
+        var dotRT = dotGO.GetComponent<RectTransform>();
+        dotRT.sizeDelta = new Vector2(npcDotSize, npcDotSize);
+
+        var dotImg = dotGO.AddComponent<Image>();
+        dotImg.sprite = _circleSprite;
+        dotImg.color = tracker.MarkerColor;
+        dotImg.raycastTarget = false;
+
+        _npcDots[tracker] = dotRT;
+
+        // Floating label above the dot
+        var labelGO = MakeUIObject("NPC_Label_" + tracker.DisplayName, _mapArea);
+        var labelRT = labelGO.GetComponent<RectTransform>();
+        labelRT.sizeDelta = new Vector2(120, 18);
+        labelRT.pivot = new Vector2(0.5f, 0f);
+
+        var label = labelGO.AddComponent<Text>();
+        label.text = tracker.DisplayName;
+        label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        label.fontSize = npcLabelSize;
+        label.color = npcLabelColor;
+        label.alignment = TextAnchor.MiddleCenter;
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
+        label.verticalOverflow = VerticalWrapMode.Overflow;
+        label.raycastTarget = false;
+
+        // Add subtle shadow for readability
+        var shadow = labelGO.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0, 0, 0, 0.7f);
+        shadow.effectDistance = new Vector2(1, -1);
+
+        _npcLabels[tracker] = label;
+
+        // Add a legend entry
+        CreateLegendEntry(tracker);
+    }
+
+    // ─────────────────── Legend Panel ───────────────────
+
+    private void BuildLegendPanel()
+    {
+        // Container anchored to the top-right of the overlay
+        var panelGO = MakeUIObject("NPCLegend", _root.transform);
+        _legendPanel = panelGO.GetComponent<RectTransform>();
+        _legendPanel.anchorMin = new Vector2(1f, 1f);
+        _legendPanel.anchorMax = new Vector2(1f, 1f);
+        _legendPanel.pivot = new Vector2(1f, 1f);
+        _legendPanel.anchoredPosition = new Vector2(-20, -80);
+        _legendPanel.sizeDelta = new Vector2(180, 30); // will grow
+
+        // Semi-transparent background
+        var bg = panelGO.AddComponent<Image>();
+        bg.color = new Color(0.06f, 0.05f, 0.08f, 0.85f);
+        bg.raycastTarget = false;
+
+        // Vertical layout
+        var layout = panelGO.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(10, 10, 8, 8);
+        layout.spacing = 4;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        layout.childAlignment = TextAnchor.UpperLeft;
+
+        // Content size fitter so it grows with entries
+        var fitter = panelGO.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+        // Legend title
+        var titleGO = MakeUIObject("LegendTitle", _legendPanel);
+        var titleRT = titleGO.GetComponent<RectTransform>();
+        titleRT.sizeDelta = new Vector2(160, 20);
+
+        var titleText = titleGO.AddComponent<Text>();
+        titleText.text = "— Tracked NPCs —";
+        titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        titleText.fontSize = 13;
+        titleText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f);
+        titleText.alignment = TextAnchor.MiddleCenter;
+        titleText.raycastTarget = false;
+
+        // Player entry (always visible)
+        CreateLegendRow(_legendPanel, "You", playerDotColor, true);
+    }
+
+    private void CreateLegendEntry(NPCMapTracker tracker)
+    {
+        var entry = CreateLegendRow(_legendPanel, tracker.DisplayName, tracker.MarkerColor, false);
+        _legendEntries[tracker] = entry;
+    }
+
+    private GameObject CreateLegendRow(RectTransform parent, string label, Color dotColor, bool alwaysVisible)
+    {
+        var rowGO = MakeUIObject("Legend_" + label, parent);
+        var rowRT = rowGO.GetComponent<RectTransform>();
+        rowRT.sizeDelta = new Vector2(160, 18);
+
+        var rowLayout = rowGO.AddComponent<HorizontalLayoutGroup>();
+        rowLayout.spacing = 6;
+        rowLayout.childForceExpandWidth = false;
+        rowLayout.childForceExpandHeight = false;
+        rowLayout.childAlignment = TextAnchor.MiddleLeft;
+        rowLayout.padding = new RectOffset(2, 2, 0, 0);
+
+        // Colour dot
+        var colorGO = MakeUIObject("Dot", rowGO.transform);
+        var colorRT = colorGO.GetComponent<RectTransform>();
+        colorRT.sizeDelta = new Vector2(10, 10);
+        var colorImg = colorGO.AddComponent<Image>();
+        colorImg.sprite = _circleSprite;
+        colorImg.color = dotColor;
+        colorImg.raycastTarget = false;
+        var colorLE = colorGO.AddComponent<LayoutElement>();
+        colorLE.preferredWidth = 10;
+        colorLE.preferredHeight = 10;
+
+        // Name label
+        var nameGO = MakeUIObject("Name", rowGO.transform);
+        var nameText = nameGO.AddComponent<Text>();
+        nameText.text = label;
+        nameText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        nameText.fontSize = 12;
+        nameText.color = npcLabelColor;
+        nameText.alignment = TextAnchor.MiddleLeft;
+        nameText.raycastTarget = false;
+        var nameLE = nameGO.AddComponent<LayoutElement>();
+        nameLE.preferredWidth = 130;
+        nameLE.preferredHeight = 18;
+
+        return rowGO;
     }
 
     // ─────────────────── Player Dot Pulse ───────────────────

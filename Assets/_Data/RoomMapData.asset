@@ -24,6 +24,8 @@ MonoBehaviour:
     - kitchen
     - study
     - dining
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
   - roomName: Throne Room
     roomId: throne
     mapPosition: {x: 0.5, y: 0.72}
@@ -31,12 +33,16 @@ MonoBehaviour:
     connectedRoomIds:
     - ballroom
     - armory
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
   - roomName: Armory
     roomId: armory
     mapPosition: {x: 0.35, y: 0.72}
     mapSize: {x: 0.12, y: 0.09}
     connectedRoomIds:
     - throne
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
   - roomName: Kitchen
     roomId: kitchen
     mapPosition: {x: 0.8, y: 0.6}
@@ -45,12 +51,16 @@ MonoBehaviour:
     - ballroom
     - classroom
     - dining
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
   - roomName: Classroom
     roomId: classroom
     mapPosition: {x: 0.65, y: 0.65}
     mapSize: {x: 0.12, y: 0.09}
     connectedRoomIds:
     - kitchen
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
   - roomName: Dining Room
     roomId: dining
     mapPosition: {x: 0.8, y: 0.35}
@@ -58,6 +68,8 @@ MonoBehaviour:
     connectedRoomIds:
     - ballroom
     - kitchen
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
   - roomName: Study Room
     roomId: study
     mapPosition: {x: 0.31, y: 0.5}
@@ -66,6 +78,8 @@ MonoBehaviour:
     - ballroom
     - bedroom
     - library
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
   - roomName: Library
     roomId: library
     mapPosition: {x: 0.31, y: 0.35}
@@ -73,15 +87,21 @@ MonoBehaviour:
     connectedRoomIds:
     - ballroom
     - study
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
   - roomName: Patio
     roomId: patio
     mapPosition: {x: 0.5, y: 0.3}
     mapSize: {x: 0.13, y: 0.1}
     connectedRoomIds:
     - ballroom
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
   - roomName: Bedroom
     roomId: bedroom
     mapPosition: {x: 0.15, y: 0.5}
     mapSize: {x: 0.12, y: 0.09}
     connectedRoomIds:
     - study
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
