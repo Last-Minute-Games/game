@@ -29,8 +29,13 @@ public class RoomMapUI : MonoBehaviour
     [SerializeField] private KeyCode toggleKey = KeyCode.M;
     [SerializeField] private KeyCode debugRevealKey = KeyCode.R;
 
+    [Header("Journal Background")]
+    [Tooltip("The fully-open journal sprite used as the map background. " +
+             "Assign JournalOverworld-Sheet_5 from Assets/Sprites/UI/journal/JournalOverworld-Sheet.png.")]
+    [SerializeField] private Sprite journalSprite;
+
     [Header("Overlay Appearance")]
-    [Tooltip("Background colour of the overlay.")]
+    [Tooltip("Background colour of the overlay (behind the journal).")]
     [SerializeField] private Color overlayColor = new Color(0.04f, 0.03f, 0.06f, 0.92f);
 
     [Header("Room Appearance")]
@@ -87,6 +92,7 @@ public class RoomMapUI : MonoBehaviour
     private Canvas _canvas;
     private GameObject _root;
     private RectTransform _mapArea;
+    private Transform _mapContentParent; // journal or root
     private bool _isOpen;
 
     // Caches
@@ -105,6 +111,8 @@ public class RoomMapUI : MonoBehaviour
     // Player ref
     private Transform _playerTransform;
     private Sprite _circleSprite;
+    // Sound
+    private EnvironmentSoundHandler _soundHandler;
     // Debug
     private bool _debugRevealAllNPCs = false;
     // ─────────────────── Lifecycle ───────────────────
@@ -120,6 +128,11 @@ public class RoomMapUI : MonoBehaviour
 
         _circleSprite = MakeCircleSprite(64);
 
+        // Find sound handler for journal page-flip audio
+        var soundHandlerGO = GameObject.Find("EnvironmentSoundHandler");
+        if (soundHandlerGO != null)
+            _soundHandler = soundHandlerGO.GetComponent<EnvironmentSoundHandler>();
+
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player != null) _playerTransform = player.transform;
 
@@ -129,6 +142,7 @@ public class RoomMapUI : MonoBehaviour
             var tex = Resources.Load<Texture2D>("Dialogues/Nikolaus/NikolausPortrait");
             if (tex != null)
             {
+                tex.filterMode = FilterMode.Point; // Crisp rendering, no blur
                 playerPortrait = Sprite.Create(
                     tex,
                     new Rect(0, 0, tex.width, tex.height),
@@ -178,8 +192,22 @@ public class RoomMapUI : MonoBehaviour
 
     private void ToggleMap()
     {
+        // Don't open while journal is already open
+        if (!_isOpen)
+        {
+            var journal = FindFirstObjectByType<JournalUI>();
+            if (journal != null && journal.IsOpen) return;
+        }
+
         _isOpen = !_isOpen;
         _root.SetActive(_isOpen);
+
+        // Play page-flip sound (same as journal open/close)
+        if (_soundHandler != null)
+        {
+            try { _soundHandler.PlayJournalSound(_isOpen); }
+            catch (System.Exception ex) { Debug.LogWarning($"[RoomMapUI] Journal sound failed: {ex.Message}"); }
+        }
 
         if (_isOpen)
         {
@@ -230,6 +258,7 @@ public class RoomMapUI : MonoBehaviour
         _canvas = go.AddComponent<Canvas>();
         _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         _canvas.sortingOrder = 100; // above most UI
+        _canvas.pixelPerfect = true; // Crisp rendering
 
         var scaler = go.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -245,17 +274,54 @@ public class RoomMapUI : MonoBehaviour
         _root = MakeUIObject("MapOverlay", _canvas.transform);
         var rootRect = Stretch(_root);
 
-        var bg = _root.AddComponent<Image>();
-        bg.color = overlayColor;
-        bg.raycastTarget = true; // blocks clicks through
+        // Dark scrim behind the journal
+        var scrim = _root.AddComponent<Image>();
+        scrim.color = overlayColor;
+        scrim.raycastTarget = true; // blocks clicks through
 
-        // ── Title ──
-        var titleGO = MakeUIObject("MapTitle", _root.transform);
+        // ── Journal background image (centred, preserving aspect ratio) ──
+        Transform mapContentParent = _root.transform; // default parent for map content
+        if (journalSprite != null)
+        {
+            var journalGO = MakeUIObject("JournalBG", _root.transform);
+            var journalRT = journalGO.GetComponent<RectTransform>();
+            journalRT.anchorMin = new Vector2(0.5f, 0.5f);
+            journalRT.anchorMax = new Vector2(0.5f, 0.5f);
+            journalRT.pivot = new Vector2(0.5f, 0.5f);
+            journalRT.anchoredPosition = Vector2.zero;
+
+            // Size the journal to fill most of the screen while keeping aspect ratio
+            float spriteW = journalSprite.rect.width;
+            float spriteH = journalSprite.rect.height;
+            float aspect = spriteW / spriteH;
+            // Target ~85% of the reference resolution height
+            float targetH = 1080f * 0.85f;
+            float targetW = targetH * aspect;
+            // Clamp width to 90% of reference width
+            if (targetW > 1920f * 0.90f)
+            {
+                targetW = 1920f * 0.90f;
+                targetH = targetW / aspect;
+            }
+            journalRT.sizeDelta = new Vector2(targetW, targetH);
+
+            var journalImg = journalGO.AddComponent<Image>();
+            journalImg.sprite = journalSprite;
+            journalImg.preserveAspect = true;
+            journalImg.raycastTarget = false;
+
+            mapContentParent = journalGO.transform;
+        }
+
+        _mapContentParent = mapContentParent; // Store for legend panel
+
+        // ── Title (inside the journal) ──
+        var titleGO = MakeUIObject("MapTitle", mapContentParent);
         var titleRect = titleGO.GetComponent<RectTransform>();
         titleRect.anchorMin = new Vector2(0.5f, 1f);
         titleRect.anchorMax = new Vector2(0.5f, 1f);
         titleRect.pivot     = new Vector2(0.5f, 1f);
-        titleRect.anchoredPosition = new Vector2(0, -30);
+        titleRect.anchoredPosition = new Vector2(0, 10);
         titleRect.sizeDelta = new Vector2(500, 50);
 
         var titleText = titleGO.AddComponent<Text>();
@@ -266,13 +332,13 @@ public class RoomMapUI : MonoBehaviour
         titleText.alignment = TextAnchor.MiddleCenter;
         titleText.raycastTarget = false;
 
-        // ── Hint ──
+        // ── Hint (below the journal) ──
         var hintGO = MakeUIObject("MapHint", _root.transform);
         var hintRect = hintGO.GetComponent<RectTransform>();
         hintRect.anchorMin = new Vector2(0.5f, 0f);
         hintRect.anchorMax = new Vector2(0.5f, 0f);
         hintRect.pivot     = new Vector2(0.5f, 0f);
-        hintRect.anchoredPosition = new Vector2(0, 20);
+        hintRect.anchoredPosition = new Vector2(0, 15);
         hintRect.sizeDelta = new Vector2(400, 30);
 
         var hintText = hintGO.AddComponent<Text>();
@@ -283,11 +349,21 @@ public class RoomMapUI : MonoBehaviour
         hintText.alignment = TextAnchor.MiddleCenter;
         hintText.raycastTarget = false;
 
-        // ── Map area (padded region where rooms are placed) ──
-        var mapGO = MakeUIObject("MapArea", _root.transform);
+        // ── Map area (padded region inside the journal pages) ──
+        var mapGO = MakeUIObject("MapArea", mapContentParent);
         _mapArea = mapGO.GetComponent<RectTransform>();
-        _mapArea.anchorMin = new Vector2(0.08f, 0.10f);
-        _mapArea.anchorMax = new Vector2(0.92f, 0.88f);
+        if (journalSprite != null)
+        {
+            // Inset the map area with generous padding to stay within the journal pages
+            // The open journal has a spine/binding area — offset content slightly right
+            _mapArea.anchorMin = new Vector2(0.12f, 0.12f);
+            _mapArea.anchorMax = new Vector2(0.88f, 0.80f);
+        }
+        else
+        {
+            _mapArea.anchorMin = new Vector2(0.08f, 0.10f);
+            _mapArea.anchorMax = new Vector2(0.92f, 0.88f);
+        }
         _mapArea.offsetMin = Vector2.zero;
         _mapArea.offsetMax = Vector2.zero;
 
@@ -664,13 +740,13 @@ public class RoomMapUI : MonoBehaviour
 
     private void BuildLegendPanel()
     {
-        // Container anchored to the top-right of the overlay
-        var panelGO = MakeUIObject("NPCLegend", _root.transform);
+        // Container anchored to the top-right of the journal
+        var panelGO = MakeUIObject("NPCLegend", _mapContentParent);
         _legendPanel = panelGO.GetComponent<RectTransform>();
         _legendPanel.anchorMin = new Vector2(1f, 1f);
         _legendPanel.anchorMax = new Vector2(1f, 1f);
         _legendPanel.pivot = new Vector2(1f, 1f);
-        _legendPanel.anchoredPosition = new Vector2(-20, -80);
+        _legendPanel.anchoredPosition = new Vector2(-300, -100);
         _legendPanel.sizeDelta = new Vector2(200, 30); // will grow
 
         // Semi-transparent background
@@ -697,7 +773,7 @@ public class RoomMapUI : MonoBehaviour
         titleRT.sizeDelta = new Vector2(160, 20);
 
         var titleText = titleGO.AddComponent<Text>();
-        titleText.text = "— Tracked NPCs —";
+        titleText.text = "— Characters —";
         titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         titleText.fontSize = 13;
         titleText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f);
@@ -747,6 +823,12 @@ public class RoomMapUI : MonoBehaviour
             thumbImg.sprite = portrait;
             thumbImg.preserveAspect = true;
             thumbImg.raycastTarget = false;
+            
+            // Ensure crisp rendering (no bilinear filtering)
+            if (portrait != null && portrait.texture != null)
+            {
+                portrait.texture.filterMode = FilterMode.Point;
+            }
 
             // Frame overlay (if available)
             if (portraitFrame != null)

@@ -97,6 +97,7 @@ public class NPCMapTracker : MonoBehaviour
             var tex = Resources.Load<Texture2D>(portraitResourcePath);
             if (tex != null)
             {
+                tex.filterMode = FilterMode.Point; // Crisp rendering, no blur
                 _cachedPortrait = TextureToSprite(tex);
                 return;
             }
@@ -108,6 +109,7 @@ public class NPCMapTracker : MonoBehaviour
             var tex = Resources.Load<Texture2D>(path);
             if (tex != null)
             {
+                tex.filterMode = FilterMode.Point; // Crisp rendering, no blur
                 _cachedPortrait = TextureToSprite(tex);
                 return;
             }
@@ -119,6 +121,7 @@ public class NPCMapTracker : MonoBehaviour
             var tex = Resources.Load<Texture2D>(path);
             if (tex != null)
             {
+                tex.filterMode = FilterMode.Point; // Crisp rendering, no blur
                 _cachedPortrait = TextureToSprite(tex);
                 return;
             }
