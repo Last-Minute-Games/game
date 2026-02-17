@@ -318,7 +318,7 @@ namespace Dialogues
 
             while (elapsed < musicFadeDuration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 float t = elapsed / musicFadeDuration;
                 conversationAudioSource.volume = Mathf.Lerp(startVolume, targetVolume, t);
                 yield return null;
@@ -361,7 +361,7 @@ namespace Dialogues
 
             while (elapsed < roomAudioFadeDuration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 float t = elapsed / roomAudioFadeDuration;
 
                 for (int i = 0; i < roomAudioZones.Length; i++)
