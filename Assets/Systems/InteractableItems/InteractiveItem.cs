@@ -172,7 +172,13 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     void OnDialogStart()
     {
         // Only respond if THIS item started the conversation
-        if (!isMyConversation) return;
+        if (!isMyConversation) 
+        {
+            DebugLogger.LogInteractiveItem("OnDialogStart called but not my conversation - ignoring", name);
+            return;
+        }
+
+        DebugLogger.LogInteractiveItem("=== DIALOG START ===", name);
 
         // Pause NPCs and timer via GlobalPause (but not player input or timescale)
         GlobalPause.SetMinigamePaused(true);
@@ -184,10 +190,10 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         // Start conversation music
         if (conversationAudioSource != null && conversationMusic != null)
         {
+            DebugLogger.LogInteractiveItem($"Starting conversation music '{conversationMusic.name}' - Current volume: {conversationAudioSource.volume}, Is playing: {conversationAudioSource.isPlaying}", name);
             if (fadeCoroutine != null)
                 StopCoroutine(fadeCoroutine);
             fadeCoroutine = StartCoroutine(FadeMusic(true));
-            DebugLogger.LogInteractiveItem($"Starting conversation music '{conversationMusic.name}'", name);
         }
         else
         {
@@ -195,6 +201,7 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         }
 
         // Duck room audio
+        DebugLogger.LogInteractiveItem("Ducking room audio...", name);
         if (roomAudioFadeCoroutine != null)
             StopCoroutine(roomAudioFadeCoroutine);
         roomAudioFadeCoroutine = StartCoroutine(FadeRoomAudio(true));
@@ -255,15 +262,22 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
     private System.Collections.IEnumerator FadeMusic(bool fadeIn)
     {
-        if (conversationAudioSource == null) yield break;
+        if (conversationAudioSource == null) 
+        {
+            DebugLogger.LogInteractiveItem("FadeMusic: conversationAudioSource is NULL!", name);
+            yield break;
+        }
 
         float startVolume = conversationAudioSource.volume;
         float targetVolume = fadeIn ? musicVolume : 0f;
         float elapsed = 0f;
 
+        DebugLogger.LogInteractiveItem($"FadeMusic: {(fadeIn ? "Fading IN" : "Fading OUT")} from {startVolume} to {targetVolume} over {musicFadeDuration}s", name);
+
         if (fadeIn && !conversationAudioSource.isPlaying)
         {
             conversationAudioSource.Play();
+            DebugLogger.LogInteractiveItem($"FadeMusic: Started playing audio clip '{conversationMusic.name}'", name);
         }
 
         while (elapsed < musicFadeDuration)
@@ -275,10 +289,12 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         }
 
         conversationAudioSource.volume = targetVolume;
+        DebugLogger.LogInteractiveItem($"FadeMusic: Fade complete. Final volume = {conversationAudioSource.volume}, Is playing: {conversationAudioSource.isPlaying}", name);
 
         if (!fadeIn)
         {
             conversationAudioSource.Stop();
+            DebugLogger.LogInteractiveItem("FadeMusic: Stopped audio playback", name);
         }
 
         fadeCoroutine = null;
@@ -286,7 +302,13 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
     private System.Collections.IEnumerator FadeRoomAudio(bool duck)
     {
-        if (roomAudioZones == null || roomAudioZones.Length == 0) yield break;
+        if (roomAudioZones == null || roomAudioZones.Length == 0) 
+        {
+            DebugLogger.LogInteractiveItem($"No room audio zones found to {(duck ? "duck" : "restore")}", name);
+            yield break;
+        }
+
+        DebugLogger.LogInteractiveItem($"Found {roomAudioZones.Length} room audio zones to {(duck ? "duck" : "restore")}", name);
 
         float elapsed = 0f;
 
@@ -295,7 +317,10 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         for (int i = 0; i < roomAudioZones.Length; i++)
         {
             if (roomAudioZones[i] != null && roomAudioZones[i].roomMusic != null)
+            {
                 startVolumes[i] = roomAudioZones[i].roomMusic.volume;
+                DebugLogger.LogInteractiveItem($"  Zone {i} '{roomAudioZones[i].name}': Current volume = {startVolumes[i]}, Target = {(duck ? roomAudioDuckVolume : originalRoomVolumes[i])}", name);
+            }
         }
 
         while (elapsed < roomAudioFadeDuration)
@@ -319,7 +344,27 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         {
             if (roomAudioZones[i] != null && roomAudioZones[i].roomMusic != null)
             {
-                roomAudioZones[i].roomMusic.volume = duck ? roomAudioDuckVolume : originalRoomVolumes[i];
+                float targetVolume = duck ? roomAudioDuckVolume : originalRoomVolumes[i];
+                roomAudioZones[i].roomMusic.volume = targetVolume;
+                
+                // If ducking to 0 or near 0, also pause the audio to save CPU
+                if (duck && roomAudioDuckVolume < 0.01f)
+                {
+                    if (roomAudioZones[i].roomMusic.isPlaying)
+                    {
+                        roomAudioZones[i].roomMusic.Pause();
+                        DebugLogger.LogInteractiveItem($"  Paused room audio zone '{roomAudioZones[i].name}'", name);
+                    }
+                }
+                else if (!duck)
+                {
+                    // Resume if it was paused
+                    if (!roomAudioZones[i].roomMusic.isPlaying)
+                    {
+                        roomAudioZones[i].roomMusic.UnPause();
+                        DebugLogger.LogInteractiveItem($"  Unpaused room audio zone '{roomAudioZones[i].name}'", name);
+                    }
+                }
             }
         }
 

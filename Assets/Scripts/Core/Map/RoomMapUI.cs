@@ -1,0 +1,928 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// Full-screen room-map overlay for the Overworld scene.
+/// Press M (configurable) to toggle the map on/off.
+/// Shows every room as a labelled rectangle with connection lines,
+/// highlights the room the player is currently in, and displays
+/// real-time Wizard101-style portrait markers for the player and discovered NPCs.
+///
+/// Setup:
+///   1. Create a RoomMapData asset (Assets → Create → Castle of Time → Room Map Data)
+///      and fill in the rooms, positions, sizes, connections, and world bounds.
+///   2. Add this script to a GameObject in the Overworld scene.
+///   3. Assign the RoomMapData asset.
+///   4. Assign the portraitFrame sprite from Assets/UIs/portraitFrame.png.
+///   5. Attach NPCMapTracker to every named NPC in the scene.
+///   6. Play — press M to open/close the map.
+/// </summary>
+public class RoomMapUI : MonoBehaviour
+{
+    // ─────────────────── Inspector ───────────────────
+
+    [Header("Data")]
+    [SerializeField] private RoomMapData mapData;
+
+    [Header("Input")]
+    [SerializeField] private KeyCode toggleKey = KeyCode.M;
+    [SerializeField] private KeyCode debugRevealKey = KeyCode.R;
+
+    [Header("Journal Background")]
+    [Tooltip("The fully-open journal sprite used as the map background. " +
+             "Assign JournalOverworld-Sheet_5 from Assets/Sprites/UI/journal/JournalOverworld-Sheet.png.")]
+    [SerializeField] private Sprite journalSprite;
+
+    [Header("Overlay Appearance")]
+    [Tooltip("Background colour of the overlay (behind the journal).")]
+    [SerializeField] private Color overlayColor = new Color(0.04f, 0.03f, 0.06f, 0.92f);
+
+    [Header("Room Appearance")]
+    [SerializeField] private Color roomColor        = new Color(0.18f, 0.16f, 0.24f, 1f);
+    [SerializeField] private Color roomBorderColor   = new Color(0.55f, 0.48f, 0.38f, 1f);
+    [SerializeField] private Color currentRoomColor  = new Color(0.35f, 0.22f, 0.12f, 1f);
+    [SerializeField] private Color currentBorderColor = new Color(1f, 0.82f, 0.45f, 1f);
+    [SerializeField] private float borderWidth = 3f;
+
+    [Header("Connection Lines")]
+    [SerializeField] private Color lineColor = new Color(0.55f, 0.48f, 0.38f, 0.6f);
+    [SerializeField] private float lineWidth = 3f;
+
+    [Header("Portrait Markers (Wizard101 Style)")]
+    [Tooltip("The decorative frame sprite placed around each portrait. " +
+             "Assign from Assets/UIs/portraitFrame.png.")]
+    [SerializeField] private Sprite portraitFrame;
+
+    [Tooltip("Size of each portrait marker on the map (pixels).")]
+    [SerializeField] private float portraitMarkerSize = 40f;
+
+    [Tooltip("How much larger the frame is relative to the portrait (multiplier).")]
+    [SerializeField] private float frameScale = 1.35f;
+
+    [Tooltip("Tint colour for the portrait frame on NPC markers.")]
+    [SerializeField] private Color npcFrameTint = new Color(0.75f, 0.65f, 0.50f, 1f);
+
+    [Tooltip("Tint colour for the portrait frame on the player marker.")]
+    [SerializeField] private Color playerFrameTint = new Color(1f, 0.85f, 0.3f, 1f);
+
+    [Header("Player Indicator")]
+    [Tooltip("Optional player portrait sprite. If empty, a gold pulsing dot is used.")]
+    [SerializeField] private Sprite playerPortrait;
+    [SerializeField] private Color playerDotColor = new Color(1f, 0.85f, 0.3f, 1f);
+    [SerializeField] private float playerDotSize  = 16f;
+    [SerializeField] private float pulseSpeed     = 2.5f;
+    [SerializeField] private float pulseScale     = 1.35f;
+
+    [Header("NPC Indicators")]
+    [SerializeField] private float npcDotSize     = 12f;
+    [SerializeField] private int   npcLabelSize   = 12;
+    [SerializeField] private Color npcLabelColor   = new Color(0.9f, 0.85f, 0.75f, 0.9f);
+
+    [Header("Labels")]
+    [SerializeField] private int   fontSize  = 18;
+    [SerializeField] private Color fontColor = new Color(0.9f, 0.85f, 0.75f, 1f);
+
+    [Header("Title")]
+    [SerializeField] private string mapTitle = "Castle Map";
+    [SerializeField] private int titleFontSize = 32;
+
+    // ─────────────────── Runtime ───────────────────
+
+    private Canvas _canvas;
+    private GameObject _root;
+    private RectTransform _mapArea;
+    private Transform _mapContentParent; // journal or root
+    private bool _isOpen;
+
+    // Caches
+    private readonly Dictionary<string, Image>   _roomBgs     = new();
+    private readonly Dictionary<string, Image>   _roomBorders = new();
+    private readonly Dictionary<string, Text>    _roomLabels  = new();
+    private RectTransform _playerMarker;     // root of the player portrait marker group
+    private Image _playerPortraitImage;       // the portrait image (or gold dot fallback)
+
+    // NPC tracking
+    private readonly Dictionary<NPCMapTracker, RectTransform> _npcDots   = new();
+    private readonly Dictionary<NPCMapTracker, Text>          _npcLabels = new();
+    private RectTransform _legendPanel;
+    private readonly Dictionary<NPCMapTracker, GameObject> _legendEntries = new();
+
+    // Player ref
+    private Transform _playerTransform;
+    private Sprite _circleSprite;
+    // Sound
+    private EnvironmentSoundHandler _soundHandler;
+    // Debug
+    private bool _debugRevealAllNPCs = false;
+    // ─────────────────── Lifecycle ───────────────────
+
+    void Start()
+    {
+        if (mapData == null)
+        {
+            Debug.LogError("RoomMapUI: No RoomMapData assigned.");
+            enabled = false;
+            return;
+        }
+
+        _circleSprite = MakeCircleSprite(64);
+
+        // Find sound handler for journal page-flip audio
+        var soundHandlerGO = GameObject.Find("EnvironmentSoundHandler");
+        if (soundHandlerGO != null)
+            _soundHandler = soundHandlerGO.GetComponent<EnvironmentSoundHandler>();
+
+        var player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null) _playerTransform = player.transform;
+
+        // Auto-load player portrait (Nikolaus) if not assigned
+        if (playerPortrait == null)
+        {
+            var tex = Resources.Load<Texture2D>("Dialogues/Nikolaus/NikolausPortrait");
+            if (tex != null)
+            {
+                tex.filterMode = FilterMode.Point; // Crisp rendering, no blur
+                playerPortrait = Sprite.Create(
+                    tex,
+                    new Rect(0, 0, tex.width, tex.height),
+                    new Vector2(0.5f, 0.5f),
+                    100f);
+            }
+        }
+
+        // Auto-populate world bounds from the scene's RoomZoneTags
+        PopulateWorldBoundsFromScene();
+
+        BuildCanvas();
+        BuildOverlay();
+        _root.SetActive(false);
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(toggleKey))
+        {
+            // Don't open the map if another pause-level UI is open (pause menu, etc.)
+            if (!_isOpen && GlobalPause.IsPaused) return;
+            ToggleMap();
+        }
+// Debug: Toggle reveal all NPCs (works when map is open)
+        if (_isOpen && Input.GetKeyDown(debugRevealKey))
+        {
+            _debugRevealAllNPCs = !_debugRevealAllNPCs;
+            Debug.Log($"[RoomMapUI] Debug reveal all NPCs: {(_debugRevealAllNPCs ? "ON" : "OFF")}");
+        }
+
+        
+        if (_isOpen)
+        {
+            UpdatePlayerDot();
+            UpdateNPCDots();
+            AnimatePlayerDot();
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (_root != null) Destroy(_root);
+    }
+
+    // ─────────────────── Toggle ───────────────────
+
+    private void ToggleMap()
+    {
+        // Don't open while journal is already open
+        if (!_isOpen)
+        {
+            var journal = FindFirstObjectByType<JournalUI>();
+            if (journal != null && journal.IsOpen) return;
+        }
+
+        _isOpen = !_isOpen;
+        _root.SetActive(_isOpen);
+
+        // Play page-flip sound (same as journal open/close)
+        if (_soundHandler != null)
+        {
+            try { _soundHandler.PlayJournalSound(_isOpen); }
+            catch (System.Exception ex) { Debug.LogWarning($"[RoomMapUI] Journal sound failed: {ex.Message}"); }
+        }
+
+        if (_isOpen)
+        {
+            GlobalPause.SetPaused(true);
+
+            // Ensure we have the player reference
+            if (_playerTransform == null)
+            {
+                var player = GameObject.FindGameObjectWithTag("Player");
+                if (player != null) _playerTransform = player.transform;
+            }
+
+            RefreshHighlight();
+            // Immediately position dots
+            UpdatePlayerDot();
+            UpdateNPCDots();
+        }
+        else
+        {
+            GlobalPause.SetPaused(false);
+        }
+    }
+
+    // ─────────────────── Auto-Populate World Bounds ───────────────────
+
+    /// <summary>
+    /// Reads every RoomZoneTag in the scene and copies its world-space
+    /// centre + radius into the matching RoomMapData.Room entry.
+    /// Runs once at Start so the map just works — no editor steps needed.
+    /// </summary>
+    private void PopulateWorldBoundsFromScene()
+    {
+        foreach (var zone in RoomZoneTag.AllZones)
+        {
+            var room = mapData.GetRoom(zone.roomId);
+            if (room == null) continue;
+
+            room.worldCenter = zone.WorldCenter;
+            room.worldRadius = zone.WorldRadius;
+        }
+    }
+
+    // ─────────────────── Build UI ───────────────────
+
+    private void BuildCanvas()
+    {
+        var go = new GameObject("RoomMapCanvas");
+        _canvas = go.AddComponent<Canvas>();
+        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _canvas.sortingOrder = 100; // above most UI
+        _canvas.pixelPerfect = true; // Crisp rendering
+
+        var scaler = go.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight = 0.5f;
+
+        go.AddComponent<GraphicRaycaster>();
+    }
+
+    private void BuildOverlay()
+    {
+        // ── Root full-screen panel ──
+        _root = MakeUIObject("MapOverlay", _canvas.transform);
+        var rootRect = Stretch(_root);
+
+        // Dark scrim behind the journal
+        var scrim = _root.AddComponent<Image>();
+        scrim.color = overlayColor;
+        scrim.raycastTarget = true; // blocks clicks through
+
+        // ── Journal background image (centred, preserving aspect ratio) ──
+        Transform mapContentParent = _root.transform; // default parent for map content
+        if (journalSprite != null)
+        {
+            var journalGO = MakeUIObject("JournalBG", _root.transform);
+            var journalRT = journalGO.GetComponent<RectTransform>();
+            journalRT.anchorMin = new Vector2(0.5f, 0.5f);
+            journalRT.anchorMax = new Vector2(0.5f, 0.5f);
+            journalRT.pivot = new Vector2(0.5f, 0.5f);
+            journalRT.anchoredPosition = Vector2.zero;
+
+            // Size the journal to fill most of the screen while keeping aspect ratio
+            float spriteW = journalSprite.rect.width;
+            float spriteH = journalSprite.rect.height;
+            float aspect = spriteW / spriteH;
+            // Target ~85% of the reference resolution height
+            float targetH = 1080f * 0.85f;
+            float targetW = targetH * aspect;
+            // Clamp width to 90% of reference width
+            if (targetW > 1920f * 0.90f)
+            {
+                targetW = 1920f * 0.90f;
+                targetH = targetW / aspect;
+            }
+            journalRT.sizeDelta = new Vector2(targetW, targetH);
+
+            var journalImg = journalGO.AddComponent<Image>();
+            journalImg.sprite = journalSprite;
+            journalImg.preserveAspect = true;
+            journalImg.raycastTarget = false;
+
+            mapContentParent = journalGO.transform;
+        }
+
+        _mapContentParent = mapContentParent; // Store for legend panel
+
+        // ── Title (inside the journal) ──
+        var titleGO = MakeUIObject("MapTitle", mapContentParent);
+        var titleRect = titleGO.GetComponent<RectTransform>();
+        titleRect.anchorMin = new Vector2(0.5f, 1f);
+        titleRect.anchorMax = new Vector2(0.5f, 1f);
+        titleRect.pivot     = new Vector2(0.5f, 1f);
+        titleRect.anchoredPosition = new Vector2(0, 10);
+        titleRect.sizeDelta = new Vector2(500, 50);
+
+        var titleText = titleGO.AddComponent<Text>();
+        titleText.text = mapTitle;
+        titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        titleText.fontSize = titleFontSize;
+        titleText.color = fontColor;
+        titleText.alignment = TextAnchor.MiddleCenter;
+        titleText.raycastTarget = false;
+
+        // ── Hint (below the journal) ──
+        var hintGO = MakeUIObject("MapHint", _root.transform);
+        var hintRect = hintGO.GetComponent<RectTransform>();
+        hintRect.anchorMin = new Vector2(0.5f, 0f);
+        hintRect.anchorMax = new Vector2(0.5f, 0f);
+        hintRect.pivot     = new Vector2(0.5f, 0f);
+        hintRect.anchoredPosition = new Vector2(0, 15);
+        hintRect.sizeDelta = new Vector2(400, 30);
+
+        var hintText = hintGO.AddComponent<Text>();
+        hintText.text = $"Press {toggleKey} to close";
+        hintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        hintText.fontSize = 16;
+        hintText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.5f);
+        hintText.alignment = TextAnchor.MiddleCenter;
+        hintText.raycastTarget = false;
+
+        // ── Map area (padded region inside the journal pages) ──
+        var mapGO = MakeUIObject("MapArea", mapContentParent);
+        _mapArea = mapGO.GetComponent<RectTransform>();
+        if (journalSprite != null)
+        {
+            // Inset the map area with generous padding to stay within the journal pages
+            // The open journal has a spine/binding area — offset content slightly right
+            _mapArea.anchorMin = new Vector2(0.12f, 0.12f);
+            _mapArea.anchorMax = new Vector2(0.88f, 0.80f);
+        }
+        else
+        {
+            _mapArea.anchorMin = new Vector2(0.08f, 0.10f);
+            _mapArea.anchorMax = new Vector2(0.92f, 0.88f);
+        }
+        _mapArea.offsetMin = Vector2.zero;
+        _mapArea.offsetMax = Vector2.zero;
+
+        // ── Draw connection lines first (behind rooms) ──
+        DrawConnections();
+
+        // ── Draw rooms ──
+        foreach (var room in mapData.rooms)
+            DrawRoom(room);
+
+        // ── Player marker (on top of rooms) ──
+        _playerMarker = CreatePortraitMarker(
+            "PlayerMarker", _mapArea,
+            playerPortrait, playerFrameTint,
+            playerDotColor, "You",
+            isPlayer: true);
+
+        // ── NPC Legend panel (right edge) ──
+        BuildLegendPanel();
+    }
+
+    // ─────────────────── Draw Room ───────────────────
+
+    private void DrawRoom(RoomMapData.Room room)
+    {
+        // Border (slightly larger rectangle behind the room fill)
+        var borderGO = MakeUIObject(room.roomId + "_border", _mapArea);
+        var borderRect = borderGO.GetComponent<RectTransform>();
+        SetRoomRect(borderRect, room.mapPosition, room.mapSize, borderWidth);
+
+        var borderImg = borderGO.AddComponent<Image>();
+        borderImg.color = roomBorderColor;
+        borderImg.raycastTarget = false;
+        _roomBorders[room.roomId] = borderImg;
+
+        // Fill
+        var fillGO = MakeUIObject(room.roomId + "_fill", _mapArea);
+        var fillRect = fillGO.GetComponent<RectTransform>();
+        SetRoomRect(fillRect, room.mapPosition, room.mapSize, 0);
+
+        var fillImg = fillGO.AddComponent<Image>();
+        fillImg.color = roomColor;
+        fillImg.raycastTarget = false;
+        _roomBgs[room.roomId] = fillImg;
+
+        // Label
+        var labelGO = MakeUIObject(room.roomId + "_label", _mapArea);
+        var labelRect = labelGO.GetComponent<RectTransform>();
+        SetRoomRect(labelRect, room.mapPosition, room.mapSize, 0);
+
+        var label = labelGO.AddComponent<Text>();
+        label.text = room.roomName;
+        label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        label.fontSize = fontSize;
+        label.color = fontColor;
+        label.alignment = TextAnchor.MiddleCenter;
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
+        label.verticalOverflow = VerticalWrapMode.Overflow;
+        label.raycastTarget = false;
+        _roomLabels[room.roomId] = label;
+    }
+
+    private void SetRoomRect(RectTransform rt, Vector2 pos, Vector2 size, float expand)
+    {
+        // pos & size are in normalised 0-1 coords relative to _mapArea
+        rt.anchorMin = pos - size * 0.5f;
+        rt.anchorMax = pos + size * 0.5f;
+        rt.offsetMin = new Vector2(-expand, -expand);
+        rt.offsetMax = new Vector2(expand, expand);
+    }
+
+    // ─────────────────── Connections ───────────────────
+
+    private void DrawConnections()
+    {
+        // Track drawn pairs so we don't double-draw A→B and B→A
+        var drawn = new HashSet<string>();
+
+        foreach (var room in mapData.rooms)
+        {
+            foreach (var otherId in room.connectedRoomIds)
+            {
+                string key = room.roomId.CompareTo(otherId) < 0
+                    ? room.roomId + "|" + otherId
+                    : otherId + "|" + room.roomId;
+
+                if (drawn.Contains(key)) continue;
+                drawn.Add(key);
+
+                var other = mapData.GetRoom(otherId);
+                if (other == null) continue;
+
+                DrawLine(room.mapPosition, other.mapPosition);
+            }
+        }
+    }
+
+    private void DrawLine(Vector2 from, Vector2 to)
+    {
+        var lineGO = MakeUIObject("Line", _mapArea);
+        var lineRect = lineGO.GetComponent<RectTransform>();
+
+        var img = lineGO.AddComponent<Image>();
+        img.color = lineColor;
+        img.raycastTarget = false;
+
+        // Compute pixel-independent line using anchors
+        Vector2 mid = (from + to) * 0.5f;
+        Vector2 diff = to - from;
+        float angle = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
+
+        // We'll place the line at the midpoint, rotated, with length = distance
+        lineRect.anchorMin = lineRect.anchorMax = mid;
+        lineRect.pivot = new Vector2(0.5f, 0.5f);
+
+        // Length needs to be in the mapArea's local space — approximate with a helper
+        // We use a LayoutRebuilder callback-free approach: set width via sizeDelta later in a helper
+        // For now, just store and fix in a coroutine after layout settles
+        lineRect.sizeDelta = new Vector2(0, lineWidth);
+        lineRect.localRotation = Quaternion.Euler(0, 0, angle);
+
+        StartCoroutine(SetLineLength(lineRect, from, to));
+    }
+
+    private System.Collections.IEnumerator SetLineLength(RectTransform rt, Vector2 fromNorm, Vector2 toNorm)
+    {
+        // Wait one frame for layout to settle
+        yield return null;
+
+        // Compute length in mapArea pixels
+        var mapRect = _mapArea.rect;
+        Vector2 fromPx = new Vector2(fromNorm.x * mapRect.width, fromNorm.y * mapRect.height);
+        Vector2 toPx   = new Vector2(toNorm.x * mapRect.width, toNorm.y * mapRect.height);
+        float length = Vector2.Distance(fromPx, toPx);
+
+        rt.sizeDelta = new Vector2(length, lineWidth);
+    }
+
+    // ─────────────────── Highlight Current Room ───────────────────
+
+    private void RefreshHighlight()
+    {
+        string current = RoomTracker.CurrentRoomId;
+
+        foreach (var room in mapData.rooms)
+        {
+            bool isCurrent = room.roomId == current;
+            _roomBgs[room.roomId].color     = isCurrent ? currentRoomColor  : roomColor;
+            _roomBorders[room.roomId].color  = isCurrent ? currentBorderColor : roomBorderColor;
+        }
+    }
+
+    // ─────────────────── Real-Time Player Tracking ───────────────────
+
+    private void UpdatePlayerDot()
+    {
+        if (_playerTransform == null)
+        {
+            _playerMarker.gameObject.SetActive(false);
+            return;
+        }
+
+        _playerMarker.gameObject.SetActive(true);
+        Vector2 mapPos = mapData.WorldToMapPosition(_playerTransform.position);
+        _playerMarker.anchorMin = _playerMarker.anchorMax = mapPos;
+        _playerMarker.anchoredPosition = Vector2.zero;
+    }
+
+    // ─────────────────── Real-Time NPC Tracking ───────────────────
+
+    private void UpdateNPCDots()
+    {
+        // Mark existing dots for potential cleanup
+        var staleTrackers = new HashSet<NPCMapTracker>(_npcDots.Keys);
+
+        foreach (var tracker in NPCMapTracker.AllTrackers)
+        {
+            staleTrackers.Remove(tracker);
+
+            // Only show NPCs the player has interacted with (unless debug reveal is active)
+            bool shouldShow = tracker.IsDiscovered || _debugRevealAllNPCs;
+            
+            if (!shouldShow)
+            {
+                if (_npcDots.ContainsKey(tracker))
+                {
+                    _npcDots[tracker].gameObject.SetActive(false);
+                    if (_legendEntries.ContainsKey(tracker))
+                        _legendEntries[tracker].SetActive(false);
+                    if (_npcLabels.ContainsKey(tracker))
+                        _npcLabels[tracker].gameObject.SetActive(false);
+                }
+                continue;
+            }
+
+            // Create dot if we haven't yet
+            if (!_npcDots.ContainsKey(tracker))
+                CreateNPCDot(tracker);
+
+            // Position the marker group
+            var dot = _npcDots[tracker];
+            dot.gameObject.SetActive(true);
+            Vector2 mapPos = mapData.WorldToMapPosition(tracker.WorldPosition);
+            dot.anchorMin = dot.anchorMax = mapPos;
+            dot.anchoredPosition = Vector2.zero;
+
+            // Label is a child of the marker — just ensure it's active
+            if (_npcLabels.TryGetValue(tracker, out var label))
+                label.gameObject.SetActive(true);
+
+            // Show legend entry
+            if (_legendEntries.ContainsKey(tracker))
+                _legendEntries[tracker].SetActive(true);
+        }
+
+        // Clean up dots for trackers that are gone (destroyed NPC, etc.)
+        foreach (var stale in staleTrackers)
+        {
+            if (_npcDots.TryGetValue(stale, out var dot))
+            {
+                Destroy(dot.gameObject);
+                _npcDots.Remove(stale);
+            }
+            if (_npcLabels.TryGetValue(stale, out var label))
+            {
+                Destroy(label.gameObject);
+                _npcLabels.Remove(stale);
+            }
+            if (_legendEntries.TryGetValue(stale, out var entry))
+            {
+                Destroy(entry);
+                _legendEntries.Remove(stale);
+            }
+        }
+    }
+
+    private void CreateNPCDot(NPCMapTracker tracker)
+    {
+        // Create a portrait marker group for this NPC
+        float markerSize = portraitMarkerSize;
+        float totalHeight = markerSize * frameScale + 4f + npcLabelSize; // frame + gap + label
+
+        var markerRT = CreatePortraitMarker(
+            "NPC_" + tracker.DisplayName, _mapArea,
+            tracker.Portrait, npcFrameTint,
+            tracker.MarkerColor, tracker.DisplayName,
+            isPlayer: false);
+
+        _npcDots[tracker] = markerRT;
+
+        // The label is the last child of the marker group
+        var labelTransform = markerRT.Find("Label_" + tracker.DisplayName);
+        if (labelTransform != null)
+        {
+            var label = labelTransform.GetComponent<Text>();
+            _npcLabels[tracker] = label;
+        }
+
+        // Add a legend entry
+        CreateLegendEntry(tracker);
+    }
+
+    // ─────────────────── Portrait Marker Factory ───────────────────
+
+    /// <summary>
+    /// Creates a Wizard101-style portrait marker: a framed character portrait
+    /// with a name label underneath. Falls back to a coloured circle if no
+    /// portrait sprite is available.
+    /// </summary>
+    /// <returns>The root RectTransform of the marker group.</returns>
+    private RectTransform CreatePortraitMarker(
+        string objectName, Transform parent,
+        Sprite portrait, Color frameTint,
+        Color fallbackColor, string label,
+        bool isPlayer)
+    {
+        float size = isPlayer ? Mathf.Max(playerDotSize, portraitMarkerSize) : portraitMarkerSize;
+        float framedSize = size * frameScale;
+
+        // Root container — anchored at 0,0; repositioned each frame via anchors
+        var rootGO = MakeUIObject(objectName, parent);
+        var rootRT = rootGO.GetComponent<RectTransform>();
+        rootRT.sizeDelta = new Vector2(framedSize, framedSize + 4f + npcLabelSize);
+        rootRT.pivot = new Vector2(0.5f, 0.5f);
+
+        bool hasPortrait = portrait != null;
+        bool hasFrame = portraitFrame != null;
+
+        if (hasPortrait)
+        {
+            // ── Frame behind the portrait ──
+            if (hasFrame)
+            {
+                var frameGO = MakeUIObject("Frame", rootGO.transform);
+                var frameRT = frameGO.GetComponent<RectTransform>();
+                frameRT.anchorMin = frameRT.anchorMax = new Vector2(0.5f, 1f);
+                frameRT.pivot = new Vector2(0.5f, 1f);
+                frameRT.sizeDelta = new Vector2(framedSize, framedSize);
+                frameRT.anchoredPosition = Vector2.zero;
+
+                var frameImg = frameGO.AddComponent<Image>();
+                frameImg.sprite = portraitFrame;
+                frameImg.color = frameTint;
+                frameImg.type = Image.Type.Sliced;
+                frameImg.raycastTarget = false;
+            }
+
+            // ── Portrait image (slightly smaller, sits inside the frame) ──
+            var portraitGO = MakeUIObject("Portrait", rootGO.transform);
+            var portraitRT = portraitGO.GetComponent<RectTransform>();
+            portraitRT.anchorMin = portraitRT.anchorMax = new Vector2(0.5f, 1f);
+            portraitRT.pivot = new Vector2(0.5f, 1f);
+            portraitRT.sizeDelta = new Vector2(size, size);
+            // Offset slightly inside the frame
+            float inset = (framedSize - size) * 0.5f;
+            portraitRT.anchoredPosition = new Vector2(0f, -inset);
+
+            var portraitImg = portraitGO.AddComponent<Image>();
+            portraitImg.sprite = portrait;
+            portraitImg.preserveAspect = true;
+            portraitImg.raycastTarget = false;
+
+            // Mask the portrait to a circle for a clean look
+            var mask = portraitGO.AddComponent<Mask>();
+            mask.showMaskGraphic = true;
+
+            if (isPlayer) _playerPortraitImage = portraitImg;
+        }
+        else
+        {
+            // ── Fallback: coloured circle dot (original style) ──
+            var dotGO = MakeUIObject("Dot", rootGO.transform);
+            var dotRT = dotGO.GetComponent<RectTransform>();
+            dotRT.anchorMin = dotRT.anchorMax = new Vector2(0.5f, 1f);
+            dotRT.pivot = new Vector2(0.5f, 1f);
+            dotRT.sizeDelta = new Vector2(size, size);
+            dotRT.anchoredPosition = Vector2.zero;
+
+            var dotImg = dotGO.AddComponent<Image>();
+            dotImg.sprite = _circleSprite;
+            dotImg.color = fallbackColor;
+            dotImg.raycastTarget = false;
+
+            if (isPlayer) _playerPortraitImage = dotImg;
+        }
+
+        // ── Name label below the portrait ──
+        var labelGO = MakeUIObject("Label_" + label, rootGO.transform);
+        var labelRT = labelGO.GetComponent<RectTransform>();
+        labelRT.anchorMin = labelRT.anchorMax = new Vector2(0.5f, 1f);
+        labelRT.pivot = new Vector2(0.5f, 1f);
+        labelRT.sizeDelta = new Vector2(120, npcLabelSize + 4);
+        labelRT.anchoredPosition = new Vector2(0f, -(framedSize + 2f));
+
+        var labelText = labelGO.AddComponent<Text>();
+        labelText.text = label;
+        labelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        labelText.fontSize = npcLabelSize;
+        labelText.color = npcLabelColor;
+        labelText.alignment = TextAnchor.MiddleCenter;
+        labelText.horizontalOverflow = HorizontalWrapMode.Overflow;
+        labelText.verticalOverflow = VerticalWrapMode.Overflow;
+        labelText.raycastTarget = false;
+
+        // Shadow for readability
+        var shadow = labelGO.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0, 0, 0, 0.8f);
+        shadow.effectDistance = new Vector2(1, -1);
+
+        return rootRT;
+    }
+
+    // ─────────────────── Legend Panel ───────────────────
+
+    private void BuildLegendPanel()
+    {
+        // Container anchored to the top-right of the journal
+        var panelGO = MakeUIObject("NPCLegend", _mapContentParent);
+        _legendPanel = panelGO.GetComponent<RectTransform>();
+        _legendPanel.anchorMin = new Vector2(1f, 1f);
+        _legendPanel.anchorMax = new Vector2(1f, 1f);
+        _legendPanel.pivot = new Vector2(1f, 1f);
+        _legendPanel.anchoredPosition = new Vector2(-300, -100);
+        _legendPanel.sizeDelta = new Vector2(200, 30); // will grow
+
+        // Semi-transparent background
+        var bg = panelGO.AddComponent<Image>();
+        bg.color = new Color(0.06f, 0.05f, 0.08f, 0.85f);
+        bg.raycastTarget = false;
+
+        // Vertical layout
+        var layout = panelGO.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(10, 10, 8, 8);
+        layout.spacing = 4;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        layout.childAlignment = TextAnchor.UpperLeft;
+
+        // Content size fitter so it grows with entries
+        var fitter = panelGO.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+        // Legend title
+        var titleGO = MakeUIObject("LegendTitle", _legendPanel);
+        var titleRT = titleGO.GetComponent<RectTransform>();
+        titleRT.sizeDelta = new Vector2(160, 20);
+
+        var titleText = titleGO.AddComponent<Text>();
+        titleText.text = "— Characters —";
+        titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        titleText.fontSize = 13;
+        titleText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f);
+        titleText.alignment = TextAnchor.MiddleCenter;
+        titleText.raycastTarget = false;
+
+        // Player entry (always visible)
+        CreateLegendRow(_legendPanel, "You", playerDotColor, true, playerPortrait);
+    }
+
+    private void CreateLegendEntry(NPCMapTracker tracker)
+    {
+        var entry = CreateLegendRow(_legendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
+        _legendEntries[tracker] = entry;
+    }
+
+    private GameObject CreateLegendRow(RectTransform parent, string label, Color dotColor, bool alwaysVisible, Sprite portrait = null)
+    {
+        var rowGO = MakeUIObject("Legend_" + label, parent);
+        var rowRT = rowGO.GetComponent<RectTransform>();
+        rowRT.sizeDelta = new Vector2(180, 22);
+
+        var rowLayout = rowGO.AddComponent<HorizontalLayoutGroup>();
+        rowLayout.spacing = 6;
+        rowLayout.childForceExpandWidth = false;
+        rowLayout.childForceExpandHeight = false;
+        rowLayout.childAlignment = TextAnchor.MiddleLeft;
+        rowLayout.padding = new RectOffset(2, 2, 0, 0);
+
+        bool hasPortrait = portrait != null;
+
+        if (hasPortrait)
+        {
+            // Small portrait thumbnail with optional frame
+            float thumbSize = 18f;
+
+            // Frame container
+            var thumbContainerGO = MakeUIObject("ThumbContainer", rowGO.transform);
+            var thumbContainerRT = thumbContainerGO.GetComponent<RectTransform>();
+            thumbContainerRT.sizeDelta = new Vector2(thumbSize, thumbSize);
+            var thumbContainerLE = thumbContainerGO.AddComponent<LayoutElement>();
+            thumbContainerLE.preferredWidth = thumbSize;
+            thumbContainerLE.preferredHeight = thumbSize;
+
+            // Portrait image
+            var thumbImg = thumbContainerGO.AddComponent<Image>();
+            thumbImg.sprite = portrait;
+            thumbImg.preserveAspect = true;
+            thumbImg.raycastTarget = false;
+            
+            // Ensure crisp rendering (no bilinear filtering)
+            if (portrait != null && portrait.texture != null)
+            {
+                portrait.texture.filterMode = FilterMode.Point;
+            }
+
+            // Frame overlay (if available)
+            if (portraitFrame != null)
+            {
+                var frameOverlayGO = MakeUIObject("FrameOverlay", thumbContainerGO.transform);
+                var frameOverlayRT = frameOverlayGO.GetComponent<RectTransform>();
+                frameOverlayRT.anchorMin = Vector2.zero;
+                frameOverlayRT.anchorMax = Vector2.one;
+                float expand = 2f;
+                frameOverlayRT.offsetMin = new Vector2(-expand, -expand);
+                frameOverlayRT.offsetMax = new Vector2(expand, expand);
+
+                var frameOverlayImg = frameOverlayGO.AddComponent<Image>();
+                frameOverlayImg.sprite = portraitFrame;
+                frameOverlayImg.color = alwaysVisible ? playerFrameTint : npcFrameTint;
+                frameOverlayImg.type = Image.Type.Sliced;
+                frameOverlayImg.raycastTarget = false;
+            }
+        }
+        else
+        {
+            // Fallback: colour dot
+            var colorGO = MakeUIObject("Dot", rowGO.transform);
+            var colorRT = colorGO.GetComponent<RectTransform>();
+            colorRT.sizeDelta = new Vector2(10, 10);
+            var colorImg = colorGO.AddComponent<Image>();
+            colorImg.sprite = _circleSprite;
+            colorImg.color = dotColor;
+            colorImg.raycastTarget = false;
+            var colorLE = colorGO.AddComponent<LayoutElement>();
+            colorLE.preferredWidth = 10;
+            colorLE.preferredHeight = 10;
+        }
+
+        // Name label
+        var nameGO = MakeUIObject("Name", rowGO.transform);
+        var nameText = nameGO.AddComponent<Text>();
+        nameText.text = label;
+        nameText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        nameText.fontSize = 12;
+        nameText.color = npcLabelColor;
+        nameText.alignment = TextAnchor.MiddleLeft;
+        nameText.raycastTarget = false;
+        var nameLE = nameGO.AddComponent<LayoutElement>();
+        nameLE.preferredWidth = 140;
+        nameLE.preferredHeight = 22;
+
+        return rowGO;
+    }
+
+    // ─────────────────── Player Dot Pulse ───────────────────
+
+    private void AnimatePlayerDot()
+    {
+        if (_playerMarker == null || !_playerMarker.gameObject.activeSelf) return;
+
+        // Use unscaled time because the game is paused while the map is open
+        float t = Mathf.PingPong(Time.unscaledTime * pulseSpeed, 1f);
+        float s = Mathf.Lerp(1f, pulseScale, t);
+        _playerMarker.localScale = new Vector3(s, s, 1f);
+    }
+
+    // ─────────────────── Helpers ───────────────────
+
+    private static GameObject MakeUIObject(string name, Transform parent)
+    {
+        var go = new GameObject(name, typeof(RectTransform));
+        go.transform.SetParent(parent, false);
+        return go;
+    }
+
+    private static RectTransform Stretch(GameObject go)
+    {
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+        return rt;
+    }
+
+    private static Sprite MakeCircleSprite(int res)
+    {
+        var tex = new Texture2D(res, res, TextureFormat.RGBA32, false);
+        float center = res * 0.5f;
+        for (int y = 0; y < res; y++)
+        for (int x = 0; x < res; x++)
+        {
+            float dx = x - center + 0.5f;
+            float dy = y - center + 0.5f;
+            float alpha = Mathf.Clamp01(center - Mathf.Sqrt(dx * dx + dy * dy));
+            tex.SetPixel(x, y, new Color(1, 1, 1, alpha));
+        }
+        tex.Apply();
+        return Sprite.Create(tex, new Rect(0, 0, res, res), Vector2.one * 0.5f, res);
+    }
+}

@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f3841210aaf11e4ca8d68910683f59b, type: 3}
+  m_Name: RoomMapData
+  m_EditorClassIdentifier: Assembly-CSharp::RoomMapData
+  rooms:
+  - roomName: Ballroom
+    roomId: ballroom
+    mapPosition: {x: 0.5, y: 0.5}
+    mapSize: {x: 0.16, y: 0.12}
+    connectedRoomIds:
+    - throne
+    - library
+    - patio
+    - kitchen
+    - study
+    - dining
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
+  - roomName: Throne Room
+    roomId: throne
+    mapPosition: {x: 0.5, y: 0.72}
+    mapSize: {x: 0.13, y: 0.1}
+    connectedRoomIds:
+    - ballroom
+    - armory
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
+  - roomName: Armory
+    roomId: armory
+    mapPosition: {x: 0.35, y: 0.72}
+    mapSize: {x: 0.12, y: 0.09}
+    connectedRoomIds:
+    - throne
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
+  - roomName: Kitchen
+    roomId: kitchen
+    mapPosition: {x: 0.8, y: 0.6}
+    mapSize: {x: 0.13, y: 0.1}
+    connectedRoomIds:
+    - ballroom
+    - classroom
+    - dining
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
+  - roomName: Classroom
+    roomId: classroom
+    mapPosition: {x: 0.65, y: 0.65}
+    mapSize: {x: 0.12, y: 0.09}
+    connectedRoomIds:
+    - kitchen
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
+  - roomName: Dining Room
+    roomId: dining
+    mapPosition: {x: 0.8, y: 0.35}
+    mapSize: {x: 0.13, y: 0.1}
+    connectedRoomIds:
+    - ballroom
+    - kitchen
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
+  - roomName: Study Room
+    roomId: study
+    mapPosition: {x: 0.31, y: 0.5}
+    mapSize: {x: 0.13, y: 0.1}
+    connectedRoomIds:
+    - ballroom
+    - bedroom
+    - library
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
+  - roomName: Library
+    roomId: library
+    mapPosition: {x: 0.31, y: 0.35}
+    mapSize: {x: 0.13, y: 0.1}
+    connectedRoomIds:
+    - ballroom
+    - study
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
+  - roomName: Patio
+    roomId: patio
+    mapPosition: {x: 0.5, y: 0.3}
+    mapSize: {x: 0.13, y: 0.1}
+    connectedRoomIds:
+    - ballroom
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
+  - roomName: Bedroom
+    roomId: bedroom
+    mapPosition: {x: 0.15, y: 0.5}
+    mapSize: {x: 0.12, y: 0.09}
+    connectedRoomIds:
+    - study
+    worldCenter: {x: 0, y: 0}
+    worldRadius: 20
