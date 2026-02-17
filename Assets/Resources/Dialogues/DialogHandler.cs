@@ -215,7 +215,9 @@ namespace Dialogues
             var mapTracker = GetComponent<NPCMapTracker>();
             if (mapTracker != null && !string.IsNullOrEmpty(mapTracker.DisplayName))
             {
-                GameFlags.SetFlag(mapTracker.MetFlagKey);
+                // Use standardized character.{name}.spoketo flag format
+                string characterFlag = $"character.{mapTracker.DisplayName.ToLower()}.spoketo";
+                GameFlags.SetFlag(characterFlag);
             }
 
             OnDialogCompleted?.Invoke();

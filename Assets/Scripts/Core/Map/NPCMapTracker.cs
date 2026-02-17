@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Attach to any named NPC that should appear on the castle map.
 /// The NPC will only show on the map after the player has interacted with them once
-/// (tracked via the GameFlags system using "npc.met.{displayName}" flags).
+/// (tracked via the GameFlags system using "character.{displayName}.spoketo" flags).
 ///
 /// Maintains a static registry so the map UI can enumerate all tracked NPCs cheaply.
 ///
@@ -23,7 +23,7 @@ public class NPCMapTracker : MonoBehaviour
 
     // ─────────────── Inspector ───────────────
 
-    [Tooltip("Display name shown on the map (also used for the npc.met.{name} flag).")]
+    [Tooltip("Display name shown on the map (also used for the character.{name}.spoketo flag).")]
     [SerializeField] private string displayName;
 
     [Tooltip("Colour of this NPC's dot on the map.")]
@@ -53,11 +53,11 @@ public class NPCMapTracker : MonoBehaviour
     public Color MarkerColor => markerColor;
 
     /// <summary>The flag key used to track whether the player has met this NPC.</summary>
-    public string MetFlagKey => $"npc.met.{displayName}";
+    public string MetFlagKey => $"character.{displayName.ToLower()}.spoketo";
 
     /// <summary>
     /// True if the player has interacted with this NPC at least once
-    /// (i.e. the "npc.met.{displayName}" flag exists).
+    /// (i.e. the "character.{displayName}.spoketo" flag exists).
     /// </summary>
     public bool IsDiscovered => GameFlags.HasFlag(MetFlagKey);
 
@@ -78,67 +78,6 @@ public class NPCMapTracker : MonoBehaviour
         }
     }
 
-    // ─────────────── Portrait Resolution ───────────────
-
-    private void ResolvePortrait()
-    {
-        _portraitResolved = true;
-
-        // 1. Inspector-assigned sprite takes priority
-        if (portrait != null)
-        {
-            _cachedPortrait = portrait;
-            return;
-        }
-
-        // 2. Try explicit override path
-        if (!string.IsNullOrEmpty(portraitResourcePath))
-        {
-            var tex = Resources.Load<Texture2D>(portraitResourcePath);
-            if (tex != null)
-            {
-                tex.filterMode = FilterMode.Point; // Crisp rendering, no blur
-                _cachedPortrait = TextureToSprite(tex);
-                return;
-            }
-        }
-
-        // 3. Default convention: Dialogues/{Name}/{Name}Portrait
-        {
-            string path = $"Dialogues/{displayName}/{displayName}Portrait";
-            var tex = Resources.Load<Texture2D>(path);
-            if (tex != null)
-            {
-                tex.filterMode = FilterMode.Point; // Crisp rendering, no blur
-                _cachedPortrait = TextureToSprite(tex);
-                return;
-            }
-        }
-
-        // 4. Fallback: try Dialogues/{Name} (for assets like king.png at root)
-        {
-            string path = $"Dialogues/{displayName}";
-            var tex = Resources.Load<Texture2D>(path);
-            if (tex != null)
-            {
-                tex.filterMode = FilterMode.Point; // Crisp rendering, no blur
-                _cachedPortrait = TextureToSprite(tex);
-                return;
-            }
-        }
-
-        Debug.LogWarning($"[NPCMapTracker] No portrait found for '{displayName}'.");
-    }
-
-    private static Sprite TextureToSprite(Texture2D tex)
-    {
-        return Sprite.Create(
-            tex,
-            new Rect(0, 0, tex.width, tex.height),
-            new Vector2(0.5f, 0.5f),
-            100f);
-    }
-
     // ─────────────── Lifecycle ───────────────
 
     void OnEnable()
@@ -149,5 +88,71 @@ public class NPCMapTracker : MonoBehaviour
     void OnDisable()
     {
         _allTrackers.Remove(this);
+    }
+
+    // ─────────────── Portrait Loading ───────────────
+
+    /// <summary>
+    /// Resolve the portrait sprite using a 4-tier fallback system:
+    ///   1. Use Inspector-assigned sprite if present
+    ///   2. Try custom portraitResourcePath if provided
+    ///   3. Try standard convention: Dialogues/{displayName}/{displayName}Portrait
+    ///   4. Try root: Dialogues/{displayName}
+    /// </summary>
+    private void ResolvePortrait()
+    {
+        _portraitResolved = true;
+
+        // Tier 1: Inspector
+        if (portrait != null)
+        {
+            _cachedPortrait = portrait;
+            return;
+        }
+
+        // Tier 2: Custom path
+        if (!string.IsNullOrEmpty(portraitResourcePath))
+        {
+            var tex = Resources.Load<Texture2D>(portraitResourcePath);
+            if (tex != null)
+            {
+                tex.filterMode = FilterMode.Point; // Crisp rendering
+                _cachedPortrait = TextureToSprite(tex);
+                return;
+            }
+        }
+
+        // Tier 3: Standard convention
+        string standardPath = $"Dialogues/{displayName}/{displayName}Portrait";
+        var standardTex = Resources.Load<Texture2D>(standardPath);
+        if (standardTex != null)
+        {
+            standardTex.filterMode = FilterMode.Point; // Crisp rendering
+            _cachedPortrait = TextureToSprite(standardTex);
+            return;
+        }
+
+        // Tier 4: Root fallback
+        string rootPath = $"Dialogues/{displayName}";
+        var rootTex = Resources.Load<Texture2D>(rootPath);
+        if (rootTex != null)
+        {
+            rootTex.filterMode = FilterMode.Point; // Crisp rendering
+            _cachedPortrait = TextureToSprite(rootTex);
+            return;
+        }
+
+        // No portrait found - will use coloured dot fallback
+        _cachedPortrait = null;
+    }
+
+    /// <summary>Helper: Convert Texture2D to Sprite.</summary>
+    private static Sprite TextureToSprite(Texture2D tex)
+    {
+        return Sprite.Create(
+            tex,
+            new Rect(0, 0, tex.width, tex.height),
+            new Vector2(0.5f, 0.5f),
+            100f);
     }
 }
