@@ -23,6 +23,7 @@ public class MazePopupActivator : MinigameActivator
                 enabled = false;
             }
         }
+        
     }
 
     protected override void Update()
