@@ -69,9 +69,9 @@ public class GameManager : MonoBehaviour
         });
         autoPlayButton.onClick.AddListener(() =>
         {
-            if (!gameOver) StartCoroutine(AutoPlayToWin());
+            
         });
-        resetButton.onClick.AddListener(ResetMatch);
+        
     }
 
     private void Choose(int choice)
@@ -124,36 +124,15 @@ public class GameManager : MonoBehaviour
         UpdateUI();
 
         // Win check
-        if (playerScore >= targetScore || aiScore >= targetScore)
+        if (playerScore >= targetScore )
         {
             gameOver = true;
             hasCompletedMatch = true;
-            statusText.text += (playerScore > aiScore)
-                ? " You win the match! 🎉"
-                : " AI wins the match! 🤖";
+            statusText.text = "Match over! You win the match!";
+           
         }
 
         isFlipping = false;
-    }
-
-    private IEnumerator AutoPlayToWin()
-    {
-        if (isFlipping || gameOver) yield break;
-
-        autoMode = true;
-        statusText.text = "Autoplay: playing rounds until someone reaches the target.";
-        while (!gameOver)
-        {
-            // Random choice each round for the player
-            playerChoice = (Random.value < 0.5f) ? HEADS : TAILS;
-
-            yield return StartCoroutine(DoRound());
-
-            // Small pacing delay between rounds
-            yield return new WaitForSeconds(0.25f);
-        }
-
-        autoMode = false;
     }
 
     private void UpdateUI()
@@ -164,18 +143,4 @@ public class GameManager : MonoBehaviour
         if (endTurnButton) endTurnButton.interactable = (playerChoice != -1) && !isFlipping && !gameOver;
     }
 
-    private void ResetMatch()
-    {
-        StopAllCoroutines();
-        playerScore = 0;
-        aiScore = 0;
-        roundIndex = 1;
-        playerChoice = -1;
-        gameOver = false;
-        isFlipping = false;
-        autoMode = false;
-
-        statusText.text = "New match. Choose Heads or Tails.";
-        UpdateUI();
-    }
 }
