@@ -57,20 +57,10 @@ public class GameManager : MonoBehaviour
     {
         headsButton.onClick.RemoveAllListeners();
         tailsButton.onClick.RemoveAllListeners();
-        endTurnButton.onClick.RemoveAllListeners();
-        autoPlayButton.onClick.RemoveAllListeners();
-        resetButton.onClick.RemoveAllListeners();
 
-        headsButton.onClick.AddListener(() => Choose(HEADS));
-        tailsButton.onClick.AddListener(() => Choose(TAILS));
-        endTurnButton.onClick.AddListener(() =>
-        {
-            if (!isFlipping && !gameOver) StartCoroutine(DoRound());
-        });
-        autoPlayButton.onClick.AddListener(() =>
-        {
-            
-        });
+        headsButton.onClick.AddListener(() => Choose(HEADS) && if(!isFlipping && !gameOver) StartCoroutine(DoRound()));
+        tailsButton.onClick.AddListener(() => Choose(TAILS) && if(!isFlipping && !gameOver) StartCoroutine(DoRound()));
+        
         
     }
 
@@ -80,8 +70,8 @@ public class GameManager : MonoBehaviour
 
         playerChoice = choice;
         statusText.text = (choice == HEADS)
-            ? "You chose HEADS. End Turn to flip!"
-            : "You chose TAILS. End Turn to flip!";
+            ? "You chose HEADS. "
+            : "You chose TAILS. ";
 
         UpdateUI();
     }
@@ -138,7 +128,6 @@ public class GameManager : MonoBehaviour
     private void UpdateUI()
     {
         if (playerScoreText) playerScoreText.text = $"You: {playerScore}";
-        if (aiScoreText) aiScoreText.text = $"AI: {aiScore}";
         if (roundText) roundText.text = $"Round {roundIndex}";
         if (endTurnButton) endTurnButton.interactable = (playerChoice != -1) && !isFlipping && !gameOver;
     }
