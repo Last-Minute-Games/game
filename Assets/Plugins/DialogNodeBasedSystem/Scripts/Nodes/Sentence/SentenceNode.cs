@@ -34,7 +34,9 @@ namespace cherrydev
 
         private const float LabelFieldSpace = 47f;
         private const float TextFieldWidth = 100f;
-        private const float ExternalNodeHeight = 155f;
+        private const float ExternalNodeHeight = 200f;
+        private const float MinNodeHeight = 180f;
+        private const float NodeWidth = 160f;
 
         /// <summary>
         /// Returns character name, using localization if available
@@ -200,10 +202,10 @@ namespace cherrydev
         /// </summary>
         private void DrawSentenceTextFieldHorizontal()
         {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField($"Text ", GUILayout.Width(LabelFieldSpace));
-            _sentence.Text = EditorGUILayout.TextField(_sentence.Text, GUILayout.Width(TextFieldWidth));
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.LabelField($"Text");
+            GUIStyle textAreaStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
+            _sentence.Text = EditorGUILayout.TextArea(_sentence.Text, textAreaStyle, 
+                GUILayout.Width(NodeWidth - 20), GUILayout.Height(80));
         }
 
         /// <summary>

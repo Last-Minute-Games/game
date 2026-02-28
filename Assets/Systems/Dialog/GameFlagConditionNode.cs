@@ -19,26 +19,7 @@ namespace cherrydev
         public string FlagName => _flagName;
 
         private const float NodeWidth = 200f;
-        private const float NodeHeight = 120f;
-
-        /// <summary>
-        /// Evaluates if the GameFlag exists
-        /// </summary>
-        /// <returns>True if flag exists, false otherwise</returns>
-        public bool EvaluateCondition()
-        {
-            if (string.IsNullOrEmpty(_flagName))
-            {
-                Debug.LogWarning("GameFlag condition has empty flag name");
-                return false;
-            }
-
-            bool flagExists = GameFlags.HasFlag(_flagName);
-            
-            Debug.Log($"[GameFlagCondition] Flag '{_flagName}' exists: {flagExists}");
-            
-            return flagExists;
-        }
+        private const float NodeHeight = 150f;
 
 #if UNITY_EDITOR
         public override void Draw(GUIStyle nodeStyle, GUIStyle labelStyle)
@@ -55,21 +36,19 @@ namespace cherrydev
             
             EditorGUILayout.Space(5);
             
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Flag Name:", GUILayout.Width(70));
-            _flagName = EditorGUILayout.TextField(_flagName, GUILayout.Width(110));
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.LabelField("Flag Name:");
+            GUIStyle textAreaStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
+            _flagName = EditorGUILayout.TextArea(_flagName, textAreaStyle, GUILayout.Width(NodeWidth - 20), GUILayout.Height(45));
             
             EditorGUILayout.Space(5);
             
             EditorGUILayout.LabelField("Connections:", EditorStyles.boldLabel);
             
-            // Show connection status with proper symbols
             string trueStatus = TrueChildNode != null ? "?" : "?";
             string falseStatus = FalseChildNode != null ? "?" : "?";
             
-            EditorGUILayout.LabelField($"True: {trueStatus}", GUILayout.Width(180));
-            EditorGUILayout.LabelField($"False: {falseStatus}", GUILayout.Width(180));
+            EditorGUILayout.LabelField($"True: {trueStatus}");
+            EditorGUILayout.LabelField($"False: {falseStatus}");
 
             GUILayout.EndArea();
         }

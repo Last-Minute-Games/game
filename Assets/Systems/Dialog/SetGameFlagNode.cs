@@ -20,7 +20,7 @@ namespace cherrydev
         public bool RemoveFlag => _removeFlag;
 
         private const float NodeWidth = 200f;
-        private const float NodeHeight = 120f;
+        private const float NodeHeight = 170f;
 
         /// <summary>
         /// Executes the flag setting/removal
@@ -60,10 +60,9 @@ namespace cherrydev
             
             EditorGUILayout.Space(5);
             
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Flag Name:", GUILayout.Width(70));
-            _flagName = EditorGUILayout.TextField(_flagName, GUILayout.Width(110));
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.LabelField("Flag Name:");
+            GUIStyle textAreaStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
+            _flagName = EditorGUILayout.TextArea(_flagName, textAreaStyle, GUILayout.Width(NodeWidth - 20), GUILayout.Height(45));
             
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Remove:", GUILayout.Width(70));
