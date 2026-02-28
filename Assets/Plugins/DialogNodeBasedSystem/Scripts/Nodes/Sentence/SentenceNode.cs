@@ -36,7 +36,8 @@ namespace cherrydev
         private const float TextFieldWidth = 100f;
         private const float ExternalNodeHeight = 280f;
         private const float MinNodeHeight = 260f;
-        private const float NodeWidth = 200f;
+        private const float NodeWidth = 170f;
+        private const float TextAreaWidth = 150f;
 
         /// <summary>
         /// Returns character name, using localization if available
@@ -211,7 +212,7 @@ namespace cherrydev
             
             GUIStyle textAreaStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
             _sentence.Text = EditorGUILayout.TextArea(_sentence.Text, textAreaStyle, 
-                GUILayout.Width(NodeWidth - 20), GUILayout.Height(80));
+                GUILayout.Width(TextAreaWidth), GUILayout.Height(80));
             
             EditorGUILayout.EndVertical();
         }
@@ -226,7 +227,7 @@ namespace cherrydev
             EditorGUILayout.LabelField("Sprite");
             
             _sentence.CharacterSprite = (Sprite)EditorGUILayout.ObjectField(_sentence.CharacterSprite,
-                typeof(Sprite), false, GUILayout.Width(NodeWidth - 20));
+                typeof(Sprite), false, GUILayout.Width(TextAreaWidth));
             
             EditorGUILayout.EndVertical();
         }

@@ -18,8 +18,28 @@ namespace cherrydev
 
         public string FlagName => _flagName;
 
-        private const float NodeWidth = 200f;
+        private const float NodeWidth = 170f;
         private const float NodeHeight = 150f;
+        private const float TextAreaWidth = 150f;
+
+        /// <summary>
+        /// Evaluates if the GameFlag exists
+        /// </summary>
+        /// <returns>True if flag exists, false otherwise</returns>
+        public bool EvaluateCondition()
+        {
+            if (string.IsNullOrEmpty(_flagName))
+            {
+                Debug.LogWarning("GameFlag condition has empty flag name");
+                return false;
+            }
+
+            bool flagExists = GameFlags.HasFlag(_flagName);
+            
+            Debug.Log($"[GameFlagCondition] Flag '{_flagName}' exists: {flagExists}");
+            
+            return flagExists;
+        }
 
 #if UNITY_EDITOR
         public override void Draw(GUIStyle nodeStyle, GUIStyle labelStyle)
@@ -28,7 +48,8 @@ namespace cherrydev
 
             ParentNodes.RemoveAll(item => item == null);
             
-            Rect.size = new Vector2(NodeWidth, NodeHeight);
+            CalculateNodeHeight();
+            Rect.width = NodeWidth;
 
             GUILayout.BeginArea(Rect, nodeStyle);
             
@@ -38,7 +59,7 @@ namespace cherrydev
             
             EditorGUILayout.LabelField("Flag Name:");
             GUIStyle textAreaStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
-            _flagName = EditorGUILayout.TextArea(_flagName, textAreaStyle, GUILayout.Width(NodeWidth - 20), GUILayout.Height(45));
+            _flagName = EditorGUILayout.TextArea(_flagName, textAreaStyle, GUILayout.Width(TextAreaWidth), GUILayout.Height(45));
             
             EditorGUILayout.Space(5);
             
@@ -51,6 +72,14 @@ namespace cherrydev
             EditorGUILayout.LabelField($"False: {falseStatus}");
 
             GUILayout.EndArea();
+        }
+
+        /// <summary>
+        /// Calculate node height (currently fixed, but following SentenceNode pattern)
+        /// </summary>
+        public void CalculateNodeHeight()
+        {
+            Rect.height = NodeHeight;
         }
 
         public override void RemoveAllConnections()
