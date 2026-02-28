@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour
     public TMP_Text playerScoreText;
     public TMP_Text aiScoreText;
     public TMP_Text roundText;
-    public TMP_Text statusText;
+    public TMP_Text resultText;
 
     [Header("Rules")]
     public int targetScore = 5;
@@ -48,9 +48,10 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        resultText.gameObject.SetActive(false);
         HookButtons();
         UpdateUI();
-        statusText.text = "Choose Heads or Tails.";
+        
     }
 
     private void HookButtons()
@@ -58,10 +59,24 @@ public class GameManager : MonoBehaviour
         headsButton.onClick.RemoveAllListeners();
         tailsButton.onClick.RemoveAllListeners();
 
-        headsButton.onClick.AddListener(() => Choose(HEADS) && if(!isFlipping && !gameOver) StartCoroutine(DoRound()));
-        tailsButton.onClick.AddListener(() => Choose(TAILS) && if(!isFlipping && !gameOver) StartCoroutine(DoRound()));
-        
-        
+        headsButton.onClick.AddListener(() =>
+        {
+            Choose(HEADS);
+            if (!isFlipping && !gameOver)
+            {
+                StartCoroutine(DoRound());
+            }
+        });
+
+        tailsButton.onClick.AddListener(() =>
+        {
+            Choose(TAILS);
+            if (!isFlipping && !gameOver)
+            {
+                StartCoroutine(DoRound());
+            }
+        });
+
     }
 
     private void Choose(int choice)
@@ -69,9 +84,6 @@ public class GameManager : MonoBehaviour
         if (isFlipping || gameOver) return;
 
         playerChoice = choice;
-        statusText.text = (choice == HEADS)
-            ? "You chose HEADS. "
-            : "You chose TAILS. ";
 
         UpdateUI();
     }
@@ -80,12 +92,11 @@ public class GameManager : MonoBehaviour
     {
         if (playerChoice == -1)
         {
-            statusText.text = "Pick Heads or Tails first.";
             yield break;
         }
 
         isFlipping = true;
-        statusText.text = "Flipping...";
+        
         int result = -1;
 
         // Trigger the flip. We pass a random outcome request (true=heads, false=tails)
@@ -103,12 +114,6 @@ public class GameManager : MonoBehaviour
         if (result == playerChoice) playerScore++;
         else aiScore++;
 
-        // Round summary
-        string resText = (result == HEADS) ? "HEADS" : "TAILS";
-        string pText = (playerChoice == HEADS) ? "HEADS" : "TAILS";
-        string aText = (aiChoice == HEADS) ? "HEADS" : "TAILS";
-        statusText.text = $"Result: {resText}. You picked {pText}, AI picked {aText}.";
-
         roundIndex++;
         playerChoice = -1; // require a fresh choice each round
         UpdateUI();
@@ -116,9 +121,10 @@ public class GameManager : MonoBehaviour
         // Win check
         if (playerScore >= targetScore )
         {
+            resultText.gameObject.SetActive(true);
+            resultText.text = "You win the match!";
             gameOver = true;
             hasCompletedMatch = true;
-            statusText.text = "Match over! You win the match!";
            
         }
 
@@ -129,7 +135,6 @@ public class GameManager : MonoBehaviour
     {
         if (playerScoreText) playerScoreText.text = $"You: {playerScore}";
         if (roundText) roundText.text = $"Round {roundIndex}";
-        if (endTurnButton) endTurnButton.interactable = (playerChoice != -1) && !isFlipping && !gameOver;
     }
 
 }
