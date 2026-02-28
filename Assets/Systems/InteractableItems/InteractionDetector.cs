@@ -30,9 +30,13 @@ public class InteractionDetector : MonoBehaviour
     [Tooltip("Enable lenient directional hover (Stardew Valley style - just point mouse in general direction)")]
     public bool enableDirectionalHover = true;
     [Tooltip("Max distance for directional hover to work")]
-    public float directionalHoverMaxDistance = 2f;
+    public float directionalHoverMaxDistance = 3f;
     [Tooltip("Angle tolerance for directional hover (degrees) - higher = more forgiving")]
-    public float directionalHoverAngleTolerance = 45f;
+    public float directionalHoverAngleTolerance = 60f;
+    
+    [Header("Keyboard Interaction")]
+    [Tooltip("Enable E key for interactions (disable to test mouse-only gameplay)")]
+    public bool enableKeyboardInteraction = true;
 
     private List<IInteractable> nearbyInteractables = new List<IInteractable>();
     private IInteractable hoveredInteractable = null;
@@ -102,8 +106,8 @@ public class InteractionDetector : MonoBehaviour
             }
         }
 
-        // Handle E key (keyboard interaction)
-        if (Input.GetKeyDown(KeyCode.E))
+        // Handle E key (keyboard interaction) - can be disabled for testing
+        if (enableKeyboardInteraction && Input.GetKeyDown(KeyCode.E))
         {
             IInteractable bestInteractable = GetBestInteractable();
             LogDebug($"E key pressed! Nearby interactables: {nearbyInteractables.Count}, Best: {(bestInteractable != null ? bestInteractable.GetType().Name : "NONE")}");
@@ -157,14 +161,12 @@ public class InteractionDetector : MonoBehaviour
             // Skip if can't interact
             if (!interactable.CanInteract()) continue;
             
-            // Only check hover for items that show prompts (NPCs, items, minigames)
-            // Doors/teleports don't need hover (they work anywhere when in range)
-            if (!interactable.ShowInteractionPrompt()) continue;
-            
             MonoBehaviour mb = interactable as MonoBehaviour;
             if (mb == null) continue;
             
-            LogDebug($"  Checking: {mb.gameObject.name} at {mb.transform.position}");
+            bool showsPrompt = interactable.ShowInteractionPrompt();
+            
+            LogDebug($"  Checking: {mb.gameObject.name} at {mb.transform.position} (ShowsPrompt: {showsPrompt})");
             
             bool isMouseOver = false;
             float distance = float.MaxValue;
@@ -283,8 +285,8 @@ public class InteractionDetector : MonoBehaviour
 
     private void UpdateCursor()
     {
-        // Only change cursor for items that show prompts (not doors/teleports)
-        if (hoveredInteractable != null && hoveredInteractable.ShowInteractionPrompt())
+        // Change cursor for any hovered interactable (including doors if enabled)
+        if (hoveredInteractable != null)
         {
             if (interactCursor != null)
             {
@@ -310,8 +312,8 @@ public class InteractionDetector : MonoBehaviour
     {
         LogDebug($"Right-click detected!");
         
-        // Priority 1: If hovering over a specific item/NPC with cursor, interact with that
-        if (enableHoverDetection && hoveredInteractable != null && hoveredInteractable.ShowInteractionPrompt())
+        // Priority 1: If hovering over something with cursor, interact with that
+        if (enableHoverDetection && hoveredInteractable != null)
         {
             if (Systems.InteractionLockManager.IsLocked)
             {
@@ -325,15 +327,13 @@ public class InteractionDetector : MonoBehaviour
         }
         
         // Priority 2: Fallback - interact with best interactable in range
-        // (Doors/teleports work this way, or if hover detection is disabled)
-        // BUT: If directional hover is enabled, DON'T use fallback for items that need prompts
+        // (Only works if directional hover is disabled)
         IInteractable bestInteractable = GetBestInteractable();
         
         if (bestInteractable != null)
         {
-            // If directional hover is enabled and this item shows a prompt,
-            // they must be hovering over it (already handled above)
-            if (enableDirectionalHover && bestInteractable.ShowInteractionPrompt())
+            // If directional hover is enabled, must be hovering first
+            if (enableDirectionalHover)
             {
                 LogDebug($"Right-click blocked - directional hover enabled, must hover over {bestInteractable.GetType().Name} first");
                 return;
@@ -406,12 +406,13 @@ public class InteractionDetector : MonoBehaviour
         foreach (var interactable in nearbyInteractables)
         {
             if (interactable == null) continue;
-            if (!interactable.ShowInteractionPrompt()) continue; // Only show for items that can be hovered
             
             MonoBehaviour mb = interactable as MonoBehaviour;
             if (mb == null) continue;
             
-            // Draw yellow circle around interactables that show prompts
+            bool showsPrompt = interactable.ShowInteractionPrompt();
+            
+            // Draw yellow circle for radius check
             Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
             Gizmos.DrawWireSphere(mb.transform.position, hoverCheckRadius);
             
@@ -425,7 +426,8 @@ public class InteractionDetector : MonoBehaviour
             // Draw directional hover range if enabled
             if (enableDirectionalHover)
             {
-                Gizmos.color = new Color(0f, 0.5f, 1f, 0.2f);
+                // Different color for doors vs items/NPCs
+                Gizmos.color = showsPrompt ? new Color(0f, 0.5f, 1f, 0.2f) : new Color(1f, 0.5f, 0f, 0.2f);
                 Gizmos.DrawWireSphere(mb.transform.position, directionalHoverMaxDistance);
             }
         }
