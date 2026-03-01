@@ -423,7 +423,7 @@ SpriteRenderer:
   m_SortingOrder: -99
   m_MaskInteraction: 0
   m_Sprite: {fileID: 2999459662881226216, guid: 9c42f4c4191e049f79dce9d1dfa5e72e, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.7735849, g: 0.7735849, b: 0.7735849, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1117,10 +1117,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
   dreamIntro: {fileID: 0}
   dreamLoop: {fileID: 0}
-  defaultIntro: {fileID: 8300000, guid: 086d6f59042fb5d4687b88494aa1643c, type: 3}
-  defaultLoop: {fileID: 8300000, guid: 46c0e1648eb414c44a5ecba46859011a, type: 3}
+  defaultIntro: {fileID: 0}
+  defaultLoop: {fileID: 0}
   defaultVolume: 0.4
-  backgroundNoise: {fileID: 8300000, guid: 30362987d550f9852a98da921ddf6e72, type: 3}
+  backgroundNoises:
+  - {fileID: 8300000, guid: 30362987d550f9852a98da921ddf6e72, type: 3}
   invokeBackgroundNoise: 1
   backgroundNoiseVolume: 0.25
 --- !u!1001 &762944565
