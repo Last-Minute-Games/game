@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -22,6 +22,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Rules")]
     public int targetScore = 5;
+    [Tooltip("Seconds to wait after winning the match before auto-closing the popup.")]
+    public float endMatchCloseDelay = 1.5f;
 
     // Internal state
     private const int HEADS = 0;
@@ -44,6 +46,9 @@ public class GameManager : MonoBehaviour
 
     public bool PlayerWonMatch => gameOver && playerScore > aiScore;
     public bool AiWonMatch => gameOver && aiScore > playerScore;
+
+    /// <summary>Invoked after endMatchCloseDelay when the match is over (player or AI reached target). Subscribe to auto-close the popup.</summary>
+    public System.Action OnMatchOver;
 
 
     void Start()
@@ -125,10 +130,16 @@ public class GameManager : MonoBehaviour
             resultText.text = "You win the match!";
             gameOver = true;
             hasCompletedMatch = true;
-           
+            StartCoroutine(CloseAfterDelay(endMatchCloseDelay));
         }
 
         isFlipping = false;
+    }
+
+    IEnumerator CloseAfterDelay(float s)
+    {
+        yield return new WaitForSecondsRealtime(s);
+        OnMatchOver?.Invoke();
     }
 
     private void UpdateUI()

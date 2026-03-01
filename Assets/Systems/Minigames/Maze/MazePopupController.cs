@@ -56,6 +56,8 @@ public class MazePopupController : MonoBehaviour
     [SerializeField] TMP_Text transitionStatusText;
     [Tooltip("How long (in seconds) the screen stays fully faded while we reposition objects.")]
     [SerializeField] float transitionCoveredDuration = 1.2f;
+    [Tooltip("How long (in seconds) the screen stays fully faded when the player WINS the maze.")]
+    [SerializeField] float transitionCoveredDurationOnWin = 2.5f;
     [Tooltip("Fade-in duration in seconds.")]
     [SerializeField] float transitionFadeInDuration = 0.4f;
     [Tooltip("Fade-out duration in seconds.")]
@@ -165,10 +167,10 @@ public class MazePopupController : MonoBehaviour
 
         mazeSolved = solved;
 
-        RunTransition(solved ? "YOU WIN" : "EXITING MAZE", PerformMazeEnd);
+        RunTransition(solved ? "YOU WIN" : "EXITING MAZE", PerformMazeEnd, solved ? transitionCoveredDurationOnWin : transitionCoveredDuration);
     }
 
-    private void RunTransition(string message, System.Action midAction)
+    private void RunTransition(string message, System.Action midAction, float? coveredDurationOverride = null)
     {
         if (isTransitionRunning)
         {
@@ -187,12 +189,19 @@ public class MazePopupController : MonoBehaviour
             gameObject.SetActive(true);
         }
 
-        transitionRoutine = StartCoroutine(TransitionRoutine(message, midAction));
+        transitionRoutine = StartCoroutine(TransitionRoutine(message, midAction, coveredDurationOverride ?? transitionCoveredDuration));
     }
 
-    private IEnumerator TransitionRoutine(string message, System.Action midAction)
+    private IEnumerator TransitionRoutine(string message, System.Action midAction, float coveredDuration)
     {
         isTransitionRunning = true;
+
+        // When entering: hide window and maze first so we see fade-to-black first, then they appear after we're black
+        if (message == "ENTERING MAZE")
+        {
+            if (window) window.SetActive(false);
+            if (mazeRoot) mazeRoot.SetActive(false);
+        }
 
         if (transitionStatusText != null)
         {
@@ -212,9 +221,9 @@ public class MazePopupController : MonoBehaviour
 
         midAction?.Invoke();
 
-        if (transitionCoveredDuration > 0f)
+        if (coveredDuration > 0f)
         {
-            yield return new WaitForSeconds(transitionCoveredDuration);
+            yield return new WaitForSeconds(coveredDuration);
         }
 
         yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 0f, transitionFadeOutDuration);
@@ -225,6 +234,9 @@ public class MazePopupController : MonoBehaviour
 
         transitionRoutine = null;
         isTransitionRunning = false;
+
+        if (!isOpen)
+            HideImmediate();
     }
 
     private IEnumerator FadeCanvasGroup(float start, float end, float duration)
@@ -283,7 +295,7 @@ public class MazePopupController : MonoBehaviour
             mainCamera.orthographicSize = originalCamSize;
         }
 
-        // Hide popup & maze
+        // Hide popup and maze; when exiting, fade-to-black already happened so removal is hidden behind black
         if (backdrop) backdrop.SetActive(false);
         if (window) window.SetActive(false);
         if (mazeRoot) mazeRoot.SetActive(false);
@@ -344,16 +356,10 @@ public class MazePopupController : MonoBehaviour
 
         mazeGenerated = false;
 
-        // Make sure transition canvas is disabled
-        if (transitionCanvasGroup != null)
-        {
-            transitionCanvasGroup.alpha = 0f;
-            transitionCanvasGroup.blocksRaycasts = false;
-            transitionCanvasGroup.interactable = false;
-            transitionCanvasGroup.gameObject.SetActive(false);
-        }
-
-        HideImmediate();
+        // Don’t call HideImmediate() here – it would disable this object and stop the transition coroutine.
+        // TransitionRoutine calls HideImmediate() after the fade-out.
+        if (!isTransitionRunning)
+            HideImmediate();
     }
 
     public void Show()
