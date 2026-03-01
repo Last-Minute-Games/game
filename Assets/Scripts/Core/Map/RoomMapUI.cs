@@ -83,6 +83,10 @@ public class RoomMapUI : MonoBehaviour
     [SerializeField] private int   fontSize  = 18;
     [SerializeField] private Color fontColor = new Color(0.9f, 0.85f, 0.75f, 1f);
 
+    [Header("Fade Animation")]
+    [Tooltip("How long the map takes to fade in/out (seconds).")]
+    [SerializeField] private float fadeDuration = 0.25f;
+
     [Header("Title")]
     [SerializeField] private string mapTitle = "Castle Map";
     [SerializeField] private int titleFontSize = 32;
@@ -113,6 +117,10 @@ public class RoomMapUI : MonoBehaviour
     private Sprite _circleSprite;
     // Sound
     private EnvironmentSoundHandler _soundHandler;
+    // Fade
+    private CanvasGroup _canvasGroup;
+    private Coroutine _fadeCoroutine;
+    private bool _isFading;
     // Debug
     private bool _debugRevealAllNPCs = false;
     // ─────────────────── Lifecycle ───────────────────
@@ -156,6 +164,10 @@ public class RoomMapUI : MonoBehaviour
 
         BuildCanvas();
         BuildOverlay();
+
+        // Add CanvasGroup for fade animation
+        _canvasGroup = _root.AddComponent<CanvasGroup>();
+        _canvasGroup.alpha = 0f;
         _root.SetActive(false);
     }
 
@@ -163,6 +175,8 @@ public class RoomMapUI : MonoBehaviour
     {
         if (Input.GetKeyDown(toggleKey))
         {
+            // Don't toggle while a fade is in progress
+            if (_isFading) return;
             // Don't open the map if another pause-level UI is open (pause menu, etc.)
             if (!_isOpen && GlobalPause.IsPaused) return;
             ToggleMap();
@@ -200,7 +214,6 @@ public class RoomMapUI : MonoBehaviour
         }
 
         _isOpen = !_isOpen;
-        _root.SetActive(_isOpen);
 
         // Play page-flip sound (same as journal open/close)
         if (_soundHandler != null)
@@ -220,15 +233,45 @@ public class RoomMapUI : MonoBehaviour
                 if (player != null) _playerTransform = player.transform;
             }
 
+            _root.SetActive(true);
             RefreshHighlight();
             // Immediately position dots
             UpdatePlayerDot();
             UpdateNPCDots();
+
+            // Fade in
+            if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+            _fadeCoroutine = StartCoroutine(FadeMap(0f, 1f));
         }
         else
         {
-            GlobalPause.SetPaused(false);
+            // Fade out, then deactivate and unpause
+            if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+            _fadeCoroutine = StartCoroutine(FadeMap(1f, 0f, onComplete: () =>
+            {
+                _root.SetActive(false);
+                GlobalPause.SetPaused(false);
+            }));
         }
+    }
+
+    private System.Collections.IEnumerator FadeMap(float from, float to, System.Action onComplete = null)
+    {
+        _isFading = true;
+        _canvasGroup.alpha = from;
+        float elapsed = 0f;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            _canvasGroup.alpha = Mathf.Lerp(from, to, elapsed / fadeDuration);
+            yield return null;
+        }
+
+        _canvasGroup.alpha = to;
+        _isFading = false;
+        _fadeCoroutine = null;
+        onComplete?.Invoke();
     }
 
     // ─────────────────── Auto-Populate World Bounds ───────────────────
