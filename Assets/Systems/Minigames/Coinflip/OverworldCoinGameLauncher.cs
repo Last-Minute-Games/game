@@ -1,3 +1,5 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
@@ -24,6 +26,19 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
     [Header("Protection")]
     public float sceneOpenDelay = 0.35f; // block instant open after load/room swap
     public float reopenCooldown = 0.25f; // block double taps
+
+    [Header("Transition (Sokoban-style fade)")]
+    [Tooltip("CanvasGroup used to fade the screen when entering/exiting. Assign a full-screen black panel with CanvasGroup.")]
+    [SerializeField] CanvasGroup transitionCanvasGroup;
+    [Tooltip("Optional text element that displays the current transition message.")]
+    [SerializeField] TMP_Text transitionStatusText;
+    [Tooltip("How long (in seconds) the screen stays fully faded while we swap UI.")]
+    [SerializeField] float transitionCoveredDuration = 0.5f;
+    [SerializeField] float transitionFadeInDuration = 0.4f;
+    [SerializeField] float transitionFadeOutDuration = 0.4f;
+
+    private Coroutine _transitionRoutine;
+    private bool _isTransitionRunning;
 
     public MinigameInstructions coinFlipInstructions;
 
@@ -58,6 +73,14 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
         else
         {
             Debug.LogWarning($"[OverworldCoinGameLauncher] {name}: No BoxCollider2D found! Add one as a trigger for interaction to work.");
+        }
+
+        if (transitionCanvasGroup != null)
+        {
+            transitionCanvasGroup.alpha = 0f;
+            transitionCanvasGroup.blocksRaycasts = false;
+            transitionCanvasGroup.interactable = false;
+            transitionCanvasGroup.gameObject.SetActive(false);
         }
     }
 
@@ -164,21 +187,62 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
         return true;
     }
 
+    private void RunTransition(string message, System.Action midAction, System.Action afterTransition = null)
+    {
+        if (_isTransitionRunning) return;
+        if (transitionCanvasGroup == null) { midAction?.Invoke(); afterTransition?.Invoke(); return; }
+        _transitionRoutine = StartCoroutine(TransitionRoutine(message, midAction, afterTransition));
+    }
+
+    private IEnumerator TransitionRoutine(string message, System.Action midAction, System.Action afterTransition)
+    {
+        _isTransitionRunning = true;
+        if (transitionStatusText != null) transitionStatusText.text = message;
+        GameObject go = transitionCanvasGroup.gameObject;
+        if (!go.activeSelf) go.SetActive(true);
+        transitionCanvasGroup.blocksRaycasts = true;
+        transitionCanvasGroup.interactable = true;
+        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
+        midAction?.Invoke();
+        if (transitionCoveredDuration > 0f) yield return new WaitForSeconds(transitionCoveredDuration);
+        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 0f, transitionFadeOutDuration);
+        transitionCanvasGroup.blocksRaycasts = false;
+        transitionCanvasGroup.interactable = false;
+        go.SetActive(false);
+        _transitionRoutine = null;
+        _isTransitionRunning = false;
+
+        afterTransition?.Invoke();
+    }
+
+    private IEnumerator FadeCanvasGroup(float start, float end, float duration)
+    {
+        if (duration <= 0f) { transitionCanvasGroup.alpha = end; yield break; }
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            transitionCanvasGroup.alpha = Mathf.Lerp(start, end, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+        transitionCanvasGroup.alpha = end;
+    }
+
     public void OpenCoinFlipPopup()
     {
-        if (!_canOpen) 
+        if (!_canOpen)
         {
             LogDebug("OpenCoinFlipPopup blocked - not ready");
             return;
         }
-        
-        if (Time.unscaledTime - _lastCloseTime < reopenCooldown) 
+
+        if (Time.unscaledTime - _lastCloseTime < reopenCooldown)
         {
             LogDebug("OpenCoinFlipPopup blocked - cooldown");
             return;
         }
-        
-        if (coinFlipPopup == null || coinFlipPopup.activeSelf) 
+
+        if (coinFlipPopup == null || coinFlipPopup.activeSelf)
         {
             LogDebug("OpenCoinFlipPopup blocked - null or already active");
             return;
@@ -186,26 +250,26 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
 
         LogDebug("Opening coinflip popup");
 
-        // Show the existing popup GameObject
+        if (transitionCanvasGroup != null)
+        {
+            RunTransition("COIN FLIP", PerformOpen, null);
+            return;
+        }
+        PerformOpen();
+    }
+
+    private void PerformOpen()
+    {
         coinFlipPopup.SetActive(true);
 
         if (coinFlipInstructions == null)
-        {
-            // fallback: try to find it on children
             coinFlipInstructions = coinFlipPopup.GetComponentInChildren<MinigameInstructions>(true);
-        }
         if (coinFlipInstructions != null)
-        {
             coinFlipInstructions.OnPopupOpened();
-        }
 
-        // Pause NPCs and ClockTimer (but NOT player input - using minigame pause)
         GlobalPause.SetMinigamePaused(true);
-
         foreach (var c in controlsToDisable) if (c) c.enabled = false;
-
-        if (hudGroup != null) //HUD off
-            hudGroup.SetActive(false);
+        if (hudGroup != null) hudGroup.SetActive(false);
     }
 
     public void CloseCoinFlipPopup()
@@ -214,22 +278,36 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
 
         LogDebug("Closing coinflip popup");
 
-        // Hide the popup GameObject (don't destroy it)
-        coinFlipPopup.SetActive(false);
-        
+        if (transitionCanvasGroup != null && gameObject.activeInHierarchy)
+        {
+            RunTransition("EXITING", () =>
+            {
+                PerformCloseLogic();
+                PerformCloseFinal();
+            }, null);
+            return;
+        }
+        PerformCloseLogic();
+        PerformCloseFinal();
+    }
+
+    /// <summary>Re-enable controls, HUD, unpause. Does NOT hide popup or unlock (safe to call during transition).</summary>
+    private void PerformCloseLogic()
+    {
         foreach (var c in controlsToDisable) if (c) c.enabled = true;
-
-        if (hudGroup != null)
-            hudGroup.SetActive(true);
-
-        // Resume NPCs and ClockTimer (using minigame pause)
+        if (hudGroup != null) hudGroup.SetActive(true);
         GlobalPause.SetMinigamePaused(false);
+    }
 
+    /// <summary>Hide popup, cooldown, unlock. Call this only when transition has finished (or when no transition).</summary>
+    private void PerformCloseFinal()
+    {
+        if (coinFlipPopup != null && coinFlipPopup != gameObject)
+            coinFlipPopup.SetActive(false);
         _lastCloseTime = Time.unscaledTime;
         _canOpen = false;
-        StartCoroutine(EnableOpenAfterDelay(sceneOpenDelay)); // brief lockout after close
-        
-        // Release the interaction lock
+        if (gameObject.activeInHierarchy)
+            StartCoroutine(EnableOpenAfterDelay(sceneOpenDelay));
         Systems.InteractionLockManager.Unlock();
     }
 

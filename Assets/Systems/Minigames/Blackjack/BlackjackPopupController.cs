@@ -1,3 +1,5 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +24,21 @@ public class BlackjackPopupController : MonoBehaviour
     [Tooltip("Overworld objects (flag/entrance) to hide once Blackjack is finished.")]
     [SerializeField] private GameObject[] blackjackShowFlags;
 
+    [Header("Transition (Sokoban-style fade)")]
+    [Tooltip("CanvasGroup used to fade the screen when entering/exiting the minigame. Assign a full-screen black panel with CanvasGroup.")]
+    [SerializeField] CanvasGroup transitionCanvasGroup;
+    [Tooltip("Optional text element that displays the current transition message.")]
+    [SerializeField] TMP_Text transitionStatusText;
+    [Tooltip("How long (in seconds) the screen stays fully faded while we swap UI.")]
+    [SerializeField] float transitionCoveredDuration = 0.5f;
+    [Tooltip("Fade-in duration in seconds.")]
+    [SerializeField] float transitionFadeInDuration = 0.4f;
+    [Tooltip("Fade-out duration in seconds.")]
+    [SerializeField] float transitionFadeOutDuration = 0.4f;
+
+    private Coroutine transitionRoutine;
+    private bool isTransitionRunning;
+
     bool wasCursorVisible;
     CursorLockMode priorLockState;
     [SerializeField] private GameObject hudGroup;
@@ -37,9 +54,69 @@ public class BlackjackPopupController : MonoBehaviour
             blackjackGame.OnRequestClose += Hide;
 
         HideImmediate(); // ensure not visible at scene start
+
+        if (transitionCanvasGroup != null)
+        {
+            transitionCanvasGroup.alpha = 0f;
+            transitionCanvasGroup.blocksRaycasts = false;
+            transitionCanvasGroup.interactable = false;
+            transitionCanvasGroup.gameObject.SetActive(false);
+        }
+    }
+
+    private void RunTransition(string message, System.Action midAction)
+    {
+        if (isTransitionRunning) return;
+        if (transitionCanvasGroup == null) { midAction?.Invoke(); return; }
+        if (!gameObject.activeSelf) gameObject.SetActive(true);
+        transitionRoutine = StartCoroutine(TransitionRoutine(message, midAction));
+    }
+
+    private IEnumerator TransitionRoutine(string message, System.Action midAction)
+    {
+        isTransitionRunning = true;
+        if (transitionStatusText != null) transitionStatusText.text = message;
+        GameObject go = transitionCanvasGroup.gameObject;
+        if (!go.activeSelf) go.SetActive(true);
+        transitionCanvasGroup.blocksRaycasts = true;
+        transitionCanvasGroup.interactable = true;
+        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
+        midAction?.Invoke();
+        if (transitionCoveredDuration > 0f) yield return new WaitForSeconds(transitionCoveredDuration);
+        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 0f, transitionFadeOutDuration);
+        transitionCanvasGroup.blocksRaycasts = false;
+        transitionCanvasGroup.interactable = false;
+        go.SetActive(false);
+        transitionRoutine = null;
+        isTransitionRunning = false;
+    }
+
+    private IEnumerator FadeCanvasGroup(float start, float end, float duration)
+    {
+        if (duration <= 0f) { transitionCanvasGroup.alpha = end; yield break; }
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            transitionCanvasGroup.alpha = Mathf.Lerp(start, end, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+        transitionCanvasGroup.alpha = end;
     }
 
     public void Show()
+    {
+        if (transitionCanvasGroup != null) { RunTransition("BLACKJACK", PerformShow); return; }
+        PerformShow();
+    }
+
+    public void Hide()
+    {
+        if (transitionCanvasGroup != null) { RunTransition("EXITING", PerformHide); return; }
+        PerformHide();
+    }
+
+    private void PerformShow()
     {
         if (hudGroup != null)
             hudGroup.SetActive(false);   // hide HUD
@@ -76,9 +153,8 @@ public class BlackjackPopupController : MonoBehaviour
         Cursor.visible = true;
     }
 
-    public void Hide()
+    private void PerformHide()
     {
-
         backdrop.SetActive(false);
         window.SetActive(false);
 
@@ -142,7 +218,7 @@ public class BlackjackPopupController : MonoBehaviour
 
         // Hide UI
         HideImmediate();
-        
+
         // Release the interaction lock
         Systems.InteractionLockManager.Unlock();
     }
