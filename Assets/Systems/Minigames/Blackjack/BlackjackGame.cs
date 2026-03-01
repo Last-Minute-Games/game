@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using Blackjack;
 using TMPro;
@@ -204,25 +204,15 @@ public class BlackjackGame : MonoBehaviour
 
             UpdateScoreUI();
 
-            if (playerWins >= targetWins || dealerWins >= targetWins)
+            // Only the player can win the whole game; match ends only when player reaches target
+            if (playerWins >= targetWins)
             {
                 matchOver = true;
-                statusText.text += $"\n\nMatch over — {(playerWins > dealerWins ? "Player" : "Dealer")} reaches {targetWins}.";
-                // lock actions until New/Reset
+                statusText.text += $"\n\nMatch over — Player reaches {targetWins}.";
                 hitButton.interactable = false;
                 standButton.interactable = false;
+                StartCoroutine(CloseAfterDelay(endMatchCloseDelay));
             }
-        }
-
-        if (playerWins >= targetWins || dealerWins >= targetWins)
-        {
-            matchOver = true;
-            statusText.text += $"\n\nMatch over — {(playerWins > dealerWins ? "Player" : "Dealer")} reaches {targetWins}.";
-            hitButton.interactable = false;
-            standButton.interactable = false;
-
-            // NEW: close after a short delay
-            StartCoroutine(CloseAfterDelay(endMatchCloseDelay));
         }
 
         // disable round buttons; player must click New to deal next round
@@ -332,7 +322,7 @@ public class BlackjackGame : MonoBehaviour
     void UpdateScoreUI()
     {
         if (scoreText != null)
-            scoreText.text = $"Player {playerWins}  —  {dealerWins} Dealer";
+            scoreText.text = $"Wins: {playerWins}";
     }
 
     IEnumerator CloseAfterDelay(float s)
