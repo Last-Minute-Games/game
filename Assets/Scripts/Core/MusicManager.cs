@@ -11,10 +11,17 @@ public class MusicManager : MonoBehaviour
     [Header("Default Settings")] 
     public AudioClip defaultIntro;
     public AudioClip defaultLoop;
-    
+
     public float defaultVolume = 0.5f;
+
+    [Header("Background Noise Settings")]
+    public AudioClip backgroundNoise;
+    public bool invokeBackgroundNoise;
+
+    public float backgroundNoiseVolume = 0.25f;
     
     private AudioSource source;
+    private AudioSource backgroundSource;
 
     void Awake()
     {
@@ -23,6 +30,17 @@ public class MusicManager : MonoBehaviour
         source.loop = true;
         source.playOnAwake = false;
         source.volume = defaultVolume;
+
+        // play background noise only if invoked
+        if (invokeBackgroundNoise && backgroundNoise != null)
+        {
+            backgroundSource = gameObject.AddComponent<AudioSource>();
+            backgroundSource.clip = backgroundNoise;
+            backgroundSource.loop = true;
+            backgroundSource.playOnAwake = false;
+            backgroundSource.volume = backgroundNoiseVolume;
+            backgroundSource.Play();
+        }
         
         if (defaultLoop != null)
         {
