@@ -15,13 +15,12 @@ public class MusicManager : MonoBehaviour
     public float defaultVolume = 0.5f;
 
     [Header("Background Noise Settings")]
-    public AudioClip backgroundNoise;
+    public AudioClip[] backgroundNoises;
     public bool invokeBackgroundNoise;
-
     public float backgroundNoiseVolume = 0.25f;
     
     private AudioSource source;
-    private AudioSource backgroundSource;
+    private AudioSource[] backgroundSources;
 
     void Awake()
     {
@@ -31,15 +30,27 @@ public class MusicManager : MonoBehaviour
         source.playOnAwake = false;
         source.volume = defaultVolume;
 
-        // play background noise only if invoked
-        if (invokeBackgroundNoise && backgroundNoise != null)
+        // play ALL background noises (layered) only if invoked
+        if (invokeBackgroundNoise && backgroundNoises != null && backgroundNoises.Length > 0)
         {
-            backgroundSource = gameObject.AddComponent<AudioSource>();
-            backgroundSource.clip = backgroundNoise;
-            backgroundSource.loop = true;
-            backgroundSource.playOnAwake = false;
-            backgroundSource.volume = backgroundNoiseVolume;
-            backgroundSource.Play();
+            backgroundSources = new AudioSource[backgroundNoises.Length];
+
+            for (int i = 0; i < backgroundNoises.Length; i++)
+            {
+                var clip = backgroundNoises[i];
+                if (clip == null) continue;
+
+                var s = gameObject.AddComponent<AudioSource>();
+                s.clip = clip;
+                s.loop = true;
+                s.playOnAwake = false;
+
+                // Optional: reduce per-layer volume so multiple layers don't get too loud
+                s.volume = backgroundNoiseVolume / Mathf.Max(1, backgroundNoises.Length);
+
+                s.Play();
+                backgroundSources[i] = s;
+            }
         }
         
         if (defaultLoop != null)
