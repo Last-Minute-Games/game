@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +23,10 @@ public class BlackjackPopupController : MonoBehaviour
     [Tooltip("Overworld objects (flag/entrance) to hide once Blackjack is finished.")]
     [SerializeField] private GameObject[] blackjackShowFlags;
 
+    [Header("Transition")]
+    [Tooltip("Shared transition component (add MinigameTransition and assign).")]
+    [SerializeField] MinigameTransition transition;
+
     bool wasCursorVisible;
     CursorLockMode priorLockState;
     [SerializeField] private GameObject hudGroup;
@@ -40,6 +45,18 @@ public class BlackjackPopupController : MonoBehaviour
     }
 
     public void Show()
+    {
+        if (transition != null) { transition.RunTransition("BLACKJACK", PerformShow); return; }
+        PerformShow();
+    }
+
+    public void Hide()
+    {
+        if (transition != null) { transition.RunTransition("EXITING", PerformHide); return; }
+        PerformHide();
+    }
+
+    private void PerformShow()
     {
         if (hudGroup != null)
             hudGroup.SetActive(false);   // hide HUD
@@ -76,9 +93,8 @@ public class BlackjackPopupController : MonoBehaviour
         Cursor.visible = true;
     }
 
-    public void Hide()
+    private void PerformHide()
     {
-
         backdrop.SetActive(false);
         window.SetActive(false);
 
@@ -142,7 +158,7 @@ public class BlackjackPopupController : MonoBehaviour
 
         // Hide UI
         HideImmediate();
-        
+
         // Release the interaction lock
         Systems.InteractionLockManager.Unlock();
     }
