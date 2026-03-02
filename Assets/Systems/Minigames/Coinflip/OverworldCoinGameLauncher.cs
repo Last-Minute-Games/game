@@ -222,7 +222,7 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
         MinigameTransition t = transition != null ? transition : FindObjectOfType<MinigameTransition>();
         if (t != null)
         {
-            t.RunTransition("EXITING", PerformCloseLogic, null, PerformCloseFinal);
+            t.RunTransition("EXITING", PerformCloseLogic, null, PerformCloseFinal, instantBlack: true);
             return;
         }
         PerformCloseLogic();

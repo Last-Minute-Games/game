@@ -44,7 +44,8 @@ public class MinigameTransition : MonoBehaviour
     /// <param name="midAction">Runs while the screen is fully black.</param>
     /// <param name="coveredDurationOverride">If set, overrides transitionCoveredDuration for this run.</param>
     /// <param name="afterTransition">Runs after the fade-out (e.g. hide popup root).</param>
-    public void RunTransition(string message, Action midAction, float? coveredDurationOverride = null, Action afterTransition = null)
+    /// <param name="instantBlack">If true, snap to full black immediately (no fade-in), then run midAction, wait, fade out. Use for exit so main game never peeks through.</param>
+    public void RunTransition(string message, Action midAction, float? coveredDurationOverride = null, Action afterTransition = null, bool instantBlack = false)
     {
         if (_isRunning) return;
 
@@ -59,10 +60,10 @@ public class MinigameTransition : MonoBehaviour
             gameObject.SetActive(true);
 
         float covered = coveredDurationOverride ?? transitionCoveredDuration;
-        _routine = StartCoroutine(TransitionRoutine(message, midAction, covered, afterTransition));
+        _routine = StartCoroutine(TransitionRoutine(message, midAction, covered, afterTransition, instantBlack));
     }
 
-    private IEnumerator TransitionRoutine(string message, Action midAction, float coveredDuration, Action afterTransition)
+    private IEnumerator TransitionRoutine(string message, Action midAction, float coveredDuration, Action afterTransition, bool instantBlack)
     {
         _isRunning = true;
 
@@ -74,7 +75,19 @@ public class MinigameTransition : MonoBehaviour
         transitionCanvasGroup.blocksRaycasts = true;
         transitionCanvasGroup.interactable = true;
 
-        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
+        // Ensure overlay is drawn on top of minigame/popup so we fade to black over the minigame, not behind it
+        Canvas canvas = transitionCanvasGroup.GetComponentInParent<Canvas>();
+        if (canvas != null)
+            canvas.sortingOrder = 999;
+
+        if (instantBlack)
+        {
+            transitionCanvasGroup.alpha = 1f;
+        }
+        else
+        {
+            yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
+        }
 
         midAction?.Invoke();
 
