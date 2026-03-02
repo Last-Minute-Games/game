@@ -18,10 +18,12 @@ public class GameManager : MonoBehaviour
     public TMP_Text playerScoreText;
     public TMP_Text aiScoreText;
     public TMP_Text roundText;
-    public TMP_Text statusText;
+    public TMP_Text resultText;
 
     [Header("Rules")]
     public int targetScore = 5;
+    [Tooltip("Seconds to wait after winning the match before auto-closing the popup.")]
+    public float endMatchCloseDelay = 1.5f;
 
     // Internal state
     private const int HEADS = 0;
@@ -45,33 +47,41 @@ public class GameManager : MonoBehaviour
     public bool PlayerWonMatch => gameOver && playerScore > aiScore;
     public bool AiWonMatch => gameOver && aiScore > playerScore;
 
+    /// <summary>Invoked after endMatchCloseDelay when the match is over (player or AI reached target). Subscribe to auto-close the popup.</summary>
+    public System.Action OnMatchOver;
+
 
     void Start()
     {
+        resultText.gameObject.SetActive(false);
         HookButtons();
         UpdateUI();
-        statusText.text = "Choose Heads or Tails.";
+        
     }
 
     private void HookButtons()
     {
         headsButton.onClick.RemoveAllListeners();
         tailsButton.onClick.RemoveAllListeners();
-        endTurnButton.onClick.RemoveAllListeners();
-        autoPlayButton.onClick.RemoveAllListeners();
-        resetButton.onClick.RemoveAllListeners();
 
-        headsButton.onClick.AddListener(() => Choose(HEADS));
-        tailsButton.onClick.AddListener(() => Choose(TAILS));
-        endTurnButton.onClick.AddListener(() =>
+        headsButton.onClick.AddListener(() =>
         {
-            if (!isFlipping && !gameOver) StartCoroutine(DoRound());
+            Choose(HEADS);
+            if (!isFlipping && !gameOver)
+            {
+                StartCoroutine(DoRound());
+            }
         });
-        autoPlayButton.onClick.AddListener(() =>
+
+        tailsButton.onClick.AddListener(() =>
         {
-            if (!gameOver) StartCoroutine(AutoPlayToWin());
+            Choose(TAILS);
+            if (!isFlipping && !gameOver)
+            {
+                StartCoroutine(DoRound());
+            }
         });
-        resetButton.onClick.AddListener(ResetMatch);
+
     }
 
     private void Choose(int choice)
@@ -79,9 +89,6 @@ public class GameManager : MonoBehaviour
         if (isFlipping || gameOver) return;
 
         playerChoice = choice;
-        statusText.text = (choice == HEADS)
-            ? "You chose HEADS. End Turn to flip!"
-            : "You chose TAILS. End Turn to flip!";
 
         UpdateUI();
     }
@@ -90,12 +97,11 @@ public class GameManager : MonoBehaviour
     {
         if (playerChoice == -1)
         {
-            statusText.text = "Pick Heads or Tails first.";
             yield break;
         }
 
         isFlipping = true;
-        statusText.text = "Flipping...";
+        
         int result = -1;
 
         // Trigger the flip. We pass a random outcome request (true=heads, false=tails)
@@ -113,69 +119,33 @@ public class GameManager : MonoBehaviour
         if (result == playerChoice) playerScore++;
         else aiScore++;
 
-        // Round summary
-        string resText = (result == HEADS) ? "HEADS" : "TAILS";
-        string pText = (playerChoice == HEADS) ? "HEADS" : "TAILS";
-        string aText = (aiChoice == HEADS) ? "HEADS" : "TAILS";
-        statusText.text = $"Result: {resText}. You picked {pText}, AI picked {aText}.";
-
         roundIndex++;
         playerChoice = -1; // require a fresh choice each round
         UpdateUI();
 
         // Win check
-        if (playerScore >= targetScore || aiScore >= targetScore)
+        if (playerScore >= targetScore )
         {
+            resultText.gameObject.SetActive(true);
+            resultText.text = "You win the match!";
             gameOver = true;
             hasCompletedMatch = true;
-            statusText.text += (playerScore > aiScore)
-                ? " You win the match! 🎉"
-                : " AI wins the match! 🤖";
+            StartCoroutine(CloseAfterDelay(endMatchCloseDelay));
         }
 
         isFlipping = false;
     }
 
-    private IEnumerator AutoPlayToWin()
+    IEnumerator CloseAfterDelay(float s)
     {
-        if (isFlipping || gameOver) yield break;
-
-        autoMode = true;
-        statusText.text = "Autoplay: playing rounds until someone reaches the target.";
-        while (!gameOver)
-        {
-            // Random choice each round for the player
-            playerChoice = (Random.value < 0.5f) ? HEADS : TAILS;
-
-            yield return StartCoroutine(DoRound());
-
-            // Small pacing delay between rounds
-            yield return new WaitForSeconds(0.25f);
-        }
-
-        autoMode = false;
+        yield return new WaitForSecondsRealtime(s);
+        OnMatchOver?.Invoke();
     }
 
     private void UpdateUI()
     {
-        if (playerScoreText) playerScoreText.text = $"You: {playerScore}";
-        if (aiScoreText) aiScoreText.text = $"AI: {aiScore}";
+        if (playerScoreText) playerScoreText.text = $"Score: {playerScore}";
         if (roundText) roundText.text = $"Round {roundIndex}";
-        if (endTurnButton) endTurnButton.interactable = (playerChoice != -1) && !isFlipping && !gameOver;
     }
 
-    private void ResetMatch()
-    {
-        StopAllCoroutines();
-        playerScore = 0;
-        aiScore = 0;
-        roundIndex = 1;
-        playerChoice = -1;
-        gameOver = false;
-        isFlipping = false;
-        autoMode = false;
-
-        statusText.text = "New match. Choose Heads or Tails.";
-        UpdateUI();
-    }
 }
