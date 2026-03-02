@@ -515,6 +515,9 @@ public class RoundManager : MonoBehaviour
         Debug.Log("[RoundManager] 🏆 PLAYER VICTORY!");
         Debug.Log("[RoundManager] ============================================");
 
+        // decrease insanity flag if win
+        DecreaseInsanityOnWin();
+
         // Advance day flag (this will trigger auto-save)
         Debug.Log("[RoundManager] Calling AdvanceDayFlag() after victory...");
         AdvanceDayFlag();
@@ -537,6 +540,9 @@ public class RoundManager : MonoBehaviour
         Debug.Log("[RoundManager] ============================================");
         Debug.Log("[RoundManager] ❌ PLAYER DEFEAT!");
         Debug.Log("[RoundManager] ============================================");
+
+        // invoke next insanity flag if loss
+        AdvanceInsanityOnLoss();
 
         // Advance day flag (this will trigger auto-save)
         Debug.Log("[RoundManager] Calling AdvanceDayFlag() after defeat...");
@@ -574,6 +580,84 @@ public class RoundManager : MonoBehaviour
             Debug.LogWarning("[RoundManager] ScreenFader missing! Falling back to direct load.");
             UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
         }
+    }
+
+    // advance insanity handler
+    private void AdvanceInsanityOnLoss()
+    {
+        // Maxed out already
+        if (GameFlags.HasFlag("insanity.three")) 
+        {
+            Debug.Log("[RoundManager] Insanity three has already been reached");
+            return;
+        }
+
+        if (GameFlags.HasFlag("insanity.two"))
+        {
+            GameFlags.RemoveFlag("insanity.two");
+            GameFlags.SetFlag("insanity.three");
+            Debug.Log("[RoundManager] Insanity increased to three");
+            return;
+        }
+
+        if (GameFlags.HasFlag("insanity.one"))
+        {
+            GameFlags.RemoveFlag("insanity.one");
+            GameFlags.SetFlag("insanity.two");
+            Debug.Log("[RoundManager] Insanity increased to two");
+            return;
+        }
+
+        if (GameFlags.HasFlag("insanity.zero"))
+        {
+            GameFlags.RemoveFlag("insanity.zero");
+            GameFlags.SetFlag("insanity.one");
+            Debug.Log("[RoundManager] Insanity increased to one");
+            return;
+        }
+
+        Debug.LogWarning("[RoundManager] AdvanceInsanityOnLoss fallback, insanity set to one.");
+        // Fallback if somehow none exist
+        GameFlags.SetFlag("insanity.one");
+    }
+
+    // decrease insanity handler (called on WIN)
+    private void DecreaseInsanityOnWin()
+    {
+        // Already at minimum
+        if (GameFlags.HasFlag("insanity.zero"))
+        {
+            Debug.Log("[RoundManager] Insanity decreased to zero");
+            return;
+        }
+
+        if (GameFlags.HasFlag("insanity.three"))
+        {
+            GameFlags.RemoveFlag("insanity.three");
+            GameFlags.SetFlag("insanity.two");
+            Debug.Log("[RoundManager] Insanity decreased to two");
+            return;
+        }
+
+        if (GameFlags.HasFlag("insanity.two"))
+        {
+            GameFlags.RemoveFlag("insanity.two");
+            GameFlags.SetFlag("insanity.one");
+            Debug.Log("[RoundManager] Insanity decreased to one");
+            return;
+        }
+
+        if (GameFlags.HasFlag("insanity.one"))
+        {
+            GameFlags.RemoveFlag("insanity.one");
+            GameFlags.SetFlag("insanity.zero");
+            Debug.Log("[RoundManager] Insanity decreased to zero");
+            return;
+        }
+
+        // Fallback if somehow none exist
+        Debug.LogWarning("[RoundManager] DecreaseInsanityOnWin fallback, insanity set to one.");
+        GameFlags.SetFlag("insanity.zero");
     }
 
     // handle advancing day flags

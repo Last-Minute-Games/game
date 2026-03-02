@@ -422,8 +422,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: -99
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 2999459662881226216, guid: 9c42f4c4191e049f79dce9d1dfa5e72e, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: -4141410268441704805, guid: 0081e21b9220a5509b6407a23f3c6fa1, type: 3}
+  m_Color: {r: 0.8773585, g: 0.8773585, b: 0.8773585, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -441,8 +441,8 @@ Transform:
   m_GameObject: {fileID: 222919204}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.64, y: 0.6849123, z: 0.89824563}
+  m_LocalPosition: {x: -0.1491, y: -0.13, z: 0}
+  m_LocalScale: {x: 1.8586183, y: 1.6978215, z: 2.0256338}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1972788296}
@@ -1117,9 +1117,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
   dreamIntro: {fileID: 0}
   dreamLoop: {fileID: 0}
-  defaultIntro: {fileID: 8300000, guid: 086d6f59042fb5d4687b88494aa1643c, type: 3}
-  defaultLoop: {fileID: 8300000, guid: 46c0e1648eb414c44a5ecba46859011a, type: 3}
+  defaultIntro: {fileID: 0}
+  defaultLoop: {fileID: 0}
   defaultVolume: 0.4
+  backgroundNoises:
+  - {fileID: 8300000, guid: 30362987d550f9852a98da921ddf6e72, type: 3}
+  invokeBackgroundNoise: 1
+  backgroundNoiseVolume: 0.25
 --- !u!1001 &762944565
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2120,7 +2124,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -5.3}
+  m_AnchoredPosition: {x: 0, y: -5.2}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &998311090
