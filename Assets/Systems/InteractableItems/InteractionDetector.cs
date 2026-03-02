@@ -152,6 +152,8 @@ public class InteractionDetector : MonoBehaviour
         
         IInteractable newHovered = null;
         float closestDistance = float.MaxValue;
+        IInteractable nearestDoor = null; // Track nearest door for cursor purposes
+        float nearestDoorDistance = float.MaxValue;
         
         // Check all nearby interactables
         foreach (var interactable in nearbyInteractables)
@@ -165,8 +167,21 @@ public class InteractionDetector : MonoBehaviour
             if (mb == null) continue;
             
             bool showsPrompt = interactable.ShowInteractionPrompt();
+            bool isDoor = !showsPrompt; // Doors/teleporters don't show prompts
             
-            LogDebug($"  Checking: {mb.gameObject.name} at {mb.transform.position} (ShowsPrompt: {showsPrompt})");
+            LogDebug($"  Checking: {mb.gameObject.name} at {mb.transform.position} (ShowsPrompt: {showsPrompt}, IsDoor: {isDoor})");
+            
+            // For doors: track the nearest one for cursor changes (no hover required)
+            if (isDoor)
+            {
+                float doorDistance = Vector2.Distance(playerPos, mb.transform.position);
+                if (doorDistance < nearestDoorDistance)
+                {
+                    nearestDoor = interactable;
+                    nearestDoorDistance = doorDistance;
+                    LogDebug($"    Door found - distance: {doorDistance:F2} (tracking as nearest door)");
+                }
+            }
             
             bool isMouseOver = false;
             float distance = float.MaxValue;
@@ -201,7 +216,8 @@ public class InteractionDetector : MonoBehaviour
             }
             
             // Method 3: Stardew Valley style - Directional hover (if enabled and player is close)
-            if (!isMouseOver && enableDirectionalHover)
+            // BUT skip directional hover for doors/teleporters - they only need collider/radius detection
+            if (!isMouseOver && enableDirectionalHover && !isDoor)
             {
                 Vector2 objectPos = mb.transform.position;
                 float distanceToObject = Vector2.Distance(playerPos, objectPos);
@@ -241,6 +257,10 @@ public class InteractionDetector : MonoBehaviour
                     LogDebug($"    ? Method 3 (Directional): Too far ({distanceToObject:F2} > {directionalHoverMaxDistance:F2})");
                 }
             }
+            else if (!isMouseOver && isDoor)
+            {
+                LogDebug($"    ? Method 3 (Directional): Skipped for door/teleporter (doors don't need directional hover)");
+            }
             else if (!isMouseOver)
             {
                 LogDebug($"    ? Method 3 (Directional): Skipped (enabled={enableDirectionalHover}, alreadyDetected={isMouseOver})");
@@ -268,6 +288,13 @@ public class InteractionDetector : MonoBehaviour
                     LogDebug($"    ? Not best option (current best: {(newHovered as MonoBehaviour)?.gameObject.name})");
                 }
             }
+        }
+        
+        // If no hover detected but there's a nearby door, use the door for cursor
+        if (newHovered == null && nearestDoor != null)
+        {
+            newHovered = nearestDoor;
+            LogDebug($">>> No mouse hover, but using nearest door for cursor: {(nearestDoor as MonoBehaviour)?.gameObject.name}");
         }
         
         // Update cursor if hover state changed
@@ -327,13 +354,16 @@ public class InteractionDetector : MonoBehaviour
         }
         
         // Priority 2: Fallback - interact with best interactable in range
-        // (Only works if directional hover is disabled)
+        // For doors/teleporters: works if player is in range (no directional hover required)
+        // For NPCs/items: only works if directional hover is disabled
         IInteractable bestInteractable = GetBestInteractable();
         
         if (bestInteractable != null)
         {
-            // If directional hover is enabled, must be hovering first
-            if (enableDirectionalHover)
+            bool isDoor = !bestInteractable.ShowInteractionPrompt();
+            
+            // If directional hover is enabled and this is NOT a door, must be hovering first
+            if (enableDirectionalHover && !isDoor)
             {
                 LogDebug($"Right-click blocked - directional hover enabled, must hover over {bestInteractable.GetType().Name} first");
                 return;
@@ -345,7 +375,7 @@ public class InteractionDetector : MonoBehaviour
                 return;
             }
             
-            LogDebug($"Right-click interacting with: {bestInteractable.GetType().Name}");
+            LogDebug($"Right-click interacting with: {bestInteractable.GetType().Name} (isDoor: {isDoor})");
             bestInteractable.Interact();
             return;
         }
