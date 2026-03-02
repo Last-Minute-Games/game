@@ -135,6 +135,9 @@ public class GameFlags : PersistentSingleton<GameFlags>
 
         // nether flags
         _activeFlags.Add("day.one");
+
+        // nether insanity meter (max of three insanity levels)
+        _activeFlags.Add("insanity.zero");
         
         // these three also have a metadata flag called unlockedByDefault as fallback
         _activeFlags.Add("card.slash");

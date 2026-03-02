@@ -19,8 +19,9 @@ namespace cherrydev
         public string FlagName => _flagName;
         public bool RemoveFlag => _removeFlag;
 
-        private const float NodeWidth = 200f;
-        private const float NodeHeight = 120f;
+        private const float NodeWidth = 170f;
+        private const float NodeHeight = 170f;
+        private const float TextAreaWidth = 150f;
 
         /// <summary>
         /// Executes the flag setting/removal
@@ -52,7 +53,8 @@ namespace cherrydev
 
             ParentNodes.RemoveAll(item => item == null);
             
-            Rect.size = new Vector2(NodeWidth, NodeHeight);
+            CalculateNodeHeight();
+            Rect.width = NodeWidth;
 
             GUILayout.BeginArea(Rect, nodeStyle);
             
@@ -60,10 +62,9 @@ namespace cherrydev
             
             EditorGUILayout.Space(5);
             
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Flag Name:", GUILayout.Width(70));
-            _flagName = EditorGUILayout.TextField(_flagName, GUILayout.Width(110));
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.LabelField("Flag Name:");
+            GUIStyle textAreaStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
+            _flagName = EditorGUILayout.TextArea(_flagName, textAreaStyle, GUILayout.Width(TextAreaWidth), GUILayout.Height(45));
             
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Remove:", GUILayout.Width(70));
@@ -76,6 +77,14 @@ namespace cherrydev
             EditorGUILayout.LabelField($"Action: {action}", EditorStyles.helpBox);
 
             GUILayout.EndArea();
+        }
+
+        /// <summary>
+        /// Calculate node height (currently fixed, but following SentenceNode pattern)
+        /// </summary>
+        public void CalculateNodeHeight()
+        {
+            Rect.height = NodeHeight;
         }
 
         public override void RemoveAllConnections()

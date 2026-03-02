@@ -35,10 +35,10 @@ namespace cherrydev
         private const float TextFieldWidth = 120f;
 
         private const float AnswerNodeWidth = 190f;
-        private const float AnswerNodeHeight = 115f;
+        private const float AnswerNodeHeight = 180f;
 
-        private float _currentAnswerNodeHeight = 115f;
-        private const float AdditionalAnswerNodeHeight = 20f;
+        private float _currentAnswerNodeHeight = 180f;
+        private const float AdditionalAnswerNodeHeight = 60f;
 
         public string GetAnswerText(int index)
         {
@@ -101,14 +101,12 @@ namespace cherrydev
             ParentNodes.RemoveAll(item => item == null);
 
             float additionalHeight = DialogNodeGraph.ShowLocalizationKeys ? _amountOfAnswers * 20f : 0;
-            // Add extra height for panel type dropdown
             additionalHeight += 25f;
             Rect.size = new Vector2(AnswerNodeWidth, _currentAnswerNodeHeight + additionalHeight);
 
             GUILayout.BeginArea(Rect, nodeStyle);
             EditorGUILayout.LabelField("Answer Node", labelStyle);
 
-            // NEW: Add dropdown to select panel type with proper spacing
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Panel Type:", GUILayout.Width(70));
             PanelType = (AnswerPanelType)EditorGUILayout.EnumPopup(PanelType, GUILayout.Width(110));
@@ -140,7 +138,7 @@ namespace cherrydev
 
         /// <summary>
         /// Removes all connections in a answer node
-        /// </summary>
+        /// /// </summary>
         public override void RemoveAllConnections()
         {
             ParentNodes.Clear();
@@ -171,11 +169,10 @@ namespace cherrydev
             GUIContent iconContent = EditorGUIUtility.IconContent(iconPathOrName);
             Texture2D fallbackTexture = Resources.Load<Texture2D>("Dot");
             
+            EditorGUILayout.BeginVertical();
+            
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField($"{answerNumber}. ", GUILayout.Width(LabelFieldSpace));
-
-            Answers[answerNumber - 1] = EditorGUILayout.TextField(Answers[answerNumber - 1],
-                GUILayout.Width(TextFieldWidth));
 
             if (fallbackTexture == null)
                 EditorGUILayout.LabelField(iconContent, GUILayout.Width(LabelFieldSpace));
@@ -183,6 +180,12 @@ namespace cherrydev
                 GUILayout.Label(fallbackTexture, GUILayout.Width(LabelFieldSpace), GUILayout.Height(LabelFieldSpace));
             
             EditorGUILayout.EndHorizontal();
+            
+            GUIStyle textAreaStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
+            Answers[answerNumber - 1] = EditorGUILayout.TextArea(Answers[answerNumber - 1],
+                textAreaStyle, GUILayout.Width(TextFieldWidth + 20), GUILayout.Height(50));
+            
+            EditorGUILayout.EndVertical();
         }
 
         private void DrawAnswerNodeButtons()
@@ -257,7 +260,7 @@ namespace cherrydev
 
         /// <summary>
         /// Remove a parent node connection
-        /// </summary>
+        /// /// </summary>
         /// <param name="nodeToRemove"></param>
         /// <returns></returns>
         public override bool RemoveFromParentConnectedNode(Node nodeToRemove) => ParentNodes.Remove(nodeToRemove);

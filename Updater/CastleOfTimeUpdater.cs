@@ -90,12 +90,30 @@ namespace CastleOfTimeUpdater
             }
         }
 
+        /// <summary>
+        /// Normalizes a version string for comparison. Supports:
+        /// - New format: plain number (e.g. "257", "v257") → treated as major.0.0
+        /// - Old format: semantic (e.g. "v1.0.240", "1.0.240") → used as-is after stripping "v"
+        /// </summary>
+        protected static string NormalizeVersionForCompare(string version)
+        {
+            string s = version.Trim().TrimStart('v');
+            if (string.IsNullOrEmpty(s)) return "0.0.0";
+            // If it's a single integer (new numbering), treat as major.0.0 so Version comparison works
+            if (int.TryParse(s, out _))
+                return s + ".0.0";
+            return s;
+        }
+
         protected bool IsNewer(string remoteVersion, string localVersion)
         {
             if (localVersion == "unknown") return true;
 
-            if (Version.TryParse(remoteVersion.TrimStart('v'), out var remote) &&
-                Version.TryParse(localVersion.TrimStart('v'), out var local))
+            string normRemote = NormalizeVersionForCompare(remoteVersion);
+            string normLocal = NormalizeVersionForCompare(localVersion);
+
+            if (Version.TryParse(normRemote, out var remote) &&
+                Version.TryParse(normLocal, out var local))
             {
                 return remote > local;
             }
@@ -109,18 +127,22 @@ namespace CastleOfTimeUpdater
             {
                 string platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" : "Linux";
                 
+                // Asset naming: new releases use "CastleOfTime-257-Windows.zip"; old used either
+                // "CastleOfTime-v1.0.250-Windows.zip" (full tag) or "CastleOfTime-240-Windows.zip" (build only).
                 string versionNumber = release.TagName.TrimStart('v');
                 var parts = versionNumber.Split('.');
                 string buildNumber = parts.Length > 0 ? parts[parts.Length - 1] : versionNumber;
                 
-                string expectedFileName = $"CastleOfTime-{buildNumber}-{platform}.zip";
+                string withFullTag = $"CastleOfTime-{release.TagName}-{platform}.zip";
+                string withBuildOnly = $"CastleOfTime-{buildNumber}-{platform}.zip";
                 
-                var asset = release.Assets.Find(a => a.Name == expectedFileName);
+                var asset = release.Assets.Find(a => a.Name == withFullTag)
+                    ?? release.Assets.Find(a => a.Name == withBuildOnly);
                 
                 if (asset == null)
                 {
                     Log($"❌ No update available for platform: {platform}");
-                    Log($"Looking for: {expectedFileName}");
+                    Log($"Looking for: {withFullTag} or {withBuildOnly}");
                     Log($"Available assets:");
                     foreach (var a in release.Assets)
                     {
