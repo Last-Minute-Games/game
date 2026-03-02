@@ -155,6 +155,12 @@ public class MazePopupController : MonoBehaviour
 
         mazeSolved = solved;
 
+        // Hide quit & help buttons first so they don't linger after the maze during the transition
+        if (quitButton != null && quitButton.transform.parent != null)
+            quitButton.transform.parent.gameObject.SetActive(false);
+        if (instructions != null)
+            instructions.Hide(); // hide help panel if open
+
         float coveredDuration = solved ? transitionCoveredDurationOnWin : 1.2f;
         if (transition != null)
             transition.RunTransition(solved ? "YOU WIN" : "EXITING MAZE", PerformMazeEnd, coveredDuration, () => { if (!isOpen) HideImmediate(); });

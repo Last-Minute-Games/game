@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -144,7 +144,7 @@ public class GameManager : MonoBehaviour
 
     private void UpdateUI()
     {
-        if (playerScoreText) playerScoreText.text = $"You: {playerScore}";
+        if (playerScoreText) playerScoreText.text = $"Score: {playerScore}";
         if (roundText) roundText.text = $"Round {roundIndex}";
     }
 
