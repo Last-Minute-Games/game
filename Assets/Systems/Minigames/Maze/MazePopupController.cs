@@ -1,5 +1,5 @@
+using System;
 using System.Collections;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -50,21 +50,10 @@ public class MazePopupController : MonoBehaviour
     [SerializeField] private GameObject[] mazeShowFlags;
 
     [Header("Transition")]
-    [Tooltip("CanvasGroup used to fade the screen when entering/exiting the minigame.")]
-    [SerializeField] CanvasGroup transitionCanvasGroup;
-    [Tooltip("Optional text element that displays the current transition message.")]
-    [SerializeField] TMP_Text transitionStatusText;
-    [Tooltip("How long (in seconds) the screen stays fully faded while we reposition objects.")]
-    [SerializeField] float transitionCoveredDuration = 1.2f;
+    [Tooltip("Shared transition component (add MinigameTransition and assign).")]
+    [SerializeField] MinigameTransition transition;
     [Tooltip("How long (in seconds) the screen stays fully faded when the player WINS the maze.")]
     [SerializeField] float transitionCoveredDurationOnWin = 2.5f;
-    [Tooltip("Fade-in duration in seconds.")]
-    [SerializeField] float transitionFadeInDuration = 0.4f;
-    [Tooltip("Fade-out duration in seconds.")]
-    [SerializeField] float transitionFadeOutDuration = 0.4f;
-
-    private Coroutine transitionRoutine;
-    private bool isTransitionRunning;
 
     private InitialPositionn playerInitialPosition;
 
@@ -136,14 +125,6 @@ public class MazePopupController : MonoBehaviour
 
         mazeGenerated = false;
 
-        // Ensure transition canvas starts disabled
-        if (transitionCanvasGroup != null)
-        {
-            transitionCanvasGroup.alpha = 0f;
-            transitionCanvasGroup.blocksRaycasts = false;
-            transitionCanvasGroup.interactable = false;
-            transitionCanvasGroup.gameObject.SetActive(false);
-        }
     }
 
     /// <summary>
@@ -153,7 +134,14 @@ public class MazePopupController : MonoBehaviour
     public void StartMaze()
     {
         if (isOpen) return;
-        RunTransition("ENTERING MAZE", PerformMazeStart);
+        if (transition != null)
+        {
+            if (window) window.SetActive(false);
+            if (mazeRoot) mazeRoot.SetActive(false);
+            transition.RunTransition("ENTERING MAZE", PerformMazeStart);
+        }
+        else
+            PerformMazeStart();
     }
 
     /// <summary>
@@ -167,96 +155,14 @@ public class MazePopupController : MonoBehaviour
 
         mazeSolved = solved;
 
-        RunTransition(solved ? "YOU WIN" : "EXITING MAZE", PerformMazeEnd, solved ? transitionCoveredDurationOnWin : transitionCoveredDuration);
-    }
-
-    private void RunTransition(string message, System.Action midAction, float? coveredDurationOverride = null)
-    {
-        if (isTransitionRunning)
+        float coveredDuration = solved ? transitionCoveredDurationOnWin : 1.2f;
+        if (transition != null)
+            transition.RunTransition(solved ? "YOU WIN" : "EXITING MAZE", PerformMazeEnd, coveredDuration, () => { if (!isOpen) HideImmediate(); });
+        else
         {
-            return;
+            PerformMazeEnd();
+            if (!isOpen) HideImmediate();
         }
-
-        if (transitionCanvasGroup == null)
-        {
-            midAction?.Invoke();
-            return;
-        }
-
-        // Ensure the GameObject is active so we can start coroutines
-        if (!gameObject.activeSelf)
-        {
-            gameObject.SetActive(true);
-        }
-
-        transitionRoutine = StartCoroutine(TransitionRoutine(message, midAction, coveredDurationOverride ?? transitionCoveredDuration));
-    }
-
-    private IEnumerator TransitionRoutine(string message, System.Action midAction, float coveredDuration)
-    {
-        isTransitionRunning = true;
-
-        // When entering: hide window and maze first so we see fade-to-black first, then they appear after we're black
-        if (message == "ENTERING MAZE")
-        {
-            if (window) window.SetActive(false);
-            if (mazeRoot) mazeRoot.SetActive(false);
-        }
-
-        if (transitionStatusText != null)
-        {
-            transitionStatusText.text = message;
-        }
-
-        GameObject transitionObject = transitionCanvasGroup.gameObject;
-        if (!transitionObject.activeSelf)
-        {
-            transitionObject.SetActive(true);
-        }
-
-        transitionCanvasGroup.blocksRaycasts = true;
-        transitionCanvasGroup.interactable = true;
-
-        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
-
-        midAction?.Invoke();
-
-        if (coveredDuration > 0f)
-        {
-            yield return new WaitForSeconds(coveredDuration);
-        }
-
-        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 0f, transitionFadeOutDuration);
-
-        transitionCanvasGroup.blocksRaycasts = false;
-        transitionCanvasGroup.interactable = false;
-        transitionObject.SetActive(false);
-
-        transitionRoutine = null;
-        isTransitionRunning = false;
-
-        if (!isOpen)
-            HideImmediate();
-    }
-
-    private IEnumerator FadeCanvasGroup(float start, float end, float duration)
-    {
-        if (duration <= 0f)
-        {
-            transitionCanvasGroup.alpha = end;
-            yield break;
-        }
-
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            transitionCanvasGroup.alpha = Mathf.Lerp(start, end, t);
-            yield return null;
-        }
-
-        transitionCanvasGroup.alpha = end;
     }
 
     private void PerformMazeStart()
@@ -358,7 +264,7 @@ public class MazePopupController : MonoBehaviour
 
         // Don’t call HideImmediate() here – it would disable this object and stop the transition coroutine.
         // TransitionRoutine calls HideImmediate() after the fade-out.
-        if (!isTransitionRunning)
+        if (transition == null || !transition.IsTransitionRunning)
             HideImmediate();
     }
 
@@ -618,20 +524,17 @@ public class MazePopupController : MonoBehaviour
     {
         if (!isOpen) return;
         
-        // If we're in a transition, don't call Hide directly - use EndMaze instead
-        if (isTransitionRunning)
+        if (transition != null && transition.IsTransitionRunning)
         {
             return;
         }
         
-        // If transitions are available, use them
-        if (transitionCanvasGroup != null)
+        if (transition != null)
         {
             EndMaze(false); // false = quit, not solved
             return;
         }
         
-        // Otherwise, hide immediately
         PerformHide();
     }
 

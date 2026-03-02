@@ -57,16 +57,18 @@ public class MinigameController : MonoBehaviour
     private bool hudWasActive;
 
     [Header("Transition")]
-    [Tooltip("CanvasGroup used to fade the screen when entering/exiting the minigame.")]
+    [Tooltip("Assign either this (MinigameTransition) OR the fields below. If both are set, MinigameTransition is used.")]
+    [SerializeField] MinigameTransition transition;
+    [Tooltip("Legacy: CanvasGroup for fade. Used when Transition (above) is not set.")]
     [SerializeField] CanvasGroup transitionCanvasGroup;
-    [Tooltip("Optional text element that displays the current transition message.")]
+    [Tooltip("Legacy: Optional status text.")]
     [SerializeField] TMP_Text transitionStatusText;
-    [Tooltip("How long (in seconds) the screen stays fully faded while we reposition objects.")]
     [SerializeField] float transitionCoveredDuration = 1.2f;
-    [Tooltip("Fade-in duration in seconds.")]
     [SerializeField] float transitionFadeInDuration = 0.4f;
-    [Tooltip("Fade-out duration in seconds.")]
     [SerializeField] float transitionFadeOutDuration = 0.4f;
+
+    private Coroutine _localTransitionRoutine;
+    private bool _localTransitionRunning;
 
     [Header("Objects to hide after Sokoban is completed")]
     [SerializeField] private GameObject[] sokobanShowFlags;
@@ -74,9 +76,6 @@ public class MinigameController : MonoBehaviour
     [Header("Instructions")]
     [SerializeField] private MinigameInstructions sokobanInstructions;
 
-
-    private Coroutine transitionRoutine;
-    private bool isTransitionRunning;
 
     // References for internal logic
     private GameObject player;
@@ -145,6 +144,17 @@ public class MinigameController : MonoBehaviour
             overworldPlayerScript.enabled = true; // Start with Overworld movement ON
             sokobanPlayerScript.enabled = false;  // Start with Sokoban movement OFF
         }
+
+        if (transition == null)
+            transition = GetComponent<MinigameTransition>();
+
+        if (transitionCanvasGroup != null)
+        {
+            transitionCanvasGroup.alpha = 0f;
+            transitionCanvasGroup.blocksRaycasts = false;
+            transitionCanvasGroup.interactable = false;
+            transitionCanvasGroup.gameObject.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -177,7 +187,12 @@ public class MinigameController : MonoBehaviour
         
         // Sprite change happens during transition (after fade) in PerformSokobanStart
         // Now run the transition (which will complete the setup in PerformSokobanStart)
-        RunTransition("ENTERING SOKOBAN", PerformSokobanStart);
+        if (transition != null)
+            transition.RunTransition("ENTERING SOKOBAN", PerformSokobanStart);
+        else if (transitionCanvasGroup != null)
+            RunTransitionLocal("ENTERING SOKOBAN", PerformSokobanStart);
+        else
+            PerformSokobanStart();
     }
 
     /// <summary>
@@ -187,7 +202,12 @@ public class MinigameController : MonoBehaviour
     public void EndSokoban(bool solved)
     {
         if (player == null || sokobanRoot == null) return;
-        RunTransition(solved ? "YOU WIN" : "EXITING SOKOBAN", () => PerformSokobanEnd(solved));
+        if (transition != null)
+            transition.RunTransition(solved ? "YOU WIN" : "EXITING SOKOBAN", () => PerformSokobanEnd(solved));
+        else if (transitionCanvasGroup != null)
+            RunTransitionLocal(solved ? "YOU WIN" : "EXITING SOKOBAN", () => PerformSokobanEnd(solved));
+        else
+            PerformSokobanEnd(solved);
     }
 
     /// <summary>
@@ -247,76 +267,42 @@ public class MinigameController : MonoBehaviour
         }
     }
 
-    private void RunTransition(string message, System.Action midAction)
+    private void RunTransitionLocal(string message, System.Action midAction)
     {
-        if (isTransitionRunning)
-        {
-            return;
-        }
-
-        if (transitionCanvasGroup == null)
-        {
-            midAction?.Invoke();
-            return;
-        }
-
-        transitionRoutine = StartCoroutine(TransitionRoutine(message, midAction));
+        if (_localTransitionRunning) return;
+        if (transitionCanvasGroup == null) { midAction?.Invoke(); return; }
+        _localTransitionRoutine = StartCoroutine(TransitionRoutineLocal(message, midAction));
     }
 
-    private IEnumerator TransitionRoutine(string message, System.Action midAction)
+    private IEnumerator TransitionRoutineLocal(string message, System.Action midAction)
     {
-        isTransitionRunning = true;
-
-        if (transitionStatusText != null)
-        {
-            transitionStatusText.text = message;
-        }
-
-        GameObject transitionObject = transitionCanvasGroup.gameObject;
-        if (!transitionObject.activeSelf)
-        {
-            transitionObject.SetActive(true);
-        }
-
+        _localTransitionRunning = true;
+        if (transitionStatusText != null) transitionStatusText.text = message;
+        GameObject go = transitionCanvasGroup.gameObject;
+        if (!go.activeSelf) go.SetActive(true);
         transitionCanvasGroup.blocksRaycasts = true;
         transitionCanvasGroup.interactable = true;
-
-        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
-
+        yield return FadeCanvasGroupLocal(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
         midAction?.Invoke();
-
-        if (transitionCoveredDuration > 0f)
-        {
-            yield return new WaitForSeconds(transitionCoveredDuration);
-        }
-
-        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 0f, transitionFadeOutDuration);
-
+        if (transitionCoveredDuration > 0f) yield return new WaitForSeconds(transitionCoveredDuration);
+        yield return FadeCanvasGroupLocal(transitionCanvasGroup.alpha, 0f, transitionFadeOutDuration);
         transitionCanvasGroup.blocksRaycasts = false;
         transitionCanvasGroup.interactable = false;
-        transitionObject.SetActive(false);
-
-        transitionRoutine = null;
-        isTransitionRunning = false;
+        go.SetActive(false);
+        _localTransitionRoutine = null;
+        _localTransitionRunning = false;
     }
 
-    private IEnumerator FadeCanvasGroup(float start, float end, float duration)
+    private IEnumerator FadeCanvasGroupLocal(float start, float end, float duration)
     {
-        if (duration <= 0f)
-        {
-            transitionCanvasGroup.alpha = end;
-            yield break;
-        }
-
+        if (duration <= 0f) { transitionCanvasGroup.alpha = end; yield break; }
         float elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            transitionCanvasGroup.alpha = Mathf.Lerp(start, end, t);
+            transitionCanvasGroup.alpha = Mathf.Lerp(start, end, Mathf.Clamp01(elapsed / duration));
             yield return null;
         }
-
         transitionCanvasGroup.alpha = end;
     }
 

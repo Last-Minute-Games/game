@@ -1,5 +1,4 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
 
 public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
@@ -27,18 +26,9 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
     public float sceneOpenDelay = 0.35f; // block instant open after load/room swap
     public float reopenCooldown = 0.25f; // block double taps
 
-    [Header("Transition (Sokoban-style fade)")]
-    [Tooltip("CanvasGroup used to fade the screen when entering/exiting. Assign a full-screen black panel with CanvasGroup.")]
-    [SerializeField] CanvasGroup transitionCanvasGroup;
-    [Tooltip("Optional text element that displays the current transition message.")]
-    [SerializeField] TMP_Text transitionStatusText;
-    [Tooltip("How long (in seconds) the screen stays fully faded while we swap UI.")]
-    [SerializeField] float transitionCoveredDuration = 0.5f;
-    [SerializeField] float transitionFadeInDuration = 0.4f;
-    [SerializeField] float transitionFadeOutDuration = 0.4f;
-
-    private Coroutine _transitionRoutine;
-    private bool _isTransitionRunning;
+    [Header("Transition")]
+    [Tooltip("Shared transition component (add MinigameTransition to this or a child and assign).")]
+    [SerializeField] MinigameTransition transition;
 
     public MinigameInstructions coinFlipInstructions;
 
@@ -73,14 +63,6 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
         else
         {
             Debug.LogWarning($"[OverworldCoinGameLauncher] {name}: No BoxCollider2D found! Add one as a trigger for interaction to work.");
-        }
-
-        if (transitionCanvasGroup != null)
-        {
-            transitionCanvasGroup.alpha = 0f;
-            transitionCanvasGroup.blocksRaycasts = false;
-            transitionCanvasGroup.interactable = false;
-            transitionCanvasGroup.gameObject.SetActive(false);
         }
     }
 
@@ -187,47 +169,6 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
         return true;
     }
 
-    private void RunTransition(string message, System.Action midAction, System.Action afterTransition = null)
-    {
-        if (_isTransitionRunning) return;
-        if (transitionCanvasGroup == null) { midAction?.Invoke(); afterTransition?.Invoke(); return; }
-        _transitionRoutine = StartCoroutine(TransitionRoutine(message, midAction, afterTransition));
-    }
-
-    private IEnumerator TransitionRoutine(string message, System.Action midAction, System.Action afterTransition)
-    {
-        _isTransitionRunning = true;
-        if (transitionStatusText != null) transitionStatusText.text = message;
-        GameObject go = transitionCanvasGroup.gameObject;
-        if (!go.activeSelf) go.SetActive(true);
-        transitionCanvasGroup.blocksRaycasts = true;
-        transitionCanvasGroup.interactable = true;
-        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 1f, transitionFadeInDuration);
-        midAction?.Invoke();
-        if (transitionCoveredDuration > 0f) yield return new WaitForSeconds(transitionCoveredDuration);
-        yield return FadeCanvasGroup(transitionCanvasGroup.alpha, 0f, transitionFadeOutDuration);
-        transitionCanvasGroup.blocksRaycasts = false;
-        transitionCanvasGroup.interactable = false;
-        go.SetActive(false);
-        _transitionRoutine = null;
-        _isTransitionRunning = false;
-
-        afterTransition?.Invoke();
-    }
-
-    private IEnumerator FadeCanvasGroup(float start, float end, float duration)
-    {
-        if (duration <= 0f) { transitionCanvasGroup.alpha = end; yield break; }
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            transitionCanvasGroup.alpha = Mathf.Lerp(start, end, Mathf.Clamp01(elapsed / duration));
-            yield return null;
-        }
-        transitionCanvasGroup.alpha = end;
-    }
-
     public void OpenCoinFlipPopup()
     {
         if (!_canOpen)
@@ -250,9 +191,9 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
 
         LogDebug("Opening coinflip popup");
 
-        if (transitionCanvasGroup != null)
+        if (transition != null && gameObject.activeInHierarchy)
         {
-            RunTransition("COIN FLIP", PerformOpen, null);
+            transition.RunTransition("COIN FLIP", PerformOpen);
             return;
         }
         PerformOpen();
@@ -278,13 +219,10 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
 
         LogDebug("Closing coinflip popup");
 
-        if (transitionCanvasGroup != null && gameObject.activeInHierarchy)
+        MinigameTransition t = transition != null ? transition : FindObjectOfType<MinigameTransition>();
+        if (t != null)
         {
-            RunTransition("EXITING", () =>
-            {
-                PerformCloseLogic();
-                PerformCloseFinal();
-            }, null);
+            t.RunTransition("EXITING", PerformCloseLogic, null, PerformCloseFinal);
             return;
         }
         PerformCloseLogic();
