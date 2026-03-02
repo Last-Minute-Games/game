@@ -5,8 +5,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Full-screen room-map overlay for the Overworld scene.
 /// Press M (configurable) to toggle the map on/off.
-/// Shows every room as a labelled rectangle with connection lines,
-/// highlights the room the player is currently in, and displays
+/// Displays a castle blueprint image (CastleMap.png) with
 /// real-time Wizard101-style portrait markers for the player and discovered NPCs.
 ///
 /// Setup:
@@ -14,9 +13,10 @@ using UnityEngine.UI;
 ///      and fill in the rooms, positions, sizes, connections, and world bounds.
 ///   2. Add this script to a GameObject in the Overworld scene.
 ///   3. Assign the RoomMapData asset.
-///   4. Assign the portraitFrame sprite from Assets/UIs/portraitFrame.png.
-///   5. Attach NPCMapTracker to every named NPC in the scene.
-///   6. Play — press M to open/close the map.
+///   4. Assign CastleMap.png from Assets/Sprites/gfx/gfx/CastleMap.png.
+///   5. Assign the portraitFrame sprite from Assets/UIs/portraitFrame.png.
+///   6. Attach NPCMapTracker to every named NPC in the scene.
+///   7. Play — press M to open/close the map.
 /// </summary>
 public class RoomMapUI : MonoBehaviour
 {
@@ -34,20 +34,14 @@ public class RoomMapUI : MonoBehaviour
              "Assign JournalOverworld-Sheet_5 from Assets/Sprites/UI/journal/JournalOverworld-Sheet.png.")]
     [SerializeField] private Sprite journalSprite;
 
+    [Header("Castle Blueprint Map")]
+    [Tooltip("The castle blueprint image displayed as the map. " +
+             "Assign CastleMap.png from Assets/Sprites/gfx/gfx/CastleMap.png.")]
+    [SerializeField] private Sprite castleMapSprite;
+
     [Header("Overlay Appearance")]
     [Tooltip("Background colour of the overlay (behind the journal).")]
     [SerializeField] private Color overlayColor = new Color(0.04f, 0.03f, 0.06f, 0.92f);
-
-    [Header("Room Appearance")]
-    [SerializeField] private Color roomColor        = new Color(0.18f, 0.16f, 0.24f, 1f);
-    [SerializeField] private Color roomBorderColor   = new Color(0.55f, 0.48f, 0.38f, 1f);
-    [SerializeField] private Color currentRoomColor  = new Color(0.35f, 0.22f, 0.12f, 1f);
-    [SerializeField] private Color currentBorderColor = new Color(1f, 0.82f, 0.45f, 1f);
-    [SerializeField] private float borderWidth = 3f;
-
-    [Header("Connection Lines")]
-    [SerializeField] private Color lineColor = new Color(0.55f, 0.48f, 0.38f, 0.6f);
-    [SerializeField] private float lineWidth = 3f;
 
     [Header("Portrait Markers (Wizard101 Style)")]
     [Tooltip("The decorative frame sprite placed around each portrait. " +
@@ -80,7 +74,6 @@ public class RoomMapUI : MonoBehaviour
     [SerializeField] private Color npcLabelColor   = new Color(0.9f, 0.85f, 0.75f, 0.9f);
 
     [Header("Labels")]
-    [SerializeField] private int   fontSize  = 18;
     [SerializeField] private Color fontColor = new Color(0.9f, 0.85f, 0.75f, 1f);
 
     [Header("Fade Animation")]
@@ -100,9 +93,6 @@ public class RoomMapUI : MonoBehaviour
     private bool _isOpen;
 
     // Caches
-    private readonly Dictionary<string, Image>   _roomBgs     = new();
-    private readonly Dictionary<string, Image>   _roomBorders = new();
-    private readonly Dictionary<string, Text>    _roomLabels  = new();
     private RectTransform _playerMarker;     // root of the player portrait marker group
     private Image _playerPortraitImage;       // the portrait image (or gold dot fallback)
 
@@ -234,7 +224,6 @@ public class RoomMapUI : MonoBehaviour
             }
 
             _root.SetActive(true);
-            RefreshHighlight();
             // Immediately position dots
             UpdatePlayerDot();
             UpdateNPCDots();
@@ -410,14 +399,28 @@ public class RoomMapUI : MonoBehaviour
         _mapArea.offsetMin = Vector2.zero;
         _mapArea.offsetMax = Vector2.zero;
 
-        // ── Draw connection lines first (behind rooms) ──
-        DrawConnections();
+        // ── Castle blueprint map image (fills the map area) ──
+        if (castleMapSprite != null)
+        {
+            var blueprintGO = MakeUIObject("CastleBlueprint", _mapArea);
+            var blueprintRT = Stretch(blueprintGO);
 
-        // ── Draw rooms ──
-        foreach (var room in mapData.rooms)
-            DrawRoom(room);
+            var blueprintImg = blueprintGO.AddComponent<Image>();
+            blueprintImg.sprite = castleMapSprite;
+            blueprintImg.preserveAspect = true;
+            blueprintImg.raycastTarget = false;
 
-        // ── Player marker (on top of rooms) ──
+            // Ensure crisp pixel-art rendering
+            if (castleMapSprite.texture != null)
+                castleMapSprite.texture.filterMode = FilterMode.Point;
+        }
+        else
+        {
+            Debug.LogWarning("[RoomMapUI] No castleMapSprite assigned. " +
+                "Assign CastleMap.png from Assets/Sprites/gfx/gfx/CastleMap.png.");
+        }
+
+        // ── Player marker (on top of the blueprint) ──
         _playerMarker = CreatePortraitMarker(
             "PlayerMarker", _mapArea,
             playerPortrait, playerFrameTint,
@@ -426,137 +429,6 @@ public class RoomMapUI : MonoBehaviour
 
         // ── NPC Legend panel (right edge) ──
         BuildLegendPanel();
-    }
-
-    // ─────────────────── Draw Room ───────────────────
-
-    private void DrawRoom(RoomMapData.Room room)
-    {
-        // Border (slightly larger rectangle behind the room fill)
-        var borderGO = MakeUIObject(room.roomId + "_border", _mapArea);
-        var borderRect = borderGO.GetComponent<RectTransform>();
-        SetRoomRect(borderRect, room.mapPosition, room.mapSize, borderWidth);
-
-        var borderImg = borderGO.AddComponent<Image>();
-        borderImg.color = roomBorderColor;
-        borderImg.raycastTarget = false;
-        _roomBorders[room.roomId] = borderImg;
-
-        // Fill
-        var fillGO = MakeUIObject(room.roomId + "_fill", _mapArea);
-        var fillRect = fillGO.GetComponent<RectTransform>();
-        SetRoomRect(fillRect, room.mapPosition, room.mapSize, 0);
-
-        var fillImg = fillGO.AddComponent<Image>();
-        fillImg.color = roomColor;
-        fillImg.raycastTarget = false;
-        _roomBgs[room.roomId] = fillImg;
-
-        // Label
-        var labelGO = MakeUIObject(room.roomId + "_label", _mapArea);
-        var labelRect = labelGO.GetComponent<RectTransform>();
-        SetRoomRect(labelRect, room.mapPosition, room.mapSize, 0);
-
-        var label = labelGO.AddComponent<Text>();
-        label.text = room.roomName;
-        label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        label.fontSize = fontSize;
-        label.color = fontColor;
-        label.alignment = TextAnchor.MiddleCenter;
-        label.horizontalOverflow = HorizontalWrapMode.Overflow;
-        label.verticalOverflow = VerticalWrapMode.Overflow;
-        label.raycastTarget = false;
-        _roomLabels[room.roomId] = label;
-    }
-
-    private void SetRoomRect(RectTransform rt, Vector2 pos, Vector2 size, float expand)
-    {
-        // pos & size are in normalised 0-1 coords relative to _mapArea
-        rt.anchorMin = pos - size * 0.5f;
-        rt.anchorMax = pos + size * 0.5f;
-        rt.offsetMin = new Vector2(-expand, -expand);
-        rt.offsetMax = new Vector2(expand, expand);
-    }
-
-    // ─────────────────── Connections ───────────────────
-
-    private void DrawConnections()
-    {
-        // Track drawn pairs so we don't double-draw A→B and B→A
-        var drawn = new HashSet<string>();
-
-        foreach (var room in mapData.rooms)
-        {
-            foreach (var otherId in room.connectedRoomIds)
-            {
-                string key = room.roomId.CompareTo(otherId) < 0
-                    ? room.roomId + "|" + otherId
-                    : otherId + "|" + room.roomId;
-
-                if (drawn.Contains(key)) continue;
-                drawn.Add(key);
-
-                var other = mapData.GetRoom(otherId);
-                if (other == null) continue;
-
-                DrawLine(room.mapPosition, other.mapPosition);
-            }
-        }
-    }
-
-    private void DrawLine(Vector2 from, Vector2 to)
-    {
-        var lineGO = MakeUIObject("Line", _mapArea);
-        var lineRect = lineGO.GetComponent<RectTransform>();
-
-        var img = lineGO.AddComponent<Image>();
-        img.color = lineColor;
-        img.raycastTarget = false;
-
-        // Compute pixel-independent line using anchors
-        Vector2 mid = (from + to) * 0.5f;
-        Vector2 diff = to - from;
-        float angle = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
-
-        // We'll place the line at the midpoint, rotated, with length = distance
-        lineRect.anchorMin = lineRect.anchorMax = mid;
-        lineRect.pivot = new Vector2(0.5f, 0.5f);
-
-        // Length needs to be in the mapArea's local space — approximate with a helper
-        // We use a LayoutRebuilder callback-free approach: set width via sizeDelta later in a helper
-        // For now, just store and fix in a coroutine after layout settles
-        lineRect.sizeDelta = new Vector2(0, lineWidth);
-        lineRect.localRotation = Quaternion.Euler(0, 0, angle);
-
-        StartCoroutine(SetLineLength(lineRect, from, to));
-    }
-
-    private System.Collections.IEnumerator SetLineLength(RectTransform rt, Vector2 fromNorm, Vector2 toNorm)
-    {
-        // Wait one frame for layout to settle
-        yield return null;
-
-        // Compute length in mapArea pixels
-        var mapRect = _mapArea.rect;
-        Vector2 fromPx = new Vector2(fromNorm.x * mapRect.width, fromNorm.y * mapRect.height);
-        Vector2 toPx   = new Vector2(toNorm.x * mapRect.width, toNorm.y * mapRect.height);
-        float length = Vector2.Distance(fromPx, toPx);
-
-        rt.sizeDelta = new Vector2(length, lineWidth);
-    }
-
-    // ─────────────────── Highlight Current Room ───────────────────
-
-    private void RefreshHighlight()
-    {
-        string current = RoomTracker.CurrentRoomId;
-
-        foreach (var room in mapData.rooms)
-        {
-            bool isCurrent = room.roomId == current;
-            _roomBgs[room.roomId].color     = isCurrent ? currentRoomColor  : roomColor;
-            _roomBorders[room.roomId].color  = isCurrent ? currentBorderColor : roomBorderColor;
-        }
     }
 
     // ─────────────────── Real-Time Player Tracking ───────────────────
