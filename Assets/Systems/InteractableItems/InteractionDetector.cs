@@ -95,15 +95,10 @@ public class InteractionDetector : MonoBehaviour
 
     private void Update()
     {
-        // Performance: Only update hover when mouse actually moves
+        // Update hover state every frame to ensure it handles camera/player movement
         if (enableHoverDetection)
         {
-            Vector3 currentMousePos = Input.mousePosition;
-            if ((currentMousePos - _lastMousePosition).sqrMagnitude > 0.01f)
-            {
-                UpdateMouseHover();
-                _lastMousePosition = currentMousePos;
-            }
+            UpdateMouseHover();
         }
 
         // Handle E key (keyboard interaction) - can be disabled for testing
@@ -317,7 +312,7 @@ public class InteractionDetector : MonoBehaviour
         {
             if (interactCursor != null)
             {
-                Cursor.SetCursor(interactCursor, interactCursorHotspot, CursorMode.Auto);
+                Cursor.SetCursor(interactCursor, interactCursorHotspot, CursorMode.ForceSoftware);
                 LogDebug($"Cursor changed - hovering over: {(hoveredInteractable as MonoBehaviour)?.gameObject.name}");
             }
         }
@@ -326,11 +321,11 @@ public class InteractionDetector : MonoBehaviour
             // Reset to default cursor
             if (defaultCursor != null)
             {
-                Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.Auto);
+                Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
             }
             else
             {
-                Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+                Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
             }
         }
     }
@@ -412,11 +407,11 @@ public class InteractionDetector : MonoBehaviour
     {
         if (defaultCursor != null)
         {
-            Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.Auto);
+            Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
         }
         else
         {
-            Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
         }
     }
     
