@@ -17,6 +17,7 @@ MonoBehaviour:
     roomId: ballroom
     mapPosition: {x: 0.5, y: 0.55}
     mapSize: {x: 0.31, y: 0.64}
+    mapOffset: {x: -0.03, y: 0}
     connectedRoomIds:
     - throne
     - library
@@ -30,6 +31,7 @@ MonoBehaviour:
     roomId: throne
     mapPosition: {x: 0.44, y: 0.78}
     mapSize: {x: 0.13, y: 0.1}
+    mapOffset: {x: 0, y: 0}
     connectedRoomIds:
     - ballroom
     - armory
@@ -39,6 +41,7 @@ MonoBehaviour:
     roomId: armory
     mapPosition: {x: 0.3, y: 0.87}
     mapSize: {x: 0.12, y: 0.09}
+    mapOffset: {x: 0, y: 0}
     connectedRoomIds:
     - throne
     worldCenter: {x: 61.552944, y: 48.326683}
@@ -47,6 +50,7 @@ MonoBehaviour:
     roomId: kitchen
     mapPosition: {x: 0.68, y: 0.72}
     mapSize: {x: 0.13, y: 0.1}
+    mapOffset: {x: 0, y: 0}
     connectedRoomIds:
     - ballroom
     - classroom
@@ -57,14 +61,16 @@ MonoBehaviour:
     roomId: classroom
     mapPosition: {x: 0.57, y: 0.8}
     mapSize: {x: 0.12, y: 0.09}
+    mapOffset: {x: 0, y: 0}
     connectedRoomIds:
     - kitchen
     worldCenter: {x: 128.83115, y: 53.12988}
     worldRadius: 15.44054
   - roomName: Dining Room
     roomId: dining
-    mapPosition: {x: 0.71, y: 0.49}
-    mapSize: {x: 0.21, y: 0.1}
+    mapPosition: {x: 0.7, y: 0.49}
+    mapSize: {x: 0.2, y: 0.4}
+    mapOffset: {x: 0, y: 0}
     connectedRoomIds:
     - ballroom
     - kitchen
@@ -74,6 +80,7 @@ MonoBehaviour:
     roomId: study
     mapPosition: {x: 0.31, y: 0.67}
     mapSize: {x: 0.13, y: 0.1}
+    mapOffset: {x: 0, y: 0}
     connectedRoomIds:
     - ballroom
     - bedroom
@@ -84,6 +91,7 @@ MonoBehaviour:
     roomId: library
     mapPosition: {x: 0.3, y: 0.52}
     mapSize: {x: 0.13, y: 0.25}
+    mapOffset: {x: 0, y: 0}
     connectedRoomIds:
     - ballroom
     - study
@@ -93,14 +101,16 @@ MonoBehaviour:
     roomId: patio
     mapPosition: {x: 0.47, y: 0.1}
     mapSize: {x: 0.13, y: 0.3}
+    mapOffset: {x: 0, y: 0}
     connectedRoomIds:
     - ballroom
     worldCenter: {x: 146.76247, y: -56.173313}
     worldRadius: 25.835056
   - roomName: Bedroom
     roomId: bedroom
-    mapPosition: {x: 0.26, y: 0.65}
-    mapSize: {x: 0.05, y: 0.09}
+    mapPosition: {x: 0.25, y: 0.65}
+    mapSize: {x: 0.05, y: 0.05}
+    mapOffset: {x: 0, y: 0}
     connectedRoomIds:
     - study
     worldCenter: {x: 50.34935, y: 9.590542}
