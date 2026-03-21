@@ -5,7 +5,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Full-screen room-map overlay for the Overworld scene.
 /// Press M (configurable) to toggle the map on/off.
-/// Displays a castle blueprint image (CastleMap.png) with
+/// Displays a castle blueprint image (ColorizedMap.png) with
 /// real-time Wizard101-style portrait markers for the player and discovered NPCs.
 ///
 /// Setup:
@@ -13,7 +13,7 @@ using UnityEngine.UI;
 ///      and fill in the rooms, positions, sizes, connections, and world bounds.
 ///   2. Add this script to a GameObject in the Overworld scene.
 ///   3. Assign the RoomMapData asset.
-///   4. Assign CastleMap.png from Assets/Sprites/gfx/gfx/CastleMap.png.
+///   4. Assign ColorizedMap.png from Assets/Sprites/gfx/gfx/ColorizedMap.png.
 ///   5. Assign the portraitFrame sprite from Assets/UIs/portraitFrame.png.
 ///   6. Attach NPCMapTracker to every named NPC in the scene.
 ///   7. Play — press M to open/close the map.
@@ -36,7 +36,7 @@ public class RoomMapUI : MonoBehaviour
 
     [Header("Castle Blueprint Map")]
     [Tooltip("The castle blueprint image displayed as the map. " +
-             "Assign CastleMap.png from Assets/Sprites/gfx/gfx/CastleMap.png.")]
+             "Assign ColorizedMap.png from Assets/Sprites/gfx/gfx/ColorizedMap.png.")]
     [SerializeField] private Sprite castleMapSprite;
 
     [Header("Overlay Appearance")]
@@ -417,7 +417,7 @@ public class RoomMapUI : MonoBehaviour
         else
         {
             Debug.LogWarning("[RoomMapUI] No castleMapSprite assigned. " +
-                "Assign CastleMap.png from Assets/Sprites/gfx/gfx/CastleMap.png.");
+                "Assign ColorizedMap.png from Assets/Sprites/gfx/gfx/ColorizedMap.png.");
         }
 
         // ── Player marker (on top of the blueprint) ──
