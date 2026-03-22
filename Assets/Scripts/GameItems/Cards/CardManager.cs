@@ -240,9 +240,23 @@ namespace GameItems.Cards
 
         private void ReshuffleDiscardIntoDraw()
         {
+            int oldDrawCount = drawPile.Count;
+            int oldDiscardCount = discardPile.Count;
+
             drawPile.AddRange(discardPile);
             discardPile.Clear();
             ShuffleDrawPile();
+
+            int newDrawCount = drawPile.Count;
+            int newDiscardCount = discardPile.Count;
+
+            PileCountUI.Instance?.AnimateReshuffle(
+                oldDrawCount,
+                oldDiscardCount,
+                newDrawCount,
+                newDiscardCount
+            );
+
             PileCountUI.RefreshNow();
         }
 
