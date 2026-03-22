@@ -8,6 +8,8 @@
 
         [Header("Movement")]
         [SerializeField] private float speed = 2f;
+        [SerializeField] private float sprintMultiplier = 2f;
+        private bool _isSprinting;
 
         [Header("Idle Sprites (static frames)")]
         [SerializeField] public Sprite idleUp;
@@ -70,7 +72,8 @@
             if (_rb.bodyType != RigidbodyType2D.Dynamic)
                 return; // don’t move static or kinematic bodies
 
-            _rb.linearVelocity = _moveInput.normalized * speed;
+            float currentSpeed = _isSprinting ? speed * sprintMultiplier : speed;
+            _rb.linearVelocity = _moveInput.normalized * currentSpeed;
         }
 
         private void StopMovement()
@@ -134,4 +137,5 @@
         public bool IsTeleporting => _isTeleporting;
 
         public void SetSpeed(float newSpeed) => speed = newSpeed;
+        public void SetSprinting(bool sprinting) => _isSprinting = sprinting;
     }
