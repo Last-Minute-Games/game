@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -53,14 +53,20 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        resultText.gameObject.SetActive(false);
+        if (resultText != null)
+            resultText.gameObject.SetActive(false);
         HookButtons();
         UpdateUI();
-        
     }
 
     private void HookButtons()
     {
+        if (headsButton == null || tailsButton == null)
+        {
+            Debug.LogWarning("[GameManager] Heads and/or Tails button not assigned in the Inspector.");
+            return;
+        }
+
         headsButton.onClick.RemoveAllListeners();
         tailsButton.onClick.RemoveAllListeners();
 
@@ -101,7 +107,14 @@ public class GameManager : MonoBehaviour
         }
 
         isFlipping = true;
-        
+
+        if (coin == null)
+        {
+            Debug.LogError("[GameManager] Coin (FlipScript) is not assigned.");
+            isFlipping = false;
+            yield break;
+        }
+
         int result = -1;
 
         // Trigger the flip. We pass a random outcome request (true=heads, false=tails)
@@ -126,8 +139,11 @@ public class GameManager : MonoBehaviour
         // Win check
         if (playerScore >= targetScore )
         {
-            resultText.gameObject.SetActive(true);
-            resultText.text = "You win the match!";
+            if (resultText != null)
+            {
+                resultText.gameObject.SetActive(true);
+                resultText.text = "You win the match!";
+            }
             gameOver = true;
             hasCompletedMatch = true;
             StartCoroutine(CloseAfterDelay(endMatchCloseDelay));
