@@ -428,6 +428,7 @@ public class RoundManager : MonoBehaviour
             discardPileViewer.SetPlayer(player);
             discardPileViewer.SetSource(GameItems.DeckViewer.Source.DiscardPile, rebuild: true);
         }
+        FindObjectOfType<PileCountUI>()?.RefreshCounts();
     }
 
     /// <summary>
