@@ -20,7 +20,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
     private const string SAVE_KEY = "GameFlags_SaveData";
     
     [Header("Debug Controls")]
-    [Tooltip("Enable debug flag controls (P to add all card flags)")]
+    [Tooltip("Enable debug flag controls (P to force-add card/minigame unlock flags)")]
     public bool enableDebugControls = true;
     
     // JSON file path for save game system
@@ -108,7 +108,7 @@ public class GameFlags : PersistentSingleton<GameFlags>
             "minigame.maze.show"
         };
 
-        DebugLogger.LogGameFlags("DEBUG: Adding all card flags (P pressed)");
+        DebugLogger.LogGameFlags("DEBUG: Force-adding card/minigame unlock flags (P pressed)");
         foreach (string flag in cardFlags)
         {
             SetFlag(flag);

@@ -102,6 +102,12 @@ public class RoomMapUI : MonoBehaviour
     private RectTransform _legendPanel;
     private readonly Dictionary<NPCMapTracker, GameObject> _legendEntries = new();
 
+    // Minigame tracking
+    private readonly Dictionary<MinigameMapTracker, RectTransform> _minigameDots = new();
+    private readonly Dictionary<MinigameMapTracker, Text> _minigameLabels = new();
+    private readonly Dictionary<MinigameMapTracker, GameObject> _minigameLegendEntries = new();
+    private GameObject _minigameLegendTitle;
+
     // Player ref
     private Transform _playerTransform;
     private Sprite _circleSprite;
@@ -171,11 +177,11 @@ public class RoomMapUI : MonoBehaviour
             if (!_isOpen && GlobalPause.IsPaused) return;
             ToggleMap();
         }
-// Debug: Toggle reveal all NPCs (works when map is open)
+// Debug: Toggle reveal all NPC and minigame markers (works when map is open)
         if (_isOpen && Input.GetKeyDown(debugRevealKey))
         {
             _debugRevealAllNPCs = !_debugRevealAllNPCs;
-            Debug.Log($"[RoomMapUI] Debug reveal all NPCs: {(_debugRevealAllNPCs ? "ON" : "OFF")}");
+            Debug.Log($"[RoomMapUI] Debug reveal all NPCs/minigames: {(_debugRevealAllNPCs ? "ON" : "OFF")}");
         }
 
         
@@ -183,6 +189,7 @@ public class RoomMapUI : MonoBehaviour
         {
             UpdatePlayerDot();
             UpdateNPCDots();
+            UpdateMinigameDots();
             AnimatePlayerDot();
         }
     }
@@ -227,6 +234,7 @@ public class RoomMapUI : MonoBehaviour
             // Immediately position dots
             UpdatePlayerDot();
             UpdateNPCDots();
+            UpdateMinigameDots();
 
             // Fade in
             if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
@@ -541,6 +549,94 @@ public class RoomMapUI : MonoBehaviour
         CreateLegendEntry(tracker);
     }
 
+    private void UpdateMinigameDots()
+    {
+        var staleTrackers = new HashSet<MinigameMapTracker>(_minigameDots.Keys);
+
+        foreach (var tracker in MinigameMapTracker.AllTrackers)
+        {
+            staleTrackers.Remove(tracker);
+
+            bool shouldShow = tracker.IsDiscovered || _debugRevealAllNPCs;
+            if (!shouldShow)
+            {
+                if (_minigameDots.TryGetValue(tracker, out var hiddenDot))
+                {
+                    hiddenDot.gameObject.SetActive(false);
+                }
+                if (_minigameLabels.TryGetValue(tracker, out var hiddenLabel))
+                {
+                    hiddenLabel.gameObject.SetActive(false);
+                }
+                if (_minigameLegendEntries.TryGetValue(tracker, out var hiddenEntry))
+                {
+                    hiddenEntry.SetActive(false);
+                }
+                continue;
+            }
+
+            if (!_minigameDots.ContainsKey(tracker))
+                CreateMinigameDot(tracker);
+
+            var dot = _minigameDots[tracker];
+            dot.gameObject.SetActive(true);
+            Vector2 mapPos = mapData.WorldToMapPosition(tracker.WorldPosition);
+            dot.anchorMin = dot.anchorMax = mapPos;
+            dot.anchoredPosition = Vector2.zero;
+
+            if (_minigameLabels.TryGetValue(tracker, out var label))
+                label.gameObject.SetActive(true);
+
+            if (_minigameLegendEntries.TryGetValue(tracker, out var legendEntry))
+                legendEntry.SetActive(tracker.IncludeInLegend);
+        }
+
+        foreach (var stale in staleTrackers)
+        {
+            if (_minigameDots.TryGetValue(stale, out var dot))
+            {
+                Destroy(dot.gameObject);
+                _minigameDots.Remove(stale);
+            }
+            if (_minigameLabels.TryGetValue(stale, out var label))
+            {
+                Destroy(label.gameObject);
+                _minigameLabels.Remove(stale);
+            }
+            if (_minigameLegendEntries.TryGetValue(stale, out var entry))
+            {
+                Destroy(entry);
+                _minigameLegendEntries.Remove(stale);
+            }
+        }
+
+        UpdateMinigameLegendTitleVisibility();
+    }
+
+    private void CreateMinigameDot(MinigameMapTracker tracker)
+    {
+        var markerRT = CreatePortraitMarker(
+            "Minigame_" + tracker.DisplayName,
+            _mapArea,
+            tracker.Portrait,
+            npcFrameTint,
+            tracker.MarkerColor,
+            tracker.DisplayName,
+            isPlayer: false);
+
+        _minigameDots[tracker] = markerRT;
+
+        var labelTransform = markerRT.Find("Label_" + tracker.DisplayName);
+        if (labelTransform != null)
+        {
+            var label = labelTransform.GetComponent<Text>();
+            _minigameLabels[tracker] = label;
+        }
+
+        if (tracker.IncludeInLegend)
+            CreateMinigameLegendEntry(tracker);
+    }
+
     // ─────────────────── Portrait Marker Factory ───────────────────
 
     /// <summary>
@@ -697,12 +793,51 @@ public class RoomMapUI : MonoBehaviour
 
         // Player entry (always visible)
         CreateLegendRow(_legendPanel, "You", playerDotColor, true, playerPortrait);
+
+        // Minigames section title (shown only when at least one discovered minigame is visible)
+        _minigameLegendTitle = MakeUIObject("MinigameLegendTitle", _legendPanel).gameObject;
+        var minigameTitleRT = _minigameLegendTitle.GetComponent<RectTransform>();
+        minigameTitleRT.sizeDelta = new Vector2(160, 20);
+
+        var minigameTitleText = _minigameLegendTitle.AddComponent<Text>();
+        minigameTitleText.text = "— Minigames —";
+        minigameTitleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        minigameTitleText.fontSize = 13;
+        minigameTitleText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f);
+        minigameTitleText.alignment = TextAnchor.MiddleCenter;
+        minigameTitleText.raycastTarget = false;
+        _minigameLegendTitle.SetActive(false);
     }
 
     private void CreateLegendEntry(NPCMapTracker tracker)
     {
         var entry = CreateLegendRow(_legendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
         _legendEntries[tracker] = entry;
+    }
+
+    private void CreateMinigameLegendEntry(MinigameMapTracker tracker)
+    {
+        var entry = CreateLegendRow(_legendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
+        _minigameLegendEntries[tracker] = entry;
+        UpdateMinigameLegendTitleVisibility();
+    }
+
+    private void UpdateMinigameLegendTitleVisibility()
+    {
+        if (_minigameLegendTitle == null)
+            return;
+
+        bool hasVisibleEntries = false;
+        foreach (var kvp in _minigameLegendEntries)
+        {
+            if (kvp.Value != null && kvp.Value.activeSelf)
+            {
+                hasVisibleEntries = true;
+                break;
+            }
+        }
+
+        _minigameLegendTitle.SetActive(hasVisibleEntries);
     }
 
     private GameObject CreateLegendRow(RectTransform parent, string label, Color dotColor, bool alwaysVisible, Sprite portrait = null)
