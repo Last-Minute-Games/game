@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 
 public class InteractionDetector : MonoBehaviour
 {
@@ -11,6 +12,12 @@ public class InteractionDetector : MonoBehaviour
     
     [Header("Popup Settings")]
     public GameObject popupImage; // Assign your PNG UI or world-space sprite
+    [Tooltip("Optional text component used to display context-sensitive prompts (e.g. E to interact / E to play)")]
+    public TMP_Text popupPromptText;
+    [Tooltip("Prompt shown for regular interactions (NPCs, items, doors)")]
+    public string interactPromptText = "E to interact";
+    [Tooltip("Prompt shown for minigame interactions")]
+    public string playPromptText = "E to play";
 
     [Header("Cursor Settings")]
     [Tooltip("Cursor to show when hovering over interactable items/NPCs")]
@@ -51,6 +58,13 @@ public class InteractionDetector : MonoBehaviour
     {
         if (popupImage != null)
             popupImage.SetActive(false);
+
+        // Auto-wire or create prompt text so legacy scenes with icon-only popup still work.
+        EnsurePromptText();
+        if (popupPromptText != null)
+        {
+            popupPromptText.text = string.Empty;
+        }
             
         // Performance: Cache Camera.main
         _mainCamera = Camera.main;
@@ -129,6 +143,9 @@ public class InteractionDetector : MonoBehaviour
         {
             HandleRightClick();
         }
+
+        // Keep prompt visibility/text in sync with changing interaction validity.
+        UpdatePopupVisibility();
     }
 
     private void UpdateMouseHover()
@@ -162,7 +179,7 @@ public class InteractionDetector : MonoBehaviour
             if (mb == null) continue;
             
             bool showsPrompt = interactable.ShowInteractionPrompt();
-            bool isDoor = !showsPrompt; // Doors/teleporters don't show prompts
+            bool isDoor = IsDoorInteractable(interactable);
             
             LogDebug($"  Checking: {mb.gameObject.name} at {mb.transform.position} (ShowsPrompt: {showsPrompt}, IsDoor: {isDoor})");
             
@@ -231,7 +248,7 @@ public class InteractionDetector : MonoBehaviour
                     // Calculate angle between the two directions
                     float angle = Vector2.Angle(toObject, toMouse);
                     
-                    LogDebug($"    Method 3 (Directional): Angle: {angle:F1}°, Tolerance: {directionalHoverAngleTolerance:F1}°");
+                    LogDebug($"    Method 3 (Directional): Angle: {angle:F1}ï¿½, Tolerance: {directionalHoverAngleTolerance:F1}ï¿½");
                     LogDebug($"      Player->Object vector: {toObject}, Player->Mouse vector: {toMouse}");
                     
                     // If mouse is pointing roughly in the direction of the object, count as hovering
@@ -240,11 +257,11 @@ public class InteractionDetector : MonoBehaviour
                         isMouseOver = true;
                         distance = distanceToObject;
                         detectionMethod = "DIRECTIONAL";
-                        LogDebug($"    ? Method 3 (Directional): HIT! Angle {angle:F1}° within tolerance");
+                        LogDebug($"    ? Method 3 (Directional): HIT! Angle {angle:F1}ï¿½ within tolerance");
                     }
                     else
                     {
-                        LogDebug($"    ? Method 3 (Directional): Angle too wide ({angle:F1}° > {directionalHoverAngleTolerance:F1}°)");
+                        LogDebug($"    ? Method 3 (Directional): Angle too wide ({angle:F1}ï¿½ > {directionalHoverAngleTolerance:F1}ï¿½)");
                     }
                 }
                 else
@@ -355,7 +372,7 @@ public class InteractionDetector : MonoBehaviour
         
         if (bestInteractable != null)
         {
-            bool isDoor = !bestInteractable.ShowInteractionPrompt();
+            bool isDoor = IsDoorInteractable(bestInteractable);
             
             // If directional hover is enabled and this is NOT a door, must be hovering first
             if (enableDirectionalHover && !isDoor)
@@ -401,6 +418,58 @@ public class InteractionDetector : MonoBehaviour
         
         bool shouldShow = bestInteractable != null && bestInteractable.ShowInteractionPrompt();
         popupImage.SetActive(shouldShow);
+
+        if (popupPromptText != null)
+        {
+            popupPromptText.text = shouldShow && bestInteractable != null
+                ? GetPromptText(bestInteractable)
+                : string.Empty;
+        }
+    }
+
+    private bool IsDoorInteractable(IInteractable interactable)
+    {
+        return interactable is Systems.TeleportSystem;
+    }
+
+    private void EnsurePromptText()
+    {
+        if (popupPromptText != null || popupImage == null)
+            return;
+
+        popupPromptText = popupImage.GetComponentInChildren<TMP_Text>(true);
+        if (popupPromptText != null)
+            return;
+
+        TextMeshPro generatedPrompt = popupImage.AddComponent<TextMeshPro>();
+        generatedPrompt.fontSize = 2.5f;
+        generatedPrompt.color = Color.white;
+        generatedPrompt.alignment = TextAlignmentOptions.Left;
+        generatedPrompt.enableWordWrapping = false;
+        generatedPrompt.text = string.Empty;
+        generatedPrompt.transform.localPosition += new Vector3(0.8f, 0f, 0f);
+
+        SpriteRenderer iconRenderer = popupImage.GetComponent<SpriteRenderer>();
+        Renderer textRenderer = generatedPrompt.GetComponent<Renderer>();
+        if (iconRenderer != null && textRenderer != null)
+        {
+            textRenderer.sortingLayerID = iconRenderer.sortingLayerID;
+            textRenderer.sortingOrder = iconRenderer.sortingOrder + 1;
+        }
+
+        popupPromptText = generatedPrompt;
+    }
+
+    private string GetPromptText(IInteractable interactable)
+    {
+        return IsMinigameInteractable(interactable) ? playPromptText : interactPromptText;
+    }
+
+    private bool IsMinigameInteractable(IInteractable interactable)
+    {
+        return interactable is MinigameActivator
+            || interactable is OverworldCoinGameLauncher
+            || interactable is OverworldRiddleItem;
     }
 
     private void OnDisable()
@@ -436,6 +505,7 @@ public class InteractionDetector : MonoBehaviour
             if (mb == null) continue;
             
             bool showsPrompt = interactable.ShowInteractionPrompt();
+            bool isDoor = IsDoorInteractable(interactable);
             
             // Draw yellow circle for radius check
             Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
@@ -452,7 +522,7 @@ public class InteractionDetector : MonoBehaviour
             if (enableDirectionalHover)
             {
                 // Different color for doors vs items/NPCs
-                Gizmos.color = showsPrompt ? new Color(0f, 0.5f, 1f, 0.2f) : new Color(1f, 0.5f, 0f, 0.2f);
+                Gizmos.color = isDoor ? new Color(1f, 0.5f, 0f, 0.2f) : new Color(0f, 0.5f, 1f, 0.2f);
                 Gizmos.DrawWireSphere(mb.transform.position, directionalHoverMaxDistance);
             }
         }
