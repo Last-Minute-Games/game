@@ -99,12 +99,13 @@ public class RoomMapUI : MonoBehaviour
     // NPC tracking
     private readonly Dictionary<NPCMapTracker, RectTransform> _npcDots   = new();
     private readonly Dictionary<NPCMapTracker, Text>          _npcLabels = new();
-    private RectTransform _legendPanel;
+    private RectTransform _characterLegendPanel;
     private readonly Dictionary<NPCMapTracker, GameObject> _legendEntries = new();
 
     // Minigame tracking
     private readonly Dictionary<MinigameMapTracker, RectTransform> _minigameDots = new();
     private readonly Dictionary<MinigameMapTracker, Text> _minigameLabels = new();
+    private RectTransform _minigameLegendPanel;
     private readonly Dictionary<MinigameMapTracker, GameObject> _minigameLegendEntries = new();
     private GameObject _minigameLegendTitle;
 
@@ -435,8 +436,9 @@ public class RoomMapUI : MonoBehaviour
             playerDotColor, "You",
             isPlayer: true);
 
-        // ── NPC Legend panel (right edge) ──
-        BuildLegendPanel();
+        // ── Split legend panels in journal whitespace ──
+        BuildCharacterLegendPanel();
+        BuildMinigameLegendPanel();
     }
 
     // ─────────────────── Real-Time Player Tracking ───────────────────
@@ -749,16 +751,16 @@ public class RoomMapUI : MonoBehaviour
 
     // ─────────────────── Legend Panel ───────────────────
 
-    private void BuildLegendPanel()
+    private void BuildCharacterLegendPanel()
     {
-        // Container anchored to the top-right of the journal
-        var panelGO = MakeUIObject("NPCLegend", _mapContentParent);
-        _legendPanel = panelGO.GetComponent<RectTransform>();
-        _legendPanel.anchorMin = new Vector2(1f, 1f);
-        _legendPanel.anchorMax = new Vector2(1f, 1f);
-        _legendPanel.pivot = new Vector2(1f, 1f);
-        _legendPanel.anchoredPosition = new Vector2(-300, -100);
-        _legendPanel.sizeDelta = new Vector2(200, 30); // will grow
+        // Container anchored to the bottom-left whitespace of the journal
+        var panelGO = MakeUIObject("CharacterLegend", _mapContentParent);
+        _characterLegendPanel = panelGO.GetComponent<RectTransform>();
+        _characterLegendPanel.anchorMin = new Vector2(0.2f, 0.12f);
+        _characterLegendPanel.anchorMax = new Vector2(0.2f, 0.12f);
+        _characterLegendPanel.pivot = new Vector2(0f, 0f);
+        _characterLegendPanel.anchoredPosition = Vector2.zero;
+        _characterLegendPanel.sizeDelta = new Vector2(120f, 30f); // will grow
 
         // Semi-transparent background
         var bg = panelGO.AddComponent<Image>();
@@ -779,7 +781,7 @@ public class RoomMapUI : MonoBehaviour
         fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
         // Legend title
-        var titleGO = MakeUIObject("LegendTitle", _legendPanel);
+        var titleGO = MakeUIObject("LegendTitle", _characterLegendPanel);
         var titleRT = titleGO.GetComponent<RectTransform>();
         titleRT.sizeDelta = new Vector2(160, 20);
 
@@ -792,10 +794,40 @@ public class RoomMapUI : MonoBehaviour
         titleText.raycastTarget = false;
 
         // Player entry (always visible)
-        CreateLegendRow(_legendPanel, "You", playerDotColor, true, playerPortrait);
+        CreateLegendRow(_characterLegendPanel, "You", playerDotColor, true, playerPortrait);
+    }
+
+    private void BuildMinigameLegendPanel()
+    {
+        // Container anchored to the bottom-right whitespace of the journal
+        var panelGO = MakeUIObject("MinigameLegend", _mapContentParent);
+        _minigameLegendPanel = panelGO.GetComponent<RectTransform>();
+        _minigameLegendPanel.anchorMin = new Vector2(0.70f, 0.12f);
+        _minigameLegendPanel.anchorMax = new Vector2(0.70f, 0.12f);
+        _minigameLegendPanel.pivot = new Vector2(1f, 0f);
+        _minigameLegendPanel.anchoredPosition = Vector2.zero;
+        _minigameLegendPanel.sizeDelta = new Vector2(120f, 30f); // will grow
+
+        // Semi-transparent background
+        var bg = panelGO.AddComponent<Image>();
+        bg.color = new Color(0.06f, 0.05f, 0.08f, 0.85f);
+        bg.raycastTarget = false;
+
+        // Vertical layout
+        var layout = panelGO.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(10, 10, 8, 8);
+        layout.spacing = 4;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        layout.childAlignment = TextAnchor.UpperLeft;
+
+        // Content size fitter so it grows with entries
+        var fitter = panelGO.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
         // Minigames section title (shown only when at least one discovered minigame is visible)
-        _minigameLegendTitle = MakeUIObject("MinigameLegendTitle", _legendPanel).gameObject;
+        _minigameLegendTitle = MakeUIObject("MinigameLegendTitle", _minigameLegendPanel).gameObject;
         var minigameTitleRT = _minigameLegendTitle.GetComponent<RectTransform>();
         minigameTitleRT.sizeDelta = new Vector2(160, 20);
 
@@ -811,13 +843,19 @@ public class RoomMapUI : MonoBehaviour
 
     private void CreateLegendEntry(NPCMapTracker tracker)
     {
-        var entry = CreateLegendRow(_legendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
+        if (_characterLegendPanel == null)
+            return;
+
+        var entry = CreateLegendRow(_characterLegendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
         _legendEntries[tracker] = entry;
     }
 
     private void CreateMinigameLegendEntry(MinigameMapTracker tracker)
     {
-        var entry = CreateLegendRow(_legendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
+        if (_minigameLegendPanel == null)
+            return;
+
+        var entry = CreateLegendRow(_minigameLegendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
         _minigameLegendEntries[tracker] = entry;
         UpdateMinigameLegendTitleVisibility();
     }
