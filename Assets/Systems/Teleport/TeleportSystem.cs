@@ -209,8 +209,8 @@ namespace Systems
 
         public bool ShowInteractionPrompt()
         {
-            // Doors/teleports don't show the popup - they're invisible interactions
-            return false;
+            // Doors/teleports now show the popup so players get a clear interaction cue.
+            return true;
         }
         
         private void OnTriggerEnter2D(Collider2D other)

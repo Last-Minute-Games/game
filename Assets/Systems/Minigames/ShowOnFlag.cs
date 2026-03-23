@@ -6,12 +6,26 @@ public class ShowOnFlag : MonoBehaviour
     [Tooltip("If empty, this GameObject is toggled.")]
     [SerializeField] private GameObject[] objectsToToggle;
 
+    [Header("Map Tracking")]
+    [SerializeField] private bool showOnMap = true;
+    [SerializeField] private string mapDisplayName;
+    [SerializeField] private Color mapMarkerColor = new Color(0.95f, 0.70f, 0.25f, 1f);
+    [SerializeField] private Sprite mapPortrait;
+    [Tooltip("Optional custom Resources path for minigame portrait sprite.")]
+    [SerializeField] private string mapPortraitResourcePath;
+    [SerializeField] private bool includeInLegend = true;
+
     private void Awake()
     {
         // Default to toggling ourselves
         if (objectsToToggle == null || objectsToToggle.Length == 0)
         {
             objectsToToggle = new[] { gameObject };
+        }
+
+        if (showOnMap && !string.IsNullOrEmpty(flagName) && flagName.StartsWith("minigame."))
+        {
+            EnsureMapTracker();
         }
 
         // Subscribe to GameFlags events
@@ -66,5 +80,23 @@ public class ShowOnFlag : MonoBehaviour
                 obj.SetActive(hasFlag);
             }
         }
+    }
+
+    private void EnsureMapTracker()
+    {
+        var tracker = GetComponent<MinigameMapTracker>();
+        if (tracker == null)
+        {
+            tracker = gameObject.AddComponent<MinigameMapTracker>();
+        }
+
+        string resolvedName = string.IsNullOrWhiteSpace(mapDisplayName) ? gameObject.name : mapDisplayName;
+        tracker.Configure(
+            resolvedName,
+            flagName,
+            mapMarkerColor,
+            mapPortrait,
+            mapPortraitResourcePath,
+            includeInLegend);
     }
 }
