@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -80,6 +81,14 @@ public class RoomMapUI : MonoBehaviour
     [Tooltip("How long the map takes to fade in/out (seconds).")]
     [SerializeField] private float fadeDuration = 0.25f;
 
+    [Header("Performance")]
+    [Tooltip("Preload portraits and map markers in small batches to avoid first-open stalls.")]
+    [SerializeField] private bool enableMapPrewarm = true;
+    [SerializeField] private float prewarmStartDelay = 0.20f;
+    [SerializeField] private int portraitPrewarmBatchSize = 3;
+    [SerializeField] private int markerPrewarmBatchSize = 2;
+    [SerializeField] private int runtimeMarkerCreateBudgetPerFrame = 2;
+
     [Header("Title")]
     [SerializeField] private string mapTitle = "Castle Map";
     [SerializeField] private int titleFontSize = 32;
@@ -120,6 +129,15 @@ public class RoomMapUI : MonoBehaviour
     private bool _isFading;
     // Debug
     private bool _debugRevealAllNPCs = false;
+
+    // Prewarm / deferred creation
+    private bool _isPrewarming;
+    private bool _prewarmComplete;
+    private Coroutine _prewarmCoroutine;
+    private readonly Queue<NPCMapTracker> _pendingNpcCreates = new();
+    private readonly HashSet<NPCMapTracker> _pendingNpcCreateSet = new();
+    private readonly Queue<MinigameMapTracker> _pendingMinigameCreates = new();
+    private readonly HashSet<MinigameMapTracker> _pendingMinigameCreateSet = new();
     // ─────────────────── Lifecycle ───────────────────
 
     void Start()
@@ -166,6 +184,9 @@ public class RoomMapUI : MonoBehaviour
         _canvasGroup = _root.AddComponent<CanvasGroup>();
         _canvasGroup.alpha = 0f;
         _root.SetActive(false);
+
+        if (enableMapPrewarm)
+            _prewarmCoroutine = StartCoroutine(PrewarmMapData());
     }
 
     void Update()
@@ -188,6 +209,7 @@ public class RoomMapUI : MonoBehaviour
         
         if (_isOpen)
         {
+            ProcessPendingMarkerCreates(runtimeMarkerCreateBudgetPerFrame);
             UpdatePlayerDot();
             UpdateNPCDots();
             UpdateMinigameDots();
@@ -197,6 +219,9 @@ public class RoomMapUI : MonoBehaviour
 
     void OnDestroy()
     {
+        if (_prewarmCoroutine != null)
+            StopCoroutine(_prewarmCoroutine);
+
         if (_root != null) Destroy(_root);
     }
 
@@ -232,6 +257,11 @@ public class RoomMapUI : MonoBehaviour
             }
 
             _root.SetActive(true);
+
+            // If prewarm is still running, create a small number of markers now.
+            if (!_prewarmComplete)
+                ProcessPendingMarkerCreates(runtimeMarkerCreateBudgetPerFrame);
+
             // Immediately position dots
             UpdatePlayerDot();
             UpdateNPCDots();
@@ -251,6 +281,187 @@ public class RoomMapUI : MonoBehaviour
                 GlobalPause.SetPaused(false);
             }));
         }
+    }
+
+    private IEnumerator PrewarmMapData()
+    {
+        _isPrewarming = true;
+
+        if (prewarmStartDelay > 0f)
+            yield return new WaitForSecondsRealtime(prewarmStartDelay);
+
+        int warmedPortraits = 0;
+        int createdMarkers = 0;
+
+        int portraitBatch = Mathf.Max(1, portraitPrewarmBatchSize);
+        int markerBatch = Mathf.Max(1, markerPrewarmBatchSize);
+
+        // Phase A: Warm portrait caches in batches.
+        int portraitOps = 0;
+        foreach (var tracker in NPCMapTracker.AllTrackers)
+        {
+            if (tracker == null || !tracker.IsDiscovered)
+                continue;
+
+            var _ = tracker.Portrait;
+            warmedPortraits++;
+
+            portraitOps++;
+            if (portraitOps >= portraitBatch)
+            {
+                portraitOps = 0;
+                yield return null;
+            }
+        }
+
+        foreach (var tracker in MinigameMapTracker.AllTrackers)
+        {
+            if (tracker == null || !tracker.IsDiscovered)
+                continue;
+
+            var _ = tracker.Portrait;
+            warmedPortraits++;
+
+            portraitOps++;
+            if (portraitOps >= portraitBatch)
+            {
+                portraitOps = 0;
+                yield return null;
+            }
+        }
+
+        // Phase B: Pre-create discovered markers/legend entries while overlay is hidden.
+        int markerOps = 0;
+        foreach (var tracker in NPCMapTracker.AllTrackers)
+        {
+            if (tracker == null || !tracker.IsDiscovered)
+                continue;
+
+            if (_npcDots.ContainsKey(tracker))
+                continue;
+
+            CreateNPCDot(tracker);
+            SetNPCVisualState(tracker, false);
+            createdMarkers++;
+
+            markerOps++;
+            if (markerOps >= markerBatch)
+            {
+                markerOps = 0;
+                yield return null;
+            }
+        }
+
+        foreach (var tracker in MinigameMapTracker.AllTrackers)
+        {
+            if (tracker == null || !tracker.IsDiscovered)
+                continue;
+
+            if (_minigameDots.ContainsKey(tracker))
+                continue;
+
+            CreateMinigameDot(tracker);
+            SetMinigameVisualState(tracker, false);
+            createdMarkers++;
+
+            markerOps++;
+            if (markerOps >= markerBatch)
+            {
+                markerOps = 0;
+                yield return null;
+            }
+        }
+
+        _isPrewarming = false;
+        _prewarmComplete = true;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        Debug.Log($"[RoomMapUI] Prewarm complete. Portraits={warmedPortraits}, Markers={createdMarkers}");
+#endif
+    }
+
+    private void EnqueueNPCMarkerCreate(NPCMapTracker tracker)
+    {
+        if (tracker == null || _npcDots.ContainsKey(tracker))
+            return;
+
+        if (_pendingNpcCreateSet.Add(tracker))
+            _pendingNpcCreates.Enqueue(tracker);
+    }
+
+    private void EnqueueMinigameMarkerCreate(MinigameMapTracker tracker)
+    {
+        if (tracker == null || _minigameDots.ContainsKey(tracker))
+            return;
+
+        if (_pendingMinigameCreateSet.Add(tracker))
+            _pendingMinigameCreates.Enqueue(tracker);
+    }
+
+    private void ProcessPendingMarkerCreates(int budgetPerFrame)
+    {
+        int budget = Mathf.Max(1, budgetPerFrame);
+        int consumed = 0;
+
+        while (consumed < budget && _pendingNpcCreates.Count > 0)
+        {
+            var tracker = _pendingNpcCreates.Dequeue();
+            _pendingNpcCreateSet.Remove(tracker);
+
+            if (tracker == null || _npcDots.ContainsKey(tracker))
+                continue;
+
+            if (!tracker.IsDiscovered && !_debugRevealAllNPCs)
+                continue;
+
+            CreateNPCDot(tracker);
+            consumed++;
+        }
+
+        while (consumed < budget && _pendingMinigameCreates.Count > 0)
+        {
+            var tracker = _pendingMinigameCreates.Dequeue();
+            _pendingMinigameCreateSet.Remove(tracker);
+
+            if (tracker == null || _minigameDots.ContainsKey(tracker))
+                continue;
+
+            if (!tracker.IsDiscovered && !_debugRevealAllNPCs)
+                continue;
+
+            CreateMinigameDot(tracker);
+            consumed++;
+        }
+    }
+
+    private void SetNPCVisualState(NPCMapTracker tracker, bool active)
+    {
+        if (tracker == null)
+            return;
+
+        if (_npcDots.TryGetValue(tracker, out var dot) && dot != null)
+            dot.gameObject.SetActive(active);
+
+        if (_npcLabels.TryGetValue(tracker, out var label) && label != null)
+            label.gameObject.SetActive(active);
+
+        if (_legendEntries.TryGetValue(tracker, out var legend) && legend != null)
+            legend.SetActive(active);
+    }
+
+    private void SetMinigameVisualState(MinigameMapTracker tracker, bool active)
+    {
+        if (tracker == null)
+            return;
+
+        if (_minigameDots.TryGetValue(tracker, out var dot) && dot != null)
+            dot.gameObject.SetActive(active);
+
+        if (_minigameLabels.TryGetValue(tracker, out var label) && label != null)
+            label.gameObject.SetActive(active);
+
+        if (_minigameLegendEntries.TryGetValue(tracker, out var legend) && legend != null)
+            legend.SetActive(active && tracker.IncludeInLegend);
     }
 
     private System.Collections.IEnumerator FadeMap(float from, float to, System.Action onComplete = null)
@@ -486,7 +697,10 @@ public class RoomMapUI : MonoBehaviour
 
             // Create dot if we haven't yet
             if (!_npcDots.ContainsKey(tracker))
-                CreateNPCDot(tracker);
+            {
+                EnqueueNPCMarkerCreate(tracker);
+                continue;
+            }
 
             // Position the marker group
             var dot = _npcDots[tracker];
@@ -578,7 +792,10 @@ public class RoomMapUI : MonoBehaviour
             }
 
             if (!_minigameDots.ContainsKey(tracker))
-                CreateMinigameDot(tracker);
+            {
+                EnqueueMinigameMarkerCreate(tracker);
+                continue;
+            }
 
             var dot = _minigameDots[tracker];
             dot.gameObject.SetActive(true);
