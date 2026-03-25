@@ -67,7 +67,7 @@ public class PlayerManager : MonoBehaviour
         }
         
         // Create a starting draw pile (fallback to 10 random cards)
-        int startingDeckSize = 10;
+        int startingDeckSize = 30;
         cardManager.drawPile = cardManager.GenerateRandomCards(startingDeckSize);
         cardManager.ShuffleDrawPile();
     }

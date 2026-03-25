@@ -70,9 +70,9 @@ namespace GameItems.Cards
 
             // 2)
 
-            const int MIN_SLASH = 4;
-            const int MIN_BLOCK = 2;
-            const int MIN_HEAL = 2;
+            const int MIN_SLASH = 12;
+            const int MIN_BLOCK = 3;
+            const int MIN_HEAL = 6;
 
             CardData slash = PullCard(SLASH_ID);
             if (slash != null) {
@@ -96,8 +96,8 @@ namespace GameItems.Cards
             }
 
             // Optional: reduce the amount of random cards so total stays consistent
-            // number -= result.Count;
-            // if (number < 0) number = 0;
+            number -= result.Count;
+            if (number < 0) number = 0;
 
             // 3)
             List<CardData> unlockedPool = allCardPool.FindAll(c => IsCardUnlocked(c, specialCardPool)); // for now, only allow one instance of specialcards
@@ -168,6 +168,8 @@ namespace GameItems.Cards
             {
                 handInstances.Add(instance);
             }
+
+            PileCountUI.RefreshNow();
         }
 
         public CardInstance GetLatestInstanceFor(CardData data)
@@ -212,6 +214,7 @@ namespace GameItems.Cards
             discardPile.AddRange(hand);
             hand.Clear();
             handInstances.Clear();
+            PileCountUI.RefreshNow();
         }
 
         // -----------------------------------------------------------
@@ -237,9 +240,24 @@ namespace GameItems.Cards
 
         private void ReshuffleDiscardIntoDraw()
         {
+            int oldDrawCount = drawPile.Count;
+            int oldDiscardCount = discardPile.Count;
+
             drawPile.AddRange(discardPile);
             discardPile.Clear();
             ShuffleDrawPile();
+
+            int newDrawCount = drawPile.Count;
+            int newDiscardCount = discardPile.Count;
+
+            PileCountUI.Instance?.AnimateReshuffle(
+                oldDrawCount,
+                oldDiscardCount,
+                newDrawCount,
+                newDiscardCount
+            );
+
+            PileCountUI.RefreshNow();
         }
 
         // -----------------------------------------------------------
@@ -282,6 +300,7 @@ namespace GameItems.Cards
             }
 
             Debug.Log($"[CardManager] Played card '{data.name}'. Hand: {hand.Count}, Discard: {discardPile.Count}, Instances: {handInstances.Count}");
+            PileCountUI.RefreshNow();
             return removed;
         }
 
