@@ -442,6 +442,9 @@ public class InteractionDetector : MonoBehaviour
             return;
 
         TextMeshPro generatedPrompt = popupImage.AddComponent<TextMeshPro>();
+        if (generatedPrompt == null)
+            return;
+
         generatedPrompt.fontSize = 2.5f;
         generatedPrompt.color = Color.white;
         generatedPrompt.alignment = TextAlignmentOptions.Left;
@@ -528,7 +531,7 @@ public class InteractionDetector : MonoBehaviour
         }
         
         // Draw debug line showing mouse direction in editor (when hovering)
-        if (enableDirectionalHover && _mainCamera != null && Application.isPlaying)
+        if (enableDirectionalHover && enableDebugLogs && _mainCamera != null && Application.isPlaying)
         {
             Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector2 playerPos = transform.position;
