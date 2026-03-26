@@ -329,7 +329,14 @@ public class InteractionDetector : MonoBehaviour
         {
             if (interactCursor != null)
             {
-                Cursor.SetCursor(interactCursor, interactCursorHotspot, CursorMode.ForceSoftware);
+                if (CursorManager.Instance != null)
+                {
+                    CursorManager.Instance.SetScaledCursor(interactCursor, interactCursorHotspot);
+                }
+                else
+                {
+                    Cursor.SetCursor(interactCursor, interactCursorHotspot, CursorMode.ForceSoftware);
+                }
                 LogDebug($"Cursor changed - hovering over: {(hoveredInteractable as MonoBehaviour)?.gameObject.name}");
             }
         }
@@ -338,11 +345,25 @@ public class InteractionDetector : MonoBehaviour
             // Reset to default cursor
             if (defaultCursor != null)
             {
-                Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
+                if (CursorManager.Instance != null)
+                {
+                    CursorManager.Instance.SetScaledCursor(defaultCursor, defaultCursorHotspot);
+                }
+                else
+                {
+                    Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
+                }
             }
             else
             {
-                Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
+                if (CursorManager.Instance != null)
+                {
+                    CursorManager.Instance.SetScaledCursor(null, Vector2.zero);
+                }
+                else
+                {
+                    Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
+                }
             }
         }
     }
@@ -476,11 +497,25 @@ public class InteractionDetector : MonoBehaviour
     {
         if (defaultCursor != null)
         {
-            Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
+            if (CursorManager.Instance != null)
+            {
+                CursorManager.Instance.SetScaledCursor(defaultCursor, defaultCursorHotspot);
+            }
+            else
+            {
+                Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
+            }
         }
         else
         {
-            Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
+            if (CursorManager.Instance != null)
+            {
+                CursorManager.Instance.SetScaledCursor(null, Vector2.zero);
+            }
+            else
+            {
+                Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
+            }
         }
     }
     
