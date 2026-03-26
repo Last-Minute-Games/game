@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using Systems;
 
 /// <summary>
 /// Displays a room name popup when entering new areas.
@@ -34,12 +35,17 @@ public class RoomNamePopup : MonoBehaviour
     private CanvasGroup canvasGroup;
     private TextMeshProUGUI textComponent;
     private string lastRoomId;
+    private string pendingRoomId;
+    private CharacterMotor2D characterMotor;
+    private CanvasGroup fadeCanvasGroup;
+    private ScreenFader screenFader;
     private Coroutine animationCoroutine;
 
     void Awake()
     {
         CreateUI();
         RoomTracker.OnRoomChanged += HandleRoomChanged;
+        TeleportSystem.OnAnyTeleportCompleted += HandleTeleportCompleted;
     }
 
     void Start()
@@ -48,9 +54,16 @@ public class RoomNamePopup : MonoBehaviour
         StartCoroutine(DelayedInitialCheck());
     }
 
+    void Update()
+    {
+        ForceHidePopupIfTransitionActive();
+        TryShowPendingRoomIfVisible();
+    }
+
     void OnDestroy()
     {
         RoomTracker.OnRoomChanged -= HandleRoomChanged;
+        TeleportSystem.OnAnyTeleportCompleted -= HandleTeleportCompleted;
     }
 
     private IEnumerator DelayedInitialCheck()
@@ -142,6 +155,111 @@ public class RoomNamePopup : MonoBehaviour
     {
         if (string.IsNullOrEmpty(roomId)) return;
         if (roomId == lastRoomId) return;
+
+        if (IsVisualTransitionActive())
+        {
+            pendingRoomId = roomId;
+            return;
+        }
+
+        ShowRoomById(roomId);
+    }
+
+    private void HandleTeleportCompleted()
+    {
+        if (string.IsNullOrEmpty(pendingRoomId)) return;
+        if (IsVisualTransitionActive()) return;
+
+        string roomToShow = pendingRoomId;
+        pendingRoomId = null;
+
+        if (roomToShow == lastRoomId) return;
+        ShowRoomById(roomToShow);
+    }
+
+    private bool IsTeleportInProgress()
+    {
+        if (characterMotor == null)
+        {
+            var player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                characterMotor = player.GetComponent<CharacterMotor2D>();
+            }
+        }
+
+        return characterMotor != null && characterMotor.IsTeleporting;
+    }
+
+    private bool IsVisualTransitionActive()
+    {
+        if (IsTeleportInProgress()) return true;
+
+        if (fadeCanvasGroup == null)
+        {
+            var fadeObj = GameObject.Find("FadeCanvasGroup");
+            if (fadeObj != null)
+            {
+                fadeCanvasGroup = fadeObj.GetComponent<CanvasGroup>();
+            }
+        }
+
+        if (fadeCanvasGroup != null && fadeCanvasGroup.alpha > 0.01f)
+        {
+            return true;
+        }
+
+        if (screenFader == null)
+        {
+            screenFader = FindFirstObjectByType<ScreenFader>();
+        }
+
+        if (screenFader != null &&
+            screenFader.fadePanel != null &&
+            screenFader.fadePanel.gameObject.activeInHierarchy &&
+            screenFader.fadePanel.color.a > 0.01f)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void TryShowPendingRoomIfVisible()
+    {
+        if (string.IsNullOrEmpty(pendingRoomId)) return;
+        if (IsVisualTransitionActive()) return;
+
+        string roomToShow = pendingRoomId;
+        pendingRoomId = null;
+
+        if (roomToShow == lastRoomId) return;
+        ShowRoomById(roomToShow);
+    }
+
+    private void ForceHidePopupIfTransitionActive()
+    {
+        if (!IsVisualTransitionActive()) return;
+
+        if (animationCoroutine != null)
+        {
+            StopCoroutine(animationCoroutine);
+            animationCoroutine = null;
+        }
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 0f;
+        }
+    }
+
+    private void ShowRoomById(string roomId)
+    {
+        if (IsVisualTransitionActive())
+        {
+            pendingRoomId = roomId;
+            return;
+        }
 
         lastRoomId = roomId;
 

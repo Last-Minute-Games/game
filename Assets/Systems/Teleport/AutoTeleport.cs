@@ -136,6 +136,8 @@ namespace Systems
 
             yield return StartCoroutine(FadeOut());
             _fadeCanvasGroup.blocksRaycasts = false;
+
+            TeleportSystem.RaiseAnyTeleportCompleted();
         }
 
         private void OnEnter()

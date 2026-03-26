@@ -8,6 +8,13 @@ namespace Systems
 {
     public class TeleportSystem : MonoBehaviour, IInteractable
     {
+        public static event System.Action OnAnyTeleportCompleted;
+
+        public static void RaiseAnyTeleportCompleted()
+        {
+            OnAnyTeleportCompleted?.Invoke();
+        }
+
         [Header("Debug")]
         [Tooltip("Enable debug logs (Editor only)")]
         public bool enableDebugLogs = false;
@@ -146,6 +153,8 @@ namespace Systems
             
             yield return StartCoroutine(FadeOut());
             _fadeCanvasGroup.blocksRaycasts = false;
+
+            RaiseAnyTeleportCompleted();
             
             // Release the lock after teleport is fully complete
             InteractionLockManager.Unlock();
