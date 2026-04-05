@@ -2,6 +2,7 @@ using System.Collections;
 using cherrydev;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Unity.Cinemachine;
 
@@ -9,6 +10,9 @@ namespace Systems.Overworld.Intro
 {
     public class OverworldWakeUpCutscene : MonoBehaviour
     {
+        private const string OverworldSceneName = "Overworld";
+        private const float DialogueFailSafeTimeoutSeconds = 30f;
+
         private CanvasGroup fadeCanvasGroup;
         private SpriteRenderer sleepingMainSpriteRenderer;
         private SpriteRenderer mainCharSpriteRenderer;
@@ -64,6 +68,42 @@ namespace Systems.Overworld.Intro
         
         // Add a flag to determine which sequence to play
         private bool shouldPlayFullWakeUpCutscene = false;
+
+        private void OnDisable()
+        {
+            // Safety: if this component is disabled mid-sequence, never leave player locked.
+            RestorePlayerControlSafe();
+        }
+
+        private void RestorePlayerControlSafe()
+        {
+            if (playerInput == null)
+            {
+                var mainChar = GameObject.Find("MainCharacter");
+                if (mainChar != null)
+                {
+                    playerInput = mainChar.GetComponent<PlayerInput2D>();
+                }
+
+                if (playerInput == null)
+                {
+                    var taggedPlayer = GameObject.FindGameObjectWithTag("Player");
+                    if (taggedPlayer != null)
+                        playerInput = taggedPlayer.GetComponent<PlayerInput2D>();
+                }
+            }
+
+            if (playerInput != null)
+                playerInput.isInputEnabled = true;
+
+            var playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                var playerMotor = playerObj.GetComponent<CharacterMotor2D>();
+                if (playerMotor != null)
+                    playerMotor.SetDialogueActive(false);
+            }
+        }
         
         private IEnumerator BeginWakeUpSequence()
         {
@@ -119,9 +159,16 @@ namespace Systems.Overworld.Intro
             
             if (mainCamera != null)
             {
-                Vector3 sleepingPosition = sleepingMain.transform.position;
-                mainCamera.transform.position = new Vector3(sleepingPosition.x, sleepingPosition.y, -10f);
-                DebugLogger.LogCutscene($"Main camera position set to {mainCamera.transform.position}");
+                if (sleepingMain != null)
+                {
+                    Vector3 sleepingPosition = sleepingMain.transform.position;
+                    mainCamera.transform.position = new Vector3(sleepingPosition.x, sleepingPosition.y, -10f);
+                    DebugLogger.LogCutscene($"Main camera position set to {mainCamera.transform.position}");
+                }
+                else
+                {
+                    DebugLogger.LogWarning("[OverworldWakeUpCutscene] sleepingMain is null; skipping camera reposition.");
+                }
             }
             
             // Disable player input during cutscene
@@ -273,6 +320,15 @@ namespace Systems.Overworld.Intro
         void Start()
         {
             DebugLogger.LogCutscene("Start() called");
+
+            string sceneName = SceneManager.GetActiveScene().name;
+            if (!string.Equals(sceneName, OverworldSceneName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                DebugLogger.LogWarning($"[OverworldWakeUpCutscene] Disabled outside Overworld (current scene: {sceneName}).");
+                RestorePlayerControlSafe();
+                enabled = false;
+                return;
+            }
 
             // Find main character components first
             var mainChar = GameObject.Find("MainCharacter");
@@ -700,9 +756,19 @@ namespace Systems.Overworld.Intro
             {
                 DebugLogger.LogWarning("[OverworldWakeUpCutscene] Dialogue did not start within 0.5 seconds - may be an issue with dialogue system");
             }
+
+            float dialogueWaitTimer = 0f;
             
             while (!dialogueFinished)
             {
+                // Fail-safe: never hard-lock player if dialog callbacks fail.
+                if (dialogueWaitTimer >= DialogueFailSafeTimeoutSeconds)
+                {
+                    DebugLogger.LogWarning($"[OverworldWakeUpCutscene] Dialogue timeout after {DialogueFailSafeTimeoutSeconds}s. Releasing player control.");
+                    break;
+                }
+
+                dialogueWaitTimer += Time.unscaledDeltaTime;
                 yield return null;
             }
             
