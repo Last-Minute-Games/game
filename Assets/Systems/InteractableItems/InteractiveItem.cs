@@ -19,7 +19,7 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     public DialogNodeGraph dialogGraph;
 
     [Header("Interaction Settings")]
-    [SerializeField] private KeyCode interactKey = KeyCode.E;
+    [Tooltip("How far away the player can be to interact with this item")]
     [SerializeField] private float interactionRange = 1f;
 
     [Header("Flags to Set After Dialog")]

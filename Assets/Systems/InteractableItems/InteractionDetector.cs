@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,13 +34,17 @@ public class InteractionDetector : MonoBehaviour
     [Tooltip("Enable hover detection for NPCs and items (Stardew Valley style)")]
     public bool enableHoverDetection = true;
     [Tooltip("Radius around interactable to check for mouse hover (fallback for objects without precise colliders)")]
-    public float hoverCheckRadius = 0.5f;
+    public float hoverCheckRadius = 1.0f;
     [Tooltip("Enable lenient directional hover (Stardew Valley style - just point mouse in general direction)")]
     public bool enableDirectionalHover = true;
     [Tooltip("Max distance for directional hover to work")]
     public float directionalHoverMaxDistance = 3f;
     [Tooltip("Angle tolerance for directional hover (degrees) - higher = more forgiving")]
     public float directionalHoverAngleTolerance = 60f;
+    [Tooltip("Use raycast for hover detection (more reliable, recommended)")]
+    public bool useRaycastDetection = true;
+    [Tooltip("Layer mask for raycast detection (set to layers containing interactables)")]
+    public LayerMask raycastLayerMask = -1;
     
     [Header("Keyboard Interaction")]
     [Tooltip("Enable E key for interactions (disable to test mouse-only gameplay)")]
@@ -53,6 +58,27 @@ public class InteractionDetector : MonoBehaviour
     
     // Performance: Track last mouse position to avoid unnecessary checks
     private Vector3 _lastMousePosition;
+    private const float MOUSE_MOVEMENT_THRESHOLD = 0.1f; // Skip hover updates if mouse barely moved
+    
+    // Performance: Cache raycast results buffer to avoid allocations
+    private RaycastHit2D[] _raycastBuffer = new RaycastHit2D[10];
+    
+    /// <summary>Result from hover detection</summary>
+    private struct HoverDetectionResult
+    {
+        public bool isDetected;
+        public float distance;
+        public string method;
+        
+        public HoverDetectionResult(bool detected, float dist, string detectionMethod)
+        {
+            isDetected = detected;
+            distance = dist;
+            method = detectionMethod;
+        }
+        
+        public static HoverDetectionResult None => new HoverDetectionResult(false, float.MaxValue, "NONE");
+    }
 
     private void Start()
     {
@@ -74,6 +100,66 @@ public class InteractionDetector : MonoBehaviour
         }
         
         _lastMousePosition = Input.mousePosition;
+        
+        // Validate collider setup
+        ValidateColliderSetup();
+    }
+    
+    /// <summary>
+    /// Validates that the InteractionDetector has a properly sized trigger collider.
+    /// This determines how close NPCs/items need to be for interaction.
+    /// </summary>
+    private void ValidateColliderSetup()
+    {
+        Collider2D[] colliders = GetComponents<Collider2D>();
+        
+        if (colliders.Length == 0)
+        {
+            Debug.LogError($"[InteractionDetector] {gameObject.name} is missing a Collider2D!\n" +
+                          "Add a CircleCollider2D or BoxCollider2D and set it as a TRIGGER.\n" +
+                          "Recommended: CircleCollider2D with radius 1.5-2.0 for full body coverage.");
+            return;
+        }
+        
+        Collider2D triggerCollider = null;
+        foreach (var col in colliders)
+        {
+            if (col.isTrigger)
+            {
+                triggerCollider = col;
+                break;
+            }
+        }
+        
+        if (triggerCollider == null)
+        {
+            Debug.LogWarning($"[InteractionDetector] {gameObject.name} has colliders but none are set as TRIGGER!\n" +
+                           "Set 'Is Trigger' checkbox in the collider inspector.");
+            return;
+        }
+        
+        // Check if collider is too small
+        float effectiveRadius = GetEffectiveRadius(triggerCollider);
+        if (effectiveRadius < 1.0f)
+        {
+            Debug.LogWarning($"[InteractionDetector] {gameObject.name}'s trigger collider is quite small ({effectiveRadius:F2} units).\n" +
+                           "For full body interaction, consider increasing to 1.5-2.0 units.\n" +
+                           "Current setup will only detect NPCs very close to the player center.");
+        }
+    }
+    
+    private float GetEffectiveRadius(Collider2D collider)
+    {
+        if (collider is CircleCollider2D circle)
+        {
+            return circle.radius * Mathf.Max(transform.localScale.x, transform.localScale.y);
+        }
+        else if (collider is BoxCollider2D box)
+        {
+            Vector2 size = box.size;
+            return Mathf.Max(size.x, size.y) * 0.5f * Mathf.Max(transform.localScale.x, transform.localScale.y);
+        }
+        return 0.5f;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -163,11 +249,18 @@ public class InteractionDetector : MonoBehaviour
             
         if (_mainCamera == null) return;
         
+        // Performance: Skip hover updates if mouse hasn't moved significantly
+        if (Vector3.Distance(Input.mousePosition, _lastMousePosition) < MOUSE_MOVEMENT_THRESHOLD)
+            return;
+            
+        _lastMousePosition = Input.mousePosition;
+        
         // Get mouse position in world space
         Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         Vector2 playerPos = transform.position;
         
-        LogDebug($"=== Hover Update === Mouse World: {mouseWorldPos}, Player: {playerPos}, Nearby: {nearbyInteractables.Count}");
+        if (enableDebugLogs)
+            LogDebug($"=== Hover Update === Mouse: {mouseWorldPos}, Player: {playerPos}, Count: {nearbyInteractables.Count}");
         
         IInteractable newHovered = null;
         float closestDistance = float.MaxValue;
@@ -202,109 +295,47 @@ public class InteractionDetector : MonoBehaviour
                 }
             }
             
-            bool isMouseOver = false;
-            float distance = float.MaxValue;
-            string detectionMethod = "NONE";
+            // Try multiple detection methods in priority order
+            HoverDetectionResult result = HoverDetectionResult.None;
             
-            // Method 1: Check if mouse is over any collider on this object
-            Collider2D[] colliders = mb.GetComponents<Collider2D>();
-            foreach (var collider in colliders)
+            // Method 1: Raycast detection (most reliable)
+            if (useRaycastDetection)
             {
-                if (collider != null && collider.enabled && collider.OverlapPoint(mouseWorldPos))
-                {
-                    isMouseOver = true;
-                    distance = Vector2.Distance(mouseWorldPos, mb.transform.position);
-                    detectionMethod = "COLLIDER";
-                    LogDebug($"    ? Method 1 (Collider): Hit! Distance: {distance:F2}");
-                    break;
-                }
+                result = TryRaycastDetection(mouseWorldPos, mb);
             }
             
-            // Method 2: Fallback - Check distance from center (for objects without precise colliders)
-            if (!isMouseOver)
+            // Method 2: Collider overlap detection (fallback)
+            if (!result.isDetected)
             {
-                float distanceToCenter = Vector2.Distance(mouseWorldPos, mb.transform.position);
-                LogDebug($"    Method 2 (Radius): Distance to center: {distanceToCenter:F2}, Threshold: {hoverCheckRadius:F2}");
-                if (distanceToCenter <= hoverCheckRadius)
-                {
-                    isMouseOver = true;
-                    distance = distanceToCenter;
-                    detectionMethod = "RADIUS";
-                    LogDebug($"    ? Method 2 (Radius): Hit!");
-                }
+                result = TryColliderDetection(mouseWorldPos, mb);
             }
             
-            // Method 3: Stardew Valley style - Directional hover (if enabled and player is close)
-            // BUT skip directional hover for doors/teleporters - they only need collider/radius detection
-            if (!isMouseOver && enableDirectionalHover && !isDoor)
+            // Method 3: Radius detection (simple distance check)
+            if (!result.isDetected)
             {
-                Vector2 objectPos = mb.transform.position;
-                float distanceToObject = Vector2.Distance(playerPos, objectPos);
-                
-                LogDebug($"    Method 3 (Directional): Player->Object distance: {distanceToObject:F2}, Max: {directionalHoverMaxDistance:F2}");
-                
-                // Only do directional check if player is reasonably close to the object
-                if (distanceToObject <= directionalHoverMaxDistance)
-                {
-                    // Direction from player to object
-                    Vector2 toObject = (objectPos - playerPos).normalized;
-                    
-                    // Direction from player to mouse
-                    Vector2 toMouse = (mouseWorldPos - playerPos).normalized;
-                    
-                    // Calculate angle between the two directions
-                    float angle = Vector2.Angle(toObject, toMouse);
-                    
-                    LogDebug($"    Method 3 (Directional): Angle: {angle:F1}�, Tolerance: {directionalHoverAngleTolerance:F1}�");
-                    LogDebug($"      Player->Object vector: {toObject}, Player->Mouse vector: {toMouse}");
-                    
-                    // If mouse is pointing roughly in the direction of the object, count as hovering
-                    if (angle <= directionalHoverAngleTolerance)
-                    {
-                        isMouseOver = true;
-                        distance = distanceToObject;
-                        detectionMethod = "DIRECTIONAL";
-                        LogDebug($"    ? Method 3 (Directional): HIT! Angle {angle:F1}� within tolerance");
-                    }
-                    else
-                    {
-                        LogDebug($"    ? Method 3 (Directional): Angle too wide ({angle:F1}� > {directionalHoverAngleTolerance:F1}�)");
-                    }
-                }
-                else
-                {
-                    LogDebug($"    ? Method 3 (Directional): Too far ({distanceToObject:F2} > {directionalHoverMaxDistance:F2})");
-                }
+                result = TryRadiusDetection(mouseWorldPos, mb);
             }
-            else if (!isMouseOver && isDoor)
+            
+            // Method 4: Directional hover (Stardew Valley style) - skip for doors
+            if (!result.isDetected && enableDirectionalHover && !isDoor)
             {
-                LogDebug($"    ? Method 3 (Directional): Skipped for door/teleporter (doors don't need directional hover)");
+                result = TryDirectionalDetection(mouseWorldPos, playerPos, mb);
             }
-            else if (!isMouseOver)
-            {
-                LogDebug($"    ? Method 3 (Directional): Skipped (enabled={enableDirectionalHover}, alreadyDetected={isMouseOver})");
-            }
+            
+            bool isMouseOver = result.isDetected;
+            float distance = result.distance;
+            string detectionMethod = result.method;
             
             // If mouse is over this interactable, check if it's the best one
             if (isMouseOver)
             {
-                LogDebug($"    ? Detected via {detectionMethod}, Distance: {distance:F2}, Priority: {interactable.GetInteractionPriority()}");
-                
                 // Prefer higher priority (lower number) or closer distance if same priority
-                if (newHovered == null || 
-                    interactable.GetInteractionPriority() < newHovered.GetInteractionPriority() ||
-                    (interactable.GetInteractionPriority() == newHovered.GetInteractionPriority() && distance < closestDistance))
+                if (ShouldReplaceHoveredInteractable(newHovered, interactable, distance, closestDistance))
                 {
-                    if (newHovered != null)
-                    {
-                        LogDebug($"    ? Replacing previous hover ({(newHovered as MonoBehaviour)?.gameObject.name}) with {mb.gameObject.name}");
-                    }
+                    if (enableDebugLogs && newHovered != null)
+                        LogDebug($"  > Hover: {mb.name} [{detectionMethod}] replaces {(newHovered as MonoBehaviour)?.name}");
                     newHovered = interactable;
                     closestDistance = distance;
-                }
-                else
-                {
-                    LogDebug($"    ? Not best option (current best: {(newHovered as MonoBehaviour)?.gameObject.name})");
                 }
             }
         }
@@ -313,19 +344,19 @@ public class InteractionDetector : MonoBehaviour
         if (newHovered == null && nearestDoor != null)
         {
             newHovered = nearestDoor;
-            LogDebug($">>> No mouse hover, but using nearest door for cursor: {(nearestDoor as MonoBehaviour)?.gameObject.name}");
         }
         
         // Update cursor if hover state changed
         if (newHovered != hoveredInteractable)
         {
-            LogDebug($">>> HOVER CHANGED: {(hoveredInteractable as MonoBehaviour)?.gameObject.name ?? "NULL"} ? {(newHovered as MonoBehaviour)?.gameObject.name ?? "NULL"}");
+            if (enableDebugLogs)
+            {
+                string oldName = (hoveredInteractable as MonoBehaviour)?.name ?? "None";
+                string newName = (newHovered as MonoBehaviour)?.name ?? "None";
+                LogDebug($"Hover: {oldName} -> {newName}");
+            }
             hoveredInteractable = newHovered;
             UpdateCursor();
-        }
-        else
-        {
-            LogDebug($">>> No hover change (still: {(hoveredInteractable as MonoBehaviour)?.gameObject.name ?? "NULL"})");
         }
     }
 
@@ -501,6 +532,115 @@ public class InteractionDetector : MonoBehaviour
         }
     }
     
+    /// <summary>Check if a new interactable should replace the currently hovered one</summary>
+    private bool ShouldReplaceHoveredInteractable(IInteractable current, IInteractable candidate, float candidateDistance, float currentDistance)
+    {
+        if (current == null) return true;
+        
+        int currentPriority = current.GetInteractionPriority();
+        int candidatePriority = candidate.GetInteractionPriority();
+        
+        // Higher priority (lower number) always wins
+        if (candidatePriority < currentPriority) return true;
+        
+        // Same priority: closer wins
+        if (candidatePriority == currentPriority && candidateDistance < currentDistance) return true;
+        
+        return false;
+    }
+    
+    /// <summary>Try to detect hover via raycast</summary>
+    private HoverDetectionResult TryRaycastDetection(Vector2 mouseWorldPos, MonoBehaviour target)
+    {
+        int hitCount = Physics2D.RaycastNonAlloc(mouseWorldPos, Vector2.zero, _raycastBuffer, 0.01f, raycastLayerMask);
+        
+        for (int i = 0; i < hitCount; i++)
+        {
+            var hit = _raycastBuffer[i];
+            if (hit.collider == null) continue;
+            
+            // Direct hit on target GameObject
+            if (hit.collider.gameObject == target.gameObject)
+            {
+                float distance = Vector2.Distance(mouseWorldPos, target.transform.position);
+                return new HoverDetectionResult(true, distance, "RAYCAST");
+            }
+            
+            // Hit on child collider
+            if (hit.collider.transform.IsChildOf(target.transform))
+            {
+                float distance = Vector2.Distance(mouseWorldPos, target.transform.position);
+                return new HoverDetectionResult(true, distance, "RAYCAST_CHILD");
+            }
+        }
+        
+        return HoverDetectionResult.None;
+    }
+    
+    /// <summary>Try to detect hover via collider overlap</summary>
+    private HoverDetectionResult TryColliderDetection(Vector2 mouseWorldPos, MonoBehaviour target)
+    {
+        Collider2D[] colliders = target.GetComponents<Collider2D>();
+        
+        // Prioritize trigger colliders (interaction zones)
+        foreach (var collider in colliders)
+        {
+            if (collider != null && collider.enabled && collider.isTrigger && collider.OverlapPoint(mouseWorldPos))
+            {
+                float distance = Vector2.Distance(mouseWorldPos, target.transform.position);
+                return new HoverDetectionResult(true, distance, "TRIGGER");
+            }
+        }
+        
+        // Fallback to solid colliders
+        foreach (var collider in colliders)
+        {
+            if (collider != null && collider.enabled && !collider.isTrigger && collider.OverlapPoint(mouseWorldPos))
+            {
+                float distance = Vector2.Distance(mouseWorldPos, target.transform.position);
+                return new HoverDetectionResult(true, distance, "COLLIDER");
+            }
+        }
+        
+        return HoverDetectionResult.None;
+    }
+    
+    /// <summary>Try to detect hover via simple radius check</summary>
+    private HoverDetectionResult TryRadiusDetection(Vector2 mouseWorldPos, MonoBehaviour target)
+    {
+        float distance = Vector2.Distance(mouseWorldPos, target.transform.position);
+        
+        if (distance <= hoverCheckRadius)
+        {
+            return new HoverDetectionResult(true, distance, "RADIUS");
+        }
+        
+        return HoverDetectionResult.None;
+    }
+    
+    /// <summary>Try to detect hover via directional pointing (Stardew Valley style)</summary>
+    private HoverDetectionResult TryDirectionalDetection(Vector2 mouseWorldPos, Vector2 playerPos, MonoBehaviour target)
+    {
+        Vector2 targetPos = target.transform.position;
+        float distanceToTarget = Vector2.Distance(playerPos, targetPos);
+        
+        // Only check if player is close enough
+        if (distanceToTarget > directionalHoverMaxDistance)
+            return HoverDetectionResult.None;
+        
+        // Check if mouse is pointing toward the target
+        Vector2 toTarget = (targetPos - playerPos).normalized;
+        Vector2 toMouse = (mouseWorldPos - playerPos).normalized;
+        float angle = Vector2.Angle(toTarget, toMouse);
+        
+        if (angle <= directionalHoverAngleTolerance)
+        {
+            return new HoverDetectionResult(true, distanceToTarget, "DIRECTIONAL");
+        }
+        
+        return HoverDetectionResult.None;
+    }
+    
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     private void LogDebug(string message)
     {
@@ -509,8 +649,57 @@ public class InteractionDetector : MonoBehaviour
     }
     
 #if UNITY_EDITOR
+    private void OnValidate()
+    {
+        // Editor-time validation to help catch setup issues
+        if (Application.isPlaying) return;
+        
+        Collider2D[] colliders = GetComponents<Collider2D>();
+        if (colliders.Length == 0)
+        {
+            Debug.LogWarning($"[InteractionDetector] {gameObject.name} needs a Collider2D (trigger) to detect nearby NPCs/items!");
+        }
+        else
+        {
+            bool hasTrigger = false;
+            foreach (var col in colliders)
+            {
+                if (col.isTrigger)
+                {
+                    hasTrigger = true;
+                    break;
+                }
+            }
+            if (!hasTrigger)
+            {
+                Debug.LogWarning($"[InteractionDetector] {gameObject.name} has colliders but none are set as TRIGGER!");
+            }
+        }
+    }
+    
     private void OnDrawGizmos()
     {
+        // Visualize the interaction trigger zone
+        Collider2D[] colliders = GetComponents<Collider2D>();
+        foreach (var col in colliders)
+        {
+            if (col != null && col.isTrigger)
+            {
+                Gizmos.color = new Color(0f, 1f, 0f, 0.3f);
+                
+                if (col is CircleCollider2D circle)
+                {
+                    Gizmos.DrawWireSphere(transform.position + (Vector3)circle.offset, circle.radius);
+                }
+                else if (col is BoxCollider2D box)
+                {
+                    Gizmos.matrix = transform.localToWorldMatrix;
+                    Gizmos.DrawWireCube(box.offset, box.size);
+                    Gizmos.matrix = Matrix4x4.identity;
+                }
+            }
+        }
+        
         // Visualize hover check radius for nearby interactables
         if (nearbyInteractables == null || !enableHoverDetection) return;
         
