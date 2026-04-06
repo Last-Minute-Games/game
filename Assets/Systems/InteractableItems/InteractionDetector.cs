@@ -118,6 +118,13 @@ public class InteractionDetector : MonoBehaviour
         // Handle E key (keyboard interaction) - can be disabled for testing
         if (enableKeyboardInteraction && Input.GetKeyDown(KeyCode.E))
         {
+            // Check if we're in dialog exit cooldown (prevents immediately re-entering dialog)
+            if (cherrydev.DialogDisplayer.IsInDialogExitCooldown)
+            {
+                LogDebug("E key ignored - dialog exit cooldown active");
+                return;
+            }
+            
             IInteractable bestInteractable = GetBestInteractable();
             LogDebug($"E key pressed! Nearby interactables: {nearbyInteractables.Count}, Best: {(bestInteractable != null ? bestInteractable.GetType().Name : "NONE")}");
             
@@ -350,6 +357,13 @@ public class InteractionDetector : MonoBehaviour
     private void HandleRightClick()
     {
         LogDebug($"Right-click detected!");
+        
+        // Check if we're in dialog exit cooldown (prevents immediately re-entering dialog)
+        if (cherrydev.DialogDisplayer.IsInDialogExitCooldown)
+        {
+            LogDebug("Right-click ignored - dialog exit cooldown active");
+            return;
+        }
         
         // Priority 1: If hovering over something with cursor, interact with that
         if (enableHoverDetection && hoveredInteractable != null)

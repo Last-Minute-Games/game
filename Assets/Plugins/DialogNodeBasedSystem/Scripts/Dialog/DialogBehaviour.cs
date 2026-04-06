@@ -159,6 +159,18 @@ namespace cherrydev
         public void Disable() => DialogDisabled?.Invoke();
 
         /// <summary>
+        /// Force end the dialog immediately (useful for manual dialog closing)
+        /// </summary>
+        public void ForceEndDialog()
+        {
+            if (_isDialogStarted)
+            {
+                EndDialog();
+                Disable();
+            }
+        }
+
+        /// <summary>
         /// Setting dialogCharDelay float parameter
         /// </summary>
         /// <param name="value"></param>
