@@ -228409,8 +228409,9 @@ MonoBehaviour:
   defaultIntro: {fileID: 8300000, guid: 25f37200fb6a1658ea9200a527d0be08, type: 3}
   defaultLoop: {fileID: 8300000, guid: 25f37200fb6a1658ea9200a527d0be08, type: 3}
   defaultVolume: 0
-  backgroundNoises: []
-  invokeBackgroundNoise: 0
+  backgroundNoises:
+  - {fileID: 8300000, guid: 30362987d550f9852a98da921ddf6e72, type: 3}
+  invokeBackgroundNoise: 1
   backgroundNoiseVolume: 0.25
 --- !u!1 &1170943150
 GameObject:
