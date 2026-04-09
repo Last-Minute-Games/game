@@ -230897,12 +230897,13 @@ MonoBehaviour:
   pulseSpeed: 2.5
   pulseScale: 1.35
   npcDotSize: 12
-  npcLabelSize: 12
+  npcLabelSize: 20
   npcLabelColor: {r: 0.9, g: 0.85, b: 0.75, a: 0.9}
   fontColor: {r: 0.9, g: 0.85, b: 0.75, a: 1}
   useDialogueLabelStyle: 1
-  dialogueLabelFontAsset: {fileID: 11400000, guid: f768914c40f8cfd4a9ccec2fcff7abff, type: 2}
-  dialogueLabelSharedMaterial: {fileID: -3194917876035781499, guid: f768914c40f8cfd4a9ccec2fcff7abff, type: 2}
+  dialogueLabelFontAsset: {fileID: 11400000, guid: 67667796e1ee0704185fa792acf0bb64, type: 2}
+  dialogueLabelSharedMaterial: {fileID: -5693713142466329080, guid: 67667796e1ee0704185fa792acf0bb64, type: 2}
+  dialogueLabelSizeMultiplier: 1.6
   fadeDuration: 0.25
   enableMapPrewarm: 1
   prewarmStartDelay: 0.2
@@ -230910,7 +230911,7 @@ MonoBehaviour:
   markerPrewarmBatchSize: 2
   runtimeMarkerCreateBudgetPerFrame: 2
   mapTitle: Castle Map
-  titleFontSize: 32
+  titleFontSize: 56
 --- !u!1 &1210836058
 GameObject:
   m_ObjectHideFlags: 0

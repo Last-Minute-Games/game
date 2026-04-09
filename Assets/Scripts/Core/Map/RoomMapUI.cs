@@ -72,7 +72,7 @@ public class RoomMapUI : MonoBehaviour
 
     [Header("NPC Indicators")]
     [SerializeField] private float npcDotSize     = 12f;
-    [SerializeField] private int   npcLabelSize   = 12;
+    [SerializeField] private int   npcLabelSize   = 18;
     [SerializeField] private Color npcLabelColor   = new Color(0.9f, 0.85f, 0.75f, 0.9f);
 
     [Header("Labels")]
@@ -102,7 +102,11 @@ public class RoomMapUI : MonoBehaviour
 
     [Header("Title")]
     [SerializeField] private string mapTitle = "Castle Map";
-    [SerializeField] private int titleFontSize = 32;
+    [SerializeField] private int titleFontSize = 56;
+    [SerializeField] private int hintFontSize = 24;
+    [SerializeField] private int legendTitleFontSize = 18;
+    [SerializeField] private int legendItemFontSize = 16;
+    [SerializeField] private float dialogueLabelSizeMultiplier = 1.6f;
 
     // ─────────────────── Runtime ───────────────────
 
@@ -585,7 +589,8 @@ public class RoomMapUI : MonoBehaviour
         titleRect.anchorMax = new Vector2(0.5f, 1f);
         titleRect.pivot     = new Vector2(0.5f, 1f);
         titleRect.anchoredPosition = new Vector2(0, 10);
-        titleRect.sizeDelta = new Vector2(500, 50);
+        float effectiveTitleSize = GetEffectiveMapFontSize(titleFontSize);
+        titleRect.sizeDelta = new Vector2(700f, Mathf.Max(60f, effectiveTitleSize + 18f));
 
         CreateMapLabel(
             titleGO,
@@ -603,14 +608,15 @@ public class RoomMapUI : MonoBehaviour
         hintRect.anchorMax = new Vector2(0.5f, 0f);
         hintRect.pivot     = new Vector2(0.5f, 0f);
         hintRect.anchoredPosition = new Vector2(0, 15);
-        hintRect.sizeDelta = new Vector2(400, 30);
+        float effectiveHintSize = GetEffectiveMapFontSize(hintFontSize);
+        hintRect.sizeDelta = new Vector2(520f, Mathf.Max(36f, effectiveHintSize + 10f));
 
         Color hintColor = new Color(fontColor.r, fontColor.g, fontColor.b, 0.5f);
 
         CreateMapLabel(
             hintGO,
             $"Press {toggleKey} to close",
-            16,
+            hintFontSize,
             hintColor,
             TextAnchor.MiddleCenter,
             TextAlignmentOptions.Center,
@@ -676,6 +682,8 @@ public class RoomMapUI : MonoBehaviour
         TextAlignmentOptions tmpAlignment,
         bool allowOverflow)
     {
+        float effectiveSize = GetEffectiveMapFontSize(size);
+
         if (useDialogueLabelStyle && dialogueLabelFontAsset != null)
         {
             var tmpText = target.AddComponent<TextMeshProUGUI>();
@@ -683,7 +691,8 @@ public class RoomMapUI : MonoBehaviour
             tmpText.font = dialogueLabelFontAsset;
             if (dialogueLabelSharedMaterial != null)
                 tmpText.fontSharedMaterial = dialogueLabelSharedMaterial;
-            tmpText.fontSize = size;
+            tmpText.enableAutoSizing = false;
+            tmpText.fontSize = effectiveSize;
             tmpText.color = color;
             tmpText.alignment = tmpAlignment;
             tmpText.enableWordWrapping = !allowOverflow;
@@ -703,6 +712,14 @@ public class RoomMapUI : MonoBehaviour
         legacyText.verticalOverflow = allowOverflow ? VerticalWrapMode.Overflow : VerticalWrapMode.Truncate;
         legacyText.raycastTarget = false;
         return legacyText;
+    }
+
+    private float GetEffectiveMapFontSize(float size)
+    {
+        if (useDialogueLabelStyle && dialogueLabelFontAsset != null)
+            return size * dialogueLabelSizeMultiplier;
+
+        return size;
     }
 
     // ─────────────────── Real-Time Player Tracking ───────────────────
@@ -925,11 +942,12 @@ public class RoomMapUI : MonoBehaviour
     {
         float size = isPlayer ? Mathf.Max(playerDotSize, portraitMarkerSize) : portraitMarkerSize;
         float framedSize = size * frameScale;
+        float effectiveMarkerLabelSize = GetEffectiveMapFontSize(npcLabelSize);
 
         // Root container — anchored at 0,0; repositioned each frame via anchors
         var rootGO = MakeUIObject(objectName, parent);
         var rootRT = rootGO.GetComponent<RectTransform>();
-        rootRT.sizeDelta = new Vector2(framedSize, framedSize + 4f + npcLabelSize);
+        rootRT.sizeDelta = new Vector2(framedSize, framedSize + 4f + effectiveMarkerLabelSize);
         rootRT.pivot = new Vector2(0.5f, 0.5f);
 
         bool hasPortrait = portrait != null;
@@ -998,7 +1016,7 @@ public class RoomMapUI : MonoBehaviour
         var labelRT = labelGO.GetComponent<RectTransform>();
         labelRT.anchorMin = labelRT.anchorMax = new Vector2(0.5f, 1f);
         labelRT.pivot = new Vector2(0.5f, 1f);
-        labelRT.sizeDelta = new Vector2(120, npcLabelSize + 4);
+        labelRT.sizeDelta = new Vector2(160, effectiveMarkerLabelSize + 6f);
         labelRT.anchoredPosition = new Vector2(0f, -(framedSize + 2f));
 
         CreateMapLabel(
@@ -1052,12 +1070,13 @@ public class RoomMapUI : MonoBehaviour
         // Legend title
         var titleGO = MakeUIObject("LegendTitle", _characterLegendPanel);
         var titleRT = titleGO.GetComponent<RectTransform>();
-        titleRT.sizeDelta = new Vector2(160, 20);
+        float effectiveLegendTitleSize = GetEffectiveMapFontSize(legendTitleFontSize);
+        titleRT.sizeDelta = new Vector2(260f, Mathf.Max(24f, effectiveLegendTitleSize + 8f));
 
         CreateMapLabel(
             titleGO,
             "— Characters —",
-            13,
+            legendTitleFontSize,
             new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f),
             TextAnchor.MiddleCenter,
             TextAlignmentOptions.Center,
@@ -1099,12 +1118,13 @@ public class RoomMapUI : MonoBehaviour
         // Minigames section title (shown only when at least one discovered minigame is visible)
         _minigameLegendTitle = MakeUIObject("MinigameLegendTitle", _minigameLegendPanel).gameObject;
         var minigameTitleRT = _minigameLegendTitle.GetComponent<RectTransform>();
-        minigameTitleRT.sizeDelta = new Vector2(160, 20);
+        float effectiveMinigameTitleSize = GetEffectiveMapFontSize(legendTitleFontSize);
+        minigameTitleRT.sizeDelta = new Vector2(260f, Mathf.Max(24f, effectiveMinigameTitleSize + 8f));
 
         CreateMapLabel(
             _minigameLegendTitle,
             "— Minigames —",
-            13,
+            legendTitleFontSize,
             new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f),
             TextAnchor.MiddleCenter,
             TextAlignmentOptions.Center,
@@ -1153,7 +1173,9 @@ public class RoomMapUI : MonoBehaviour
     {
         var rowGO = MakeUIObject("Legend_" + label, parent);
         var rowRT = rowGO.GetComponent<RectTransform>();
-        rowRT.sizeDelta = new Vector2(180, 22);
+        float effectiveLegendItemSize = GetEffectiveMapFontSize(legendItemFontSize);
+        float legendRowHeight = Mathf.Max(22f, effectiveLegendItemSize + 8f);
+        rowRT.sizeDelta = new Vector2(180, legendRowHeight);
 
         var rowLayout = rowGO.AddComponent<HorizontalLayoutGroup>();
         rowLayout.spacing = 6;
@@ -1227,14 +1249,14 @@ public class RoomMapUI : MonoBehaviour
         CreateMapLabel(
             nameGO,
             label,
-            12,
+            legendItemFontSize,
             npcLabelColor,
             TextAnchor.MiddleLeft,
             TextAlignmentOptions.MidlineLeft,
             allowOverflow: true);
         var nameLE = nameGO.AddComponent<LayoutElement>();
         nameLE.preferredWidth = 140;
-        nameLE.preferredHeight = 22;
+        nameLE.preferredHeight = legendRowHeight;
 
         return rowGO;
     }
