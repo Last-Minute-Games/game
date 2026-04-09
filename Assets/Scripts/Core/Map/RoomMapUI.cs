@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -77,6 +78,16 @@ public class RoomMapUI : MonoBehaviour
     [Header("Labels")]
     [SerializeField] private Color fontColor = new Color(0.9f, 0.85f, 0.75f, 1f);
 
+    [Header("Dialogue-Match Label Style")]
+    [Tooltip("Enable TMP labels so map title/hint can match dialogue typography. Enable on Overworld only.")]
+    [SerializeField] private bool useDialogueLabelStyle = false;
+
+    [Tooltip("TMP font asset used by dialogue text (for example Foglihten-068 SDF).")]
+    [SerializeField] private TMP_FontAsset dialogueLabelFontAsset;
+
+    [Tooltip("Optional shared material from dialogue text for a closer visual match.")]
+    [SerializeField] private Material dialogueLabelSharedMaterial;
+
     [Header("Fade Animation")]
     [Tooltip("How long the map takes to fade in/out (seconds).")]
     [SerializeField] private float fadeDuration = 0.25f;
@@ -107,13 +118,13 @@ public class RoomMapUI : MonoBehaviour
 
     // NPC tracking
     private readonly Dictionary<NPCMapTracker, RectTransform> _npcDots   = new();
-    private readonly Dictionary<NPCMapTracker, Text>          _npcLabels = new();
+    private readonly Dictionary<NPCMapTracker, Graphic>       _npcLabels = new();
     private RectTransform _characterLegendPanel;
     private readonly Dictionary<NPCMapTracker, GameObject> _legendEntries = new();
 
     // Minigame tracking
     private readonly Dictionary<MinigameMapTracker, RectTransform> _minigameDots = new();
-    private readonly Dictionary<MinigameMapTracker, Text> _minigameLabels = new();
+    private readonly Dictionary<MinigameMapTracker, Graphic> _minigameLabels = new();
     private RectTransform _minigameLegendPanel;
     private readonly Dictionary<MinigameMapTracker, GameObject> _minigameLegendEntries = new();
     private GameObject _minigameLegendTitle;
@@ -576,13 +587,14 @@ public class RoomMapUI : MonoBehaviour
         titleRect.anchoredPosition = new Vector2(0, 10);
         titleRect.sizeDelta = new Vector2(500, 50);
 
-        var titleText = titleGO.AddComponent<Text>();
-        titleText.text = mapTitle;
-        titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        titleText.fontSize = titleFontSize;
-        titleText.color = fontColor;
-        titleText.alignment = TextAnchor.MiddleCenter;
-        titleText.raycastTarget = false;
+        CreateMapLabel(
+            titleGO,
+            mapTitle,
+            titleFontSize,
+            fontColor,
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
 
         // ── Hint (below the journal) ──
         var hintGO = MakeUIObject("MapHint", _root.transform);
@@ -593,13 +605,16 @@ public class RoomMapUI : MonoBehaviour
         hintRect.anchoredPosition = new Vector2(0, 15);
         hintRect.sizeDelta = new Vector2(400, 30);
 
-        var hintText = hintGO.AddComponent<Text>();
-        hintText.text = $"Press {toggleKey} to close";
-        hintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        hintText.fontSize = 16;
-        hintText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.5f);
-        hintText.alignment = TextAnchor.MiddleCenter;
-        hintText.raycastTarget = false;
+        Color hintColor = new Color(fontColor.r, fontColor.g, fontColor.b, 0.5f);
+
+        CreateMapLabel(
+            hintGO,
+            $"Press {toggleKey} to close",
+            16,
+            hintColor,
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
 
         // ── Map area (padded region inside the journal pages) ──
         var mapGO = MakeUIObject("MapArea", mapContentParent);
@@ -650,6 +665,44 @@ public class RoomMapUI : MonoBehaviour
         // ── Split legend panels in journal whitespace ──
         BuildCharacterLegendPanel();
         BuildMinigameLegendPanel();
+    }
+
+    private Graphic CreateMapLabel(
+        GameObject target,
+        string text,
+        float size,
+        Color color,
+        TextAnchor legacyAlignment,
+        TextAlignmentOptions tmpAlignment,
+        bool allowOverflow)
+    {
+        if (useDialogueLabelStyle && dialogueLabelFontAsset != null)
+        {
+            var tmpText = target.AddComponent<TextMeshProUGUI>();
+            tmpText.text = text;
+            tmpText.font = dialogueLabelFontAsset;
+            if (dialogueLabelSharedMaterial != null)
+                tmpText.fontSharedMaterial = dialogueLabelSharedMaterial;
+            tmpText.fontSize = size;
+            tmpText.color = color;
+            tmpText.alignment = tmpAlignment;
+            tmpText.enableWordWrapping = !allowOverflow;
+            tmpText.overflowMode = allowOverflow ? TextOverflowModes.Overflow : TextOverflowModes.Truncate;
+            tmpText.richText = true;
+            tmpText.raycastTarget = false;
+            return tmpText;
+        }
+
+        var legacyText = target.AddComponent<Text>();
+        legacyText.text = text;
+        legacyText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        legacyText.fontSize = Mathf.RoundToInt(size);
+        legacyText.color = color;
+        legacyText.alignment = legacyAlignment;
+        legacyText.horizontalOverflow = allowOverflow ? HorizontalWrapMode.Overflow : HorizontalWrapMode.Wrap;
+        legacyText.verticalOverflow = allowOverflow ? VerticalWrapMode.Overflow : VerticalWrapMode.Truncate;
+        legacyText.raycastTarget = false;
+        return legacyText;
     }
 
     // ─────────────────── Real-Time Player Tracking ───────────────────
@@ -757,7 +810,7 @@ public class RoomMapUI : MonoBehaviour
         var labelTransform = markerRT.Find("Label_" + tracker.DisplayName);
         if (labelTransform != null)
         {
-            var label = labelTransform.GetComponent<Text>();
+            var label = labelTransform.GetComponent<Graphic>();
             _npcLabels[tracker] = label;
         }
 
@@ -848,7 +901,7 @@ public class RoomMapUI : MonoBehaviour
         var labelTransform = markerRT.Find("Label_" + tracker.DisplayName);
         if (labelTransform != null)
         {
-            var label = labelTransform.GetComponent<Text>();
+            var label = labelTransform.GetComponent<Graphic>();
             _minigameLabels[tracker] = label;
         }
 
@@ -948,15 +1001,14 @@ public class RoomMapUI : MonoBehaviour
         labelRT.sizeDelta = new Vector2(120, npcLabelSize + 4);
         labelRT.anchoredPosition = new Vector2(0f, -(framedSize + 2f));
 
-        var labelText = labelGO.AddComponent<Text>();
-        labelText.text = label;
-        labelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        labelText.fontSize = npcLabelSize;
-        labelText.color = npcLabelColor;
-        labelText.alignment = TextAnchor.MiddleCenter;
-        labelText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        labelText.verticalOverflow = VerticalWrapMode.Overflow;
-        labelText.raycastTarget = false;
+        CreateMapLabel(
+            labelGO,
+            label,
+            npcLabelSize,
+            npcLabelColor,
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
 
         // Shadow for readability
         var shadow = labelGO.AddComponent<Shadow>();
@@ -1002,13 +1054,14 @@ public class RoomMapUI : MonoBehaviour
         var titleRT = titleGO.GetComponent<RectTransform>();
         titleRT.sizeDelta = new Vector2(160, 20);
 
-        var titleText = titleGO.AddComponent<Text>();
-        titleText.text = "— Characters —";
-        titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        titleText.fontSize = 13;
-        titleText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f);
-        titleText.alignment = TextAnchor.MiddleCenter;
-        titleText.raycastTarget = false;
+        CreateMapLabel(
+            titleGO,
+            "— Characters —",
+            13,
+            new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f),
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
 
         // Player entry (always visible)
         CreateLegendRow(_characterLegendPanel, "You", playerDotColor, true, playerPortrait);
@@ -1048,13 +1101,14 @@ public class RoomMapUI : MonoBehaviour
         var minigameTitleRT = _minigameLegendTitle.GetComponent<RectTransform>();
         minigameTitleRT.sizeDelta = new Vector2(160, 20);
 
-        var minigameTitleText = _minigameLegendTitle.AddComponent<Text>();
-        minigameTitleText.text = "— Minigames —";
-        minigameTitleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        minigameTitleText.fontSize = 13;
-        minigameTitleText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f);
-        minigameTitleText.alignment = TextAnchor.MiddleCenter;
-        minigameTitleText.raycastTarget = false;
+        CreateMapLabel(
+            _minigameLegendTitle,
+            "— Minigames —",
+            13,
+            new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f),
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
         _minigameLegendTitle.SetActive(false);
     }
 
@@ -1170,13 +1224,14 @@ public class RoomMapUI : MonoBehaviour
 
         // Name label
         var nameGO = MakeUIObject("Name", rowGO.transform);
-        var nameText = nameGO.AddComponent<Text>();
-        nameText.text = label;
-        nameText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        nameText.fontSize = 12;
-        nameText.color = npcLabelColor;
-        nameText.alignment = TextAnchor.MiddleLeft;
-        nameText.raycastTarget = false;
+        CreateMapLabel(
+            nameGO,
+            label,
+            12,
+            npcLabelColor,
+            TextAnchor.MiddleLeft,
+            TextAlignmentOptions.MidlineLeft,
+            allowOverflow: true);
         var nameLE = nameGO.AddComponent<LayoutElement>();
         nameLE.preferredWidth = 140;
         nameLE.preferredHeight = 22;
