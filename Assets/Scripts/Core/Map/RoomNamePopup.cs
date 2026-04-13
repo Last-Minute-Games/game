@@ -16,14 +16,21 @@ public class RoomNamePopup : MonoBehaviour
 
     [Header("Appearance")]
     [SerializeField] private Sprite journalSprite;
-    [SerializeField] private float popupWidth = 500f;
-    [SerializeField] private float popupHeight = 150f;
+    [SerializeField] private float popupWidth = 680f;
+    [SerializeField] private float popupHeight = 240f;
     [SerializeField] private float topOffset = 50f;
 
     [Header("Text Settings")]
-    [SerializeField] private float maxFontSize = 42f;
-    [SerializeField] private float minFontSize = 28f;
+    [SerializeField] private float maxFontSize = 52f;
+    [SerializeField] private float minFontSize = 24f;
+    [SerializeField] private float textHorizontalPadding = 115f;
+    [SerializeField] private float textVerticalPadding = 70f;
+    [SerializeField] private float textVerticalOffset = 28f;
     [SerializeField] private Color textColor = new Color(0.2f, 0.15f, 0.1f, 1f);
+
+    [Header("Journal Font")]
+    [SerializeField] private KeyCode journalToggleKey = KeyCode.Q;
+    [SerializeField] private TMP_FontAsset journalFontOverride;
 
     [Header("Animation")]
     [SerializeField] private float fadeInTime = 0.5f;
@@ -40,6 +47,7 @@ public class RoomNamePopup : MonoBehaviour
     private CanvasGroup fadeCanvasGroup;
     private ScreenFader screenFader;
     private Coroutine animationCoroutine;
+    private RoomMapUI cachedRoomMapUI;
 
     void Awake()
     {
@@ -52,12 +60,18 @@ public class RoomNamePopup : MonoBehaviour
     {
         // Check if already in a room
         StartCoroutine(DelayedInitialCheck());
+        ApplyJournalFont();
     }
 
     void Update()
     {
         ForceHidePopupIfTransitionActive();
         TryShowPendingRoomIfVisible();
+
+        if (Input.GetKeyDown(journalToggleKey))
+        {
+            ApplyJournalFont();
+        }
     }
 
     void OnDestroy()
@@ -138,15 +152,17 @@ public class RoomNamePopup : MonoBehaviour
         RectTransform textRect = textObj.AddComponent<RectTransform>();
         textRect.anchorMin = Vector2.zero;
         textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = new Vector2(50f, 40f);
-        textRect.offsetMax = new Vector2(-50f, -40f);
+        float effectiveVerticalOffset = Mathf.Max(textVerticalOffset, 28f);
+        textRect.offsetMin = new Vector2(textHorizontalPadding, textVerticalPadding + effectiveVerticalOffset);
+        textRect.offsetMax = new Vector2(-textHorizontalPadding, -textVerticalPadding + effectiveVerticalOffset);
 
         textComponent = textObj.AddComponent<TextMeshProUGUI>();
         textComponent.text = "";
         textComponent.alignment = TextAlignmentOptions.Center;
         textComponent.enableAutoSizing = true;
-        textComponent.fontSizeMin = minFontSize;
-        textComponent.fontSizeMax = maxFontSize;
+        textComponent.enableWordWrapping = false;
+        textComponent.fontSizeMin = Mathf.Max(minFontSize * 3f, 24f);
+        textComponent.fontSizeMax = Mathf.Max(maxFontSize * 3f, 52f);
         textComponent.color = textColor;
         textComponent.fontStyle = FontStyles.Bold;
     }
@@ -253,6 +269,39 @@ public class RoomNamePopup : MonoBehaviour
         }
     }
 
+    private void ApplyJournalFont()
+    {
+        if (textComponent == null) return;
+
+        TMP_FontAsset fontToApply = ResolveJournalFont();
+        if (fontToApply == null || textComponent.font == fontToApply)
+        {
+            return;
+        }
+
+        textComponent.font = fontToApply;
+    }
+
+    private TMP_FontAsset ResolveJournalFont()
+    {
+        if (journalFontOverride != null)
+        {
+            return journalFontOverride;
+        }
+
+        if (cachedRoomMapUI == null)
+        {
+            cachedRoomMapUI = FindFirstObjectByType<RoomMapUI>();
+        }
+
+        if (cachedRoomMapUI != null)
+        {
+            return cachedRoomMapUI.DialogueLabelFontAsset;
+        }
+
+        return null;
+    }
+
     private void ShowRoomById(string roomId)
     {
         if (IsVisualTransitionActive())
@@ -295,6 +344,8 @@ public class RoomNamePopup : MonoBehaviour
         {
             StopCoroutine(animationCoroutine);
         }
+
+        ApplyJournalFont();
         animationCoroutine = StartCoroutine(AnimatePopup(roomName));
     }
 

@@ -88,6 +88,8 @@ public class RoomMapUI : MonoBehaviour
     [Tooltip("Optional shared material from dialogue text for a closer visual match.")]
     [SerializeField] private Material dialogueLabelSharedMaterial;
 
+    public TMP_FontAsset DialogueLabelFontAsset => dialogueLabelFontAsset;
+
     [Header("Fade Animation")]
     [Tooltip("How long the map takes to fade in/out (seconds).")]
     [SerializeField] private float fadeDuration = 0.25f;
