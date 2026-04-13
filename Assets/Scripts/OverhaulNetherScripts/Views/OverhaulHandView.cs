@@ -4,15 +4,15 @@ using UnityEngine.Splines;
 using UnityEngine;
 using DG.Tweening;
 
-public class HandView : MonoBehaviour
+public class OverhaulHandView : MonoBehaviour
 {
   [SerializeField] private SplineContainer splineContainer;
 
   [SerializeField] private readonly float maxHandSize = 10f;
 
-  private readonly List<CardView> cards = new();
+  private readonly List<OverhaulCardView> cards = new();
 
-  public IEnumerator AddCard(CardView cardView)
+  public IEnumerator AddCard(OverhaulCardView cardView)
   {
     cards.Add(cardView);
     yield return UpdateCardPositions(0.15f);
