@@ -23,6 +23,9 @@ public class CoinFlipPopupController : MonoBehaviour
         if (gameManager == null)
             gameManager = FindObjectOfType<GameManager>();
 
+        if (gameManager != null)
+            gameManager.OnMatchOver += OnMatchOverClose;
+
         if (quitButton != null)
             quitButton.onClick.AddListener(OnQuitClicked);
 
@@ -41,18 +44,18 @@ public class CoinFlipPopupController : MonoBehaviour
             // GameFlags.SetFlag("minigame.coinflip.finish");
             GameFlags.SetFlag("minigame.coinflip.finish");
 
-            Debug.Log("[CoinFlip] Match completed – hiding entrance flag.");
+            Debug.Log("[CoinFlip] Match completed ? hiding entrance flag.");
 
             if (gameManager.PlayerWonMatch)
             {
                 GameFlags.SetFlag("minigame.coinflip.win");
-                Debug.Log("[CoinFlip] Player won the match – setting win flag.");
+                Debug.Log("[CoinFlip] Player won the match ? setting win flag.");
             }
 
             else if (gameManager.AiWonMatch)
             {
                 GameFlags.SetFlag("minigame.coinflip.lose");
-                Debug.Log("[CoinFlip] Player lost the match – setting lose flag.");
+                Debug.Log("[CoinFlip] Player lost the match ? setting lose flag.");
             }
 
             if (coinFlipShowFlags != null)
@@ -66,7 +69,7 @@ public class CoinFlipPopupController : MonoBehaviour
         }
         else
         {
-            Debug.Log("[CoinFlip] Closed before finishing match – leaving entrance so player can retry later.");
+            Debug.Log("[CoinFlip] Closed before finishing match ? leaving entrance so player can retry later.");
         }
 
         // Now actually close the popup
@@ -74,5 +77,29 @@ public class CoinFlipPopupController : MonoBehaviour
             launcher.CloseCoinFlipPopup();
         else
             gameObject.SetActive(false); // fallback: just hide it
+    }
+
+    void OnMatchOverClose()
+    {
+        bool finishedMatch = (gameManager != null && gameManager.HasCompletedMatch);
+        if (finishedMatch)
+        {
+            GameFlags.SetFlag("minigame.coinflip.finish");
+            if (gameManager.PlayerWonMatch)
+                GameFlags.SetFlag("minigame.coinflip.win");
+            else if (gameManager.AiWonMatch)
+                GameFlags.SetFlag("minigame.coinflip.lose");
+            if (coinFlipShowFlags != null)
+            {
+                foreach (var obj in coinFlipShowFlags)
+                    if (obj != null) obj.SetActive(false);
+            }
+        }
+        if (launcher != null)
+        {
+            if (!launcher.gameObject.activeInHierarchy)
+                launcher.gameObject.SetActive(true);
+            launcher.CloseCoinFlipPopup();
+        }
     }
 }

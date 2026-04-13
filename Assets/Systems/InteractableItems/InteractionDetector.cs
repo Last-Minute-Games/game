@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 
 public class InteractionDetector : MonoBehaviour
 {
@@ -11,6 +12,12 @@ public class InteractionDetector : MonoBehaviour
     
     [Header("Popup Settings")]
     public GameObject popupImage; // Assign your PNG UI or world-space sprite
+    [Tooltip("Optional text component used to display context-sensitive prompts (e.g. E to interact / E to play)")]
+    public TMP_Text popupPromptText;
+    [Tooltip("Prompt shown for regular interactions (NPCs, items, doors)")]
+    public string interactPromptText = "E to interact";
+    [Tooltip("Prompt shown for minigame interactions")]
+    public string playPromptText = "E to play";
 
     [Header("Cursor Settings")]
     [Tooltip("Cursor to show when hovering over interactable items/NPCs")]
@@ -51,6 +58,13 @@ public class InteractionDetector : MonoBehaviour
     {
         if (popupImage != null)
             popupImage.SetActive(false);
+
+        // Auto-wire or create prompt text so legacy scenes with icon-only popup still work.
+        EnsurePromptText();
+        if (popupPromptText != null)
+        {
+            popupPromptText.text = string.Empty;
+        }
             
         // Performance: Cache Camera.main
         _mainCamera = Camera.main;
@@ -95,15 +109,10 @@ public class InteractionDetector : MonoBehaviour
 
     private void Update()
     {
-        // Performance: Only update hover when mouse actually moves
+        // Update hover state every frame to ensure it handles camera/player movement
         if (enableHoverDetection)
         {
-            Vector3 currentMousePos = Input.mousePosition;
-            if ((currentMousePos - _lastMousePosition).sqrMagnitude > 0.01f)
-            {
-                UpdateMouseHover();
-                _lastMousePosition = currentMousePos;
-            }
+            UpdateMouseHover();
         }
 
         // Handle E key (keyboard interaction) - can be disabled for testing
@@ -134,6 +143,9 @@ public class InteractionDetector : MonoBehaviour
         {
             HandleRightClick();
         }
+
+        // Keep prompt visibility/text in sync with changing interaction validity.
+        UpdatePopupVisibility();
     }
 
     private void UpdateMouseHover()
@@ -152,6 +164,8 @@ public class InteractionDetector : MonoBehaviour
         
         IInteractable newHovered = null;
         float closestDistance = float.MaxValue;
+        IInteractable nearestDoor = null; // Track nearest door for cursor purposes
+        float nearestDoorDistance = float.MaxValue;
         
         // Check all nearby interactables
         foreach (var interactable in nearbyInteractables)
@@ -165,8 +179,21 @@ public class InteractionDetector : MonoBehaviour
             if (mb == null) continue;
             
             bool showsPrompt = interactable.ShowInteractionPrompt();
+            bool isDoor = IsDoorInteractable(interactable);
             
-            LogDebug($"  Checking: {mb.gameObject.name} at {mb.transform.position} (ShowsPrompt: {showsPrompt})");
+            LogDebug($"  Checking: {mb.gameObject.name} at {mb.transform.position} (ShowsPrompt: {showsPrompt}, IsDoor: {isDoor})");
+            
+            // For doors: track the nearest one for cursor changes (no hover required)
+            if (isDoor)
+            {
+                float doorDistance = Vector2.Distance(playerPos, mb.transform.position);
+                if (doorDistance < nearestDoorDistance)
+                {
+                    nearestDoor = interactable;
+                    nearestDoorDistance = doorDistance;
+                    LogDebug($"    Door found - distance: {doorDistance:F2} (tracking as nearest door)");
+                }
+            }
             
             bool isMouseOver = false;
             float distance = float.MaxValue;
@@ -201,7 +228,8 @@ public class InteractionDetector : MonoBehaviour
             }
             
             // Method 3: Stardew Valley style - Directional hover (if enabled and player is close)
-            if (!isMouseOver && enableDirectionalHover)
+            // BUT skip directional hover for doors/teleporters - they only need collider/radius detection
+            if (!isMouseOver && enableDirectionalHover && !isDoor)
             {
                 Vector2 objectPos = mb.transform.position;
                 float distanceToObject = Vector2.Distance(playerPos, objectPos);
@@ -220,7 +248,7 @@ public class InteractionDetector : MonoBehaviour
                     // Calculate angle between the two directions
                     float angle = Vector2.Angle(toObject, toMouse);
                     
-                    LogDebug($"    Method 3 (Directional): Angle: {angle:F1}°, Tolerance: {directionalHoverAngleTolerance:F1}°");
+                    LogDebug($"    Method 3 (Directional): Angle: {angle:F1}ï¿½, Tolerance: {directionalHoverAngleTolerance:F1}ï¿½");
                     LogDebug($"      Player->Object vector: {toObject}, Player->Mouse vector: {toMouse}");
                     
                     // If mouse is pointing roughly in the direction of the object, count as hovering
@@ -229,17 +257,21 @@ public class InteractionDetector : MonoBehaviour
                         isMouseOver = true;
                         distance = distanceToObject;
                         detectionMethod = "DIRECTIONAL";
-                        LogDebug($"    ? Method 3 (Directional): HIT! Angle {angle:F1}° within tolerance");
+                        LogDebug($"    ? Method 3 (Directional): HIT! Angle {angle:F1}ï¿½ within tolerance");
                     }
                     else
                     {
-                        LogDebug($"    ? Method 3 (Directional): Angle too wide ({angle:F1}° > {directionalHoverAngleTolerance:F1}°)");
+                        LogDebug($"    ? Method 3 (Directional): Angle too wide ({angle:F1}ï¿½ > {directionalHoverAngleTolerance:F1}ï¿½)");
                     }
                 }
                 else
                 {
                     LogDebug($"    ? Method 3 (Directional): Too far ({distanceToObject:F2} > {directionalHoverMaxDistance:F2})");
                 }
+            }
+            else if (!isMouseOver && isDoor)
+            {
+                LogDebug($"    ? Method 3 (Directional): Skipped for door/teleporter (doors don't need directional hover)");
             }
             else if (!isMouseOver)
             {
@@ -270,6 +302,13 @@ public class InteractionDetector : MonoBehaviour
             }
         }
         
+        // If no hover detected but there's a nearby door, use the door for cursor
+        if (newHovered == null && nearestDoor != null)
+        {
+            newHovered = nearestDoor;
+            LogDebug($">>> No mouse hover, but using nearest door for cursor: {(nearestDoor as MonoBehaviour)?.gameObject.name}");
+        }
+        
         // Update cursor if hover state changed
         if (newHovered != hoveredInteractable)
         {
@@ -290,7 +329,7 @@ public class InteractionDetector : MonoBehaviour
         {
             if (interactCursor != null)
             {
-                Cursor.SetCursor(interactCursor, interactCursorHotspot, CursorMode.Auto);
+                Cursor.SetCursor(interactCursor, interactCursorHotspot, CursorMode.ForceSoftware);
                 LogDebug($"Cursor changed - hovering over: {(hoveredInteractable as MonoBehaviour)?.gameObject.name}");
             }
         }
@@ -299,11 +338,11 @@ public class InteractionDetector : MonoBehaviour
             // Reset to default cursor
             if (defaultCursor != null)
             {
-                Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.Auto);
+                Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
             }
             else
             {
-                Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+                Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
             }
         }
     }
@@ -327,13 +366,16 @@ public class InteractionDetector : MonoBehaviour
         }
         
         // Priority 2: Fallback - interact with best interactable in range
-        // (Only works if directional hover is disabled)
+        // For doors/teleporters: works if player is in range (no directional hover required)
+        // For NPCs/items: only works if directional hover is disabled
         IInteractable bestInteractable = GetBestInteractable();
         
         if (bestInteractable != null)
         {
-            // If directional hover is enabled, must be hovering first
-            if (enableDirectionalHover)
+            bool isDoor = IsDoorInteractable(bestInteractable);
+            
+            // If directional hover is enabled and this is NOT a door, must be hovering first
+            if (enableDirectionalHover && !isDoor)
             {
                 LogDebug($"Right-click blocked - directional hover enabled, must hover over {bestInteractable.GetType().Name} first");
                 return;
@@ -345,7 +387,7 @@ public class InteractionDetector : MonoBehaviour
                 return;
             }
             
-            LogDebug($"Right-click interacting with: {bestInteractable.GetType().Name}");
+            LogDebug($"Right-click interacting with: {bestInteractable.GetType().Name} (isDoor: {isDoor})");
             bestInteractable.Interact();
             return;
         }
@@ -376,17 +418,72 @@ public class InteractionDetector : MonoBehaviour
         
         bool shouldShow = bestInteractable != null && bestInteractable.ShowInteractionPrompt();
         popupImage.SetActive(shouldShow);
+
+        if (popupPromptText != null)
+        {
+            popupPromptText.text = shouldShow && bestInteractable != null
+                ? GetPromptText(bestInteractable)
+                : string.Empty;
+        }
+    }
+
+    private bool IsDoorInteractable(IInteractable interactable)
+    {
+        return interactable is Systems.TeleportSystem;
+    }
+
+    private void EnsurePromptText()
+    {
+        if (popupPromptText != null || popupImage == null)
+            return;
+
+        popupPromptText = popupImage.GetComponentInChildren<TMP_Text>(true);
+        if (popupPromptText != null)
+            return;
+
+        TextMeshPro generatedPrompt = popupImage.AddComponent<TextMeshPro>();
+        if (generatedPrompt == null)
+            return;
+
+        generatedPrompt.fontSize = 2.5f;
+        generatedPrompt.color = Color.white;
+        generatedPrompt.alignment = TextAlignmentOptions.Left;
+        generatedPrompt.enableWordWrapping = false;
+        generatedPrompt.text = string.Empty;
+        generatedPrompt.transform.localPosition += new Vector3(0.8f, 0f, 0f);
+
+        SpriteRenderer iconRenderer = popupImage.GetComponent<SpriteRenderer>();
+        Renderer textRenderer = generatedPrompt.GetComponent<Renderer>();
+        if (iconRenderer != null && textRenderer != null)
+        {
+            textRenderer.sortingLayerID = iconRenderer.sortingLayerID;
+            textRenderer.sortingOrder = iconRenderer.sortingOrder + 1;
+        }
+
+        popupPromptText = generatedPrompt;
+    }
+
+    private string GetPromptText(IInteractable interactable)
+    {
+        return IsMinigameInteractable(interactable) ? playPromptText : interactPromptText;
+    }
+
+    private bool IsMinigameInteractable(IInteractable interactable)
+    {
+        return interactable is MinigameActivator
+            || interactable is OverworldCoinGameLauncher
+            || interactable is OverworldRiddleItem;
     }
 
     private void OnDisable()
     {
         if (defaultCursor != null)
         {
-            Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.Auto);
+            Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
         }
         else
         {
-            Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
         }
     }
     
@@ -411,6 +508,7 @@ public class InteractionDetector : MonoBehaviour
             if (mb == null) continue;
             
             bool showsPrompt = interactable.ShowInteractionPrompt();
+            bool isDoor = IsDoorInteractable(interactable);
             
             // Draw yellow circle for radius check
             Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
@@ -427,13 +525,13 @@ public class InteractionDetector : MonoBehaviour
             if (enableDirectionalHover)
             {
                 // Different color for doors vs items/NPCs
-                Gizmos.color = showsPrompt ? new Color(0f, 0.5f, 1f, 0.2f) : new Color(1f, 0.5f, 0f, 0.2f);
+                Gizmos.color = isDoor ? new Color(1f, 0.5f, 0f, 0.2f) : new Color(0f, 0.5f, 1f, 0.2f);
                 Gizmos.DrawWireSphere(mb.transform.position, directionalHoverMaxDistance);
             }
         }
         
         // Draw debug line showing mouse direction in editor (when hovering)
-        if (enableDirectionalHover && _mainCamera != null && Application.isPlaying)
+        if (enableDirectionalHover && enableDebugLogs && _mainCamera != null && Application.isPlaying)
         {
             Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector2 playerPos = transform.position;

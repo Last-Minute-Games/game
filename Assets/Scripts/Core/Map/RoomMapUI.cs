@@ -1,12 +1,13 @@
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// Full-screen room-map overlay for the Overworld scene.
 /// Press M (configurable) to toggle the map on/off.
-/// Shows every room as a labelled rectangle with connection lines,
-/// highlights the room the player is currently in, and displays
+/// Displays a castle blueprint image (ColorizedMap.png) with
 /// real-time Wizard101-style portrait markers for the player and discovered NPCs.
 ///
 /// Setup:
@@ -14,9 +15,10 @@ using UnityEngine.UI;
 ///      and fill in the rooms, positions, sizes, connections, and world bounds.
 ///   2. Add this script to a GameObject in the Overworld scene.
 ///   3. Assign the RoomMapData asset.
-///   4. Assign the portraitFrame sprite from Assets/UIs/portraitFrame.png.
-///   5. Attach NPCMapTracker to every named NPC in the scene.
-///   6. Play — press M to open/close the map.
+///   4. Assign ColorizedMap.png from Assets/Sprites/gfx/gfx/ColorizedMap.png.
+///   5. Assign the portraitFrame sprite from Assets/UIs/portraitFrame.png.
+///   6. Attach NPCMapTracker to every named NPC in the scene.
+///   7. Play — press M to open/close the map.
 /// </summary>
 public class RoomMapUI : MonoBehaviour
 {
@@ -34,20 +36,14 @@ public class RoomMapUI : MonoBehaviour
              "Assign JournalOverworld-Sheet_5 from Assets/Sprites/UI/journal/JournalOverworld-Sheet.png.")]
     [SerializeField] private Sprite journalSprite;
 
+    [Header("Castle Blueprint Map")]
+    [Tooltip("The castle blueprint image displayed as the map. " +
+             "Assign ColorizedMap.png from Assets/Sprites/gfx/gfx/ColorizedMap.png.")]
+    [SerializeField] private Sprite castleMapSprite;
+
     [Header("Overlay Appearance")]
     [Tooltip("Background colour of the overlay (behind the journal).")]
     [SerializeField] private Color overlayColor = new Color(0.04f, 0.03f, 0.06f, 0.92f);
-
-    [Header("Room Appearance")]
-    [SerializeField] private Color roomColor        = new Color(0.18f, 0.16f, 0.24f, 1f);
-    [SerializeField] private Color roomBorderColor   = new Color(0.55f, 0.48f, 0.38f, 1f);
-    [SerializeField] private Color currentRoomColor  = new Color(0.35f, 0.22f, 0.12f, 1f);
-    [SerializeField] private Color currentBorderColor = new Color(1f, 0.82f, 0.45f, 1f);
-    [SerializeField] private float borderWidth = 3f;
-
-    [Header("Connection Lines")]
-    [SerializeField] private Color lineColor = new Color(0.55f, 0.48f, 0.38f, 0.6f);
-    [SerializeField] private float lineWidth = 3f;
 
     [Header("Portrait Markers (Wizard101 Style)")]
     [Tooltip("The decorative frame sprite placed around each portrait. " +
@@ -76,20 +72,41 @@ public class RoomMapUI : MonoBehaviour
 
     [Header("NPC Indicators")]
     [SerializeField] private float npcDotSize     = 12f;
-    [SerializeField] private int   npcLabelSize   = 12;
+    [SerializeField] private int   npcLabelSize   = 18;
     [SerializeField] private Color npcLabelColor   = new Color(0.9f, 0.85f, 0.75f, 0.9f);
 
     [Header("Labels")]
-    [SerializeField] private int   fontSize  = 18;
     [SerializeField] private Color fontColor = new Color(0.9f, 0.85f, 0.75f, 1f);
+
+    [Header("Dialogue-Match Label Style")]
+    [Tooltip("Enable TMP labels so map title/hint can match dialogue typography. Enable on Overworld only.")]
+    [SerializeField] private bool useDialogueLabelStyle = false;
+
+    [Tooltip("TMP font asset used by dialogue text (for example Foglihten-068 SDF).")]
+    [SerializeField] private TMP_FontAsset dialogueLabelFontAsset;
+
+    [Tooltip("Optional shared material from dialogue text for a closer visual match.")]
+    [SerializeField] private Material dialogueLabelSharedMaterial;
 
     [Header("Fade Animation")]
     [Tooltip("How long the map takes to fade in/out (seconds).")]
     [SerializeField] private float fadeDuration = 0.25f;
 
+    [Header("Performance")]
+    [Tooltip("Preload portraits and map markers in small batches to avoid first-open stalls.")]
+    [SerializeField] private bool enableMapPrewarm = true;
+    [SerializeField] private float prewarmStartDelay = 0.20f;
+    [SerializeField] private int portraitPrewarmBatchSize = 3;
+    [SerializeField] private int markerPrewarmBatchSize = 2;
+    [SerializeField] private int runtimeMarkerCreateBudgetPerFrame = 2;
+
     [Header("Title")]
     [SerializeField] private string mapTitle = "Castle Map";
-    [SerializeField] private int titleFontSize = 32;
+    [SerializeField] private int titleFontSize = 56;
+    [SerializeField] private int hintFontSize = 24;
+    [SerializeField] private int legendTitleFontSize = 18;
+    [SerializeField] private int legendItemFontSize = 16;
+    [SerializeField] private float dialogueLabelSizeMultiplier = 1.6f;
 
     // ─────────────────── Runtime ───────────────────
 
@@ -100,17 +117,21 @@ public class RoomMapUI : MonoBehaviour
     private bool _isOpen;
 
     // Caches
-    private readonly Dictionary<string, Image>   _roomBgs     = new();
-    private readonly Dictionary<string, Image>   _roomBorders = new();
-    private readonly Dictionary<string, Text>    _roomLabels  = new();
     private RectTransform _playerMarker;     // root of the player portrait marker group
     private Image _playerPortraitImage;       // the portrait image (or gold dot fallback)
 
     // NPC tracking
     private readonly Dictionary<NPCMapTracker, RectTransform> _npcDots   = new();
-    private readonly Dictionary<NPCMapTracker, Text>          _npcLabels = new();
-    private RectTransform _legendPanel;
+    private readonly Dictionary<NPCMapTracker, Graphic>       _npcLabels = new();
+    private RectTransform _characterLegendPanel;
     private readonly Dictionary<NPCMapTracker, GameObject> _legendEntries = new();
+
+    // Minigame tracking
+    private readonly Dictionary<MinigameMapTracker, RectTransform> _minigameDots = new();
+    private readonly Dictionary<MinigameMapTracker, Graphic> _minigameLabels = new();
+    private RectTransform _minigameLegendPanel;
+    private readonly Dictionary<MinigameMapTracker, GameObject> _minigameLegendEntries = new();
+    private GameObject _minigameLegendTitle;
 
     // Player ref
     private Transform _playerTransform;
@@ -123,6 +144,15 @@ public class RoomMapUI : MonoBehaviour
     private bool _isFading;
     // Debug
     private bool _debugRevealAllNPCs = false;
+
+    // Prewarm / deferred creation
+    private bool _isPrewarming;
+    private bool _prewarmComplete;
+    private Coroutine _prewarmCoroutine;
+    private readonly Queue<NPCMapTracker> _pendingNpcCreates = new();
+    private readonly HashSet<NPCMapTracker> _pendingNpcCreateSet = new();
+    private readonly Queue<MinigameMapTracker> _pendingMinigameCreates = new();
+    private readonly HashSet<MinigameMapTracker> _pendingMinigameCreateSet = new();
     // ─────────────────── Lifecycle ───────────────────
 
     void Start()
@@ -169,6 +199,9 @@ public class RoomMapUI : MonoBehaviour
         _canvasGroup = _root.AddComponent<CanvasGroup>();
         _canvasGroup.alpha = 0f;
         _root.SetActive(false);
+
+        if (enableMapPrewarm)
+            _prewarmCoroutine = StartCoroutine(PrewarmMapData());
     }
 
     void Update()
@@ -181,24 +214,29 @@ public class RoomMapUI : MonoBehaviour
             if (!_isOpen && GlobalPause.IsPaused) return;
             ToggleMap();
         }
-// Debug: Toggle reveal all NPCs (works when map is open)
+// Debug: Toggle reveal all NPC and minigame markers (works when map is open)
         if (_isOpen && Input.GetKeyDown(debugRevealKey))
         {
             _debugRevealAllNPCs = !_debugRevealAllNPCs;
-            Debug.Log($"[RoomMapUI] Debug reveal all NPCs: {(_debugRevealAllNPCs ? "ON" : "OFF")}");
+            Debug.Log($"[RoomMapUI] Debug reveal all NPCs/minigames: {(_debugRevealAllNPCs ? "ON" : "OFF")}");
         }
 
         
         if (_isOpen)
         {
+            ProcessPendingMarkerCreates(runtimeMarkerCreateBudgetPerFrame);
             UpdatePlayerDot();
             UpdateNPCDots();
+            UpdateMinigameDots();
             AnimatePlayerDot();
         }
     }
 
     void OnDestroy()
     {
+        if (_prewarmCoroutine != null)
+            StopCoroutine(_prewarmCoroutine);
+
         if (_root != null) Destroy(_root);
     }
 
@@ -234,10 +272,15 @@ public class RoomMapUI : MonoBehaviour
             }
 
             _root.SetActive(true);
-            RefreshHighlight();
+
+            // If prewarm is still running, create a small number of markers now.
+            if (!_prewarmComplete)
+                ProcessPendingMarkerCreates(runtimeMarkerCreateBudgetPerFrame);
+
             // Immediately position dots
             UpdatePlayerDot();
             UpdateNPCDots();
+            UpdateMinigameDots();
 
             // Fade in
             if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
@@ -253,6 +296,187 @@ public class RoomMapUI : MonoBehaviour
                 GlobalPause.SetPaused(false);
             }));
         }
+    }
+
+    private IEnumerator PrewarmMapData()
+    {
+        _isPrewarming = true;
+
+        if (prewarmStartDelay > 0f)
+            yield return new WaitForSecondsRealtime(prewarmStartDelay);
+
+        int warmedPortraits = 0;
+        int createdMarkers = 0;
+
+        int portraitBatch = Mathf.Max(1, portraitPrewarmBatchSize);
+        int markerBatch = Mathf.Max(1, markerPrewarmBatchSize);
+
+        // Phase A: Warm portrait caches in batches.
+        int portraitOps = 0;
+        foreach (var tracker in NPCMapTracker.AllTrackers)
+        {
+            if (tracker == null || !tracker.IsDiscovered)
+                continue;
+
+            var _ = tracker.Portrait;
+            warmedPortraits++;
+
+            portraitOps++;
+            if (portraitOps >= portraitBatch)
+            {
+                portraitOps = 0;
+                yield return null;
+            }
+        }
+
+        foreach (var tracker in MinigameMapTracker.AllTrackers)
+        {
+            if (tracker == null || !tracker.IsDiscovered)
+                continue;
+
+            var _ = tracker.Portrait;
+            warmedPortraits++;
+
+            portraitOps++;
+            if (portraitOps >= portraitBatch)
+            {
+                portraitOps = 0;
+                yield return null;
+            }
+        }
+
+        // Phase B: Pre-create discovered markers/legend entries while overlay is hidden.
+        int markerOps = 0;
+        foreach (var tracker in NPCMapTracker.AllTrackers)
+        {
+            if (tracker == null || !tracker.IsDiscovered)
+                continue;
+
+            if (_npcDots.ContainsKey(tracker))
+                continue;
+
+            CreateNPCDot(tracker);
+            SetNPCVisualState(tracker, false);
+            createdMarkers++;
+
+            markerOps++;
+            if (markerOps >= markerBatch)
+            {
+                markerOps = 0;
+                yield return null;
+            }
+        }
+
+        foreach (var tracker in MinigameMapTracker.AllTrackers)
+        {
+            if (tracker == null || !tracker.IsDiscovered)
+                continue;
+
+            if (_minigameDots.ContainsKey(tracker))
+                continue;
+
+            CreateMinigameDot(tracker);
+            SetMinigameVisualState(tracker, false);
+            createdMarkers++;
+
+            markerOps++;
+            if (markerOps >= markerBatch)
+            {
+                markerOps = 0;
+                yield return null;
+            }
+        }
+
+        _isPrewarming = false;
+        _prewarmComplete = true;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        Debug.Log($"[RoomMapUI] Prewarm complete. Portraits={warmedPortraits}, Markers={createdMarkers}");
+#endif
+    }
+
+    private void EnqueueNPCMarkerCreate(NPCMapTracker tracker)
+    {
+        if (tracker == null || _npcDots.ContainsKey(tracker))
+            return;
+
+        if (_pendingNpcCreateSet.Add(tracker))
+            _pendingNpcCreates.Enqueue(tracker);
+    }
+
+    private void EnqueueMinigameMarkerCreate(MinigameMapTracker tracker)
+    {
+        if (tracker == null || _minigameDots.ContainsKey(tracker))
+            return;
+
+        if (_pendingMinigameCreateSet.Add(tracker))
+            _pendingMinigameCreates.Enqueue(tracker);
+    }
+
+    private void ProcessPendingMarkerCreates(int budgetPerFrame)
+    {
+        int budget = Mathf.Max(1, budgetPerFrame);
+        int consumed = 0;
+
+        while (consumed < budget && _pendingNpcCreates.Count > 0)
+        {
+            var tracker = _pendingNpcCreates.Dequeue();
+            _pendingNpcCreateSet.Remove(tracker);
+
+            if (tracker == null || _npcDots.ContainsKey(tracker))
+                continue;
+
+            if (!tracker.IsDiscovered && !_debugRevealAllNPCs)
+                continue;
+
+            CreateNPCDot(tracker);
+            consumed++;
+        }
+
+        while (consumed < budget && _pendingMinigameCreates.Count > 0)
+        {
+            var tracker = _pendingMinigameCreates.Dequeue();
+            _pendingMinigameCreateSet.Remove(tracker);
+
+            if (tracker == null || _minigameDots.ContainsKey(tracker))
+                continue;
+
+            if (!tracker.IsDiscovered && !_debugRevealAllNPCs)
+                continue;
+
+            CreateMinigameDot(tracker);
+            consumed++;
+        }
+    }
+
+    private void SetNPCVisualState(NPCMapTracker tracker, bool active)
+    {
+        if (tracker == null)
+            return;
+
+        if (_npcDots.TryGetValue(tracker, out var dot) && dot != null)
+            dot.gameObject.SetActive(active);
+
+        if (_npcLabels.TryGetValue(tracker, out var label) && label != null)
+            label.gameObject.SetActive(active);
+
+        if (_legendEntries.TryGetValue(tracker, out var legend) && legend != null)
+            legend.SetActive(active);
+    }
+
+    private void SetMinigameVisualState(MinigameMapTracker tracker, bool active)
+    {
+        if (tracker == null)
+            return;
+
+        if (_minigameDots.TryGetValue(tracker, out var dot) && dot != null)
+            dot.gameObject.SetActive(active);
+
+        if (_minigameLabels.TryGetValue(tracker, out var label) && label != null)
+            label.gameObject.SetActive(active);
+
+        if (_minigameLegendEntries.TryGetValue(tracker, out var legend) && legend != null)
+            legend.SetActive(active && tracker.IncludeInLegend);
     }
 
     private System.Collections.IEnumerator FadeMap(float from, float to, System.Action onComplete = null)
@@ -365,15 +589,17 @@ public class RoomMapUI : MonoBehaviour
         titleRect.anchorMax = new Vector2(0.5f, 1f);
         titleRect.pivot     = new Vector2(0.5f, 1f);
         titleRect.anchoredPosition = new Vector2(0, 10);
-        titleRect.sizeDelta = new Vector2(500, 50);
+        float effectiveTitleSize = GetEffectiveMapFontSize(titleFontSize);
+        titleRect.sizeDelta = new Vector2(700f, Mathf.Max(60f, effectiveTitleSize + 18f));
 
-        var titleText = titleGO.AddComponent<Text>();
-        titleText.text = mapTitle;
-        titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        titleText.fontSize = titleFontSize;
-        titleText.color = fontColor;
-        titleText.alignment = TextAnchor.MiddleCenter;
-        titleText.raycastTarget = false;
+        CreateMapLabel(
+            titleGO,
+            mapTitle,
+            titleFontSize,
+            fontColor,
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
 
         // ── Hint (below the journal) ──
         var hintGO = MakeUIObject("MapHint", _root.transform);
@@ -382,15 +608,19 @@ public class RoomMapUI : MonoBehaviour
         hintRect.anchorMax = new Vector2(0.5f, 0f);
         hintRect.pivot     = new Vector2(0.5f, 0f);
         hintRect.anchoredPosition = new Vector2(0, 15);
-        hintRect.sizeDelta = new Vector2(400, 30);
+        float effectiveHintSize = GetEffectiveMapFontSize(hintFontSize);
+        hintRect.sizeDelta = new Vector2(520f, Mathf.Max(36f, effectiveHintSize + 10f));
 
-        var hintText = hintGO.AddComponent<Text>();
-        hintText.text = $"Press {toggleKey} to close";
-        hintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        hintText.fontSize = 16;
-        hintText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.5f);
-        hintText.alignment = TextAnchor.MiddleCenter;
-        hintText.raycastTarget = false;
+        Color hintColor = new Color(fontColor.r, fontColor.g, fontColor.b, 0.5f);
+
+        CreateMapLabel(
+            hintGO,
+            $"Press {toggleKey} to close",
+            hintFontSize,
+            hintColor,
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
 
         // ── Map area (padded region inside the journal pages) ──
         var mapGO = MakeUIObject("MapArea", mapContentParent);
@@ -410,153 +640,86 @@ public class RoomMapUI : MonoBehaviour
         _mapArea.offsetMin = Vector2.zero;
         _mapArea.offsetMax = Vector2.zero;
 
-        // ── Draw connection lines first (behind rooms) ──
-        DrawConnections();
+        // ── Castle blueprint map image (fills the map area) ──
+        if (castleMapSprite != null)
+        {
+            var blueprintGO = MakeUIObject("CastleBlueprint", _mapArea);
+            var blueprintRT = Stretch(blueprintGO);
 
-        // ── Draw rooms ──
-        foreach (var room in mapData.rooms)
-            DrawRoom(room);
+            var blueprintImg = blueprintGO.AddComponent<Image>();
+            blueprintImg.sprite = castleMapSprite;
+            blueprintImg.preserveAspect = true;
+            blueprintImg.raycastTarget = false;
 
-        // ── Player marker (on top of rooms) ──
+            // Ensure crisp pixel-art rendering
+            if (castleMapSprite.texture != null)
+                castleMapSprite.texture.filterMode = FilterMode.Point;
+        }
+        else
+        {
+            Debug.LogWarning("[RoomMapUI] No castleMapSprite assigned. " +
+                "Assign ColorizedMap.png from Assets/Sprites/gfx/gfx/ColorizedMap.png.");
+        }
+
+        // ── Player marker (on top of the blueprint) ──
         _playerMarker = CreatePortraitMarker(
             "PlayerMarker", _mapArea,
             playerPortrait, playerFrameTint,
             playerDotColor, "You",
             isPlayer: true);
 
-        // ── NPC Legend panel (right edge) ──
-        BuildLegendPanel();
+        // ── Split legend panels in journal whitespace ──
+        BuildCharacterLegendPanel();
+        BuildMinigameLegendPanel();
     }
 
-    // ─────────────────── Draw Room ───────────────────
-
-    private void DrawRoom(RoomMapData.Room room)
+    private Graphic CreateMapLabel(
+        GameObject target,
+        string text,
+        float size,
+        Color color,
+        TextAnchor legacyAlignment,
+        TextAlignmentOptions tmpAlignment,
+        bool allowOverflow)
     {
-        // Border (slightly larger rectangle behind the room fill)
-        var borderGO = MakeUIObject(room.roomId + "_border", _mapArea);
-        var borderRect = borderGO.GetComponent<RectTransform>();
-        SetRoomRect(borderRect, room.mapPosition, room.mapSize, borderWidth);
+        float effectiveSize = GetEffectiveMapFontSize(size);
 
-        var borderImg = borderGO.AddComponent<Image>();
-        borderImg.color = roomBorderColor;
-        borderImg.raycastTarget = false;
-        _roomBorders[room.roomId] = borderImg;
-
-        // Fill
-        var fillGO = MakeUIObject(room.roomId + "_fill", _mapArea);
-        var fillRect = fillGO.GetComponent<RectTransform>();
-        SetRoomRect(fillRect, room.mapPosition, room.mapSize, 0);
-
-        var fillImg = fillGO.AddComponent<Image>();
-        fillImg.color = roomColor;
-        fillImg.raycastTarget = false;
-        _roomBgs[room.roomId] = fillImg;
-
-        // Label
-        var labelGO = MakeUIObject(room.roomId + "_label", _mapArea);
-        var labelRect = labelGO.GetComponent<RectTransform>();
-        SetRoomRect(labelRect, room.mapPosition, room.mapSize, 0);
-
-        var label = labelGO.AddComponent<Text>();
-        label.text = room.roomName;
-        label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        label.fontSize = fontSize;
-        label.color = fontColor;
-        label.alignment = TextAnchor.MiddleCenter;
-        label.horizontalOverflow = HorizontalWrapMode.Overflow;
-        label.verticalOverflow = VerticalWrapMode.Overflow;
-        label.raycastTarget = false;
-        _roomLabels[room.roomId] = label;
-    }
-
-    private void SetRoomRect(RectTransform rt, Vector2 pos, Vector2 size, float expand)
-    {
-        // pos & size are in normalised 0-1 coords relative to _mapArea
-        rt.anchorMin = pos - size * 0.5f;
-        rt.anchorMax = pos + size * 0.5f;
-        rt.offsetMin = new Vector2(-expand, -expand);
-        rt.offsetMax = new Vector2(expand, expand);
-    }
-
-    // ─────────────────── Connections ───────────────────
-
-    private void DrawConnections()
-    {
-        // Track drawn pairs so we don't double-draw A→B and B→A
-        var drawn = new HashSet<string>();
-
-        foreach (var room in mapData.rooms)
+        if (useDialogueLabelStyle && dialogueLabelFontAsset != null)
         {
-            foreach (var otherId in room.connectedRoomIds)
-            {
-                string key = room.roomId.CompareTo(otherId) < 0
-                    ? room.roomId + "|" + otherId
-                    : otherId + "|" + room.roomId;
-
-                if (drawn.Contains(key)) continue;
-                drawn.Add(key);
-
-                var other = mapData.GetRoom(otherId);
-                if (other == null) continue;
-
-                DrawLine(room.mapPosition, other.mapPosition);
-            }
+            var tmpText = target.AddComponent<TextMeshProUGUI>();
+            tmpText.text = text;
+            tmpText.font = dialogueLabelFontAsset;
+            if (dialogueLabelSharedMaterial != null)
+                tmpText.fontSharedMaterial = dialogueLabelSharedMaterial;
+            tmpText.enableAutoSizing = false;
+            tmpText.fontSize = effectiveSize;
+            tmpText.color = color;
+            tmpText.alignment = tmpAlignment;
+            tmpText.enableWordWrapping = !allowOverflow;
+            tmpText.overflowMode = allowOverflow ? TextOverflowModes.Overflow : TextOverflowModes.Truncate;
+            tmpText.richText = true;
+            tmpText.raycastTarget = false;
+            return tmpText;
         }
+
+        var legacyText = target.AddComponent<Text>();
+        legacyText.text = text;
+        legacyText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        legacyText.fontSize = Mathf.RoundToInt(size);
+        legacyText.color = color;
+        legacyText.alignment = legacyAlignment;
+        legacyText.horizontalOverflow = allowOverflow ? HorizontalWrapMode.Overflow : HorizontalWrapMode.Wrap;
+        legacyText.verticalOverflow = allowOverflow ? VerticalWrapMode.Overflow : VerticalWrapMode.Truncate;
+        legacyText.raycastTarget = false;
+        return legacyText;
     }
 
-    private void DrawLine(Vector2 from, Vector2 to)
+    private float GetEffectiveMapFontSize(float size)
     {
-        var lineGO = MakeUIObject("Line", _mapArea);
-        var lineRect = lineGO.GetComponent<RectTransform>();
+        if (useDialogueLabelStyle && dialogueLabelFontAsset != null)
+            return size * dialogueLabelSizeMultiplier;
 
-        var img = lineGO.AddComponent<Image>();
-        img.color = lineColor;
-        img.raycastTarget = false;
-
-        // Compute pixel-independent line using anchors
-        Vector2 mid = (from + to) * 0.5f;
-        Vector2 diff = to - from;
-        float angle = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
-
-        // We'll place the line at the midpoint, rotated, with length = distance
-        lineRect.anchorMin = lineRect.anchorMax = mid;
-        lineRect.pivot = new Vector2(0.5f, 0.5f);
-
-        // Length needs to be in the mapArea's local space — approximate with a helper
-        // We use a LayoutRebuilder callback-free approach: set width via sizeDelta later in a helper
-        // For now, just store and fix in a coroutine after layout settles
-        lineRect.sizeDelta = new Vector2(0, lineWidth);
-        lineRect.localRotation = Quaternion.Euler(0, 0, angle);
-
-        StartCoroutine(SetLineLength(lineRect, from, to));
-    }
-
-    private System.Collections.IEnumerator SetLineLength(RectTransform rt, Vector2 fromNorm, Vector2 toNorm)
-    {
-        // Wait one frame for layout to settle
-        yield return null;
-
-        // Compute length in mapArea pixels
-        var mapRect = _mapArea.rect;
-        Vector2 fromPx = new Vector2(fromNorm.x * mapRect.width, fromNorm.y * mapRect.height);
-        Vector2 toPx   = new Vector2(toNorm.x * mapRect.width, toNorm.y * mapRect.height);
-        float length = Vector2.Distance(fromPx, toPx);
-
-        rt.sizeDelta = new Vector2(length, lineWidth);
-    }
-
-    // ─────────────────── Highlight Current Room ───────────────────
-
-    private void RefreshHighlight()
-    {
-        string current = RoomTracker.CurrentRoomId;
-
-        foreach (var room in mapData.rooms)
-        {
-            bool isCurrent = room.roomId == current;
-            _roomBgs[room.roomId].color     = isCurrent ? currentRoomColor  : roomColor;
-            _roomBorders[room.roomId].color  = isCurrent ? currentBorderColor : roomBorderColor;
-        }
+        return size;
     }
 
     // ─────────────────── Real-Time Player Tracking ───────────────────
@@ -604,7 +767,10 @@ public class RoomMapUI : MonoBehaviour
 
             // Create dot if we haven't yet
             if (!_npcDots.ContainsKey(tracker))
-                CreateNPCDot(tracker);
+            {
+                EnqueueNPCMarkerCreate(tracker);
+                continue;
+            }
 
             // Position the marker group
             var dot = _npcDots[tracker];
@@ -661,12 +827,103 @@ public class RoomMapUI : MonoBehaviour
         var labelTransform = markerRT.Find("Label_" + tracker.DisplayName);
         if (labelTransform != null)
         {
-            var label = labelTransform.GetComponent<Text>();
+            var label = labelTransform.GetComponent<Graphic>();
             _npcLabels[tracker] = label;
         }
 
         // Add a legend entry
         CreateLegendEntry(tracker);
+    }
+
+    private void UpdateMinigameDots()
+    {
+        var staleTrackers = new HashSet<MinigameMapTracker>(_minigameDots.Keys);
+
+        foreach (var tracker in MinigameMapTracker.AllTrackers)
+        {
+            staleTrackers.Remove(tracker);
+
+            bool shouldShow = tracker.IsDiscovered || _debugRevealAllNPCs;
+            if (!shouldShow)
+            {
+                if (_minigameDots.TryGetValue(tracker, out var hiddenDot))
+                {
+                    hiddenDot.gameObject.SetActive(false);
+                }
+                if (_minigameLabels.TryGetValue(tracker, out var hiddenLabel))
+                {
+                    hiddenLabel.gameObject.SetActive(false);
+                }
+                if (_minigameLegendEntries.TryGetValue(tracker, out var hiddenEntry))
+                {
+                    hiddenEntry.SetActive(false);
+                }
+                continue;
+            }
+
+            if (!_minigameDots.ContainsKey(tracker))
+            {
+                EnqueueMinigameMarkerCreate(tracker);
+                continue;
+            }
+
+            var dot = _minigameDots[tracker];
+            dot.gameObject.SetActive(true);
+            Vector2 mapPos = mapData.WorldToMapPosition(tracker.WorldPosition);
+            dot.anchorMin = dot.anchorMax = mapPos;
+            dot.anchoredPosition = Vector2.zero;
+
+            if (_minigameLabels.TryGetValue(tracker, out var label))
+                label.gameObject.SetActive(true);
+
+            if (_minigameLegendEntries.TryGetValue(tracker, out var legendEntry))
+                legendEntry.SetActive(tracker.IncludeInLegend);
+        }
+
+        foreach (var stale in staleTrackers)
+        {
+            if (_minigameDots.TryGetValue(stale, out var dot))
+            {
+                Destroy(dot.gameObject);
+                _minigameDots.Remove(stale);
+            }
+            if (_minigameLabels.TryGetValue(stale, out var label))
+            {
+                Destroy(label.gameObject);
+                _minigameLabels.Remove(stale);
+            }
+            if (_minigameLegendEntries.TryGetValue(stale, out var entry))
+            {
+                Destroy(entry);
+                _minigameLegendEntries.Remove(stale);
+            }
+        }
+
+        UpdateMinigameLegendTitleVisibility();
+    }
+
+    private void CreateMinigameDot(MinigameMapTracker tracker)
+    {
+        var markerRT = CreatePortraitMarker(
+            "Minigame_" + tracker.DisplayName,
+            _mapArea,
+            tracker.Portrait,
+            npcFrameTint,
+            tracker.MarkerColor,
+            tracker.DisplayName,
+            isPlayer: false);
+
+        _minigameDots[tracker] = markerRT;
+
+        var labelTransform = markerRT.Find("Label_" + tracker.DisplayName);
+        if (labelTransform != null)
+        {
+            var label = labelTransform.GetComponent<Graphic>();
+            _minigameLabels[tracker] = label;
+        }
+
+        if (tracker.IncludeInLegend)
+            CreateMinigameLegendEntry(tracker);
     }
 
     // ─────────────────── Portrait Marker Factory ───────────────────
@@ -685,11 +942,12 @@ public class RoomMapUI : MonoBehaviour
     {
         float size = isPlayer ? Mathf.Max(playerDotSize, portraitMarkerSize) : portraitMarkerSize;
         float framedSize = size * frameScale;
+        float effectiveMarkerLabelSize = GetEffectiveMapFontSize(npcLabelSize);
 
         // Root container — anchored at 0,0; repositioned each frame via anchors
         var rootGO = MakeUIObject(objectName, parent);
         var rootRT = rootGO.GetComponent<RectTransform>();
-        rootRT.sizeDelta = new Vector2(framedSize, framedSize + 4f + npcLabelSize);
+        rootRT.sizeDelta = new Vector2(framedSize, framedSize + 4f + effectiveMarkerLabelSize);
         rootRT.pivot = new Vector2(0.5f, 0.5f);
 
         bool hasPortrait = portrait != null;
@@ -758,18 +1016,17 @@ public class RoomMapUI : MonoBehaviour
         var labelRT = labelGO.GetComponent<RectTransform>();
         labelRT.anchorMin = labelRT.anchorMax = new Vector2(0.5f, 1f);
         labelRT.pivot = new Vector2(0.5f, 1f);
-        labelRT.sizeDelta = new Vector2(120, npcLabelSize + 4);
+        labelRT.sizeDelta = new Vector2(160, effectiveMarkerLabelSize + 6f);
         labelRT.anchoredPosition = new Vector2(0f, -(framedSize + 2f));
 
-        var labelText = labelGO.AddComponent<Text>();
-        labelText.text = label;
-        labelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        labelText.fontSize = npcLabelSize;
-        labelText.color = npcLabelColor;
-        labelText.alignment = TextAnchor.MiddleCenter;
-        labelText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        labelText.verticalOverflow = VerticalWrapMode.Overflow;
-        labelText.raycastTarget = false;
+        CreateMapLabel(
+            labelGO,
+            label,
+            npcLabelSize,
+            npcLabelColor,
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
 
         // Shadow for readability
         var shadow = labelGO.AddComponent<Shadow>();
@@ -781,16 +1038,16 @@ public class RoomMapUI : MonoBehaviour
 
     // ─────────────────── Legend Panel ───────────────────
 
-    private void BuildLegendPanel()
+    private void BuildCharacterLegendPanel()
     {
-        // Container anchored to the top-right of the journal
-        var panelGO = MakeUIObject("NPCLegend", _mapContentParent);
-        _legendPanel = panelGO.GetComponent<RectTransform>();
-        _legendPanel.anchorMin = new Vector2(1f, 1f);
-        _legendPanel.anchorMax = new Vector2(1f, 1f);
-        _legendPanel.pivot = new Vector2(1f, 1f);
-        _legendPanel.anchoredPosition = new Vector2(-300, -100);
-        _legendPanel.sizeDelta = new Vector2(200, 30); // will grow
+        // Container anchored to the bottom-left whitespace of the journal
+        var panelGO = MakeUIObject("CharacterLegend", _mapContentParent);
+        _characterLegendPanel = panelGO.GetComponent<RectTransform>();
+        _characterLegendPanel.anchorMin = new Vector2(0.2f, 0.12f);
+        _characterLegendPanel.anchorMax = new Vector2(0.2f, 0.12f);
+        _characterLegendPanel.pivot = new Vector2(0f, 0f);
+        _characterLegendPanel.anchoredPosition = Vector2.zero;
+        _characterLegendPanel.sizeDelta = new Vector2(120f, 30f); // will grow
 
         // Semi-transparent background
         var bg = panelGO.AddComponent<Image>();
@@ -811,33 +1068,114 @@ public class RoomMapUI : MonoBehaviour
         fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
         // Legend title
-        var titleGO = MakeUIObject("LegendTitle", _legendPanel);
+        var titleGO = MakeUIObject("LegendTitle", _characterLegendPanel);
         var titleRT = titleGO.GetComponent<RectTransform>();
-        titleRT.sizeDelta = new Vector2(160, 20);
+        float effectiveLegendTitleSize = GetEffectiveMapFontSize(legendTitleFontSize);
+        titleRT.sizeDelta = new Vector2(260f, Mathf.Max(24f, effectiveLegendTitleSize + 8f));
 
-        var titleText = titleGO.AddComponent<Text>();
-        titleText.text = "— Characters —";
-        titleText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        titleText.fontSize = 13;
-        titleText.color = new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f);
-        titleText.alignment = TextAnchor.MiddleCenter;
-        titleText.raycastTarget = false;
+        CreateMapLabel(
+            titleGO,
+            "— Characters —",
+            legendTitleFontSize,
+            new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f),
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
 
         // Player entry (always visible)
-        CreateLegendRow(_legendPanel, "You", playerDotColor, true, playerPortrait);
+        CreateLegendRow(_characterLegendPanel, "You", playerDotColor, true, playerPortrait);
+    }
+
+    private void BuildMinigameLegendPanel()
+    {
+        // Container anchored to the bottom-right whitespace of the journal
+        var panelGO = MakeUIObject("MinigameLegend", _mapContentParent);
+        _minigameLegendPanel = panelGO.GetComponent<RectTransform>();
+        _minigameLegendPanel.anchorMin = new Vector2(0.70f, 0.12f);
+        _minigameLegendPanel.anchorMax = new Vector2(0.70f, 0.12f);
+        _minigameLegendPanel.pivot = new Vector2(1f, 0f);
+        _minigameLegendPanel.anchoredPosition = Vector2.zero;
+        _minigameLegendPanel.sizeDelta = new Vector2(120f, 30f); // will grow
+
+        // Semi-transparent background
+        var bg = panelGO.AddComponent<Image>();
+        bg.color = new Color(0.06f, 0.05f, 0.08f, 0.85f);
+        bg.raycastTarget = false;
+
+        // Vertical layout
+        var layout = panelGO.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(10, 10, 8, 8);
+        layout.spacing = 4;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        layout.childAlignment = TextAnchor.UpperLeft;
+
+        // Content size fitter so it grows with entries
+        var fitter = panelGO.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+        // Minigames section title (shown only when at least one discovered minigame is visible)
+        _minigameLegendTitle = MakeUIObject("MinigameLegendTitle", _minigameLegendPanel).gameObject;
+        var minigameTitleRT = _minigameLegendTitle.GetComponent<RectTransform>();
+        float effectiveMinigameTitleSize = GetEffectiveMapFontSize(legendTitleFontSize);
+        minigameTitleRT.sizeDelta = new Vector2(260f, Mathf.Max(24f, effectiveMinigameTitleSize + 8f));
+
+        CreateMapLabel(
+            _minigameLegendTitle,
+            "— Minigames —",
+            legendTitleFontSize,
+            new Color(fontColor.r, fontColor.g, fontColor.b, 0.6f),
+            TextAnchor.MiddleCenter,
+            TextAlignmentOptions.Center,
+            allowOverflow: true);
+        _minigameLegendTitle.SetActive(false);
     }
 
     private void CreateLegendEntry(NPCMapTracker tracker)
     {
-        var entry = CreateLegendRow(_legendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
+        if (_characterLegendPanel == null)
+            return;
+
+        var entry = CreateLegendRow(_characterLegendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
         _legendEntries[tracker] = entry;
+    }
+
+    private void CreateMinigameLegendEntry(MinigameMapTracker tracker)
+    {
+        if (_minigameLegendPanel == null)
+            return;
+
+        var entry = CreateLegendRow(_minigameLegendPanel, tracker.DisplayName, tracker.MarkerColor, false, tracker.Portrait);
+        _minigameLegendEntries[tracker] = entry;
+        UpdateMinigameLegendTitleVisibility();
+    }
+
+    private void UpdateMinigameLegendTitleVisibility()
+    {
+        if (_minigameLegendTitle == null)
+            return;
+
+        bool hasVisibleEntries = false;
+        foreach (var kvp in _minigameLegendEntries)
+        {
+            if (kvp.Value != null && kvp.Value.activeSelf)
+            {
+                hasVisibleEntries = true;
+                break;
+            }
+        }
+
+        _minigameLegendTitle.SetActive(hasVisibleEntries);
     }
 
     private GameObject CreateLegendRow(RectTransform parent, string label, Color dotColor, bool alwaysVisible, Sprite portrait = null)
     {
         var rowGO = MakeUIObject("Legend_" + label, parent);
         var rowRT = rowGO.GetComponent<RectTransform>();
-        rowRT.sizeDelta = new Vector2(180, 22);
+        float effectiveLegendItemSize = GetEffectiveMapFontSize(legendItemFontSize);
+        float legendRowHeight = Mathf.Max(22f, effectiveLegendItemSize + 8f);
+        rowRT.sizeDelta = new Vector2(180, legendRowHeight);
 
         var rowLayout = rowGO.AddComponent<HorizontalLayoutGroup>();
         rowLayout.spacing = 6;
@@ -908,16 +1246,17 @@ public class RoomMapUI : MonoBehaviour
 
         // Name label
         var nameGO = MakeUIObject("Name", rowGO.transform);
-        var nameText = nameGO.AddComponent<Text>();
-        nameText.text = label;
-        nameText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        nameText.fontSize = 12;
-        nameText.color = npcLabelColor;
-        nameText.alignment = TextAnchor.MiddleLeft;
-        nameText.raycastTarget = false;
+        CreateMapLabel(
+            nameGO,
+            label,
+            legendItemFontSize,
+            npcLabelColor,
+            TextAnchor.MiddleLeft,
+            TextAlignmentOptions.MidlineLeft,
+            allowOverflow: true);
         var nameLE = nameGO.AddComponent<LayoutElement>();
         nameLE.preferredWidth = 140;
-        nameLE.preferredHeight = 22;
+        nameLE.preferredHeight = legendRowHeight;
 
         return rowGO;
     }

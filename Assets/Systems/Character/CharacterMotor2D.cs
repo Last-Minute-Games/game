@@ -8,6 +8,12 @@
 
         [Header("Movement")]
         [SerializeField] private float speed = 2f;
+        [SerializeField] private float sprintMultiplier = 2f;
+        private bool _isSprinting;
+
+        [Header("Animation Controllers")]
+        [SerializeField] private RuntimeAnimatorController walkController;
+        [SerializeField] private RuntimeAnimatorController runController;
 
         [Header("Idle Sprites (static frames)")]
         [SerializeField] public Sprite idleUp;
@@ -51,6 +57,18 @@
                 // Ensure Animator is enabled while moving
                 if (!_anim.enabled) _anim.enabled = true;
 
+                // Swap animator controller based on sprint state
+                RuntimeAnimatorController targetController = _isSprinting ? runController : walkController;
+                if (targetController == null)
+                {
+                    targetController = walkController != null ? walkController : runController;
+                }
+                if (_anim.runtimeAnimatorController != targetController && targetController != null)
+                {
+                    _anim.runtimeAnimatorController = targetController;
+                    _anim.Rebind();
+                }
+
                 _anim.speed = 1f;
                 _anim.SetFloat(Horizontal, _moveInput.x);
                 _anim.SetFloat(Vertical,   _moveInput.y);
@@ -61,6 +79,12 @@
             else
             {
                 // Static idle: disable Animator and set a single sprite
+                // Reset to walk controller when stopping
+                if (_anim.runtimeAnimatorController != walkController && walkController != null)
+                {
+                    _anim.runtimeAnimatorController = walkController;
+                }
+
                 ApplyStaticIdle();
             }
         }
@@ -70,7 +94,8 @@
             if (_rb.bodyType != RigidbodyType2D.Dynamic)
                 return; // don’t move static or kinematic bodies
 
-            _rb.linearVelocity = _moveInput.normalized * speed;
+            float currentSpeed = _isSprinting ? speed * sprintMultiplier : speed;
+            _rb.linearVelocity = _moveInput.normalized * currentSpeed;
         }
 
         private void StopMovement()
@@ -128,10 +153,23 @@
         public void SetTeleporting(bool t)
         {
             _isTeleporting = t;
-            if (t) StopMovement();
-            else if (!_anim.enabled) _anim.enabled = true;
+            if (t)
+            {
+                StopMovement();
+
+                // Reset to walk controller before teleport transition
+                if (_anim.runtimeAnimatorController != walkController && walkController != null)
+                {
+                    _anim.runtimeAnimatorController = walkController;
+                }
+            }
+            else if (!_anim.enabled)
+            {
+                _anim.enabled = true;
+            }
         }
         public bool IsTeleporting => _isTeleporting;
 
         public void SetSpeed(float newSpeed) => speed = newSpeed;
+        public void SetSprinting(bool sprinting) => _isSprinting = sprinting;
     }

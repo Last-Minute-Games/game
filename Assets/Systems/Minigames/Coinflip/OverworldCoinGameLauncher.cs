@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
@@ -24,6 +25,10 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
     [Header("Protection")]
     public float sceneOpenDelay = 0.35f; // block instant open after load/room swap
     public float reopenCooldown = 0.25f; // block double taps
+
+    [Header("Transition")]
+    [Tooltip("Shared transition component (add MinigameTransition to this or a child and assign).")]
+    [SerializeField] MinigameTransition transition;
 
     public MinigameInstructions coinFlipInstructions;
 
@@ -166,19 +171,19 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
 
     public void OpenCoinFlipPopup()
     {
-        if (!_canOpen) 
+        if (!_canOpen)
         {
             LogDebug("OpenCoinFlipPopup blocked - not ready");
             return;
         }
-        
-        if (Time.unscaledTime - _lastCloseTime < reopenCooldown) 
+
+        if (Time.unscaledTime - _lastCloseTime < reopenCooldown)
         {
             LogDebug("OpenCoinFlipPopup blocked - cooldown");
             return;
         }
-        
-        if (coinFlipPopup == null || coinFlipPopup.activeSelf) 
+
+        if (coinFlipPopup == null || coinFlipPopup.activeSelf)
         {
             LogDebug("OpenCoinFlipPopup blocked - null or already active");
             return;
@@ -186,26 +191,26 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
 
         LogDebug("Opening coinflip popup");
 
-        // Show the existing popup GameObject
+        if (transition != null && gameObject.activeInHierarchy)
+        {
+            transition.RunTransition("COIN FLIP", PerformOpen);
+            return;
+        }
+        PerformOpen();
+    }
+
+    private void PerformOpen()
+    {
         coinFlipPopup.SetActive(true);
 
         if (coinFlipInstructions == null)
-        {
-            // fallback: try to find it on children
             coinFlipInstructions = coinFlipPopup.GetComponentInChildren<MinigameInstructions>(true);
-        }
         if (coinFlipInstructions != null)
-        {
             coinFlipInstructions.OnPopupOpened();
-        }
 
-        // Pause NPCs and ClockTimer (but NOT player input - using minigame pause)
         GlobalPause.SetMinigamePaused(true);
-
         foreach (var c in controlsToDisable) if (c) c.enabled = false;
-
-        if (hudGroup != null) //HUD off
-            hudGroup.SetActive(false);
+        if (hudGroup != null) hudGroup.SetActive(false);
     }
 
     public void CloseCoinFlipPopup()
@@ -214,22 +219,33 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
 
         LogDebug("Closing coinflip popup");
 
-        // Hide the popup GameObject (don't destroy it)
-        coinFlipPopup.SetActive(false);
-        
+        MinigameTransition t = transition != null ? transition : FindObjectOfType<MinigameTransition>();
+        if (t != null)
+        {
+            t.RunTransition("EXITING", PerformCloseLogic, null, PerformCloseFinal, instantBlack: true);
+            return;
+        }
+        PerformCloseLogic();
+        PerformCloseFinal();
+    }
+
+    /// <summary>Re-enable controls, HUD, unpause. Does NOT hide popup or unlock (safe to call during transition).</summary>
+    private void PerformCloseLogic()
+    {
         foreach (var c in controlsToDisable) if (c) c.enabled = true;
-
-        if (hudGroup != null)
-            hudGroup.SetActive(true);
-
-        // Resume NPCs and ClockTimer (using minigame pause)
+        if (hudGroup != null) hudGroup.SetActive(true);
         GlobalPause.SetMinigamePaused(false);
+    }
 
+    /// <summary>Hide popup, cooldown, unlock. Call this only when transition has finished (or when no transition).</summary>
+    private void PerformCloseFinal()
+    {
+        if (coinFlipPopup != null && coinFlipPopup != gameObject)
+            coinFlipPopup.SetActive(false);
         _lastCloseTime = Time.unscaledTime;
         _canOpen = false;
-        StartCoroutine(EnableOpenAfterDelay(sceneOpenDelay)); // brief lockout after close
-        
-        // Release the interaction lock
+        if (gameObject.activeInHierarchy)
+            StartCoroutine(EnableOpenAfterDelay(sceneOpenDelay));
         Systems.InteractionLockManager.Unlock();
     }
 

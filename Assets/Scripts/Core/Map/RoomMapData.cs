@@ -23,6 +23,9 @@ public class RoomMapData : ScriptableObject
         [Tooltip("Size of the room rectangle on the map (normalised 0-1).")]
         public Vector2 mapSize = new Vector2(0.12f, 0.10f);
 
+        [Tooltip("Fine-tuning offset applied to markers in this room (normalised 0-1). Use to align markers with the visual map.")]
+        public Vector2 mapOffset = Vector2.zero;
+
         [Tooltip("IDs of rooms this room connects to (bidirectional doors).")]
         public List<string> connectedRoomIds = new List<string>();
 
@@ -120,6 +123,9 @@ public class RoomMapData : ScriptableObject
             normalised.x * targetRoom.mapSize.x * 0.45f,  // 0.45 keeps dot inside border
             normalised.y * targetRoom.mapSize.y * 0.45f
         );
+
+        // Apply fine-tuning offset
+        mapPos += targetRoom.mapOffset;
 
         return mapPos;
     }
