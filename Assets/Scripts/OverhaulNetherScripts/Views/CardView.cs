@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class CardView : MonoBehaviour
 {
@@ -13,5 +14,12 @@ public class CardView : MonoBehaviour
 
   [SerializeField] private SpriteRenderer iconBackground;
 
+  [SerializeField] private SortingGroup sortingGroup;
+
   [SerializeField] private GameObject wrapper;
+
+  public void SetSortingOrder(int order) // expose order to manage sorting group for cards
+  {
+    sortingGroup.sortingOrder = order;
+  }
 }
