@@ -41,8 +41,11 @@ public class OverhaulCardView : MonoBehaviour
   {
     Debug.Log("Mouse is over card " + title);
     wrapper.SetActive(false); // set the surrounding wrapper to false
-    Vector3 pos = new(transform.position.x, -2, 0);
-    OverhaulCardViewHover.Instance.Show(Card, pos);
+    Vector3 initPos = new(transform.position.x, transform.position.y, 0);
+    Vector3 finalPos = new(transform.position.x, -2, 0);
+    Quaternion initRotation = transform.rotation;
+
+    OverhaulCardViewHover.Instance.Show(Card, initRotation, initPos, finalPos, 0.25f);
   }
 
   void OnMouseExit()

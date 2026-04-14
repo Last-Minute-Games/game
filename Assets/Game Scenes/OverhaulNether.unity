@@ -419,6 +419,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6045678228050333332, guid: 3a24ee11f501b445ba10882a135eff14, type: 3}
+      propertyPath: m_SortingOrder
+      value: 99
+      objectReference: {fileID: 0}
+    - target: {fileID: 8112856624885427671, guid: 3a24ee11f501b445ba10882a135eff14, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -590,11 +598,11 @@ MonoBehaviour:
       TangentIn:
         x: 0
         y: 0
-        z: -3.32
+        z: -2.75
       TangentOut:
         x: 0
         y: 0
-        z: 3.32
+        z: 2.75
       Rotation:
         value:
           x: 0.50000083
@@ -896,7 +904,7 @@ Transform:
   m_GameObject: {fileID: 1816365489}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -3.82, z: 0}
+  m_LocalPosition: {x: 0, y: -4.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
