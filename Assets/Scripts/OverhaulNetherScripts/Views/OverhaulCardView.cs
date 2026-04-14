@@ -36,4 +36,19 @@ public class OverhaulCardView : MonoBehaviour
     iconSR.sprite = card.Icon;
     iconBackground.color = card.IconBackgroundColor;
   }
+
+  void OnMouseOver()
+  {
+    Debug.Log("Mouse is over card " + title);
+    wrapper.SetActive(false); // set the surrounding wrapper to false
+    Vector3 pos = new(transform.position.x, -2, 0);
+    OverhaulCardViewHover.Instance.Show(Card, pos);
+  }
+
+  void OnMouseExit()
+  {
+    Debug.Log("Mouse has exited card " + title);
+    OverhaulCardViewHover.Instance.Hide();
+    wrapper.SetActive(true);
+  }
 }
