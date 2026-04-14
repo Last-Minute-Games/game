@@ -1,28 +1,33 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 [RequireComponent(typeof(AudioSource))]
 public class FootstepSystem : MonoBehaviour
 {
-    [Header("Footstep Sounds")] 
+    [Header("Footstep Sounds")]
     public List<AudioClip> woodFs;
     public List<AudioClip> concreteFs;
 
     [Header("Settings")]
-    public float stepInterval = 0.4f;   // seconds between steps while moving
-    public float minSpeedForStep = 0.1f; // how fast the player must move to count as walking
+    public float stepInterval = 0.4f;
+    public float minSpeedForStep = 0.1f;
 
     private Tilemap _floorTilemap;
     private AudioSource _audioSource;
-    private CharacterMotor2D _controller;
+
+    // ✅ SUPPORT BOTH CONTROLLERS
+    private CharacterMotor2D _playerController;
+    private NPCMotor2D _npcController;
+
+    private Rigidbody2D _rb;
+
     private float _stepTimer;
 
     private enum SurfaceType
     {
         Wood,
         Concrete,
-        // Add more surface types here
     }
 
     private SurfaceType _surfaceType = SurfaceType.Wood;
@@ -30,41 +35,61 @@ public class FootstepSystem : MonoBehaviour
     void Start()
     {
         _audioSource = GetComponent<AudioSource>();
-        _controller = GetComponent<CharacterMotor2D>(); // same GameObject
+        _rb = GetComponent<Rigidbody2D>();
+
+        // Try both controllers
+        _playerController = GetComponent<CharacterMotor2D>();
+        _npcController = GetComponent<NPCMotor2D>();
 
         if (_audioSource == null)
-            Debug.LogError("[FootstepSystem] No AudioSource component found!");
-        if (_controller == null)
-            Debug.LogError("[FootstepSystem] No CharacterController2D found!");
-        
-        // Find the ground tilemap in the scene
+            Debug.LogError("[FootstepSystem] No AudioSource found!");
+
+        if (_playerController == null && _npcController == null)
+            Debug.LogError("[FootstepSystem] No movement controller found!");
+
+        if (_rb == null)
+            Debug.LogError("[FootstepSystem] No Rigidbody2D found!");
+
         _floorTilemap = GameObject.Find("Floor")?.GetComponent<Tilemap>();
     }
 
     void Update()
     {
-        if (!_controller || !_audioSource) return;
+        if (!_audioSource || !_rb) return;
 
-        // Skip if in dialogue/teleport or not moving
-        if (_controller.IsDialogueActive || _controller.IsTeleporting) return;
+        // =========================
+        // BLOCK STATES (BOTH SYSTEMS)
+        // =========================
+        bool isBlocked =
+            (_playerController != null &&
+                (_playerController.IsDialogueActive || _playerController.IsTeleporting))
+            ||
+            (_npcController != null &&
+                (_npcController.IsDialogueActive || _npcController.IsTeleporting));
 
-        Vector2 velocity = _controller.GetComponent<Rigidbody2D>().linearVelocity;
-        float speed = velocity.magnitude;
+        if (isBlocked)
+            return;
 
-        // Only step if moving
+        float speed = _rb.linearVelocity.magnitude;
+
         if (speed > minSpeedForStep)
         {
             _stepTimer -= Time.deltaTime;
+
             if (_stepTimer <= 0f)
             {
                 PlayStep();
-                // Reset step timer; shorter interval for faster movement
-                _stepTimer = Mathf.Lerp(stepInterval, stepInterval * 0.6f, speed / 5f);
+
+                _stepTimer = Mathf.Lerp(
+                    stepInterval,
+                    stepInterval * 0.6f,
+                    speed / 5f
+                );
             }
         }
         else
         {
-            _stepTimer = 0f; // reset so next time you start moving, step instantly
+            _stepTimer = 0f;
         }
     }
 
@@ -74,27 +99,20 @@ public class FootstepSystem : MonoBehaviour
 
         Vector3Int cellPosition = _floorTilemap.WorldToCell(transform.position);
         TileBase tile = _floorTilemap.GetTile(cellPosition);
+
         if (tile)
         {
-            // Here you could check tile properties to determine surface type
-            // For simplicity, we assume all tiles in this tilemap are wood
-                
-            // print tile name
-            // Debug.Log("[FootstepSystem] Stepping on tile: " + tile.name);
+            string name = tile.name.ToLower();
 
-            var loweredName = tile.name.ToLower();
-            
-            if (loweredName.Contains("wood"))
-            {
+            if (name.Contains("wood"))
                 _surfaceType = SurfaceType.Wood;
-            } else if (loweredName.Contains("concrete") || loweredName.Contains("marble"))
-            {
+
+            else if (name.Contains("concrete") || name.Contains("marble"))
                 _surfaceType = SurfaceType.Concrete;
-            }
         }
 
         clip = _surfaceType switch
-        {   
+        {
             SurfaceType.Wood => woodFs[Random.Range(0, woodFs.Count)],
             SurfaceType.Concrete => concreteFs[Random.Range(0, concreteFs.Count)],
             _ => null
@@ -102,8 +120,7 @@ public class FootstepSystem : MonoBehaviour
 
         if (clip)
         {
-            // RANDOMIZE PITCH
-            _audioSource.pitch = Random.Range(0.9f, 1.1f); 
+            _audioSource.pitch = Random.Range(0.9f, 1.1f);
             _audioSource.PlayOneShot(clip);
         }
     }
