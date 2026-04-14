@@ -14,6 +14,8 @@ public class OverhaulCardViewHover : Singleton<OverhaulCardViewHover>
     cardViewHover.transform.rotation = initRotation;
 
     cardViewHover.gameObject.SetActive(true); // make visible
+
+    // rotation animation
     cardViewHover.transform.DOMove(finalPos, 0.25f);
     cardViewHover.transform.DORotateQuaternion(Quaternion.identity, 0.25f); //
   }
