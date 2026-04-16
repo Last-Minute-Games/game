@@ -44,16 +44,34 @@ public class NPCMotor2D : MonoBehaviour
         if (isMoving)
         {
             _lastDirection = _moveInput.normalized;
-            UpdateAnimator(_lastDirection, 1f);
+            UpdateAnimator(GetBlendDirection(_lastDirection), 1f);
         }
         else
         {
-            // ⭐ CRITICAL FIX:
-            // Idle ALWAYS uses last direction (fixes "back idle bug")
-            UpdateAnimator(_lastDirection, 0f);
+            UpdateAnimator(GetBlendDirection(_lastDirection), 0f);
         }
 
         UpdateSpriteFlip(_lastDirection);
+    }
+
+    private Vector2 GetBlendDirection(Vector2 dir)
+    {
+        // If moving more horizontally than vertically, use pure left (-1,0)
+        // and let the sprite flip handle right side
+        if (Mathf.Abs(dir.x) >= Mathf.Abs(dir.y))
+            return new Vector2(-1f, 0f); // always left, flipX handles right
+
+        // Otherwise use pure up or down
+        return new Vector2(0f, dir.y > 0 ? 1f : -1f);
+    }
+
+    private Vector2 GetDominantDirection(Vector2 dir)
+    {
+        // If moving more horizontally, zero out vertical (and vice versa)
+        if (Mathf.Abs(dir.x) >= Mathf.Abs(dir.y))
+            return new Vector2(dir.x, 0f).normalized; // pure left/right
+        else
+            return new Vector2(0f, dir.y).normalized; // pure up/down
     }
 
     void FixedUpdate()
@@ -94,8 +112,9 @@ public class NPCMotor2D : MonoBehaviour
 
     private void UpdateSpriteFlip(Vector2 dir)
     {
-        // Flip only when moving right
-        _sprite.flipX = dir.x > 0.01f;
+        // Flip to show right-facing when moving right
+        if (Mathf.Abs(dir.x) >= Mathf.Abs(dir.y))
+            _sprite.flipX = dir.x > 0f; // right = flip, left = normal
     }
 
     // =========================
