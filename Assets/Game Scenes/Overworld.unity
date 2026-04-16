@@ -4555,7 +4555,6 @@ GameObject:
   - component: {fileID: 35463139}
   - component: {fileID: 35463138}
   - component: {fileID: 35463137}
-  - component: {fileID: 35463136}
   - component: {fileID: 35463143}
   - component: {fileID: 35463134}
   - component: {fileID: 35463133}
@@ -4844,30 +4843,6 @@ MonoBehaviour:
   roomAudioDuckVolume: 0
   roomAudioFadeDuration: 1
   interactionRange: 1
---- !u!114 &35463136
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 35463129}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 3
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 728083523859098278, guid: e78d7992c29ec6944af8b2ae30f60de5, type: 3}
-  idleDown: {fileID: -6441863953052985134, guid: e78d7992c29ec6944af8b2ae30f60de5, type: 3}
-  idleLeft: {fileID: 4289813280928029332, guid: e78d7992c29ec6944af8b2ae30f60de5, type: 3}
-  idleRight: {fileID: -502906209370374931, guid: e78d7992c29ec6944af8b2ae30f60de5, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &35463137
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -38756,7 +38731,6 @@ GameObject:
   - component: {fileID: 264085571}
   - component: {fileID: 264085570}
   - component: {fileID: 264085569}
-  - component: {fileID: 264085568}
   - component: {fileID: 264085567}
   - component: {fileID: 264085566}
   - component: {fileID: 264085565}
@@ -39072,30 +39046,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &264085568
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 264085561}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &264085569
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -60806,7 +60756,6 @@ GameObject:
   - component: {fileID: 433678965}
   - component: {fileID: 433678964}
   - component: {fileID: 433678963}
-  - component: {fileID: 433678962}
   - component: {fileID: 433678969}
   - component: {fileID: 433678960}
   - component: {fileID: 433678959}
@@ -61095,30 +61044,6 @@ MonoBehaviour:
   roomAudioDuckVolume: 0
   roomAudioFadeDuration: 1
   interactionRange: 1
---- !u!114 &433678962
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 433678955}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 3
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 4459261116700164270, guid: 53abc5cb6765a5c4299eb92f2c9d2150, type: 3}
-  idleDown: {fileID: -4575556389795276762, guid: 53abc5cb6765a5c4299eb92f2c9d2150, type: 3}
-  idleLeft: {fileID: -2089776467621730125, guid: 53abc5cb6765a5c4299eb92f2c9d2150, type: 3}
-  idleRight: {fileID: -4277771251777186377, guid: 53abc5cb6765a5c4299eb92f2c9d2150, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &433678963
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -68968,7 +68893,6 @@ GameObject:
   - component: {fileID: 484632027}
   - component: {fileID: 484632026}
   - component: {fileID: 484632025}
-  - component: {fileID: 484632024}
   - component: {fileID: 484632023}
   - component: {fileID: 484632022}
   - component: {fileID: 484632021}
@@ -69293,30 +69217,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &484632024
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 484632017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &484632025
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -75586,7 +75486,6 @@ GameObject:
   - component: {fileID: 539290764}
   - component: {fileID: 539290763}
   - component: {fileID: 539290762}
-  - component: {fileID: 539290761}
   - component: {fileID: 539290760}
   - component: {fileID: 539290759}
   - component: {fileID: 539290758}
@@ -75912,30 +75811,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &539290761
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 539290754}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &539290762
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -214286,7 +214161,6 @@ GameObject:
   - component: {fileID: 1104324896}
   - component: {fileID: 1104324895}
   - component: {fileID: 1104324894}
-  - component: {fileID: 1104324893}
   - component: {fileID: 1104324892}
   - component: {fileID: 1104324891}
   - component: {fileID: 1104324890}
@@ -214610,30 +214484,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &1104324893
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1104324886}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1104324894
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -224114,7 +223964,6 @@ GameObject:
   - component: {fileID: 1158789633}
   - component: {fileID: 1158789632}
   - component: {fileID: 1158789631}
-  - component: {fileID: 1158789630}
   - component: {fileID: 1158789629}
   - component: {fileID: 1158789628}
   - component: {fileID: 1158789627}
@@ -224442,30 +224291,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &1158789630
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1158789623}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1158789631
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -236567,7 +236392,6 @@ GameObject:
   - component: {fileID: 1248394171}
   - component: {fileID: 1248394170}
   - component: {fileID: 1248394169}
-  - component: {fileID: 1248394168}
   - component: {fileID: 1248394167}
   - component: {fileID: 1248394166}
   - component: {fileID: 1248394165}
@@ -236888,30 +236712,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &1248394168
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1248394161}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1248394169
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -240156,7 +239956,6 @@ GameObject:
   - component: {fileID: 1285717939}
   - component: {fileID: 1285717938}
   - component: {fileID: 1285717937}
-  - component: {fileID: 1285717936}
   - component: {fileID: 1285717935}
   - component: {fileID: 1285717934}
   - component: {fileID: 1285717933}
@@ -240478,30 +240277,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &1285717936
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1285717929}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1285717937
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -261801,7 +261576,6 @@ GameObject:
   - component: {fileID: 1427658071}
   - component: {fileID: 1427658070}
   - component: {fileID: 1427658069}
-  - component: {fileID: 1427658068}
   - component: {fileID: 1427658066}
   - component: {fileID: 1427658075}
   - component: {fileID: 1427658065}
@@ -262090,30 +261864,6 @@ MonoBehaviour:
   roomAudioDuckVolume: 0
   roomAudioFadeDuration: 1
   interactionRange: 1
---- !u!114 &1427658068
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1427658061}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1.5
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1537657991143817471, guid: 32d146fbd8c2abc42a058b21c3435d1a, type: 3}
-  idleDown: {fileID: -5335349320146860692, guid: 32d146fbd8c2abc42a058b21c3435d1a, type: 3}
-  idleLeft: {fileID: -4527157862657408599, guid: 32d146fbd8c2abc42a058b21c3435d1a, type: 3}
-  idleRight: {fileID: 7206485582929158976, guid: 32d146fbd8c2abc42a058b21c3435d1a, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1427658069
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -273023,7 +272773,6 @@ GameObject:
   - component: {fileID: 1498735205}
   - component: {fileID: 1498735204}
   - component: {fileID: 1498735203}
-  - component: {fileID: 1498735202}
   - component: {fileID: 1498735201}
   - component: {fileID: 1498735200}
   - component: {fileID: 1498735199}
@@ -273343,30 +273092,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &1498735202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1498735195}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1498735203
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -278626,7 +278351,6 @@ GameObject:
   - component: {fileID: 1525256440}
   - component: {fileID: 1525256439}
   - component: {fileID: 1525256438}
-  - component: {fileID: 1525256437}
   - component: {fileID: 1525256436}
   - component: {fileID: 1525256435}
   - component: {fileID: 1525256434}
@@ -278948,30 +278672,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &1525256437
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1525256430}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1525256438
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -284451,7 +284151,6 @@ GameObject:
   - component: {fileID: 1562285593}
   - component: {fileID: 1562285592}
   - component: {fileID: 1562285591}
-  - component: {fileID: 1562285590}
   - component: {fileID: 1562285589}
   - component: {fileID: 1562285588}
   - component: {fileID: 1562285587}
@@ -284767,30 +284466,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &1562285590
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1562285583}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1562285591
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -289188,7 +288863,6 @@ GameObject:
   - component: {fileID: 1590742457}
   - component: {fileID: 1590742456}
   - component: {fileID: 1590742455}
-  - component: {fileID: 1590742454}
   - component: {fileID: 1590742461}
   - component: {fileID: 1590742452}
   - component: {fileID: 1590742451}
@@ -289478,30 +289152,6 @@ MonoBehaviour:
   roomAudioDuckVolume: 0
   roomAudioFadeDuration: 1
   interactionRange: 1
---- !u!114 &1590742454
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1590742447}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: -1948945622288386660, guid: f7c22c5f3ac2f8749a3c760ab9111be5, type: 3}
-  idleDown: {fileID: -4329958472022460067, guid: f7c22c5f3ac2f8749a3c760ab9111be5, type: 3}
-  idleLeft: {fileID: -1017708019093121219, guid: f7c22c5f3ac2f8749a3c760ab9111be5, type: 3}
-  idleRight: {fileID: 8427670090092134994, guid: f7c22c5f3ac2f8749a3c760ab9111be5, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1590742455
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -359942,7 +359592,6 @@ GameObject:
   - component: {fileID: 1857690076}
   - component: {fileID: 1857690075}
   - component: {fileID: 1857690074}
-  - component: {fileID: 1857690073}
   - component: {fileID: 1857690072}
   - component: {fileID: 1857690071}
   - component: {fileID: 1857690070}
@@ -360284,30 +359933,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &1857690073
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1857690066}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1857690074
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -362859,7 +362484,6 @@ GameObject:
   - component: {fileID: 1870527051}
   - component: {fileID: 1870527050}
   - component: {fileID: 1870527049}
-  - component: {fileID: 1870527048}
   - component: {fileID: 1870527047}
   - component: {fileID: 1870527046}
   - component: {fileID: 1870527045}
@@ -363202,30 +362826,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &1870527048
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1870527041}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &1870527049
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -393966,7 +393566,6 @@ GameObject:
   - component: {fileID: 2055523575}
   - component: {fileID: 2055523574}
   - component: {fileID: 2055523573}
-  - component: {fileID: 2055523572}
   - component: {fileID: 2055523571}
   - component: {fileID: 2055523570}
   - component: {fileID: 2055523569}
@@ -394286,30 +393885,6 @@ MonoBehaviour:
   stopDistance: 0.75
   playerTag: Player
   detectionRadius: 1
---- !u!114 &2055523572
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2055523565}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3499b79c7c7ac439d32d944f61757a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  speed: 1
-  sprintMultiplier: 2
-  walkController: {fileID: 0}
-  runController: {fileID: 0}
-  idleController: {fileID: 0}
-  useAnimatedIdleController: 0
-  idleUp: {fileID: 1203849357763017269, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleDown: {fileID: 387638986779881568, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleLeft: {fileID: 3703622231805953965, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  idleRight: {fileID: 2957960801161380371, guid: 44fcb241048f32145ba8fdc7dbf4c881, type: 3}
-  axisBias: 0.05
-  forceIdleSprite: {fileID: 0}
 --- !u!61 &2055523573
 BoxCollider2D:
   m_ObjectHideFlags: 0
