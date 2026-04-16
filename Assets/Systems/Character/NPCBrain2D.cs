@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterMotor2D))]
+[RequireComponent(typeof(NPCMotor2D))]
 public class NpcBrain2D : MonoBehaviour
 {
     public enum NpcMode { Idle, Patrol, Wander, Follow, Manual }
@@ -54,7 +54,7 @@ public class NpcBrain2D : MonoBehaviour
     private NpcMode _previousMode;
     // =======================================
 
-    private CharacterMotor2D _motor;
+    private NPCMotor2D _motor;
     private int _currentWp;
     private Vector2 _desiredMove;
     private Coroutine _wanderRoutine;
@@ -68,7 +68,7 @@ public class NpcBrain2D : MonoBehaviour
 
     void Awake()
     {
-        _motor = GetComponent<CharacterMotor2D>();
+        _motor = GetComponent<NPCMotor2D>();
         _rb = GetComponent<Rigidbody2D>();
 
         _chaseDistanceSqr = chaseDistance * chaseDistance;
