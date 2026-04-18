@@ -176,10 +176,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "PRODUCED BY\r\nSyrus Tolentino \r\n\r\nART AND ANIMATION\r\nMurtaza Tayabali
-    \r\nJennifer Ceja \r\nNgan Nguyen (External) \r\nLinh Huynh\r\n\r\nENGINEER\r\nDarrell
-    Se \r\nAurelio Aguirre \r\nLinh Huynh \r\nJester Santos \r\nHenry Nguyen (External)
-    \r\n\r\nAUDIO\r\nMelisa Unlu \r\n"
+  m_text: "Game Dev 2 Team\nPRODUCED BY\r\nSyrus Tolentino \r\n\r\nART AND ANIMATION\r\nMurtaza
+    Tayabali \r\nJoseph Giap (External)\r\nLinh Huynh\r\n\r\nENGINEER\r\nDarrell
+    Se \r\nLinh Huynh \r\nJester Santos \r\n\r\n\r\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f768914c40f8cfd4a9ccec2fcff7abff, type: 2}
   m_sharedMaterial: {fileID: -3194917876035781499, guid: f768914c40f8cfd4a9ccec2fcff7abff, type: 2}
@@ -217,6 +216,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -433,7 +433,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82e070607996e98498e1bee8ced48747, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  enableDebugLogs: 0
   popupImage: {fileID: 826498232}
+  popupPromptText: {fileID: 0}
+  interactPromptText: E to interact
+  playPromptText: E to play
+  interactCursor: {fileID: 0}
+  interactCursorHotspot: {x: 16, y: 16}
+  defaultCursor: {fileID: 0}
+  defaultCursorHotspot: {x: 0, y: 0}
+  enableHoverDetection: 1
+  hoverCheckRadius: 1
+  enableDirectionalHover: 1
+  directionalHoverMaxDistance: 3
+  directionalHoverAngleTolerance: 60
+  useRaycastDetection: 1
+  raycastLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  enableKeyboardInteraction: 1
 --- !u!61 &497838753
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -873,6 +891,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &826498234
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -918,6 +937,7 @@ SpriteRenderer:
   m_SortingLayerID: -324064293
   m_SortingLayer: 2
   m_SortingOrder: 1
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -7561119220053961803, guid: 7274326e6bb87a840af3cfc4d76ab228, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -927,7 +947,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &983187382
 GameObject:
