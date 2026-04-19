@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using Systems;
+using Systems.Overworld.Intro;
 
 /// <summary>
 /// Displays a room name popup when entering new areas.
@@ -54,6 +55,7 @@ public class RoomNamePopup : MonoBehaviour
         CreateUI();
         RoomTracker.OnRoomChanged += HandleRoomChanged;
         TeleportSystem.OnAnyTeleportCompleted += HandleTeleportCompleted;
+        OverworldWakeUpCutscene.OnWakeUpSequenceCompleted += HandleWakeUpSequenceCompleted;
     }
 
     void Start()
@@ -78,6 +80,7 @@ public class RoomNamePopup : MonoBehaviour
     {
         RoomTracker.OnRoomChanged -= HandleRoomChanged;
         TeleportSystem.OnAnyTeleportCompleted -= HandleTeleportCompleted;
+        OverworldWakeUpCutscene.OnWakeUpSequenceCompleted -= HandleWakeUpSequenceCompleted;
     }
 
     private IEnumerator DelayedInitialCheck()
@@ -172,7 +175,7 @@ public class RoomNamePopup : MonoBehaviour
         if (string.IsNullOrEmpty(roomId)) return;
         if (roomId == lastRoomId) return;
 
-        if (IsVisualTransitionActive())
+        if (ShouldDeferBanner())
         {
             pendingRoomId = roomId;
             return;
@@ -184,13 +187,31 @@ public class RoomNamePopup : MonoBehaviour
     private void HandleTeleportCompleted()
     {
         if (string.IsNullOrEmpty(pendingRoomId)) return;
-        if (IsVisualTransitionActive()) return;
+        if (ShouldDeferBanner()) return;
 
         string roomToShow = pendingRoomId;
         pendingRoomId = null;
 
         if (roomToShow == lastRoomId) return;
         ShowRoomById(roomToShow);
+    }
+
+    private void HandleWakeUpSequenceCompleted()
+    {
+        TryShowPendingRoomIfVisible();
+    }
+
+    private bool IsWakeUpSequenceBlockingBanner()
+    {
+        return OverworldWakeUpCutscene.IsWakeUpSequenceActive;
+    }
+
+    private bool ShouldDeferBanner()
+    {
+        if (IsVisualTransitionActive()) return true;
+        if (IsWakeUpSequenceBlockingBanner()) return true;
+
+        return false;
     }
 
     private bool IsTeleportInProgress()
@@ -244,7 +265,7 @@ public class RoomNamePopup : MonoBehaviour
     private void TryShowPendingRoomIfVisible()
     {
         if (string.IsNullOrEmpty(pendingRoomId)) return;
-        if (IsVisualTransitionActive()) return;
+        if (ShouldDeferBanner()) return;
 
         string roomToShow = pendingRoomId;
         pendingRoomId = null;
@@ -255,7 +276,7 @@ public class RoomNamePopup : MonoBehaviour
 
     private void ForceHidePopupIfTransitionActive()
     {
-        if (!IsVisualTransitionActive()) return;
+        if (!ShouldDeferBanner()) return;
 
         if (animationCoroutine != null)
         {
@@ -304,7 +325,7 @@ public class RoomNamePopup : MonoBehaviour
 
     private void ShowRoomById(string roomId)
     {
-        if (IsVisualTransitionActive())
+        if (ShouldDeferBanner())
         {
             pendingRoomId = roomId;
             return;
