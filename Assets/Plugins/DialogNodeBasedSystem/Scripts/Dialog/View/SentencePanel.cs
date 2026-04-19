@@ -19,6 +19,7 @@ namespace cherrydev
         private string _currentFullText;
         private int _charCounter = 0;
         private AudioSource _textAudioSource;
+        private bool _soundEnabled = true; // Flag to control whether sounds should play
         
         public void Awake()
         {
@@ -59,6 +60,7 @@ namespace cherrydev
             _dialogText.maxVisibleCharacters = 0;
             _currentFullText = string.Empty;
             _charCounter = 0;
+            _soundEnabled = true; // Re-enable sound for new dialog
         }
 
         /// <summary>
@@ -81,8 +83,8 @@ namespace cherrydev
             _dialogText.maxVisibleCharacters++;
             _charCounter++;
             
-            // Play sound every Nth character
-            if (_playTextSound && _textSounds != null && _textSounds.Length > 0 && _charCounter % _soundEveryNthChar == 0)
+            // Play sound every Nth character (only if sound is enabled)
+            if (_soundEnabled && _playTextSound && _textSounds != null && _textSounds.Length > 0 && _charCounter % _soundEveryNthChar == 0)
             {
                 PlayTextSound();
             }
@@ -102,6 +104,21 @@ namespace cherrydev
             if (clip != null)
             {
                 _textAudioSource.PlayOneShot(clip, _soundVolume);
+            }
+        }
+        
+        /// <summary>
+        /// Stops any currently playing text sound
+        /// </summary>
+        public void StopTextSound()
+        {
+            // Disable further sound playback
+            _soundEnabled = false;
+            
+            // Stop the audio source (though PlayOneShot can't be stopped, this prevents looping sounds)
+            if (_textAudioSource != null)
+            {
+                _textAudioSource.Stop();
             }
         }
         
