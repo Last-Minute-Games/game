@@ -115,8 +115,14 @@ namespace Systems
             {
                 yield break; // Another interaction is in progress
             }
+
+            Vector2 interactionDirection = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            CharacterMotor2D.Facing preservedFacing = _characterController2D.GetFacingFromVector(interactionDirection);
+
+            _characterController2D.SetFacingDirection(preservedFacing);
             
             _characterController2D.SetTeleporting(true);
+            _characterController2D.SetFacingDirection(preservedFacing);
             
             // Start fade-in
             _fadeCanvasGroup.blocksRaycasts = true;
@@ -148,6 +154,7 @@ namespace Systems
                 
             // Start fade-out
             _characterController2D.SetTeleporting(false);
+            _characterController2D.SetFacingDirection(preservedFacing);
             
             _cinemachinePositionComposer.Damping = Vector3.one;
             
