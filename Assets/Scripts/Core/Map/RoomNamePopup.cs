@@ -121,6 +121,7 @@ public class RoomNamePopup : MonoBehaviour
         containerRect.pivot = new Vector2(0.5f, 1f);
         containerRect.anchoredPosition = new Vector2(0f, -topOffset);
         containerRect.sizeDelta = new Vector2(popupWidth, popupHeight);
+        containerRect.localScale = new Vector3(0.5f, 0.5f, 1f);
 
         canvasGroup = containerObj.AddComponent<CanvasGroup>();
         canvasGroup.alpha = 0f;
