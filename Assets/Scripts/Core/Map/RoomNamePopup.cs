@@ -12,6 +12,14 @@ using Systems.Overworld.Intro;
 /// </summary>
 public class RoomNamePopup : MonoBehaviour
 {
+    private enum PopupPhase
+    {
+        None,
+        FadeIn,
+        Display,
+        FadeOut
+    }
+
     [Header("Room Data")]
     [SerializeField] private RoomMapData roomMapData;
 
@@ -49,6 +57,13 @@ public class RoomNamePopup : MonoBehaviour
     private ScreenFader screenFader;
     private Coroutine animationCoroutine;
     private RoomMapUI cachedRoomMapUI;
+    private PopupPhase currentPhase = PopupPhase.None;
+    private float currentPhaseElapsed;
+    private string activeRoomName;
+    private bool hasSuppressedBannerState;
+    private PopupPhase suppressedPhase = PopupPhase.None;
+    private float suppressedPhaseElapsed;
+    private string suppressedRoomName;
 
     void Awake()
     {
@@ -56,6 +71,7 @@ public class RoomNamePopup : MonoBehaviour
         RoomTracker.OnRoomChanged += HandleRoomChanged;
         TeleportSystem.OnAnyTeleportCompleted += HandleTeleportCompleted;
         OverworldWakeUpCutscene.OnWakeUpSequenceCompleted += HandleWakeUpSequenceCompleted;
+        RoomMapUI.OnMapVisibilityChanged += HandleMapVisibilityChanged;
     }
 
     void Start()
@@ -68,6 +84,7 @@ public class RoomNamePopup : MonoBehaviour
     void Update()
     {
         ForceHidePopupIfTransitionActive();
+        TryResumeSuppressedBannerIfVisible();
         TryShowPendingRoomIfVisible();
 
         if (Input.GetKeyDown(journalToggleKey))
@@ -81,6 +98,7 @@ public class RoomNamePopup : MonoBehaviour
         RoomTracker.OnRoomChanged -= HandleRoomChanged;
         TeleportSystem.OnAnyTeleportCompleted -= HandleTeleportCompleted;
         OverworldWakeUpCutscene.OnWakeUpSequenceCompleted -= HandleWakeUpSequenceCompleted;
+        RoomMapUI.OnMapVisibilityChanged -= HandleMapVisibilityChanged;
     }
 
     private IEnumerator DelayedInitialCheck()
@@ -209,6 +227,7 @@ public class RoomNamePopup : MonoBehaviour
 
     private bool ShouldDeferBanner()
     {
+        if (RoomMapUI.IsMapVisible) return true;
         if (IsVisualTransitionActive()) return true;
         if (IsWakeUpSequenceBlockingBanner()) return true;
 
@@ -265,6 +284,7 @@ public class RoomNamePopup : MonoBehaviour
 
     private void TryShowPendingRoomIfVisible()
     {
+        if (animationCoroutine != null) return;
         if (string.IsNullOrEmpty(pendingRoomId)) return;
         if (ShouldDeferBanner()) return;
 
@@ -281,8 +301,14 @@ public class RoomNamePopup : MonoBehaviour
 
         if (animationCoroutine != null)
         {
+            if (RoomMapUI.IsMapVisible)
+            {
+                SaveActiveBannerStateForMap();
+            }
+
             StopCoroutine(animationCoroutine);
             animationCoroutine = null;
+            ClearActiveAnimationState();
         }
 
         if (canvasGroup != null)
@@ -362,42 +388,180 @@ public class RoomNamePopup : MonoBehaviour
 
     private void ShowPopup(string roomName)
     {
+        ClearSuppressedBannerState();
+        StartPopupAnimation(roomName, PopupPhase.FadeIn, 0f);
+    }
+
+    private void HandleMapVisibilityChanged(bool isMapVisible)
+    {
+        if (isMapVisible)
+        {
+            SuppressBannerForMap();
+            return;
+        }
+
+        TryResumeSuppressedBannerIfVisible();
+    }
+
+    private void SuppressBannerForMap()
+    {
+        SaveActiveBannerStateForMap();
+
         if (animationCoroutine != null)
         {
             StopCoroutine(animationCoroutine);
+            animationCoroutine = null;
+            ClearActiveAnimationState();
+        }
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 0f;
+        }
+    }
+
+    private void SaveActiveBannerStateForMap()
+    {
+        if (animationCoroutine == null) return;
+        if (string.IsNullOrEmpty(activeRoomName)) return;
+        if (currentPhase == PopupPhase.None) return;
+
+        hasSuppressedBannerState = true;
+        suppressedRoomName = activeRoomName;
+        suppressedPhase = currentPhase;
+        suppressedPhaseElapsed = currentPhaseElapsed;
+    }
+
+    private void TryResumeSuppressedBannerIfVisible()
+    {
+        if (!hasSuppressedBannerState) return;
+        if (animationCoroutine != null) return;
+        if (ShouldDeferBanner()) return;
+
+        StartPopupAnimation(suppressedRoomName, suppressedPhase, suppressedPhaseElapsed);
+        ClearSuppressedBannerState();
+    }
+
+    private void StartPopupAnimation(string roomName, PopupPhase startPhase, float startElapsed)
+    {
+        if (string.IsNullOrEmpty(roomName)) return;
+
+        if (startPhase == PopupPhase.None)
+        {
+            startPhase = PopupPhase.FadeIn;
+            startElapsed = 0f;
+        }
+
+        if (animationCoroutine != null)
+        {
+            StopCoroutine(animationCoroutine);
+            animationCoroutine = null;
         }
 
         ApplyJournalFont();
-        animationCoroutine = StartCoroutine(AnimatePopup(roomName));
+
+        activeRoomName = roomName;
+        currentPhase = startPhase;
+        currentPhaseElapsed = Mathf.Max(0f, startElapsed);
+        animationCoroutine = StartCoroutine(AnimatePopup());
     }
 
-    private IEnumerator AnimatePopup(string roomName)
+    private IEnumerator AnimatePopup()
     {
-        textComponent.text = roomName;
-
-        // Fade in
-        float elapsed = 0f;
-        while (elapsed < fadeInTime)
+        if (textComponent == null || canvasGroup == null)
         {
-            elapsed += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Clamp01(elapsed / fadeInTime);
-            yield return null;
+            animationCoroutine = null;
+            ClearActiveAnimationState();
+            yield break;
         }
-        canvasGroup.alpha = 1f;
 
-        // Display
-        yield return new WaitForSeconds(displayTime);
+        textComponent.text = activeRoomName;
 
-        // Fade out
-        elapsed = 0f;
-        while (elapsed < fadeOutTime)
+        while (true)
         {
-            elapsed += Time.deltaTime;
-            canvasGroup.alpha = 1f - Mathf.Clamp01(elapsed / fadeOutTime);
-            yield return null;
-        }
-        canvasGroup.alpha = 0f;
+            switch (currentPhase)
+            {
+                case PopupPhase.FadeIn:
+                    if (fadeInTime <= 0f)
+                    {
+                        canvasGroup.alpha = 1f;
+                        currentPhase = PopupPhase.Display;
+                        currentPhaseElapsed = 0f;
+                        break;
+                    }
 
-        animationCoroutine = null;
+                    while (currentPhaseElapsed < fadeInTime)
+                    {
+                        currentPhaseElapsed += Time.deltaTime;
+                        canvasGroup.alpha = Mathf.Clamp01(currentPhaseElapsed / fadeInTime);
+                        yield return null;
+                    }
+
+                    canvasGroup.alpha = 1f;
+                    currentPhase = PopupPhase.Display;
+                    currentPhaseElapsed = 0f;
+                    break;
+
+                case PopupPhase.Display:
+                    if (displayTime <= 0f)
+                    {
+                        currentPhase = PopupPhase.FadeOut;
+                        currentPhaseElapsed = 0f;
+                        break;
+                    }
+
+                    while (currentPhaseElapsed < displayTime)
+                    {
+                        currentPhaseElapsed += Time.deltaTime;
+                        yield return null;
+                    }
+
+                    currentPhase = PopupPhase.FadeOut;
+                    currentPhaseElapsed = 0f;
+                    break;
+
+                case PopupPhase.FadeOut:
+                    if (fadeOutTime <= 0f)
+                    {
+                        canvasGroup.alpha = 0f;
+                        animationCoroutine = null;
+                        ClearActiveAnimationState();
+                        yield break;
+                    }
+
+                    while (currentPhaseElapsed < fadeOutTime)
+                    {
+                        currentPhaseElapsed += Time.deltaTime;
+                        canvasGroup.alpha = 1f - Mathf.Clamp01(currentPhaseElapsed / fadeOutTime);
+                        yield return null;
+                    }
+
+                    canvasGroup.alpha = 0f;
+                    animationCoroutine = null;
+                    ClearActiveAnimationState();
+                    yield break;
+
+                default:
+                    canvasGroup.alpha = 0f;
+                    animationCoroutine = null;
+                    ClearActiveAnimationState();
+                    yield break;
+            }
+        }
+    }
+
+    private void ClearActiveAnimationState()
+    {
+        currentPhase = PopupPhase.None;
+        currentPhaseElapsed = 0f;
+        activeRoomName = null;
+    }
+
+    private void ClearSuppressedBannerState()
+    {
+        hasSuppressedBannerState = false;
+        suppressedPhase = PopupPhase.None;
+        suppressedPhaseElapsed = 0f;
+        suppressedRoomName = null;
     }
 }
