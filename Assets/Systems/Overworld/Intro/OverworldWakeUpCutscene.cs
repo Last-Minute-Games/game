@@ -13,6 +13,9 @@ namespace Systems.Overworld.Intro
         private const string OverworldSceneName = "Overworld";
         private const float DialogueFailSafeTimeoutSeconds = 30f;
 
+        public static bool IsWakeUpSequenceActive { get; private set; }
+        public static event System.Action OnWakeUpSequenceCompleted;
+
         private CanvasGroup fadeCanvasGroup;
         private SpriteRenderer sleepingMainSpriteRenderer;
         private SpriteRenderer mainCharSpriteRenderer;
@@ -65,6 +68,7 @@ namespace Systems.Overworld.Intro
         [SerializeField] private bool autoFindEndTransition = true;
         
         private bool hasPlayed = false;
+        private bool wakeUpSequenceCompletionSignaled;
         
         // Add a flag to determine which sequence to play
         private bool shouldPlayFullWakeUpCutscene = false;
@@ -73,6 +77,7 @@ namespace Systems.Overworld.Intro
         {
             // Safety: if this component is disabled mid-sequence, never leave player locked.
             RestorePlayerControlSafe();
+            ClearWakeUpSequenceState();
         }
 
         private void RestorePlayerControlSafe()
@@ -104,10 +109,39 @@ namespace Systems.Overworld.Intro
                     playerMotor.SetDialogueActive(false);
             }
         }
+
+        private void MarkWakeUpSequenceStarted()
+        {
+            IsWakeUpSequenceActive = true;
+            wakeUpSequenceCompletionSignaled = false;
+        }
+
+        private void MarkWakeUpSequenceCompleted()
+        {
+            if (wakeUpSequenceCompletionSignaled)
+            {
+                return;
+            }
+
+            wakeUpSequenceCompletionSignaled = true;
+            IsWakeUpSequenceActive = false;
+            OnWakeUpSequenceCompleted?.Invoke();
+        }
+
+        private void ClearWakeUpSequenceState()
+        {
+            IsWakeUpSequenceActive = false;
+            wakeUpSequenceCompletionSignaled = false;
+        }
         
         private IEnumerator BeginWakeUpSequence()
         {
             DebugLogger.LogCutscene("BeginWakeUpSequence started");
+
+            if (!IsWakeUpSequenceActive)
+            {
+                MarkWakeUpSequenceStarted();
+            }
             
             if (hasPlayed) yield break;
             hasPlayed = true;
@@ -279,6 +313,7 @@ namespace Systems.Overworld.Intro
             {
                 fadeCanvasGroup.blocksRaycasts = false;
                 DebugLogger.LogCutscene("Fade complete - character out of bed");
+                MarkWakeUpSequenceCompleted();
                 
                 // Re-enable player input immediately after fade completes
                 if (playerInput != null)
@@ -325,6 +360,7 @@ namespace Systems.Overworld.Intro
             if (!string.Equals(sceneName, OverworldSceneName, System.StringComparison.OrdinalIgnoreCase))
             {
                 DebugLogger.LogWarning($"[OverworldWakeUpCutscene] Disabled outside Overworld (current scene: {sceneName}).");
+                ClearWakeUpSequenceState();
                 RestorePlayerControlSafe();
                 enabled = false;
                 return;
@@ -413,6 +449,8 @@ namespace Systems.Overworld.Intro
 
             if (playFlag == 1)
             {
+                MarkWakeUpSequenceStarted();
+
                 // Clear the flag
                 PlayerPrefs.SetInt("PlayWakeUpCutscene", 0);
                 PlayerPrefs.Save();
@@ -442,6 +480,7 @@ namespace Systems.Overworld.Intro
             // Check if day.six flag is set - trigger ending instead of dialogue
             else if (GameFlags.HasFlag("day.six"))
             {
+                ClearWakeUpSequenceState();
                 DebugLogger.LogCutscene("day.six detected - triggering ending sequence");
                 StartCoroutine(HandleDayEndingSequence("day.six"));
             }
@@ -449,12 +488,14 @@ namespace Systems.Overworld.Intro
             // Check if we should play day-specific wake-up dialogue
             else if (ShouldPlayDaySpecificWakeUpDialogue())
             {
+                MarkWakeUpSequenceStarted();
                 string currentDay = GetCurrentDay();
                 DebugLogger.LogCutscene($"Day-specific wake-up dialogue detected for {currentDay}, starting...");
                 StartCoroutine(PlayDaySpecificWakeUpDialogue());
             }
             else
             {
+                ClearWakeUpSequenceState();
                 DebugLogger.LogCutscene("No cutscene to play, component will remain inactive");
             }
         }
@@ -635,6 +676,11 @@ namespace Systems.Overworld.Intro
         private IEnumerator PlayDaySpecificWakeUpDialogue()
         {
             DebugLogger.LogCutscene("Starting day-specific wake-up dialogue sequence");
+
+            if (!IsWakeUpSequenceActive)
+            {
+                MarkWakeUpSequenceStarted();
+            }
             
             // Find clock timer
             if (clockTimer == null)
@@ -645,6 +691,7 @@ namespace Systems.Overworld.Intro
             if (clockTimer == null)
             {
                 DebugLogger.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot continue");
+                MarkWakeUpSequenceCompleted();
                 yield break;
             }
 
@@ -656,6 +703,7 @@ namespace Systems.Overworld.Intro
                 // Day.one: Just start timer normally (no reconstruction needed)
                 DebugLogger.LogCutscene("Day.one - starting timer normally without reconstruction");
                 clockTimer.StartTimer(clockTimer.totalTime);
+                MarkWakeUpSequenceCompleted();
                 yield break;
             }
             
@@ -696,6 +744,7 @@ namespace Systems.Overworld.Intro
                     clockTimer.StartTimer(clockTimer.totalTime);
                     DebugLogger.LogCutscene("Started clock timer manually (no dialogue to play)");
                 }
+                MarkWakeUpSequenceCompleted();
                 yield break;
             }
             
@@ -709,6 +758,7 @@ namespace Systems.Overworld.Intro
                     clockTimer.StartTimer(clockTimer.totalTime);
                     DebugLogger.LogCutscene("Started clock timer manually (no dialogBehaviour)");
                 }
+                MarkWakeUpSequenceCompleted();
                 yield break;
             }
             
@@ -791,6 +841,8 @@ namespace Systems.Overworld.Intro
             {
                 DebugLogger.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot start timer!");
             }
+
+            MarkWakeUpSequenceCompleted();
 
             DebugLogger.LogCutscene("Day-specific wake-up dialogue complete");
         }

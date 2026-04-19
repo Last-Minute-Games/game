@@ -22,6 +22,9 @@ using UnityEngine.UI;
 /// </summary>
 public class RoomMapUI : MonoBehaviour
 {
+    public static event System.Action<bool> OnMapVisibilityChanged;
+    public static bool IsMapVisible { get; private set; }
+
     // ─────────────────── Inspector ───────────────────
 
     [Header("Data")]
@@ -236,6 +239,11 @@ public class RoomMapUI : MonoBehaviour
 
     void OnDestroy()
     {
+        if (IsMapVisible && (_isOpen || (_root != null && _root.activeSelf)))
+        {
+            SetMapVisibility(false);
+        }
+
         if (_prewarmCoroutine != null)
             StopCoroutine(_prewarmCoroutine);
 
@@ -264,6 +272,7 @@ public class RoomMapUI : MonoBehaviour
 
         if (_isOpen)
         {
+            SetMapVisibility(true);
             GlobalPause.SetPaused(true);
 
             // Ensure we have the player reference
@@ -296,8 +305,17 @@ public class RoomMapUI : MonoBehaviour
             {
                 _root.SetActive(false);
                 GlobalPause.SetPaused(false);
+                SetMapVisibility(false);
             }));
         }
+    }
+
+    private static void SetMapVisibility(bool isVisible)
+    {
+        if (IsMapVisible == isVisible) return;
+
+        IsMapVisible = isVisible;
+        OnMapVisibilityChanged?.Invoke(isVisible);
     }
 
     private IEnumerator PrewarmMapData()

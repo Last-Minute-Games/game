@@ -119,18 +119,25 @@
             ApplyStaticIdle();
         }
 
+        private Facing ResolveFacingFrom(Vector2 direction)
+        {
+            if (direction.sqrMagnitude < 0.0001f)
+            {
+                return _facing;
+            }
+
+            if (Mathf.Abs(direction.y) > Mathf.Abs(direction.x) + axisBias)
+            {
+                return direction.y >= 0f ? Facing.Up : Facing.Down;
+            }
+
+            return direction.x >= 0f ? Facing.Right : Facing.Left;
+        }
+
         private void UpdateFacingFrom(Vector2 v)
         {
             if (v.sqrMagnitude < 0.0001f) return;
-
-            if (Mathf.Abs(v.y) > Mathf.Abs(v.x) + axisBias)
-            {
-                _facing = (v.y >= 0f) ? Facing.Up : Facing.Down;
-            }
-            else
-            {
-                _facing = (v.x >= 0f) ? Facing.Right : Facing.Left;
-            }
+            _facing = ResolveFacingFrom(v);
         }
 
         private bool TryApplyDirectionalIdleAnimation()
@@ -221,6 +228,31 @@
         }
 
         // ===== Public API =====
+        public Facing GetFacingDirection() => _facing;
+
+        public Facing GetFacingFromVector(Vector2 direction) => ResolveFacingFrom(direction);
+
+        public void SetFacingDirection(Facing facing)
+        {
+            _facing = facing;
+
+            bool isMoving = _moveInput.sqrMagnitude > 0.0001f;
+            if (isMoving && !_isTeleporting && !_isDialogueActive)
+            {
+                return;
+            }
+
+            if (!TryApplyDirectionalIdleAnimation())
+            {
+                if (_anim.runtimeAnimatorController != walkController && walkController != null)
+                {
+                    _anim.runtimeAnimatorController = walkController;
+                }
+
+                ApplyStaticIdle();
+            }
+        }
+
         public void SetMoveInput(Vector2 input) => _moveInput = input;
 
         public void SetDialogueActive(bool active)
