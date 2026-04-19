@@ -18,6 +18,10 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     public DialogBehaviour dialogBehaviour;
     public DialogNodeGraph dialogGraph;
 
+    [Header("Interaction Settings")]
+    [Tooltip("How far away the player can be to interact with this item (should match or be smaller than trigger collider size)")]
+    [SerializeField] private float interactionRange = 2f;
+
     [Header("Flags to Set After Dialog")]
     [Tooltip("These flags will be set when the dialog finishes (e.g., 'talked_to_npc', 'quest_completed')")]
     [SerializeField] private List<string> flagsToSet = new List<string>();
@@ -100,14 +104,29 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
     public bool CanInteract()
     {
-        // Can interact if we have dialog setup and no other interaction is in progress
-        // Note: Proximity is validated by InteractionDetector's trigger - if this method is called,
-        // the player is already within range
+        // Can interact if we have dialog setup, player is within range, and no other interaction is in progress
         if (dialogBehaviour == null || dialogGraph == null)
         {
             DebugLogger.LogInteractiveItem($"CanInteract=false: dialogBehaviour={dialogBehaviour != null}, dialogGraph={dialogGraph != null}", name);
             return false;
         }
+
+        // Check if player is within interaction range
+        if (player != null)
+        {
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+            if (distance > interactionRange)
+            {
+                DebugLogger.LogInteractiveItem($"CanInteract=false: Player too far (distance={distance:F2}, range={interactionRange})", name);
+                return false;
+            }
+        }
+        else
+        {
+            DebugLogger.LogInteractiveItem($"CanInteract=false: Player reference is null", name);
+            return false;
+        }
+
         if (Systems.InteractionLockManager.IsLocked)
         {
             DebugLogger.LogInteractiveItem($"CanInteract=false: InteractionLockManager is locked", name);
@@ -184,6 +203,15 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         // Release the interaction lock
         Systems.InteractionLockManager.Unlock();
     }
+
+#if UNITY_EDITOR
+    void OnDrawGizmosSelected()
+    {
+        // Draw interaction range
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, interactionRange);
+    }
+#endif
 
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     private void LogDebug(string message)
