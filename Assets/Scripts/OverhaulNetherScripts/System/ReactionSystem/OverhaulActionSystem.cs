@@ -6,7 +6,7 @@ using UnityEngine;
 public class OverhaulActionSystem : Singleton<OverhaulActionSystem>
 {
   // reference to the current reaction list
-  private readonly List<OverhaulActionSystem> reactions = null;
+  private List<OverhaulGameAction> reactions = null;
 
   // good to have when only allowing interactions with cards when system is not performing
   public bool IsPerforming { get; private set; } = false;
@@ -20,6 +20,8 @@ public class OverhaulActionSystem : Singleton<OverhaulActionSystem>
   // hold logic for game actions, for each game action type, add a performer
   // that is called when action system performs game action of this type
   private static Dictionary<Type, Func<OverhaulGameAction, IEnumerator>> performers = new();
+
+  private static Dictionary<Delegate, Action<OverhaulGameAction>> wrappedReactions = new();
 
   // performs an action, give it an action and an optional callback that is called when perform is done
   public void Perform(OverhaulGameAction action, System.Action OnPerformFinished = null)
@@ -43,27 +45,18 @@ public class OverhaulActionSystem : Singleton<OverhaulActionSystem>
   {
     // add all reactions
     reactions = action.PreReactions;
-    PerformSubscribe(action, preSubs);
+    PerformSubscribers(action, preSubs);
     yield return PerformReactions();
 
-    reactions = actions.PerformReactions;
+    reactions = action.PerformReactions;
     yield return PerformPerformer(action);
     yield return PerformReactions();
 
-    reaction = action.PostReactions;
+    reactions = action.PostReactions;
     PerformSubscribers(action, postSubs);
     yield return PerformReactions();
 
     OnFlowFinished?.Invoke();
-  }
-
-  // call whole process until there's no more
-  private IEnumerator PerformReaction()
-  {
-    foreach (var reaction in reactions)
-    {
-      yield return Flow(reaction);
-    }
   }
 
   // execute a performer
@@ -89,11 +82,12 @@ public class OverhaulActionSystem : Singleton<OverhaulActionSystem>
     }
   }
 
+  // call flow until there's none left
   private IEnumerator PerformReactions()
   {
     foreach (var reaction in reactions)
     {
-      yield return flow(reaction);
+      yield return Flow(reaction);
     }
   }
 
@@ -125,6 +119,8 @@ public class OverhaulActionSystem : Singleton<OverhaulActionSystem>
     Dictionary<Type, List<Action<OverhaulGameAction>>> subs = timing == OverhaulReactionTiming.PRE ? preSubs : postSubs;
     // similar to attach performer and detach performer
     void wrappedReaction(OverhaulGameAction action) => reaction((T)action);
+    wrappedReactions[reaction] = wrappedReaction;
+
     if (subs.ContainsKey(typeof(T)))
     {
       subs[typeof(T)].Add(wrappedReaction);
@@ -138,11 +134,16 @@ public class OverhaulActionSystem : Singleton<OverhaulActionSystem>
 
   public static void UnsubscribeReaction<T>(Action<T> reaction, OverhaulReactionTiming timing) where T : OverhaulGameAction
   {
-    Dictionary<Type, List<Action<OverhaulGameAction>>> subs = timing => OverhaulReactionTiming.PRE ? preSubs : postSubs;
+    Dictionary<Type, List<Action<OverhaulGameAction>>> subs = timing == OverhaulReactionTiming.PRE ? preSubs : postSubs;
+
     if (subs.ContainsKey(typeof(T)))
     {
       void wrappedReaction(OverhaulGameAction action) => reaction((T)action);
-      subs[typeof(T)].Remove(wrappedReaction);
+      if (wrappedReactions.TryGetValue(reaction, out var wrapped))
+      {
+        subs[typeof(T)].Remove(wrapped);
+        wrappedReactions.Remove(reaction);
+      }
     }
   }
 }
