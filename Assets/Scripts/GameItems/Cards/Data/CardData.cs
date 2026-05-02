@@ -71,6 +71,10 @@ public class CardData : GameItemData
     [Tooltip("Unlock the card by default")] // fallback, incase GameFlags doesn't work
     public bool unlockedByDefault;
 
+    [Tooltip("Shown in the battle card catalog when this card is still locked (hover).")]
+    [TextArea(2, 4)]
+    public string unlockHint;
+
     // --------------------------------------------------
     // PER-OPERATION VARIABILITY SLIDERS (SPEC ONLY; NO LOGIC CHANGES)
     // --------------------------------------------------
