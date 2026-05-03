@@ -1,5 +1,7 @@
 using UnityEngine;
 
+using UnityEngine;
+
 namespace cherrydev
 {
     public class DialogDisplayer : MonoBehaviour
@@ -13,6 +15,37 @@ namespace cherrydev
         [SerializeField] private AnswerPanel _characterSelectionPanel; // NEW: Second panel
 
         private AnswerPanel _currentAnswerPanel; // NEW: Track which panel is active
+        
+        // Static cooldown to prevent immediately re-entering dialog after closing
+        private static float _dialogExitCooldown = 0f;
+        private const float DIALOG_EXIT_COOLDOWN_TIME = 0.3f;
+        
+        public static bool IsInDialogExitCooldown => Time.unscaledTime < _dialogExitCooldown;
+
+        private void Update()
+        {
+            // Check if any dialog panel is active
+            bool isDialogActive = (_dialogSentencePanel != null && _dialogSentencePanel.gameObject.activeSelf) ||
+                                  (_dialogAnswerPanel != null && _dialogAnswerPanel.gameObject.activeSelf) ||
+                                  (_characterSelectionPanel != null && _characterSelectionPanel.gameObject.activeSelf);
+
+            if (!isDialogActive)
+                return;
+
+            // Exit dialog on E key press or right-click
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetMouseButtonDown(1))
+            {
+                // Stop any playing text sound
+                if (_dialogSentencePanel != null)
+                {
+                    _dialogSentencePanel.StopTextSound();
+                }
+                
+                _dialogBehaviour.ForceEndDialog();
+                // Set cooldown to prevent immediately re-entering dialog
+                _dialogExitCooldown = Time.unscaledTime + DIALOG_EXIT_COOLDOWN_TIME;
+            }
+        }
 
         private void OnEnable()
         {

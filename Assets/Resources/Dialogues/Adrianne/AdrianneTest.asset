@@ -15,10 +15,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1469.9996
-    y: 173.99995
-    width: 190
-    height: 135
+    x: 995.49963
+    y: 6.999939
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -47,17 +47,15 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 914.4995
-    y: 295.49994
-    width: 200
-    height: 120
+    x: 446.9995
+    y: 294.49994
+    width: 170
+    height: 150
   IsDragging: 1
   IsSelected: 0
   _flagName: character.elias.spoketo
-  ParentNodes:
-  - {fileID: 1305919116598701323}
-  - {fileID: 7699575241972746348}
-  TrueChildNode: {fileID: 5062585804381860848}
+  ParentNodes: []
+  TrueChildNode: {fileID: 1305919116598701323}
   FalseChildNode: {fileID: 5362745953541671061}
 --- !u!114 &-7479912034770189435
 MonoBehaviour:
@@ -74,10 +72,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2661.999
-    y: 364.00003
-    width: 190
-    height: 135
+    x: 2283.999
+    y: 160.50003
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -106,10 +104,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1831.9995
-    y: 772.4999
+    x: 1447.9995
+    y: 753.9999
     width: 190
-    height: 160
+    height: 265
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -137,10 +135,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1945.9995
-    y: 487.5
-    width: 190
-    height: 135
+    x: 1537.4995
+    y: 392.5
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -171,10 +169,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 3421.9998
-    y: 468.49994
-    width: 190
-    height: 135
+    x: 3232.5
+    y: 556.49994
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -188,6 +186,31 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &-6834038779605765439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d19e89406c5582438a765fdd212f9da, type: 3}
+  m_Name: Set GameFlag Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.SetGameFlagNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1296.5
+    y: -2
+    width: 170
+    height: 170
+  IsDragging: 1
+  IsSelected: 0
+  _flagName: character.
+  _removeFlag: 0
+  ParentNodes: []
+  ChildNode: {fileID: 0}
 --- !u!114 &-6698988496953393724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,10 +226,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2657.499
-    y: 590.00006
-    width: 190
-    height: 135
+    x: 2308.999
+    y: 586.50006
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -237,17 +260,17 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1527.9996
-    y: 458
+    x: 1179.4995
+    y: 454.5
     width: 190
-    height: 140
+    height: 205
   IsDragging: 1
   IsSelected: 0
   Answers:
   - Adrianne, I hope you are okay. I heard from Elias.
   AnswerKeys: []
   ParentNodes:
-  - {fileID: 5062585804381860848}
+  - {fileID: 1305919116598701323}
   ChildNodes:
   - {fileID: -7009247578166804874}
   PanelType: 0
@@ -266,10 +289,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2444.9993
-    y: 367.5
-    width: 190
-    height: 135
+    x: 2011.4993
+    y: 245.5
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -299,10 +322,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2190.9998
-    y: 497.50006
+    x: 1760.4998
+    y: 327.50006
     width: 190
-    height: 180
+    height: 325
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -332,10 +355,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 3395.9998
-    y: 717.4999
-    width: 190
-    height: 135
+    x: 3047.4998
+    y: 713.9999
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -366,10 +389,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2857.249
-    y: 768.4999
+    x: 2508.749
+    y: 764.9999
     width: 190
-    height: 160
+    height: 265
   IsDragging: 1
   IsSelected: 0
   Answers:
@@ -385,6 +408,38 @@ MonoBehaviour:
   - {fileID: 520138227263441538}
   - {fileID: 3843203973738420518}
   PanelType: 0
+--- !u!114 &-115188968503141482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 186
+    y: 353.5
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Adrianne
+    Text: I'm not feeling too well. What is it?
+    CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
+  ParentNodes:
+  - {fileID: 7699575241972746348}
+  ChildNode: {fileID: -7710240511575501943}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -422,6 +477,8 @@ MonoBehaviour:
   - {fileID: 1305919116598701323}
   - {fileID: 5883728693888802004}
   - {fileID: 7699575241972746348}
+  - {fileID: -6834038779605765439}
+  - {fileID: -115188968503141482}
   VariablesConfig: {fileID: 11400000, guid: ddd8fa02b66f28546bcc9a98be882d63, type: 2}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -443,10 +500,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1594.9996
-    y: 711.4999
-    width: 190
-    height: 135
+    x: 1024.4996
+    y: 881.9999
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -474,10 +531,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 3091.999
-    y: 737.4999
-    width: 190
-    height: 135
+    x: 2743.499
+    y: 733.9999
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -507,18 +564,19 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 204.99951
-    y: 304.5
-    width: 190
-    height: 135
+    x: 802.4995
+    y: 362
+    width: 170
+    height: 260
   IsDragging: 1
-  IsSelected: 0
+  IsSelected: 1
   _sentence:
     CharacterName: Adrianne
-    Text: Hello, Nikolaus.
+    Text: You know what happened.
     CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 7699575241972746348}
+  ParentNodes:
+  - {fileID: -7710240511575501943}
+  ChildNode: {fileID: -6600178266136748303}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -538,10 +596,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2085.9995
-    y: 779.4999
-    width: 190
-    height: 135
+    x: 1763.9995
+    y: 1084.4999
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -570,10 +628,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 3089.749
-    y: 958
-    width: 190
-    height: 135
+    x: 2741.249
+    y: 954.5
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -606,18 +664,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1184.2495
-    y: 478.16663
-    width: 190
-    height: 135
+    x: -708.2505
+    y: 459.66663
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Adrianne
-    Text: How can I help you?
+    Text: Hello, Nikolaus.
     CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
   ParentNodes: []
-  ChildNode: {fileID: -6600178266136748303}
+  ChildNode: {fileID: 7699575241972746348}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -637,18 +695,17 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1161.7495
-    y: 181.49995
-    width: 190
-    height: 135
+    x: 701.7495
+    y: -4.000061
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Adrianne
     Text: I am busy right now Nikolaus. This is not the best time.
     CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
-  ParentNodes:
-  - {fileID: -7710240511575501943}
+  ParentNodes: []
   ChildNode: {fileID: -8049341999096993714}
   _isExternalFunc: 0
   _externalFunctionName: 
@@ -669,10 +726,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 3745.9993
-    y: 272.99994
-    width: 200
-    height: 120
+    x: 3405.999
+    y: 288.99994
+    width: 170
+    height: 170
   IsDragging: 1
   IsSelected: 0
   _flagName: character.adrianne.spoketo
@@ -696,10 +753,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 3110.999
-    y: 350.5
-    width: 190
-    height: 135
+    x: 2764.999
+    y: 138.5
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -728,17 +785,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 488.5
-    y: 255.5
-    width: 200
-    height: 120
+    x: -68.5
+    y: 411.5
+    width: 170
+    height: 170
   IsDragging: 1
-  IsSelected: 1
-  _flagName: character.adrianne.spoketo
+  IsSelected: 0
+  _flagName: character.adrianne.spoketohelp
   _removeFlag: 0
   ParentNodes:
   - {fileID: 1305919116598701323}
-  ChildNode: {fileID: -7710240511575501943}
+  - {fileID: 5062585804381860848}
+  ChildNode: {fileID: -115188968503141482}
 --- !u!114 &9021183027737670704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -754,15 +812,15 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2900.9995
-    y: 366
-    width: 190
-    height: 135
+    x: 2515.4995
+    y: 133.5
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Nikolaus
-    Text: It is okay. I do not mean to make you relive that terrible moment.
+    Text: (It is okay. I do not mean to make you relive that terrible moment.)
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
   - {fileID: -7479912034770189435}
@@ -786,10 +844,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2452.9993
-    y: 542.5
-    width: 190
-    height: 135
+    x: 2104.4993
+    y: 539
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:

@@ -285,8 +285,8 @@ namespace Systems.Overworld.Intro
             var breakingVaseSource = GameObject.Find("BreakingVase").GetComponent<AudioSource>();
             
             var mysteriousTarget =  GameObject.Find("MysteriousTarget");
-            var npcBrain2D = _mysteriousPersonHallway.GetComponent<NpcBrain2D>();
-            var moveToPosition = npcBrain2D.MoveToPosition(mysteriousTarget.transform.position);
+            var npcTututorialBrain = _mysteriousPersonHallway.GetComponent<npcTututorialBrain>();
+            var moveToPosition = npcTututorialBrain.MoveToPosition(mysteriousTarget.transform.position);
 
             StartCoroutine(moveToPosition);
             yield return new WaitForSeconds(1.7f);
