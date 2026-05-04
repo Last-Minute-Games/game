@@ -37,10 +37,18 @@ namespace GameItems
         [Header("Spline Layout")] 
         [Tooltip("Spacing between cards along the spline in normalized t (0..1). Example: 0.1 = 10 cards span the entire spline.")]
         [SerializeField] private float splineCardSpacing = 0.1f; // 1f / 10f as in screenshot
-        [Tooltip("Seconds to tween cards into their new positions/rotations along the spline.")]
-        [SerializeField] private float tweenDuration = 0.5f;
+        [Tooltip("Max hand size used for spline distribution (matches OverhaulHandView).")]
+        [SerializeField] private float maxHandSize = 10f;
+        [Tooltip("Seconds to tween cards into their new positions/rotations along the spline (Overhaul-style default 0.15).")]
+        [SerializeField] private float tweenDuration = 0.15f;
         [Tooltip("If true, will layout cards along the spline after building or when calling Rebuild().")]
         [SerializeField] private bool autoLayoutOnSpline = true;
+
+        [Header("Pile anchors (Nether / Overhaul-style)")]
+        [Tooltip("Optional: new hand cards spawn here, then tween along the spline. If unset, cards use the default content origin and the draw scale-in effect.")]
+        [SerializeField] private Transform drawPilePoint;
+        [Tooltip("Optional: end-of-turn discard and ClearSmooth target. If unset, ClearSmooth uses a fixed offset from this viewer's transform.")]
+        [SerializeField] private Transform discardPilePoint;
 
         private readonly List<CardRender> _renders = new();
         private Coroutine _layoutRoutine;
@@ -62,6 +70,13 @@ namespace GameItems
             if (rebuild) Rebuild();
         }
 
+        /// <summary>Wire from code if you prefer not to use the inspector (e.g. shared scene anchors).</summary>
+        public void SetPilePointTransforms(Transform drawPoint, Transform discardPoint)
+        {
+            drawPilePoint = drawPoint;
+            discardPilePoint = discardPoint;
+        }
+
         public void Clear()
         {
             for (int i = _renders.Count - 1; i >= 0; i--)
@@ -76,6 +91,13 @@ namespace GameItems
                 for (int i = content.childCount - 1; i >= 0; i--)
                     Destroy(content.GetChild(i).gameObject);
             }
+        }
+
+        private void ApplyDrawPileSpawnIfHand(GameObject go)
+        {
+            if (drawPilePoint == null || source != Source.Hand)
+                return;
+            go.transform.SetPositionAndRotation(drawPilePoint.position, drawPilePoint.rotation);
         }
 
         /// <summary>
@@ -100,7 +122,7 @@ namespace GameItems
                 yield break;
             }
 
-            float cardSpacing = 1f / 10f;
+            float cardSpacing = 1f / maxHandSize;
             float firstCardPosition = 0.5f - (_renders.Count - 1) * cardSpacing / 2f;
             var spline = splineContainer.Spline;
 
@@ -116,11 +138,9 @@ namespace GameItems
 
                 var cardRender = _renders[i]; // Capture for closure
 
-                // Using DOTween to animate position and rotation
-                // Use OnComplete callback to update original position after tween finishes
+                // OverhaulHandView-style DOMove / DORotate (no extra ease on layout tweens)
                 _renders[i].transform
                     .DOMove(splinePosition + transform.position + 0.01f * i * Vector3.back, duration)
-                    .SetEase(Ease.OutQuad)
                     .OnComplete(() =>
                     {
                         if (cardRender != null)
@@ -134,9 +154,7 @@ namespace GameItems
                         }
                     });
 
-                _renders[i].transform
-                    .DORotate(rotation.eulerAngles, duration)
-                    .SetEase(Ease.OutQuad);
+                _renders[i].transform.DORotate(rotation.eulerAngles, duration);
             }
             yield return new WaitForSeconds(duration);
 
@@ -246,6 +264,7 @@ namespace GameItems
 
                     if (content != null)
                         go.transform.SetParent(content, false);
+                    ApplyDrawPileSpawnIfHand(go);
 
                     var render = go.GetComponent<CardRender>();
                     if (render == null) render = go.AddComponent<CardRender>();
@@ -259,7 +278,7 @@ namespace GameItems
                     if (fxHelper != null)
                     {
                         Debug.Log($"[DeckViewer] Calling OnCardDrawn for '{inst.data.name}'");
-                        fxHelper.OnCardDrawn(render);
+                        fxHelper.OnCardDrawn(render, playDrawScaleAnimation: drawPilePoint == null);
                     }
                     else
                     {
@@ -285,15 +304,16 @@ namespace GameItems
                         sortingGroup.sortingOrder = _renders.Count + 100;
                     }
 
-                    if (content != null)
-                        go.transform.SetParent(content, false);
+                if (content != null)
+                    go.transform.SetParent(content, false);
+                ApplyDrawPileSpawnIfHand(go);
 
-                    var render = go.GetComponent<CardRender>();
-                    if (render == null) render = go.AddComponent<CardRender>();
+                var render = go.GetComponent<CardRender>();
+                if (render == null) render = go.AddComponent<CardRender>();
 
-                    render.Bind(cardData);
-                    _renders.Add(render);
-                }
+                render.Bind(cardData);
+                _renders.Add(render);
+            }
             }
 
             // Re-animate all cards to their new positions
@@ -347,6 +367,7 @@ namespace GameItems
                 {
                     go.transform.SetParent(content, false);
                 }
+                ApplyDrawPileSpawnIfHand(go);
 
                 // Ensure CardRender exists
                 var render = go.GetComponent<CardRender>();
@@ -440,16 +461,66 @@ namespace GameItems
 
         public IReadOnlyList<CardRender> GetRenders() => _renders;
 
+        /// <summary>Duration (seconds) of hand spline layout tweens — wait this long between sequential draws.</summary>
+        public float LayoutTweenDuration => tweenDuration;
+
+        public bool UnregisterRender(CardRender render)
+        {
+            if (render == null)
+                return false;
+            return _renders.Remove(render);
+        }
+
+        /// <summary>Resolve hand UI for the given runtime instance (preferred) or card data.</summary>
+        public CardRender FindRenderForHandCard(CardInstance inst, CardData dataFallback)
+        {
+            foreach (var r in _renders)
+            {
+                if (r == null)
+                    continue;
+                if (inst != null && r.Instance == inst)
+                    return r;
+            }
+
+            if (dataFallback != null)
+            {
+                foreach (var r in _renders)
+                {
+                    if (r != null && r.Data == dataFallback && inst == null && r.Instance == null)
+                        return r;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>Shared setup before flying a card off-screen (arrows, hover, tweens).</summary>
+        public static void PrepareCardVisualForDiscard(CardRender card)
+        {
+            if (card == null)
+                return;
+
+            var arrowHelper = card.GetComponent<BezierCardArrowHelper>();
+            arrowHelper?.StopDrawing();
+
+            card.GetComponent<CardAnimationHelper>()?.ClearEnemyHoverSprites();
+
+            var fxHelper = card.GetComponent<CardFXHelper>();
+            fxHelper?.OnCardExit(card);
+
+            card.transform.DOKill();
+        }
+
         /// <summary>
         /// Animates currently visible cards to discard without touching the data.
         /// This allows the animation to play independently even if the card data gets cleared.
         /// Perfect for end-of-round animations where data is wiped but visuals should persist.
         /// </summary>
         /// <param name="discardTargetWorldPos">World position where cards fly to</param>
-        /// <param name="duration">Time for each card to fly</param>
+        /// <param name="duration">Time for each card to fly (Overhaul-style default 0.15)</param>
         /// <param name="staggerDelay">Delay between each card starting</param>
         /// <param name="onComplete">Callback when all cards finish animating</param>
-        public void AnimateDiscardAllVisuals(Vector3 discardTargetWorldPos, float duration = 0.4f, float staggerDelay = 0.05f, System.Action onComplete = null)
+        public void AnimateDiscardAllVisuals(Vector3 discardTargetWorldPos, float duration = 0.15f, float staggerDelay = 0.05f, System.Action onComplete = null)
         {
             if (_renders.Count == 0)
             {
@@ -532,26 +603,14 @@ namespace GameItems
 
                 float delay = i * staggerDelay;
 
-                // Create the animation sequence
+                // OverhaulCardSystem-style: DOMove + DOScale to zero in parallel
                 Sequence cardSequence = DOTween.Sequence();
                 
-                // Delay based on position in hand
                 if (delay > 0)
                     cardSequence.AppendInterval(delay);
 
-                // Tween to discard position with arc motion
-                cardSequence.Append(card.transform
-                    .DOMove(discardTargetWorldPos, duration)
-                    .SetEase(Ease.InQuad));
-
-                // Rotate and scale down while flying
-                cardSequence.Join(card.transform
-                    .DORotate(new Vector3(0, 0, Random.Range(-15f, 15f)), duration)
-                    .SetEase(Ease.InOutQuad));
-
-                cardSequence.Join(card.transform
-                    .DOScale(0.3f, duration)
-                    .SetEase(Ease.InQuad));
+                cardSequence.Append(card.transform.DOMove(discardTargetWorldPos, duration));
+                cardSequence.Join(card.transform.DOScale(Vector3.zero, duration).SetEase(Ease.InQuad));
 
                 // Destroy after animation completes
                 cardSequence.OnComplete(() =>
@@ -575,10 +634,10 @@ namespace GameItems
         /// Call this when the round ends for a smooth card game feel.
         /// </summary>
         /// <param name="discardTargetWorldPos">World position where cards fly to (usually discard pile)</param>
-        /// <param name="duration">Time for each card to fly</param>
+        /// <param name="duration">Time for each card to fly (Overhaul-style default 0.15)</param>
         /// <param name="staggerDelay">Delay between each card starting its animation</param>
         /// <param name="onComplete">Callback when all cards have been discarded</param>
-        public void AnimateDiscardAll(Vector3 discardTargetWorldPos, float duration = 0.4f, float staggerDelay = 0.05f, System.Action onComplete = null)
+        public void AnimateDiscardAll(Vector3 discardTargetWorldPos, float duration = 0.15f, float staggerDelay = 0.05f, System.Action onComplete = null)
         {
             if (_renders.Count == 0)
             {
@@ -598,26 +657,13 @@ namespace GameItems
                 var card = _renders[i];
                 float delay = i * staggerDelay;
 
-                // Animate card flying to discard pile
                 Sequence cardSequence = DOTween.Sequence();
                 
-                // Slight delay based on position in hand
                 if (delay > 0)
                     cardSequence.AppendInterval(delay);
 
-                // Tween to discard position with arc motion
-                cardSequence.Append(card.transform
-                    .DOMove(discardTargetWorldPos, duration)
-                    .SetEase(Ease.InQuad));
-
-                // Rotate and scale down while flying
-                cardSequence.Join(card.transform
-                    .DORotate(new Vector3(0, 0, Random.Range(-15f, 15f)), duration)
-                    .SetEase(Ease.InOutQuad));
-
-                cardSequence.Join(card.transform
-                    .DOScale(0.3f, duration)
-                    .SetEase(Ease.InQuad));
+                cardSequence.Append(card.transform.DOMove(discardTargetWorldPos, duration));
+                cardSequence.Join(card.transform.DOScale(Vector3.zero, duration).SetEase(Ease.InQuad));
 
                 // Destroy after animation
                 cardSequence.OnComplete(() =>
@@ -636,6 +682,13 @@ namespace GameItems
             }
         }
 
+        public Vector3 GetDiscardTargetWorldPosition()
+        {
+            return discardPilePoint != null
+                ? discardPilePoint.position
+                : (transform.position + new Vector3(2f, -3f, 0));
+        }
+
         /// <summary>
         /// Smooth clear - animates cards out before clearing.
         /// Use this instead of Clear() for end-of-turn visual polish.
@@ -649,11 +702,9 @@ namespace GameItems
                 return;
             }
 
-            // Default discard target: down and to the right
-            Vector3 target = discardTarget ?? (transform.position + new Vector3(2f, -3f, 0));
+            Vector3 target = discardTarget ?? GetDiscardTargetWorldPosition();
             
-            // Use visual-independent animation so it works even if data gets cleared during animation
-            AnimateDiscardAllVisuals(target, duration: 0.4f, staggerDelay: 0.05f, onComplete);
+            AnimateDiscardAllVisuals(target, duration: 0.15f, staggerDelay: 0.05f, onComplete);
         }
     }
 }

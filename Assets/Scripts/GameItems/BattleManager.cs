@@ -76,24 +76,13 @@ public class BattleManager : MonoBehaviour
         roundManager.Initialize(playerManager, enemyManager);
         roundManager.onWaveComplete = OnWaveComplete;
 
-        // BEFORE tutorial runs, blackout the screen
+        // Start from a full black canvas group; round transition / wave UI will reveal combat.
         if (roundManager.roundTransitionUI != null)
         {
             var blackout = roundManager.roundTransitionUI.canvasGroup;
-            blackout.alpha = 1f;              // keep screen fully black
+            blackout.alpha = 1f;
             blackout.blocksRaycasts = true;
             blackout.interactable = false;
-        }
-
-        // ---------------------------------------------------------
-        // Wait for tutorial before starting wave
-        // ---------------------------------------------------------
-        if (ShouldRunTutorialForToday())
-        {
-            Debug.Log("[BattleManager] Waiting for ScreenFader.cs to finish transition.");
-            yield return new WaitForSeconds(3f); // estimated time to allow for ScreenFader.cs to finish
-            Debug.Log("[BattleManager] Running Nether Tutorial...");
-            yield return NetherTutorial.Instance.RunTutorial();
         }
 
         StartWave(0); // start first wave
@@ -135,27 +124,6 @@ public class BattleManager : MonoBehaviour
                 roundManager.TriggerVictory();
             }
         }
-    }
-
-    private bool ShouldRunTutorialForToday()
-    {
-        if (GameFlags.HasFlag("day.five")) {
-            Debug.Log("[BattleManager] Skipping nether tutorial, it is day five.");
-            return false;
-        } else if (GameFlags.HasFlag("day.four")) {
-            Debug.Log("[BattleManager] Skipping nether tutorial, it is day four.");
-            return false;
-        } else if (GameFlags.HasFlag("day.three")) {
-            Debug.Log("[BattleManager] Skipping nether tutorial, it is day three.");
-            return false;
-        } else if (GameFlags.HasFlag("day.two")) {
-            Debug.Log("[BattleManager] Skipping nether tutorial, it is day two.");
-            return false;
-        } else if (GameFlags.HasFlag("day.one")) {
-            Debug.Log("[BattleManager] Initiating tutorial, it is day one.");
-            return true;
-        } 
-        return false; // default is no tutorial
     }
 
     private System.Collections.IEnumerator WaveTransitionSequence(int waveIndex)

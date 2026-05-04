@@ -19,6 +19,9 @@ public struct EnemyAction
 
     [Tooltip("Optional custom name for this action (e.g., 'Crushing Blow' instead of 'Attack'). Leave empty to use default.")]
     public string customName;
+
+    [Tooltip("When non-empty, this action uses the same Effect model as player cards (multi-hit, poison, lifesteal, recoil, etc.) instead of only intent+value.")]
+    public List<Effect> combatEffects;
 }
 
 public enum EnemyIntent { Attack, Block, Heal, Buff }
@@ -246,6 +249,13 @@ public class EnemyData : EntityData
     {
         if (player == null) return;
 
+        if (currentAction.combatEffects != null && currentAction.combatEffects.Count > 0)
+        {
+            foreach (var eff in currentAction.combatEffects)
+                ApplyEnemyCombatEffect(eff, player);
+            return;
+        }
+
         switch (currentIntent)
         {
             case EnemyIntent.Attack:
@@ -274,6 +284,54 @@ public class EnemyData : EntityData
                 Debug.Log($"[Buff] {enemyName} applied buff! mult={mult:F3}, total={buffMultiplier:F3}");
                 break;
             }
+        }
+    }
+
+    /// <summary>Author combat Effects on <see cref="EnemyAction.combatEffects"/>; values scale with <see cref="buffMultiplier"/>.</summary>
+    private void ApplyEnemyCombatEffect(Effect eff, PlayerData player)
+    {
+        int v = Mathf.RoundToInt(eff.baseValue * buffMultiplier);
+        int sec = Mathf.RoundToInt(eff.secondaryValue * buffMultiplier);
+        int hits = Mathf.Max(1, eff.hitCount);
+
+        switch (eff.operationType)
+        {
+            case OperationType.Damage:
+                for (int i = 0; i < hits; i++)
+                    player.TakeDamage(v);
+                break;
+
+            case OperationType.ApplyPoison:
+                player.AddPoisonStacks(v);
+                break;
+
+            case OperationType.AddShield:
+                GainBlock(v);
+                break;
+
+            case OperationType.Heal:
+                Heal(v);
+                break;
+
+            case OperationType.LifeSteal:
+            {
+                int healAmt = sec > 0 ? sec : Mathf.Max(1, v / 2);
+                player.TakeDamage(v);
+                Heal(healAmt);
+                break;
+            }
+
+            case OperationType.RecoilStrike:
+            {
+                int selfHit = sec > 0 ? sec : Mathf.Max(1, v / 4);
+                player.TakeDamage(v);
+                TakeDamage(selfHit);
+                break;
+            }
+
+            default:
+                Debug.LogWarning($"[EnemyData] Unsupported OperationType on enemy pattern: {eff.operationType}");
+                break;
         }
     }
 

@@ -109,4 +109,29 @@ public class EntityData
     {
         // Implement status logic here
     }
+
+    // Poison (Slay-the-Spire style: at start of your turn, lose HP equal to stacks, then stacks decrease by 1)
+
+    [Tooltip("Poison stacks; tick at start of this entity's turn via TickPoisonAtTurnStart.")]
+    public int poisonStacks;
+
+    public void AddPoisonStacks(int amount)
+    {
+        if (amount <= 0) return;
+        poisonStacks += amount;
+        TooltipManager.SpawnTooltip(
+            worldPosition,
+            "+" + amount + " POISON",
+            new Color(0.35f, 0.9f, 0.35f),
+            isPlayer ? TooltipDirection.Down : TooltipDirection.Up
+        );
+    }
+
+    /// <summary>Call at the beginning of this entity's turn (player or individual enemy).</summary>
+    public virtual void TickPoisonAtTurnStart()
+    {
+        if (poisonStacks <= 0) return;
+        TakeDamage(poisonStacks);
+        poisonStacks--;
+    }
 }

@@ -46,10 +46,6 @@ public class InteractionDetector : MonoBehaviour
     [Tooltip("Layer mask for raycast detection (set to layers containing interactables)")]
     public LayerMask raycastLayerMask = -1;
     
-    [Header("Keyboard Interaction")]
-    [Tooltip("Enable E key for interactions (disable to test mouse-only gameplay)")]
-    public bool enableKeyboardInteraction = true;
-
     private List<IInteractable> nearbyInteractables = new List<IInteractable>();
     private IInteractable hoveredInteractable = null;
     
@@ -201,8 +197,8 @@ public class InteractionDetector : MonoBehaviour
             UpdateMouseHover();
         }
 
-        // Handle E key (keyboard interaction) - can be disabled for testing
-        if (enableKeyboardInteraction && Input.GetKeyDown(KeyCode.E))
+        // Handle E key (keyboard interaction)
+        if (Input.GetKeyDown(KeyCode.E))
         {
             // Check if we're in dialog exit cooldown (prevents immediately re-entering dialog)
             if (cherrydev.DialogDisplayer.IsInDialogExitCooldown)
@@ -379,7 +375,7 @@ public class InteractionDetector : MonoBehaviour
         {
             if (interactCursor != null)
             {
-                Cursor.SetCursor(interactCursor, interactCursorHotspot, CursorMode.ForceSoftware);
+                Cursor.SetCursor(interactCursor, interactCursorHotspot, CursorMode.Auto);
                 LogDebug($"Cursor changed - hovering over: {(hoveredInteractable as MonoBehaviour)?.gameObject.name}");
             }
         }
@@ -388,11 +384,11 @@ public class InteractionDetector : MonoBehaviour
             // Reset to default cursor
             if (defaultCursor != null)
             {
-                Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
+                Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.Auto);
             }
             else
             {
-                Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
+                Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
             }
         }
     }
@@ -537,11 +533,11 @@ public class InteractionDetector : MonoBehaviour
     {
         if (defaultCursor != null)
         {
-            Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.ForceSoftware);
+            Cursor.SetCursor(defaultCursor, defaultCursorHotspot, CursorMode.Auto);
         }
         else
         {
-            Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
+            Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         }
     }
     

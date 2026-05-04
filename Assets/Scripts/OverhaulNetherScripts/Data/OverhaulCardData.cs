@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Data/OverhaulCardCard")] // serves as template / asset / raw stored data
+[CreateAssetMenu(menuName = "Data/OverhaulCard")] // serves as template / asset / raw stored data
 
 // for ex; setting stuff like sword, heal, mana boost, etc...
 

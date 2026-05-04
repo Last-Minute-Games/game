@@ -237,6 +237,18 @@ namespace Entities.Enemies.Manager
 
                 Debug.Log($"[EnemyManager] {enemy.enemyName} is taking their turn...");
 
+                enemy.TickPoisonAtTurnStart();
+                if (!enemy.isAlive)
+                {
+                    var rDead = GetRenderFor(enemy);
+                    if (rDead != null)
+                    {
+                        rDead.UpdateHealth();
+                        rDead.PlayDeath();
+                    }
+                    continue;
+                }
+
                 // Get the render for animation
                 var r = GetRenderFor(enemy);
 
