@@ -36,6 +36,8 @@ namespace Systems.Overworld.Intro
         private GameObject _plrObject;
         private PlayerInput2D _plrInput;
         private CharacterMotor2D _plrMotor2D;
+        private bool _cachedCanSprint;
+        private bool _hasCachedCanSprint;
 
         private Camera _plrMainCamera;
         private CinemachinePositionComposer _cinemachinePositionComposer;
@@ -324,6 +326,16 @@ namespace Systems.Overworld.Intro
 
             _plrMotor2D = _plrObject.GetComponent<CharacterMotor2D>();
 
+            if (_plrInput != null)
+            {
+                _cachedCanSprint = _plrInput.CanSprint;
+                _hasCachedCanSprint = true;
+                _plrInput.CanSprint = false;
+            }
+
+            if (_plrMotor2D != null)
+                _plrMotor2D.SetSprinting(false);
+
             _plrMainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
             _cinemachinePositionComposer =
                 GameObject.Find("CinemachineCamera").GetComponent<CinemachinePositionComposer>();
@@ -434,6 +446,12 @@ namespace Systems.Overworld.Intro
             }
 
             StartCoroutine(BeginTutorialSeq());
+        }
+
+        private void OnDestroy()
+        {
+            if (_plrInput != null && _hasCachedCanSprint)
+                _plrInput.CanSprint = _cachedCanSprint;
         }
 
         public IEnumerator OpenJournal()

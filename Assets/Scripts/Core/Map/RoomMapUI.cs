@@ -310,6 +310,44 @@ public class RoomMapUI : MonoBehaviour
         }
     }
 
+    public void CloseFromExternal(bool immediate = true)
+    {
+        if (!_isOpen) return;
+
+        _isOpen = false;
+
+        if (_soundHandler != null)
+        {
+            try { _soundHandler.PlayJournalSound(false); }
+            catch (System.Exception ex) { Debug.LogWarning($"[RoomMapUI] Journal sound failed: {ex.Message}"); }
+        }
+
+        if (_fadeCoroutine != null)
+        {
+            StopCoroutine(_fadeCoroutine);
+            _fadeCoroutine = null;
+        }
+
+        _isFading = false;
+
+        if (immediate)
+        {
+            if (_canvasGroup != null) _canvasGroup.alpha = 0f;
+            if (_root != null) _root.SetActive(false);
+            GlobalPause.SetPaused(false);
+            SetMapVisibility(false);
+            return;
+        }
+
+        float fromAlpha = _canvasGroup != null ? _canvasGroup.alpha : 1f;
+        _fadeCoroutine = StartCoroutine(FadeMap(fromAlpha, 0f, onComplete: () =>
+        {
+            if (_root != null) _root.SetActive(false);
+            GlobalPause.SetPaused(false);
+            SetMapVisibility(false);
+        }));
+    }
+
     private static void SetMapVisibility(bool isVisible)
     {
         if (IsMapVisible == isVisible) return;

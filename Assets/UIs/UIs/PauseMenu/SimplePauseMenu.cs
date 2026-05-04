@@ -111,6 +111,12 @@ public class SimplePauseMenu : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            if (RoomMapUI.IsMapVisible)
+            {
+                OpenPauseFromMap();
+                return;
+            }
+
             if (settingsPanel && settingsPanel.activeSelf)
             {
                 // Close settings, back to pause menu
@@ -164,6 +170,24 @@ public class SimplePauseMenu : MonoBehaviour
         {
             settingsPanel.SetActive(false);
         }
+
+        if (isPaused && pausePanel && !pausePanel.activeSelf)
+        {
+            pausePanel.SetActive(true);
+        }
+    }
+
+    private void OpenPauseFromMap()
+    {
+        var mapUI = FindFirstObjectByType<RoomMapUI>();
+        if (mapUI != null)
+        {
+            mapUI.CloseFromExternal(true);
+        }
+
+        Pause();
+
+        if (settingsPanel) settingsPanel.SetActive(false);
     }
 
     void QuitToMenu()
