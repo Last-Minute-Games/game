@@ -79,6 +79,17 @@ namespace GameItems.Cards.Helpers
                 Debug.Log($"[CardFXHelper] OnCardHover ignored - card '{card.Data?.name ?? "unknown"}' is animating");
                 return;
             }
+
+            if (NetherCardViewHover.Instance != null && NetherCardViewHover.Instance.SuppressesInPlaceHover)
+            {
+                NetherCardViewHover.Instance.ShowForCard(card);
+                if (CardFXManager.Instance.CurrentlyHoveredCard != card)
+                {
+                    CardFXManager.Instance.CurrentlyHoveredCard = card;
+                    sfxHelper?.PlayHover();
+                }
+                return;
+            }
             
             // Only play sound and visuals if this is a NEW hover (not the same card)
             if (CardFXManager.Instance.CurrentlyHoveredCard != card)
@@ -101,6 +112,8 @@ namespace GameItems.Cards.Helpers
                 Debug.LogWarning("[CardFXHelper] OnCardHoverExit called with null card.");
                 return;
             }
+
+            NetherCardViewHover.Instance?.Hide();
             
             // Clear hover tracking when exiting
             if (CardFXManager.Instance.CurrentlyHoveredCard == card)

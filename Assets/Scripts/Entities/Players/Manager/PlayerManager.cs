@@ -72,24 +72,34 @@ public class PlayerManager : MonoBehaviour
         cardManager.ShuffleDrawPile();
     }
 
-    public void StartTurn()
+    /// <summary>
+    /// Strength tick, energy and block reset — no draw. Drawing is driven by NetherBattleActionBridge / NetherDrawCardsGA for sequential animations.
+    /// </summary>
+    public void ApplyTurnStartResources()
     {
         if (playerData == null) return;
 
-        // Reduce strength by 1 each turn
         if (playerData.strength > 0)
-        {
             playerData.LoseStrength(1);
-        }
 
-        // Reset energy and block
         playerData.ResetEnergy();
         playerData.block = 0;
+    }
 
-        // Draw hand
-        int handSize = playerConfig != null && playerConfig.config != null 
-            ? Mathf.Max(1, playerConfig.config.defaultHandSize) 
+    public int GetDefaultHandDrawCount()
+    {
+        return playerConfig != null && playerConfig.config != null
+            ? Mathf.Max(1, playerConfig.config.defaultHandSize)
             : 5;
+    }
+
+    /// <summary>
+    /// Applies turn-start rules and draws a full hand immediately (no sequential animation).
+    /// </summary>
+    public void StartTurn()
+    {
+        ApplyTurnStartResources();
+        int handSize = GetDefaultHandDrawCount();
         for (int i = 0; i < handSize; i++)
             cardManager.DrawCard();
     }

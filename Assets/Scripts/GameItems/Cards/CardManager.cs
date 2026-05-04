@@ -217,6 +217,23 @@ namespace GameItems.Cards
             PileCountUI.RefreshNow();
         }
 
+        /// <summary>
+        /// Moves one card from hand to discard (same index for data + instance). Used for sequential discard animations.
+        /// </summary>
+        public void DiscardHandCardAtIndex(int index)
+        {
+            if (index < 0 || index >= hand.Count)
+                return;
+
+            var data = hand[index];
+            hand.RemoveAt(index);
+            if (index < handInstances.Count)
+                handInstances.RemoveAt(index);
+
+            discardPile.Add(data);
+            PileCountUI.RefreshNow();
+        }
+
         // -----------------------------------------------------------
         // Clear discard pile (e.g., for new wave/battle)
         // -----------------------------------------------------------

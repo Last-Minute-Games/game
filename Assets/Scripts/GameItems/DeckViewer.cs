@@ -461,6 +461,56 @@ namespace GameItems
 
         public IReadOnlyList<CardRender> GetRenders() => _renders;
 
+        /// <summary>Duration (seconds) of hand spline layout tweens — wait this long between sequential draws.</summary>
+        public float LayoutTweenDuration => tweenDuration;
+
+        public bool UnregisterRender(CardRender render)
+        {
+            if (render == null)
+                return false;
+            return _renders.Remove(render);
+        }
+
+        /// <summary>Resolve hand UI for the given runtime instance (preferred) or card data.</summary>
+        public CardRender FindRenderForHandCard(CardInstance inst, CardData dataFallback)
+        {
+            foreach (var r in _renders)
+            {
+                if (r == null)
+                    continue;
+                if (inst != null && r.Instance == inst)
+                    return r;
+            }
+
+            if (dataFallback != null)
+            {
+                foreach (var r in _renders)
+                {
+                    if (r != null && r.Data == dataFallback && inst == null && r.Instance == null)
+                        return r;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>Shared setup before flying a card off-screen (arrows, hover, tweens).</summary>
+        public static void PrepareCardVisualForDiscard(CardRender card)
+        {
+            if (card == null)
+                return;
+
+            var arrowHelper = card.GetComponent<BezierCardArrowHelper>();
+            arrowHelper?.StopDrawing();
+
+            card.GetComponent<CardAnimationHelper>()?.ClearEnemyHoverSprites();
+
+            var fxHelper = card.GetComponent<CardFXHelper>();
+            fxHelper?.OnCardExit(card);
+
+            card.transform.DOKill();
+        }
+
         /// <summary>
         /// Animates currently visible cards to discard without touching the data.
         /// This allows the animation to play independently even if the card data gets cleared.
@@ -632,6 +682,13 @@ namespace GameItems
             }
         }
 
+        public Vector3 GetDiscardTargetWorldPosition()
+        {
+            return discardPilePoint != null
+                ? discardPilePoint.position
+                : (transform.position + new Vector3(2f, -3f, 0));
+        }
+
         /// <summary>
         /// Smooth clear - animates cards out before clearing.
         /// Use this instead of Clear() for end-of-turn visual polish.
@@ -645,10 +702,7 @@ namespace GameItems
                 return;
             }
 
-            Vector3 target = discardTarget
-                ?? (discardPilePoint != null
-                    ? discardPilePoint.position
-                    : (transform.position + new Vector3(2f, -3f, 0)));
+            Vector3 target = discardTarget ?? GetDiscardTargetWorldPosition();
             
             AnimateDiscardAllVisuals(target, duration: 0.15f, staggerDelay: 0.05f, onComplete);
         }

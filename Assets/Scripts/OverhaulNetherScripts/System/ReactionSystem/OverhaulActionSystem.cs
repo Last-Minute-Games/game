@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GameItems.Cards.Helpers;
 using UnityEngine;
 
 public class OverhaulActionSystem : Singleton<OverhaulActionSystem>
@@ -29,9 +30,11 @@ public class OverhaulActionSystem : Singleton<OverhaulActionSystem>
     // only able to run if no other action is running
     if (IsPerforming) return;
     IsPerforming = true;
+    CardFXHelper.CardInteraction.Locked = true;
     StartCoroutine(Flow(action, () =>
     {
       IsPerforming = false;
+      CardFXHelper.CardInteraction.Locked = false;
       OnPerformFinished?.Invoke();
     }));
   }
