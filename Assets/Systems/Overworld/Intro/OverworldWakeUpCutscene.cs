@@ -717,9 +717,12 @@ namespace Systems.Overworld.Intro
             
             // Apply battle result time adjustment after reconstruction
             CheckAndApplyBattleResultTimeAdjustment();
-            
+
             // Check for evidence flags and unlock corresponding cards (every day)
             CheckAndSetEvidenceCardFlags();
+
+            // Check for minigame completion flags and unlock corresponding cards (every day)
+            CheckAndSetMinigameCardFlags();
 
             // Get the dialogue for current day
             DialogNodeGraph dialogueGraph = GetDaySpecificWakeUpDialogue();
@@ -937,7 +940,79 @@ namespace Systems.Overworld.Intro
             
             DebugLogger.LogCutscene("Evidence flag check complete");
         }
-        
+
+        /// <summary>
+        /// Check for minigame completion flags and set corresponding card flags.
+        /// This runs every day (days 2-5) so cards are unlocked as minigames are completed.
+        /// Mapping:
+        /// - Coin Flip (minigame.coinflip.finish) -> Exchange (card.exchange)
+        /// - Sokoban (minigame.sokoban.finish) -> Double Slash (card.double_slash)
+        /// - Maze (minigame.maze.finish) -> Workout (card.workout)
+        /// - Blackjack (minigame.blackjack.finish) -> Energy Drink (card.energy_drink)
+        /// </summary>
+        private void CheckAndSetMinigameCardFlags()
+        {
+            DebugLogger.LogCutscene("Checking minigame completion flags for card unlocks...");
+
+            // minigame.coinflip.finish -> card.exchange
+            if (GameFlags.HasFlag("minigame.coinflip.finish"))
+            {
+                if (!GameFlags.HasFlag("card.exchange"))
+                {
+                    GameFlags.SetFlag("card.exchange");
+                    DebugLogger.LogCutscene("Minigame: Coin Flip completed -> Unlocked card: exchange");
+                }
+                else
+                {
+                    DebugLogger.LogCutscene("Minigame: Coin Flip completed (card.exchange already unlocked)");
+                }
+            }
+
+            // minigame.sokoban.finish -> card.double_slash
+            if (GameFlags.HasFlag("minigame.sokoban.finish"))
+            {
+                if (!GameFlags.HasFlag("card.double_slash"))
+                {
+                    GameFlags.SetFlag("card.double_slash");
+                    DebugLogger.LogCutscene("Minigame: Sokoban completed -> Unlocked card: double_slash");
+                }
+                else
+                {
+                    DebugLogger.LogCutscene("Minigame: Sokoban completed (card.double_slash already unlocked)");
+                }
+            }
+
+            // minigame.maze.finish -> card.workout
+            if (GameFlags.HasFlag("minigame.maze.finish"))
+            {
+                if (!GameFlags.HasFlag("card.workout"))
+                {
+                    GameFlags.SetFlag("card.workout");
+                    DebugLogger.LogCutscene("Minigame: Maze completed -> Unlocked card: workout");
+                }
+                else
+                {
+                    DebugLogger.LogCutscene("Minigame: Maze completed (card.workout already unlocked)");
+                }
+            }
+
+            // minigame.blackjack.finish -> card.energy_drink
+            if (GameFlags.HasFlag("minigame.blackjack.finish"))
+            {
+                if (!GameFlags.HasFlag("card.energy_drink"))
+                {
+                    GameFlags.SetFlag("card.energy_drink");
+                    DebugLogger.LogCutscene("Minigame: Blackjack completed -> Unlocked card: energy_drink");
+                }
+                else
+                {
+                    DebugLogger.LogCutscene("Minigame: Blackjack completed (card.energy_drink already unlocked)");
+                }
+            }
+
+            DebugLogger.LogCutscene("Minigame flag check complete");
+        }
+
         /// <summary>
         /// Check for nether.win or nether.lose flags and adjust ClockTimer accordingly.
         /// Clears the flags after applying the time adjustment and saves the game.
