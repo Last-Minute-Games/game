@@ -27,6 +27,8 @@ public class BattleCardCatalogPopup : MonoBehaviour
     [SerializeField] private PlayerManager playerManager;
 
     private readonly List<BattleCardCatalogEntry> _entries = new List<BattleCardCatalogEntry>();
+    /// <summary>True if this catalog called <see cref="GlobalPause.SetPaused"/> while opening.</summary>
+    private bool _pausedByCatalog;
 
     private void Awake()
     {
@@ -57,6 +59,7 @@ public class BattleCardCatalogPopup : MonoBehaviour
     {
         if (GameFlags.Instance != null)
             GameFlags.Instance.OnFlagChanged -= HandleFlagChanged;
+        ReleaseCatalogPause();
     }
 
     private void HandleFlagChanged(string _)
@@ -80,6 +83,15 @@ public class BattleCardCatalogPopup : MonoBehaviour
 
     public void Open()
     {
+        bool alreadyOpen = panelRoot != null && panelRoot.activeSelf;
+        if (!alreadyOpen)
+        {
+            // Same path as SimplePauseMenu / settings-over-pause: central pause (time scale, input, clock, journal).
+            _pausedByCatalog = !GlobalPause.IsPaused;
+            if (_pausedByCatalog)
+                GlobalPause.SetPaused(true);
+        }
+
         if (panelRoot != null)
             panelRoot.SetActive(true);
         RebuildEntries();
@@ -90,6 +102,15 @@ public class BattleCardCatalogPopup : MonoBehaviour
         HideUnlockHint();
         if (panelRoot != null)
             panelRoot.SetActive(false);
+        ReleaseCatalogPause();
+    }
+
+    private void ReleaseCatalogPause()
+    {
+        if (!_pausedByCatalog)
+            return;
+        GlobalPause.SetPaused(false);
+        _pausedByCatalog = false;
     }
 
     public void Toggle()
