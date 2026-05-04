@@ -79,6 +79,8 @@ public class PlayerManager : MonoBehaviour
     {
         if (playerData == null) return;
 
+        playerData.TickPoisonAtTurnStart();
+
         if (playerData.strength > 0)
             playerData.LoseStrength(1);
 
@@ -181,13 +183,14 @@ public class PlayerManager : MonoBehaviour
             return;
         }
 
+        bool useRolledInstanceValues = cardInstance != null && cardInstance.rolledEffects != null &&
+                                       cardInstance.rolledEffects.Count > 0 && ReferenceEquals(effectsToApply, cardInstance.rolledEffects);
+
         foreach (var effect in effectsToApply)
         {
-
-            // Get the actual value to apply (rolled value if from instance, base value otherwise)
-            int value = (cardInstance != null && cardInstance.rolledEffects != null && cardInstance.rolledEffects.Contains(effect))
-                ? effect.postCopyValue
-                : effect.baseValue;
+            int value = useRolledInstanceValues ? effect.postCopyValue : effect.baseValue;
+            int secondaryVal = useRolledInstanceValues ? effect.postCopySecondaryValue : effect.secondaryValue;
+            int hits = Mathf.Max(1, effect.hitCount);
 
             var roundManager = FindFirstObjectByType<RoundManager>();
             
@@ -195,76 +198,145 @@ public class PlayerManager : MonoBehaviour
             {
                 case OperationType.Damage:
                 {
-                    // Total damage, same as before
-                    int totalDamage = value + (playerData != null ? playerData.strength : 0);
+                    int strBonus = playerData != null ? playerData.strength : 0;
+                    int damagePerHit = value + strBonus;
 
-                    // ───────────────────────────────
-                    // Self-targeting damage (player hurts themselves)
-                    // ───────────────────────────────
                     if (effect.targetRule == TargetRule.Self)
                     {
-                        if (playerData != null)
-                        {
-                            // Optional: reuse attack SFX for feedback
-                            var cardFXHelper = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
-                            if (cardFXHelper != null)
-                            {
-                                cardFXHelper.OnCardAttack();
-                            }
-
-                            // Optional: camera shake for feedback
-                            CameraShake.Shake();
-
-                            playerData.TakeDamage(totalDamage);
-                            Debug.Log($"[PlayerManager] Player took {totalDamage} self-damage from '{cardData.itemName}'. HP: {playerData.currentHealth}/{playerData.maxHealth}");
-                        }
-                        else
+                        if (playerData == null)
                         {
                             Debug.LogWarning("[PlayerManager] Self-damage effect but playerData is null");
+                            break;
                         }
+
+                        var sfxSelf = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        for (int h = 0; h < hits; h++)
+                        {
+                            sfxSelf?.OnCardAttack();
+                            CameraShake.Shake();
+                            playerData.TakeDamage(damagePerHit);
+                        }
+
+                        Debug.Log($"[PlayerManager] Player took {damagePerHit}x{hits} self-damage from '{cardData.itemName}'. HP: {playerData.currentHealth}/{playerData.maxHealth}");
                     }
-                    // ───────────────────────────────
-                    // Enemy-targeting damage (existing behavior)
-                    // ───────────────────────────────
                     else if (targetEnemy != null && targetEnemy.data != null)
                     {
-                        // Play attack sound effect
-                        var cardFXHelper = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
-                        if (cardFXHelper != null)
+                        var sfx = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        for (int h = 0; h < hits; h++)
                         {
-                            cardFXHelper.OnCardAttack();
-                        }
+                            sfx?.OnCardAttack();
+                            if (targetEnemy.data.block > 0)
+                                CameraShake.Shake();
 
-                        // Camera shake if enemy has block
-                        if (targetEnemy.data.block > 0)
-                        {
-                            CameraShake.Shake();
-                        }
+                            targetEnemy.data.TakeDamage(damagePerHit);
 
-                        targetEnemy.data.TakeDamage(totalDamage);
-                        Debug.Log($"[PlayerManager] Dealt {totalDamage} damage ({value} base + {playerData?.strength} strength) to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
-
-                        // Update enemy health display
-                        var enemyManager = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
-                        if (enemyManager != null)
-                        {
-                            enemyManager.UpdateEnemyHealth(targetEnemy.data);
-                        }
-                        else
-                        {
-                            // Fallback: update directly
-                            targetEnemy.UpdateHealth();
-                            if (targetEnemy.data.isAlive)
-                                targetEnemy.PlayHurt();
+                            var enemyManager = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
+                            if (enemyManager != null)
+                                enemyManager.UpdateEnemyHealth(targetEnemy.data);
                             else
-                                targetEnemy.PlayDeath();
+                            {
+                                targetEnemy.UpdateHealth();
+                                if (targetEnemy.data.isAlive)
+                                    targetEnemy.PlayHurt();
+                                else
+                                    targetEnemy.PlayDeath();
+                            }
                         }
+
+                        Debug.Log($"[PlayerManager] Dealt {damagePerHit} x {hits} hits to {targetEnemy.data.enemyName}. HP: {targetEnemy.data.currentHealth}/{targetEnemy.data.maxHealth}");
                     }
                     else
-                    {
                         Debug.LogWarning("[PlayerManager] Damage effect requires a valid target (Self or Enemy)");
+
+                    break;
+                }
+
+                case OperationType.ApplyPoison:
+                {
+                    if (effect.targetRule == TargetRule.Enemy && targetEnemy != null && targetEnemy.data != null)
+                        targetEnemy.data.AddPoisonStacks(value);
+                    else if (effect.targetRule == TargetRule.Self && playerData != null)
+                        playerData.AddPoisonStacks(value);
+                    else
+                        Debug.LogWarning("[PlayerManager] ApplyPoison needs Enemy or Self target.");
+                    break;
+                }
+
+                case OperationType.LifeSteal:
+                {
+                    if (targetEnemy == null || targetEnemy.data == null)
+                    {
+                        Debug.LogWarning("[PlayerManager] LifeSteal requires an enemy target.");
+                        break;
                     }
 
+                    int strB = playerData != null ? playerData.strength : 0;
+                    int dmg = value + strB;
+                    int healAmt = secondaryVal > 0 ? secondaryVal : Mathf.Max(1, value / 2);
+
+                    var sfxLs = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                    sfxLs?.OnCardAttack();
+                    if (targetEnemy.data.block > 0)
+                        CameraShake.Shake();
+
+                    targetEnemy.data.TakeDamage(dmg);
+
+                    var em = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
+                    if (em != null)
+                        em.UpdateEnemyHealth(targetEnemy.data);
+                    else
+                    {
+                        targetEnemy.UpdateHealth();
+                        if (targetEnemy.data.isAlive)
+                            targetEnemy.PlayHurt();
+                        else
+                            targetEnemy.PlayDeath();
+                    }
+
+                    if (playerData != null)
+                    {
+                        var sfxHeal = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        sfxHeal?.OnCardHeal();
+                        playerData.Heal(healAmt);
+                    }
+
+                    break;
+                }
+
+                case OperationType.RecoilStrike:
+                {
+                    if (targetEnemy == null || targetEnemy.data == null || playerData == null)
+                    {
+                        Debug.LogWarning("[PlayerManager] RecoilStrike requires player + enemy target.");
+                        break;
+                    }
+
+                    int strB = playerData.strength;
+                    int toEnemy = value + strB;
+                    int selfPain = secondaryVal > 0 ? secondaryVal : Mathf.Max(1, value / 4);
+
+                    var sfxR = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                    sfxR?.OnCardAttack();
+                    if (targetEnemy.data.block > 0)
+                        CameraShake.Shake();
+
+                    targetEnemy.data.TakeDamage(toEnemy);
+
+                    var em2 = FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>();
+                    if (em2 != null)
+                        em2.UpdateEnemyHealth(targetEnemy.data);
+                    else
+                    {
+                        targetEnemy.UpdateHealth();
+                        if (targetEnemy.data.isAlive)
+                            targetEnemy.PlayHurt();
+                        else
+                            targetEnemy.PlayDeath();
+                    }
+
+                    sfxR?.OnCardAttack();
+                    CameraShake.Shake();
+                    playerData.TakeDamage(selfPain);
                     break;
                 }
                 case OperationType.AddShield:
@@ -286,15 +358,17 @@ public class PlayerManager : MonoBehaviour
                     break;
 
                 case OperationType.Heal:
-                    if (playerData != null)
+                    if (effect.targetRule == TargetRule.Enemy && targetEnemy != null && targetEnemy.data != null)
                     {
-                        // Play heal sound effect
+                        var cardFXHelperHealE = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
+                        cardFXHelperHealE?.OnCardHeal();
+                        targetEnemy.data.Heal(value);
+                        FindFirstObjectByType<Entities.Enemies.Manager.EnemyManager>()?.UpdateEnemyHealth(targetEnemy.data);
+                    }
+                    else if (playerData != null)
+                    {
                         var cardFXHelperHeal = FindFirstObjectByType<GameItems.Cards.Helpers.CardFXHelper>();
-                        if (cardFXHelperHeal != null)
-                        {
-                            cardFXHelperHeal.OnCardHeal();
-                        }
-                        
+                        cardFXHelperHeal?.OnCardHeal();
                         playerData.Heal(value);
                         Debug.Log($"[PlayerManager] Player healed {value} HP. Current HP: {playerData.currentHealth}/{playerData.maxHealth}");
                     }
