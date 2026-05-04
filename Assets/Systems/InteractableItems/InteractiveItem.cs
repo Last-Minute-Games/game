@@ -19,8 +19,8 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     public DialogNodeGraph dialogGraph;
 
     [Header("Interaction Settings")]
-    [Tooltip("How far away the player can be to interact with this item")]
-    [SerializeField] private float interactionRange = 1f;
+    [Tooltip("How far away the player can be to interact with this item (should match or be smaller than trigger collider size)")]
+    [SerializeField] private float interactionRange = 2f;
 
     [Header("Flags to Set After Dialog")]
     [Tooltip("These flags will be set when the dialog finishes (e.g., 'talked_to_npc', 'quest_completed')")]
@@ -30,37 +30,13 @@ public class InteractiveItem : MonoBehaviour, IInteractable
     [Tooltip("Invoked when the dialog completes - use this to trigger custom scripts or actions")]
     public UnityEvent OnDialogCompleted;
 
-    [Header("Conversation Audio")]
-    [Tooltip("Music/audio to play during the conversation with this NPC")]
-    [SerializeField] private AudioClip conversationMusic;
-    [Tooltip("Volume for the conversation music (0-1)")]
-    [Range(0f, 1f)]
-    [SerializeField] private float musicVolume = 0.5f;
-    [Tooltip("How long to fade in/out the music")]
-    [SerializeField] private float musicFadeDuration = 0.5f;
-    [Tooltip("Should the music loop during the conversation?")]
-    [SerializeField] private bool loopMusic = true;
-    [Tooltip("Volume to reduce room audio to during conversation (0-1)")]
-    [Range(0f, 1f)]
-    [SerializeField] private float roomAudioDuckVolume = 0f;
-    [Tooltip("How long to fade room audio in/out")]
-    [SerializeField] private float roomAudioFadeDuration = 1f;
-
     // Runtime
     private GameObject player;
     private CharacterMotor2D characterController;
     private ClockTimer clockTimer;
-    private bool isPlayerNear = false;
-    
+
     // Track if THIS item started the current conversation
     private bool isMyConversation = false;
-    
-    // Audio
-    private AudioSource conversationAudioSource;
-    private Coroutine fadeCoroutine;
-    private Coroutine roomAudioFadeCoroutine;
-    private RoomAudioZone[] roomAudioZones;
-    private float[] originalRoomVolumes;
 
     void Start()
     {
@@ -85,40 +61,13 @@ public class InteractiveItem : MonoBehaviour, IInteractable
             dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
             dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
         }
-
-        // Setup audio source for conversation music
-        if (conversationMusic != null)
-        {
-            conversationAudioSource = gameObject.AddComponent<AudioSource>();
-            conversationAudioSource.clip = conversationMusic;
-            conversationAudioSource.loop = loopMusic;
-            conversationAudioSource.playOnAwake = false;
-            conversationAudioSource.volume = 0f;
-            conversationAudioSource.spatialBlend = 0f; // 2D audio
-            DebugLogger.LogInteractiveItem($"Audio source created with clip '{conversationMusic.name}'", name);
-        }
-        else
-        {
-            DebugLogger.LogInteractiveItem("No conversation music assigned", name);
-        }
-
-        // Find all room audio zones for ducking
-        roomAudioZones = FindObjectsOfType<RoomAudioZone>();
-        originalRoomVolumes = new float[roomAudioZones.Length];
-        for (int i = 0; i < roomAudioZones.Length; i++)
-        {
-            if (roomAudioZones[i].roomMusic != null)
-                originalRoomVolumes[i] = roomAudioZones[i].roomMusic.volume;
-        }
     }
 
     void Update()
     {
-        if (player == null) return;
-
-        isPlayerNear = Vector3.Distance(transform.position, player.transform.position) <= interactionRange;
-
-        // Note: Individual input checking removed - now handled by InteractionDetector
+        // Note: Player proximity is now handled by InteractionDetector's trigger collider
+        // This prevents mismatches between trigger size and interaction range
+        // Individual input checking removed - now handled by InteractionDetector
         // This prevents duplicate E key checks and ensures proper priority ordering
     }
 
@@ -155,11 +104,39 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
     public bool CanInteract()
     {
-        // Can interact if we have dialog setup, player is near, and no other interaction is in progress
-        if (dialogBehaviour == null || dialogGraph == null) return false;
-        if (!isPlayerNear) return false;
-        if (Systems.InteractionLockManager.IsLocked) return false;
-        if (characterController != null && characterController.IsDialogueActive) return false;
+        // Can interact if we have dialog setup, player is within range, and no other interaction is in progress
+        if (dialogBehaviour == null || dialogGraph == null)
+        {
+            DebugLogger.LogInteractiveItem($"CanInteract=false: dialogBehaviour={dialogBehaviour != null}, dialogGraph={dialogGraph != null}", name);
+            return false;
+        }
+
+        // Check if player is within interaction range
+        if (player != null)
+        {
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+            if (distance > interactionRange)
+            {
+                DebugLogger.LogInteractiveItem($"CanInteract=false: Player too far (distance={distance:F2}, range={interactionRange})", name);
+                return false;
+            }
+        }
+        else
+        {
+            DebugLogger.LogInteractiveItem($"CanInteract=false: Player reference is null", name);
+            return false;
+        }
+
+        if (Systems.InteractionLockManager.IsLocked)
+        {
+            DebugLogger.LogInteractiveItem($"CanInteract=false: InteractionLockManager is locked", name);
+            return false;
+        }
+        if (characterController != null && characterController.IsDialogueActive)
+        {
+            DebugLogger.LogInteractiveItem($"CanInteract=false: Dialogue is active", name);
+            return false;
+        }
         return true;
     }
 
@@ -186,25 +163,6 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
         if (characterController != null)
             characterController.SetDialogueActive(true);
-
-        // Start conversation music
-        if (conversationAudioSource != null && conversationMusic != null)
-        {
-            DebugLogger.LogInteractiveItem($"Starting conversation music '{conversationMusic.name}' - Current volume: {conversationAudioSource.volume}, Is playing: {conversationAudioSource.isPlaying}", name);
-            if (fadeCoroutine != null)
-                StopCoroutine(fadeCoroutine);
-            fadeCoroutine = StartCoroutine(FadeMusic(true));
-        }
-        else
-        {
-            DebugLogger.LogInteractiveItem($"Cannot start music - AudioSource: {(conversationAudioSource != null ? "OK" : "NULL")}, Clip: {(conversationMusic != null ? "OK" : "NULL")}", name);
-        }
-
-        // Duck room audio
-        DebugLogger.LogInteractiveItem("Ducking room audio...", name);
-        if (roomAudioFadeCoroutine != null)
-            StopCoroutine(roomAudioFadeCoroutine);
-        roomAudioFadeCoroutine = StartCoroutine(FadeRoomAudio(true));
     }
 
     void OnDialogFinished()
@@ -236,20 +194,6 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         if (characterController != null)
             characterController.SetDialogueActive(false);
 
-        // Stop conversation music
-        if (conversationAudioSource != null && conversationAudioSource.isPlaying)
-        {
-            if (fadeCoroutine != null)
-                StopCoroutine(fadeCoroutine);
-            fadeCoroutine = StartCoroutine(FadeMusic(false));
-            DebugLogger.LogInteractiveItem("Stopping conversation music", name);
-        }
-
-        // Restore room audio
-        if (roomAudioFadeCoroutine != null)
-            StopCoroutine(roomAudioFadeCoroutine);
-        roomAudioFadeCoroutine = StartCoroutine(FadeRoomAudio(false));
-
         // Invoke the custom callback
         OnDialogCompleted?.Invoke();
 
@@ -260,126 +204,15 @@ public class InteractiveItem : MonoBehaviour, IInteractable
         Systems.InteractionLockManager.Unlock();
     }
 
-    private System.Collections.IEnumerator FadeMusic(bool fadeIn)
-    {
-        if (conversationAudioSource == null) 
-        {
-            DebugLogger.LogInteractiveItem("FadeMusic: conversationAudioSource is NULL!", name);
-            yield break;
-        }
-
-        float startVolume = conversationAudioSource.volume;
-        float targetVolume = fadeIn ? musicVolume : 0f;
-        float elapsed = 0f;
-
-        DebugLogger.LogInteractiveItem($"FadeMusic: {(fadeIn ? "Fading IN" : "Fading OUT")} from {startVolume} to {targetVolume} over {musicFadeDuration}s", name);
-
-        if (fadeIn && !conversationAudioSource.isPlaying)
-        {
-            conversationAudioSource.Play();
-            DebugLogger.LogInteractiveItem($"FadeMusic: Started playing audio clip '{conversationMusic.name}'", name);
-        }
-
-        while (elapsed < musicFadeDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / musicFadeDuration;
-            conversationAudioSource.volume = Mathf.Lerp(startVolume, targetVolume, t);
-            yield return null;
-        }
-
-        conversationAudioSource.volume = targetVolume;
-        DebugLogger.LogInteractiveItem($"FadeMusic: Fade complete. Final volume = {conversationAudioSource.volume}, Is playing: {conversationAudioSource.isPlaying}", name);
-
-        if (!fadeIn)
-        {
-            conversationAudioSource.Stop();
-            DebugLogger.LogInteractiveItem("FadeMusic: Stopped audio playback", name);
-        }
-
-        fadeCoroutine = null;
-    }
-
-    private System.Collections.IEnumerator FadeRoomAudio(bool duck)
-    {
-        if (roomAudioZones == null || roomAudioZones.Length == 0) 
-        {
-            DebugLogger.LogInteractiveItem($"No room audio zones found to {(duck ? "duck" : "restore")}", name);
-            yield break;
-        }
-
-        DebugLogger.LogInteractiveItem($"Found {roomAudioZones.Length} room audio zones to {(duck ? "duck" : "restore")}", name);
-
-        float elapsed = 0f;
-
-        // Store current volumes as starting point
-        float[] startVolumes = new float[roomAudioZones.Length];
-        for (int i = 0; i < roomAudioZones.Length; i++)
-        {
-            if (roomAudioZones[i] != null && roomAudioZones[i].roomMusic != null)
-            {
-                startVolumes[i] = roomAudioZones[i].roomMusic.volume;
-                DebugLogger.LogInteractiveItem($"  Zone {i} '{roomAudioZones[i].name}': Current volume = {startVolumes[i]}, Target = {(duck ? roomAudioDuckVolume : originalRoomVolumes[i])}", name);
-            }
-        }
-
-        while (elapsed < roomAudioFadeDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / roomAudioFadeDuration;
-
-            for (int i = 0; i < roomAudioZones.Length; i++)
-            {
-                if (roomAudioZones[i] != null && roomAudioZones[i].roomMusic != null)
-                {
-                    float targetVolume = duck ? roomAudioDuckVolume : originalRoomVolumes[i];
-                    roomAudioZones[i].roomMusic.volume = Mathf.Lerp(startVolumes[i], targetVolume, t);
-                }
-            }
-            yield return null;
-        }
-
-        // Ensure final volumes are set
-        for (int i = 0; i < roomAudioZones.Length; i++)
-        {
-            if (roomAudioZones[i] != null && roomAudioZones[i].roomMusic != null)
-            {
-                float targetVolume = duck ? roomAudioDuckVolume : originalRoomVolumes[i];
-                roomAudioZones[i].roomMusic.volume = targetVolume;
-                
-                // If ducking to 0 or near 0, also pause the audio to save CPU
-                if (duck && roomAudioDuckVolume < 0.01f)
-                {
-                    if (roomAudioZones[i].roomMusic.isPlaying)
-                    {
-                        roomAudioZones[i].roomMusic.Pause();
-                        DebugLogger.LogInteractiveItem($"  Paused room audio zone '{roomAudioZones[i].name}'", name);
-                    }
-                }
-                else if (!duck)
-                {
-                    // Resume if it was paused
-                    if (!roomAudioZones[i].roomMusic.isPlaying)
-                    {
-                        roomAudioZones[i].roomMusic.UnPause();
-                        DebugLogger.LogInteractiveItem($"  Unpaused room audio zone '{roomAudioZones[i].name}'", name);
-                    }
-                }
-            }
-        }
-
-        DebugLogger.LogInteractiveItem($"Room audio {(duck ? "ducked to " + roomAudioDuckVolume : "restored")}", name);
-        roomAudioFadeCoroutine = null;
-    }
-
 #if UNITY_EDITOR
     void OnDrawGizmosSelected()
     {
+        // Draw interaction range
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, interactionRange);
     }
 #endif
-    
+
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     private void LogDebug(string message)
     {

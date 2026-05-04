@@ -32,8 +32,8 @@ namespace cherrydev
             if (!isDialogActive)
                 return;
 
-            // Exit dialog on E key press or right-click
-            if (Input.GetKeyDown(KeyCode.E) || Input.GetMouseButtonDown(1))
+            // Exit dialog on E key press or right-click (only if allowed)
+            if (_dialogBehaviour.CanExitDialog && (Input.GetKeyDown(KeyCode.E) || Input.GetMouseButtonDown(1)))
             {
                 // Stop any playing text sound
                 if (_dialogSentencePanel != null)

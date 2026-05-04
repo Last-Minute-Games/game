@@ -397,6 +397,12 @@ public class ScreenFader : MonoBehaviour
 
         // Just load the scene, don't reset panels
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(nextScene);
+        if (asyncLoad == null)
+        {
+            Debug.LogError($"[ScreenFader] SceneManager.LoadSceneAsync returned null for '{nextScene}'. Make sure the scene is added to the active Build Profile / Build Settings.");
+            isTransitioning = false;
+            yield break;
+        }
         asyncLoad.allowSceneActivation = true;
 
         while (!asyncLoad.isDone)

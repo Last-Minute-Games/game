@@ -213,7 +213,19 @@ public class InteractionDetector : MonoBehaviour
             
             IInteractable bestInteractable = GetBestInteractable();
             LogDebug($"E key pressed! Nearby interactables: {nearbyInteractables.Count}, Best: {(bestInteractable != null ? bestInteractable.GetType().Name : "NONE")}");
-            
+
+            // Debug: Log why each interactable can't interact
+            if (bestInteractable == null && nearbyInteractables.Count > 0)
+            {
+                foreach (var interactable in nearbyInteractables)
+                {
+                    if (interactable != null)
+                    {
+                        LogDebug($"  - {interactable.GetType().Name}: CanInteract={interactable.CanInteract()}");
+                    }
+                }
+            }
+
             if (bestInteractable != null)
             {
                 if (Systems.InteractionLockManager.IsLocked)
@@ -474,7 +486,8 @@ public class InteractionDetector : MonoBehaviour
 
     private bool IsDoorInteractable(IInteractable interactable)
     {
-        return interactable is Systems.TeleportSystem;
+        return interactable is Systems.TeleportSystem
+            || interactable is Systems.SceneTransitionDoor;
     }
 
     private void EnsurePromptText()
