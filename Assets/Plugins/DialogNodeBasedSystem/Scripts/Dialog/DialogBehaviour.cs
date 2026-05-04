@@ -17,6 +17,7 @@ namespace cherrydev
         [SerializeField] private float _dialogCharDelay;
         [SerializeField] private List<KeyCode> _nextSentenceKeyCodes;
         [SerializeField] private bool _isCanSkippingText = true;
+        [SerializeField] private bool _canExitDialog = true; // Allow exiting dialog with E/right-click
 #if UNITY_LOCALIZATION
         [SerializeField] private bool _reloadTextOnLanguageChange = true;
 #endif
@@ -58,6 +59,12 @@ namespace cherrydev
         {
             get => _isCanSkippingText;
             set => _isCanSkippingText = value;
+        }
+        
+        public bool CanExitDialog
+        {
+            get => _canExitDialog;
+            set => _canExitDialog = value;
         }
 
         public event Action SentenceStarted;
