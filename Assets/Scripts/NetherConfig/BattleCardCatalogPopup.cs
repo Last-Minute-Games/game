@@ -41,6 +41,25 @@ public class BattleCardCatalogPopup : MonoBehaviour
             panelRoot.SetActive(false);
 
         HideUnlockHint();
+        ConfigureHintToIgnoreRaycasts();
+    }
+
+    /// <summary>
+    /// Hint must not block raycasts or it sits under the cursor and steals hover from the card → flicker.
+    /// </summary>
+    private void ConfigureHintToIgnoreRaycasts()
+    {
+        if (unlockHintPanel == null)
+            return;
+
+        foreach (var graphic in unlockHintPanel.GetComponentsInChildren<Graphic>(true))
+            graphic.raycastTarget = false;
+
+        foreach (var canvasGroup in unlockHintPanel.GetComponentsInChildren<CanvasGroup>(true))
+            canvasGroup.blocksRaycasts = false;
+
+        if (unlockHintLabel != null)
+            unlockHintLabel.raycastTarget = false;
     }
 
     private void OnEnable()

@@ -43,7 +43,12 @@ public class BattleCardCatalogEntry : MonoBehaviour, IPointerEnterHandler, IPoin
         cardImage.color = unlocked ? Color.white : lockedTint;
 
         if (lockedOverlay != null)
+        {
             lockedOverlay.SetActive(!unlocked);
+            // Let rays hit the root card Image so hover doesn't flicker between overlay and art.
+            foreach (var g in lockedOverlay.GetComponentsInChildren<Graphic>(true))
+                g.raycastTarget = false;
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
