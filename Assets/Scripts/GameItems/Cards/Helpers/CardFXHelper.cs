@@ -22,8 +22,8 @@ namespace GameItems.Cards.Helpers
             public static bool Locked = false;
         }
 
-        // Draw card onto player hand
-        public void OnCardDrawn(CardRender card)
+        // Draw card onto player hand. Set playDrawScaleAnimation false when the card spawns at drawPilePoint and DeckViewer tweens it into the hand (Overhaul-style).
+        public void OnCardDrawn(CardRender card, bool playDrawScaleAnimation = true)
         {
             Debug.Log($"[CardFXHelper] OnCardDrawn called for card '{card?.Data?.name ?? "unknown"}'");
             if (card == null)
@@ -34,8 +34,7 @@ namespace GameItems.Cards.Helpers
 
             Debug.Log($"[CardFXHelper] OnCardDrawn - animHelper: {animHelper != null}, sfxHelper: {sfxHelper != null}");
             
-            // Always animate the card
-            animHelper?.AnimateDraw(card);
+            animHelper?.AnimateDraw(card, playScaleFromDraw: playDrawScaleAnimation);
             
             // Only play draw sound once per round (first card drawn) - use manager's shared state
             if (!CardFXManager.Instance.DrawSoundPlayed && sfxHelper != null)
