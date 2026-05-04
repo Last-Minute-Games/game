@@ -474,7 +474,8 @@ public class InteractionDetector : MonoBehaviour
 
     private bool IsDoorInteractable(IInteractable interactable)
     {
-        return interactable is Systems.TeleportSystem;
+        return interactable is Systems.TeleportSystem
+            || interactable is Systems.SceneTransitionDoor;
     }
 
     private void EnsurePromptText()
