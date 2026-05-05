@@ -36,16 +36,27 @@ public class OverworldRiddleItem : MonoBehaviour, IInteractable
         {
             Debug.LogWarning($"[OverworldRiddleItem] {name}: Player not found!");
         }
-        
-        // Ensure collider is set as trigger
-        var col = GetComponent<Collider2D>();
-        if (col != null)
+
+        // Ensure collider exists - auto-add if missing
+        Collider2D col = GetComponent<Collider2D>();
+        if (col == null)
         {
-            col.isTrigger = true;
-        }
-        else
-        {
-            Debug.LogWarning($"[OverworldRiddleItem] {name}: No Collider2D found! Add a BoxCollider2D or CircleCollider2D.");
+            Debug.LogWarning($"[OverworldRiddleItem] {name}: No Collider2D found! Auto-adding BoxCollider2D...");
+            BoxCollider2D autoCollider = gameObject.AddComponent<BoxCollider2D>();
+
+            // Try to size it based on sprite renderer if available
+            SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null && spriteRenderer.sprite != null)
+            {
+                autoCollider.size = spriteRenderer.sprite.bounds.size;
+                autoCollider.offset = spriteRenderer.sprite.bounds.center;
+            }
+            else
+            {
+                autoCollider.size = new Vector2(1f, 1f);
+            }
+
+            Debug.LogWarning($"[OverworldRiddleItem] {name}: Auto-added BoxCollider2D (size: {autoCollider.size})");
         }
     }
 

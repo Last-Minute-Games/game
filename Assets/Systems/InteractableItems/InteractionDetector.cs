@@ -160,12 +160,13 @@ public class InteractionDetector : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // This will only work for objects that have trigger colliders (items, etc.)
         IInteractable interactable = other.GetComponent<IInteractable>();
-        
+
         if (interactable != null && !nearbyInteractables.Contains(interactable))
         {
             nearbyInteractables.Add(interactable);
-            LogDebug($"Added interactable: {other.gameObject.name} (Type: {interactable.GetType().Name}, Priority: {interactable.GetInteractionPriority()})");
+            LogDebug($"Added interactable (trigger): {other.gameObject.name} (Type: {interactable.GetType().Name}, Priority: {interactable.GetInteractionPriority()})");
             UpdatePopupVisibility();
         }
     }
@@ -176,21 +177,102 @@ public class InteractionDetector : MonoBehaviour
         if (interactable != null && nearbyInteractables.Contains(interactable))
         {
             nearbyInteractables.Remove(interactable);
-            LogDebug($"Removed interactable: {other.gameObject.name}");
-            
+            LogDebug($"Removed interactable (trigger): {other.gameObject.name}");
+
             // Clear hover if we're leaving the hovered interactable
             if (interactable == hoveredInteractable)
             {
                 hoveredInteractable = null;
                 UpdateCursor();
             }
-            
+
             UpdatePopupVisibility();
+        }
+    }
+
+    /// <summary>
+    /// Manually detect nearby interactables using overlap detection.
+    /// This catches NPCs with non-trigger colliders that OnTriggerEnter2D misses.
+    /// Just adds them to the list - CanInteract() is checked later in GetBestInteractable().
+    /// </summary>
+    private void UpdateNearbyInteractables()
+    {
+        // Get the player's trigger collider to determine maximum detection range
+        Collider2D triggerCollider = null;
+        foreach (var col in GetComponents<Collider2D>())
+        {
+            if (col.isTrigger)
+            {
+                triggerCollider = col;
+                break;
+            }
+        }
+
+        if (triggerCollider == null)
+        {
+            Debug.LogWarning("[InteractionDetector] No trigger collider found on player! Overlap detection disabled.");
+            return;
+        }
+
+        // Use overlap detection to find nearby colliders (including non-trigger ones)
+        float detectionRadius = GetEffectiveRadius(triggerCollider);
+        Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, detectionRadius);
+
+        // Track which interactables we found this frame
+        HashSet<IInteractable> foundInteractables = new HashSet<IInteractable>();
+
+        foreach (var col in nearbyColliders)
+        {
+            if (col.gameObject == gameObject)
+                continue; // Skip the player's own collider
+
+            IInteractable interactable = col.GetComponent<IInteractable>();
+            if (interactable != null)
+            {
+                foundInteractables.Add(interactable);
+
+                // Add to list if not already there
+                if (!nearbyInteractables.Contains(interactable))
+                {
+                    nearbyInteractables.Add(interactable);
+                    Debug.Log($"[InteractionDetector] Added interactable: {col.gameObject.name} (Type: {interactable.GetType().Name})");
+                }
+            }
+        }
+
+        // Remove interactables that are no longer in range
+        for (int i = nearbyInteractables.Count - 1; i >= 0; i--)
+        {
+            if (nearbyInteractables[i] == null || !foundInteractables.Contains(nearbyInteractables[i]))
+            {
+                var removed = nearbyInteractables[i];
+                nearbyInteractables.RemoveAt(i);
+
+                if (removed != null)
+                {
+                    MonoBehaviour mb = removed as MonoBehaviour;
+                    if (mb != null)
+                        Debug.Log($"[InteractionDetector] Removed interactable: {mb.gameObject.name}");
+                }
+
+                // Clear hover if we're leaving the hovered interactable
+                if (removed == hoveredInteractable)
+                {
+                    hoveredInteractable = null;
+                    UpdateCursor();
+                }
+            }
         }
     }
 
     private void Update()
     {
+        // Manually detect nearby interactables (catches NPCs with non-trigger colliders)
+        UpdateNearbyInteractables();
+
+        // Update popup visibility based on nearby interactables
+        UpdatePopupVisibility();
+
         // Update hover state every frame to ensure it handles camera/player movement
         if (enableHoverDetection)
         {
@@ -200,15 +282,17 @@ public class InteractionDetector : MonoBehaviour
         // Handle E key (keyboard interaction)
         if (Input.GetKeyDown(KeyCode.E))
         {
+            Debug.Log($"[InteractionDetector] E pressed! Nearby count: {nearbyInteractables.Count}");
+
             // Check if we're in dialog exit cooldown (prevents immediately re-entering dialog)
             if (cherrydev.DialogDisplayer.IsInDialogExitCooldown)
             {
                 LogDebug("E key ignored - dialog exit cooldown active");
                 return;
             }
-            
+
             IInteractable bestInteractable = GetBestInteractable();
-            LogDebug($"E key pressed! Nearby interactables: {nearbyInteractables.Count}, Best: {(bestInteractable != null ? bestInteractable.GetType().Name : "NONE")}");
+            Debug.Log($"[InteractionDetector] Best interactable: {(bestInteractable != null ? (bestInteractable as MonoBehaviour)?.gameObject.name : "NONE")}");
 
             // Debug: Log why each interactable can't interact
             if (bestInteractable == null && nearbyInteractables.Count > 0)
@@ -217,7 +301,8 @@ public class InteractionDetector : MonoBehaviour
                 {
                     if (interactable != null)
                     {
-                        LogDebug($"  - {interactable.GetType().Name}: CanInteract={interactable.CanInteract()}");
+                        MonoBehaviour mb = interactable as MonoBehaviour;
+                        Debug.Log($"[InteractionDetector] {mb?.gameObject.name}: CanInteract={interactable.CanInteract()}");
                     }
                 }
             }
@@ -229,13 +314,13 @@ public class InteractionDetector : MonoBehaviour
                     LogDebug($"Cannot interact - lock is held");
                     return;
                 }
-                
-                LogDebug($"Calling Interact() on {bestInteractable.GetType().Name}");
+
+                Debug.Log($"[InteractionDetector] Calling Interact() on {(bestInteractable as MonoBehaviour)?.gameObject.name}");
                 bestInteractable.Interact();
             }
             else
             {
-                LogDebug($"No valid interactable found");
+                Debug.Log($"[InteractionDetector] No valid interactable found");
             }
         }
 
@@ -266,10 +351,7 @@ public class InteractionDetector : MonoBehaviour
         // Get mouse position in world space
         Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         Vector2 playerPos = transform.position;
-        
-        if (enableDebugLogs)
-            LogDebug($"=== Hover Update === Mouse: {mouseWorldPos}, Player: {playerPos}, Count: {nearbyInteractables.Count}");
-        
+ 
         IInteractable newHovered = null;
         float closestDistance = float.MaxValue;
         IInteractable nearestDoor = null; // Track nearest door for cursor purposes

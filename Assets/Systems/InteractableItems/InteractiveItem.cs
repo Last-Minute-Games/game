@@ -40,11 +40,38 @@ public class InteractiveItem : MonoBehaviour, IInteractable
 
     void Start()
     {
-        // Runtime validation for collider
-        if (GetComponent<Collider2D>() == null)
+        // Runtime validation for collider - just check if missing
+        Collider2D existingCollider = GetComponent<Collider2D>();
+        if (existingCollider == null)
         {
-            DebugLogger.LogWarning($"[InteractiveItem] {name} is missing a Collider2D component! " +
-                           "Add a BoxCollider2D, CircleCollider2D, or other 2D collider for player interaction to work.");
+            // Check for 3D collider that might be blocking us
+            Collider collider3D = GetComponent<Collider>();
+            if (collider3D != null)
+            {
+                Debug.LogWarning($"[InteractiveItem] {name} has a 3D Collider ({collider3D.GetType().Name}) instead of a 2D Collider2D! This is a 2D game - the 3D collider won't work for interactions. Please replace it with a BoxCollider2D in the Unity Editor.");
+            }
+            else
+            {
+                DebugLogger.LogWarning($"[InteractiveItem] {name} is missing a Collider2D component! Auto-adding BoxCollider2D...");
+
+                // Auto-add a BoxCollider2D to fix the issue
+                BoxCollider2D autoCollider = gameObject.AddComponent<BoxCollider2D>();
+
+                // Try to size it based on sprite renderer if available
+                SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+                if (spriteRenderer != null && spriteRenderer.sprite != null)
+                {
+                    autoCollider.size = spriteRenderer.sprite.bounds.size;
+                    autoCollider.offset = spriteRenderer.sprite.bounds.center;
+                }
+                else
+                {
+                    // Default size if no sprite renderer
+                    autoCollider.size = new Vector2(1f, 1f);
+                }
+
+                Debug.LogWarning($"[InteractiveItem] {name}: Auto-added BoxCollider2D (size: {autoCollider.size})");
+            }
         }
 
         player = GameObject.FindGameObjectWithTag("Player");

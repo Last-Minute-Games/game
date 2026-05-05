@@ -76,9 +76,9 @@ namespace Dialogues
 
             dialogBehaviour.OnDialogStarted.AddListener(OnDialogStart);
             dialogBehaviour.OnDialogFinished.AddListener(OnDialogFinished);
-            
+
             LogDebug($"'{gameObject.name}' successfully subscribed to DialogBehaviour events");
-            
+
             // Setup audio source for conversation music
             if (conversationMusic != null)
             {
@@ -137,6 +137,8 @@ namespace Dialogues
 
         private void OnDialogStart()
         {
+            Debug.Log($"[DialogTrigger] OnDialogStart called for '{gameObject.name}', _isMyConversation={_isMyConversation}");
+
             // Ignore global start events unless they were initiated by THIS trigger
             if (!_isMyConversation) return;
 
@@ -144,7 +146,7 @@ namespace Dialogues
 
             // Use GlobalPause to pause NPCs and timer (but not player input or timescale)
             GlobalPause.SetMinigamePaused(true);
-            LogDebug("GlobalPause minigame pause enabled (NPCs and timer paused)");
+            Debug.Log($"[DialogTrigger] '{gameObject.name}' GlobalPause minigame pause enabled");
 
             if (_npcBrain)
             {
@@ -251,19 +253,32 @@ namespace Dialogues
 
             if (dialogBehaviour == null)
             {
-                DebugLogger.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogBehaviour is null!");
-                return;
-            }
-            
-            if (dialogGraph == null)
-            {
-                DebugLogger.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogGraph is null!");
+                Debug.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogBehaviour is null!");
                 return;
             }
 
+            if (dialogGraph == null)
+            {
+                Debug.LogError($"[DialogTrigger] '{gameObject.name}' cannot start dialog - DialogGraph is null!");
+                return;
+            }
+
+            // CHECK IF DIALOGDISPLAYER EXISTS IN THE SCENE
+            var dialogDisplayer = FindObjectOfType<cherrydev.DialogDisplayer>();
+            if (dialogDisplayer == null)
+            {
+                Debug.LogError($"[DialogTrigger] CRITICAL: DialogDisplayer not found in scene! Dialog UI will not show!");
+                Debug.LogError($"[DialogTrigger] Please ensure the DialogDisplayer GameObject is in the Overworld scene and not being stripped from builds.");
+            }
+            else
+            {
+                Debug.Log($"[DialogTrigger] DialogDisplayer found: {dialogDisplayer.gameObject.name}");
+            }
+
             _isMyConversation = true;
-            LogDebug($"'{gameObject.name}' starting dialog (will trigger GlobalPause)");
+            Debug.Log($"[DialogTrigger] '{gameObject.name}' calling StartDialog on DialogBehaviour...");
             dialogBehaviour.StartDialog(dialogGraph);
+            Debug.Log($"[DialogTrigger] '{gameObject.name}' StartDialog called successfully");
         }
 
         public int GetInteractionPriority()
