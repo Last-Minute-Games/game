@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
@@ -162,6 +163,12 @@ public class RoomMapUI : MonoBehaviour
 
     void Start()
     {
+        if (IsMapDisabledInCurrentScene())
+        {
+            enabled = false;
+            return;
+        }
+
         if (mapData == null)
         {
             Debug.LogError("RoomMapUI: No RoomMapData assigned.");
@@ -211,6 +218,11 @@ public class RoomMapUI : MonoBehaviour
 
     void Update()
     {
+        if (IsMapDisabledInCurrentScene())
+        {
+            return;
+        }
+
         if (Input.GetKeyDown(toggleKey))
         {
             // Don't toggle while a fade is in progress
@@ -254,6 +266,9 @@ public class RoomMapUI : MonoBehaviour
 
     private void ToggleMap()
     {
+        if (IsMapDisabledInCurrentScene())
+            return;
+
         // Don't open while journal is already open
         if (!_isOpen)
         {
@@ -354,6 +369,11 @@ public class RoomMapUI : MonoBehaviour
 
         IsMapVisible = isVisible;
         OnMapVisibilityChanged?.Invoke(isVisible);
+    }
+
+    private static bool IsMapDisabledInCurrentScene()
+    {
+        return SceneManager.GetActiveScene().name == "Catacombs";
     }
 
     private IEnumerator PrewarmMapData()

@@ -57,7 +57,9 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
         {
             triggerY = 38f,
             flagName = "catacombs.devil.survive.shown",
-            dialogResourcePath = "Dialogues/Monologues/CatacombsDevilSurvive"
+            dialogResourcePath = "Dialogues/Monologues/CatacombsDevilSurvive",
+            opensDoor = true,
+            doorObjectName = "Doors"
         },
     };
 
@@ -88,6 +90,12 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
     private bool _warnedMissingDialog;
     private Transform _player;
     private int _currentStepIndex = -1;
+    private PlayerInput2D _activePlayerInput;
+    private CharacterMotor2D _activeMotor;
+    private bool _storedInputEnabled;
+    private bool _storedDialogueActive;
+    private bool _hasStoredPlayerState;
+    private UnityAction _dialogFinishedListener;
 
     private void Start()
     {
@@ -97,6 +105,57 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
         {
             dialogBehaviour = FindObjectOfType<DialogBehaviour>(true);
         }
+    }
+
+    private void CachePlayerControl(GameObject playerObj)
+    {
+        _activePlayerInput = null;
+        _activeMotor = null;
+        _hasStoredPlayerState = false;
+
+        if (playerObj == null)
+        {
+            return;
+        }
+
+        _activePlayerInput = playerObj.GetComponent<PlayerInput2D>();
+        _activeMotor = playerObj.GetComponent<CharacterMotor2D>();
+
+        if (_activePlayerInput != null)
+        {
+            _storedInputEnabled = _activePlayerInput.isInputEnabled;
+            _activePlayerInput.isInputEnabled = false;
+            _hasStoredPlayerState = true;
+        }
+
+        if (_activeMotor != null)
+        {
+            _storedDialogueActive = _activeMotor.IsDialogueActive;
+            _activeMotor.SetDialogueActive(true);
+            _hasStoredPlayerState = true;
+        }
+    }
+
+    private void RestorePlayerControl()
+    {
+        if (!_hasStoredPlayerState)
+        {
+            return;
+        }
+
+        if (_activePlayerInput != null)
+        {
+            _activePlayerInput.isInputEnabled = _storedInputEnabled;
+        }
+
+        if (_activeMotor != null)
+        {
+            _activeMotor.SetDialogueActive(_storedDialogueActive);
+        }
+
+        _activePlayerInput = null;
+        _activeMotor = null;
+        _hasStoredPlayerState = false;
     }
 
     private void Update()
@@ -186,46 +245,17 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
         }
 
         GameObject playerObj = _player != null ? _player.gameObject : GameObject.FindGameObjectWithTag("Player");
-        PlayerInput2D playerInput = null;
-        CharacterMotor2D motor = null;
-        bool prevInputEnabled = true;
-        bool prevDialogueActive = false;
+        CachePlayerControl(playerObj);
 
-        if (playerObj != null)
+        _dialogFinishedListener = null;
+        _dialogFinishedListener = () =>
         {
-            playerInput = playerObj.GetComponent<PlayerInput2D>();
-            motor = playerObj.GetComponent<CharacterMotor2D>();
-
-            if (playerInput != null)
+            if (dialogBehaviour != null && _dialogFinishedListener != null)
             {
-                prevInputEnabled = playerInput.isInputEnabled;
-                playerInput.isInputEnabled = false;
+                dialogBehaviour.OnDialogFinished.RemoveListener(_dialogFinishedListener);
             }
 
-            if (motor != null)
-            {
-                prevDialogueActive = motor.IsDialogueActive;
-                motor.SetDialogueActive(true);
-            }
-        }
-
-        UnityAction onFinished = null;
-        onFinished = () =>
-        {
-            if (dialogBehaviour != null)
-            {
-                dialogBehaviour.OnDialogFinished.RemoveListener(onFinished);
-            }
-
-            if (playerInput != null)
-            {
-                playerInput.isInputEnabled = prevInputEnabled;
-            }
-
-            if (motor != null)
-            {
-                motor.SetDialogueActive(prevDialogueActive);
-            }
+            RestorePlayerControl();
 
             _isDialogPlaying = false;
             _currentStepIndex = FindNextStepIndex();
@@ -234,11 +264,36 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
             {
                 StartCoroutine(WaitAndOpenBigDoor(step));
             }
+
+            _dialogFinishedListener = null;
         };
 
-        dialogBehaviour.OnDialogFinished.AddListener(onFinished);
+        dialogBehaviour.OnDialogFinished.AddListener(_dialogFinishedListener);
         GameFlags.SetFlag(step.flagName);
         dialogBehaviour.StartDialog(dialogGraph);
+
+        // If this step opens the door, start the door sequence immediately in parallel
+        if (step.opensDoor)
+        {
+            StartCoroutine(WaitAndOpenBigDoor(step));
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (dialogBehaviour != null && _dialogFinishedListener != null)
+        {
+            dialogBehaviour.OnDialogFinished.RemoveListener(_dialogFinishedListener);
+        }
+
+        _dialogFinishedListener = null;
+        RestorePlayerControl();
+        _isDialogPlaying = false;
+    }
+
+    private void OnDestroy()
+    {
+        OnDisable();
     }
 
     private IEnumerator WaitAndOpenBigDoor(DialogueStep step)
@@ -269,10 +324,11 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
 
         if (characterLight2D != null)
         {
-            characterLight2D.DOIntensity(0, 2f);
+            characterLight2D.DOIntensity(0, 0.5f);
         }
 
-        yield return new WaitForSeconds(step.doorOpenDelay);
+        // Door opens immediately after dialogue finishes, no delay
+        yield return new WaitForSeconds(0f);
 
         if (characterLight2D != null)
         {
