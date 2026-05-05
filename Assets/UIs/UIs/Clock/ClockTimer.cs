@@ -24,8 +24,13 @@ public class ClockTimer : MonoBehaviour
     [Tooltip("Scene name that represents the overworld")]
     public string overworldSceneName = "Overworld";
 
-    [Tooltip("Scene to load when the overworld timer hits 0")]
+    [Tooltip("Scene to load when the overworld timer hits 0 (FIRST TIME)")]
     public string overworldTimeoutSceneName = "Catacombs";
+
+    [Tooltip("Scene to load when the overworld timer hits 0 (SECOND TIME and onwards)")]
+    public string overworldTimeoutBattleSceneName = "BattleScene";
+
+    private const string FIRST_TIMEOUT_FLAG = "clock.first.timeout.complete";
     
     [Header("Day Five Ending")]
     [Tooltip("EndTransition component to trigger when day.five timer runs out")]
@@ -625,12 +630,30 @@ public class ClockTimer : MonoBehaviour
         string sceneToLoad = nextSceneName;
         string activeSceneName = SceneManager.GetActiveScene().name;
 
+        // Check if we're in Overworld and timer expired
         if (!string.IsNullOrEmpty(overworldSceneName)
             && !string.IsNullOrEmpty(overworldTimeoutSceneName)
             && activeSceneName == overworldSceneName)
         {
-            sceneToLoad = overworldTimeoutSceneName;
-            LogDebug($"Overworld timer ended - overriding next scene to '{sceneToLoad}'.");
+            // Check if this is the first time the timer has run out
+            if (!GameFlags.HasFlag(FIRST_TIMEOUT_FLAG))
+            {
+                // FIRST TIME: Go to Catacombs
+                sceneToLoad = overworldTimeoutSceneName;
+                LogDebug($"Overworld timer ended - FIRST TIME - going to Catacombs: '{sceneToLoad}'.");
+
+                // Set flag so next time we go straight to battle
+                GameFlags.SetFlag(FIRST_TIMEOUT_FLAG);
+                LogDebug($"Set flag '{FIRST_TIMEOUT_FLAG}' - next timeout will go to battle");
+            }
+            else
+            {
+                // SECOND TIME and onwards: Go straight to Battle
+                sceneToLoad = string.IsNullOrEmpty(overworldTimeoutBattleSceneName) 
+                    ? nextSceneName 
+                    : overworldTimeoutBattleSceneName;
+                LogDebug($"Overworld timer ended - SECOND+ TIME - going straight to Battle: '{sceneToLoad}'.");
+            }
         }
 
         // Transition to the next scene
