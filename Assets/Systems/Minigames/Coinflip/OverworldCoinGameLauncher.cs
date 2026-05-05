@@ -53,16 +53,27 @@ public class OverworldCoinGameLauncher : MonoBehaviour, IInteractable
         {
             Debug.LogWarning($"[OverworldCoinGameLauncher] {name}: Player not found!");
         }
-        
-        // Ensure we have a trigger collider
+
+        // Ensure we have a collider - auto-add if missing
         BoxCollider2D triggerCollider = GetComponent<BoxCollider2D>();
-        if (triggerCollider != null)
+        if (triggerCollider == null)
         {
-            triggerCollider.isTrigger = true;
-        }
-        else
-        {
-            Debug.LogWarning($"[OverworldCoinGameLauncher] {name}: No BoxCollider2D found! Add one as a trigger for interaction to work.");
+            Debug.LogWarning($"[OverworldCoinGameLauncher] {name}: No BoxCollider2D found! Auto-adding one...");
+            triggerCollider = gameObject.AddComponent<BoxCollider2D>();
+
+            // Try to size it based on sprite renderer if available
+            SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null && spriteRenderer.sprite != null)
+            {
+                triggerCollider.size = spriteRenderer.sprite.bounds.size;
+                triggerCollider.offset = spriteRenderer.sprite.bounds.center;
+            }
+            else
+            {
+                triggerCollider.size = new Vector2(1f, 1f);
+            }
+
+            Debug.LogWarning($"[OverworldCoinGameLauncher] {name}: Auto-added BoxCollider2D (size: {triggerCollider.size})");
         }
     }
 

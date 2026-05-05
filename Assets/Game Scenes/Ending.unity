@@ -451,7 +451,6 @@ MonoBehaviour:
   raycastLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  enableKeyboardInteraction: 1
 --- !u!61 &497838753
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -785,41 +784,91 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EndingCutsceneManager
   endings:
-  - endingName: asdfasd
-    requiredFlags:
-    - asdf
-    - character.avant.heir
-    forbiddenFlags: []
-    priority: 100
-    endingDialogGraph: {fileID: 11400000, guid: 9e448aeb32cbc9f4db80e0696c6f2e13, type: 2}
-    backgroundImage: {fileID: 2348572458802879445, guid: 8c2ebe9c5f42134479cc039925acb46f, type: 3}
-    backgroundColor: {r: 1, g: 1, b: 1, a: 0}
-    endingMusic: {fileID: 0}
-  - endingName: Neutral Ending
+  - endingName: KHGod
     requiredFlags:
     - ending.killer.found
-    forbiddenFlags:
-    - character.avant.heir
-    priority: 50
-    endingDialogGraph: {fileID: 11400000, guid: 9f06d1f1a275cb946baa50198aefe26e, type: 2}
-    backgroundImage: {fileID: -8156607550707674532, guid: 55591520689be944088b293f12be31f8, type: 3}
-    backgroundColor: {r: 1, g: 1, b: 1, a: 1}
-    endingMusic: {fileID: 8300000, guid: 2f3c11a248b154941ba426382bd09fbd, type: 3}
-  - endingName: Bad Ending
-    requiredFlags: []
+    - character.nikolaus.heir
+    - ending.religous
     forbiddenFlags: []
-    priority: 0
-    endingDialogGraph: {fileID: 11400000, guid: a8f5e75dfd15e3d4cbffa304afe8dace, type: 2}
+    priority: 100
+    endingDialogGraph: {fileID: 11400000, guid: b008717ba0d35dc4cb79c81b5bacbb9c, type: 2}
+    backgroundImage: {fileID: 2348572458802879445, guid: 8c2ebe9c5f42134479cc039925acb46f, type: 3}
+    backgroundColor: {r: 1, g: 1, b: 1, a: 0}
+    endingMusic: {fileID: 8300000, guid: 6c00da6bbba87278096cc9d04d867ea4, type: 3}
+  - endingName: KNHGod
+    requiredFlags:
+    - ending.religious
+    - ending.killer.found
+    forbiddenFlags:
+    - character.nikolaus.heir
+    priority: 60
+    endingDialogGraph: {fileID: 11400000, guid: 64b232098b1b5e343ad8f4ca7119ff31, type: 2}
     backgroundImage: {fileID: 7602184945161523033, guid: 757eb04978fca3c4aaf37a7f73461e31, type: 3}
     backgroundColor: {r: 1, g: 1, b: 1, a: 1}
     endingMusic: {fileID: 8300000, guid: 8653c51aeda11eb68a5f24ddbbc46aa6, type: 3}
-  - endingName: WorkingEnding
+  - endingName: NKNHGod
     requiredFlags:
+    - ending.relgious
+    forbiddenFlags:
+    - character.nikolaus.heir
     - ending.killer.found
-    - character.avant.heir
+    priority: 0
+    endingDialogGraph: {fileID: 11400000, guid: 7a3ae35e0c7206548a5d47a7bfd8ce0a, type: 2}
+    backgroundImage: {fileID: 7602184945161523033, guid: 757eb04978fca3c4aaf37a7f73461e31, type: 3}
+    backgroundColor: {r: 1, g: 1, b: 1, a: 1}
+    endingMusic: {fileID: 8300000, guid: 8653c51aeda11eb68a5f24ddbbc46aa6, type: 3}
+  - endingName: NKHGod
+    requiredFlags:
+    - ending.religous
+    - character.nikolaus.heir
+    forbiddenFlags:
+    - ending.killer.found
+    priority: 60
+    endingDialogGraph: {fileID: 11400000, guid: 64b232098b1b5e343ad8f4ca7119ff31, type: 2}
+    backgroundImage: {fileID: 7602184945161523033, guid: 757eb04978fca3c4aaf37a7f73461e31, type: 3}
+    backgroundColor: {r: 1, g: 1, b: 1, a: 1}
+    endingMusic: {fileID: 8300000, guid: 8653c51aeda11eb68a5f24ddbbc46aa6, type: 3}
+  - endingName: NKHGuard
+    requiredFlags:
+    - ending.guard
+    - character.nikolaus.heir
+    forbiddenFlags:
+    - ending.killer.found
+    priority: 60
+    endingDialogGraph: {fileID: 11400000, guid: a4bb071874a1f3046b2f3d5e48cc25ae, type: 2}
+    backgroundImage: {fileID: 7602184945161523033, guid: 757eb04978fca3c4aaf37a7f73461e31, type: 3}
+    backgroundColor: {r: 1, g: 1, b: 1, a: 1}
+    endingMusic: {fileID: 8300000, guid: 8653c51aeda11eb68a5f24ddbbc46aa6, type: 3}
+  - endingName: NKNHGuard
+    requiredFlags:
+    - ending.guard
+    forbiddenFlags:
+    - ending.killer.found
+    - character.nikolaus.heir
+    priority: 60
+    endingDialogGraph: {fileID: 11400000, guid: 64b232098b1b5e343ad8f4ca7119ff31, type: 2}
+    backgroundImage: {fileID: 7602184945161523033, guid: 757eb04978fca3c4aaf37a7f73461e31, type: 3}
+    backgroundColor: {r: 1, g: 1, b: 1, a: 1}
+    endingMusic: {fileID: 8300000, guid: 8653c51aeda11eb68a5f24ddbbc46aa6, type: 3}
+  - endingName: KNHGuard
+    requiredFlags:
+    - ending.guard
+    - ending.killer.found
+    forbiddenFlags:
+    - character.nikolaus.heir
+    priority: 60
+    endingDialogGraph: {fileID: 11400000, guid: 36a9d1dacffb73b4ba665963ac58a697, type: 2}
+    backgroundImage: {fileID: 7602184945161523033, guid: 757eb04978fca3c4aaf37a7f73461e31, type: 3}
+    backgroundColor: {r: 1, g: 1, b: 1, a: 1}
+    endingMusic: {fileID: 8300000, guid: 8653c51aeda11eb68a5f24ddbbc46aa6, type: 3}
+  - endingName: KHGuard
+    requiredFlags:
+    - ending.guard
+    - ending.killer.found
+    - character.nikolaus.heir
     forbiddenFlags: []
     priority: 60
-    endingDialogGraph: {fileID: 11400000, guid: 9e448aeb32cbc9f4db80e0696c6f2e13, type: 2}
+    endingDialogGraph: {fileID: 11400000, guid: eb00e134198a80f49b18eaa2e995b610, type: 2}
     backgroundImage: {fileID: 2348572458802879445, guid: 8c2ebe9c5f42134479cc039925acb46f, type: 3}
     backgroundColor: {r: 1, g: 1, b: 1, a: 1}
     endingMusic: {fileID: 8300000, guid: 6c00da6bbba87278096cc9d04d867ea4, type: 3}

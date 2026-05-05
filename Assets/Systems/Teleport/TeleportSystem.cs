@@ -52,23 +52,29 @@ namespace Systems
             _fadeCanvasGroup.blocksRaycasts = false;
             _tutorialScene = FindFirstObjectByType<Overworld.Intro.TutorialScene>();
 
-            
+
             _tptCollider = transform.gameObject.GetComponent<BoxCollider2D>();
-            _tptCollider.isTrigger = true;
-            
+            if (_tptCollider == null)
+            {
+                Debug.LogWarning($"[TeleportSystem] {name} is missing a BoxCollider2D! Auto-adding one...");
+                _tptCollider = gameObject.AddComponent<BoxCollider2D>();
+                _tptCollider.size = new Vector2(1f, 1f);
+                Debug.LogWarning($"[TeleportSystem] {name}: Auto-added BoxCollider2D (size: {_tptCollider.size})");
+            }
+
             _player = GameObject.FindGameObjectWithTag("Player");
             _characterController2D = _player.GetComponent<CharacterMotor2D>();
             _characterCollider2D = _player.GetComponent<BoxCollider2D>();
-            
+
             // Cinemachine
             _cinemachinePositionComposer = GameObject.Find("CinemachineCamera").GetComponent<CinemachinePositionComposer>();
-            
+
             // make the new collider
             _newCollider = gameObject.AddComponent<BoxCollider2D>();
             _newCollider.isTrigger = false;
             _newCollider.offset = _tptCollider.offset;
             _newCollider.size = _tptCollider.size * 0.99f;
-            
+
             _environmentSoundHandler = GameObject.Find("EnvironmentSoundHandler").GetComponent<EnvironmentSoundHandler>();
         }
         
