@@ -7,6 +7,9 @@ using UnityEditor;
 /// </summary>
 public class RoomNamePopupSetup : Editor
 {
+    private const string RoomBannerPath = "Assets/Sprites/roomBanner.png";
+    private const string RoomBannerSpriteName = "roomBanner_0";
+
     [MenuItem("Tools/Castle of Time/Create Room Name Popup")]
     public static void CreateRoomNamePopup()
     {
@@ -26,19 +29,18 @@ public class RoomNamePopupSetup : Editor
         // Add component
         RoomNamePopup popup = popupObj.AddComponent<RoomNamePopup>();
 
-        // Find and assign journal sprite
-        Sprite journalSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-            "Assets/Sprites/UI/journal/journal.png");
+        // Find and assign room banner sprite
+        Sprite roomBannerSprite = LoadRoomBannerSprite();
 
-        if (journalSprite != null)
+        if (roomBannerSprite != null)
         {
             SerializedObject so = new SerializedObject(popup);
-            so.FindProperty("journalSprite").objectReferenceValue = journalSprite;
+            so.FindProperty("journalSprite").objectReferenceValue = roomBannerSprite;
             so.ApplyModifiedProperties();
         }
         else
         {
-            Debug.LogWarning("[RoomNamePopupSetup] journal.png not found at expected path. Please assign manually.");
+            Debug.LogWarning("[RoomNamePopupSetup] roomBanner.png not found at expected path. Please assign manually.");
         }
 
         // Find and assign RoomMapData
@@ -60,6 +62,37 @@ public class RoomNamePopupSetup : Editor
         Selection.activeGameObject = popupObj;
         EditorUtility.SetDirty(popupObj);
 
-        Debug.Log("[RoomNamePopupSetup] Room Name Popup created! Make sure to assign the Journal Sprite and RoomMapData in the Inspector if not auto-detected.");
+        Debug.Log("[RoomNamePopupSetup] Room Name Popup created! Make sure to assign the room banner sprite and RoomMapData in the Inspector if not auto-detected.");
+    }
+
+    private static Sprite LoadRoomBannerSprite()
+    {
+        Sprite directSprite = AssetDatabase.LoadAssetAtPath<Sprite>(RoomBannerPath);
+        if (directSprite != null)
+        {
+            return directSprite;
+        }
+
+        Sprite fallbackSprite = null;
+        Object[] allAssets = AssetDatabase.LoadAllAssetsAtPath(RoomBannerPath);
+        foreach (Object asset in allAssets)
+        {
+            if (asset is not Sprite sprite)
+            {
+                continue;
+            }
+
+            if (sprite.name == RoomBannerSpriteName)
+            {
+                return sprite;
+            }
+
+            if (fallbackSprite == null)
+            {
+                fallbackSprite = sprite;
+            }
+        }
+
+        return fallbackSprite;
     }
 }

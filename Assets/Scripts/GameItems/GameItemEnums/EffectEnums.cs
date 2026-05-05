@@ -20,7 +20,16 @@ public enum OperationType // player and enemy manager must define handling all o
     MultiplyPowerScale,
     AddEnergy,
     DrawCards,
-    AddStrength
+    AddStrength,
+
+    /// <summary>Add poison stacks to target; ticks down each turn (see EntityData.TickPoisonAtTurnStart).</summary>
+    ApplyPoison,
+
+    /// <summary>Deal damage to enemy (or self per TargetRule) and heal player for secondaryValue (or postCopyValue of secondary).</summary>
+    LifeSteal,
+
+    /// <summary>Deal damage to enemy and damage player by secondaryValue (reckless / blood price).</summary>
+    RecoilStrike
 }
 
 public enum TimeUnit
@@ -69,8 +78,17 @@ public struct Effect
     [Tooltip("Unique key to substitute in descriptions, e.g., X, Y, Z. Must be unique per-card.")]
     public string textKey;
 
+    [Header("Pattern / paired values")]
+    [Tooltip("For Damage: number of sequential hits (each uses rolled damage). For poison ticks use duration/stack rules on ApplyPoison.")]
+    [Min(1)] public int hitCount;
+
+    [Tooltip("Second number for paired ops: LifeSteal heal amount, RecoilStrike self-hit, etc.")]
+    public int secondaryValue;
+
     // Runtime value that will be used after multiplier is applied
     [HideInInspector] public int postCopyValue;
+
+    [HideInInspector] public int postCopySecondaryValue;
 
     // --------------------------------------------------
     // Helper Methods
@@ -84,6 +102,9 @@ public struct Effect
         Effect clone = this;
         float rolledMultiplier = applyMultiplier ? UnityEngine.Random.Range(minMultiplier, maxMultiplier) : 1f;
         clone.postCopyValue = Mathf.RoundToInt(baseValue * rolledMultiplier);
+        clone.postCopySecondaryValue = Mathf.RoundToInt(secondaryValue * rolledMultiplier);
+        if (hitCount <= 0)
+            clone.hitCount = 1;
         return clone;
     }
 
@@ -113,7 +134,10 @@ public struct Effect
             delayUnit = TimeUnit.Turns,
             variableColor = Color.white,
             textKey = "X",
-            postCopyValue = 0
+            hitCount = 1,
+            secondaryValue = 0,
+            postCopyValue = 0,
+            postCopySecondaryValue = 0
         };
     }
 }

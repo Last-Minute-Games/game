@@ -19,6 +19,13 @@ public class ClockTimer : MonoBehaviour
     [Header("Ending Scene")]
     [Tooltip("Scene to load when the game ends (e.g., after day five is completed). If empty, will use nextSceneName.")]
     public string endingSceneName = "";
+
+    [Header("Overworld Timeout")]
+    [Tooltip("Scene name that represents the overworld")]
+    public string overworldSceneName = "Overworld";
+
+    [Tooltip("Scene to load when the overworld timer hits 0")]
+    public string overworldTimeoutSceneName = "Catacombs";
     
     [Header("Day Five Ending")]
     [Tooltip("EndTransition component to trigger when day.five timer runs out")]
@@ -197,6 +204,9 @@ public class ClockTimer : MonoBehaviour
             StopCoroutine(specialAnimRoutine);
             specialAnimRoutine = null;
         }
+
+        // Ensure the static time-ended flag doesn't persist across scenes
+        IsTimeEnded = false;
 
         // Unsubscribe scene loaded
         SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -613,6 +623,14 @@ public class ClockTimer : MonoBehaviour
 
         // Normal transition for other days
         string sceneToLoad = nextSceneName;
+        string activeSceneName = SceneManager.GetActiveScene().name;
+        if (!string.IsNullOrEmpty(overworldSceneName)
+            && !string.IsNullOrEmpty(overworldTimeoutSceneName)
+            && activeSceneName == overworldSceneName)
+        {
+            sceneToLoad = overworldTimeoutSceneName;
+            LogDebug($"Overworld timer ended - overriding next scene to '{sceneToLoad}'.");
+        }
 
         // Transition to the next scene - KEEP PANELS CLOSED
         if (string.IsNullOrEmpty(sceneToLoad))

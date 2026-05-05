@@ -22,8 +22,8 @@ namespace GameItems.Cards.Helpers
             public static bool Locked = false;
         }
 
-        // Draw card onto player hand
-        public void OnCardDrawn(CardRender card)
+        // Draw card onto player hand. Set playDrawScaleAnimation false when the card spawns at drawPilePoint and DeckViewer tweens it into the hand (Overhaul-style).
+        public void OnCardDrawn(CardRender card, bool playDrawScaleAnimation = true)
         {
             Debug.Log($"[CardFXHelper] OnCardDrawn called for card '{card?.Data?.name ?? "unknown"}'");
             if (card == null)
@@ -34,8 +34,7 @@ namespace GameItems.Cards.Helpers
 
             Debug.Log($"[CardFXHelper] OnCardDrawn - animHelper: {animHelper != null}, sfxHelper: {sfxHelper != null}");
             
-            // Always animate the card
-            animHelper?.AnimateDraw(card);
+            animHelper?.AnimateDraw(card, playScaleFromDraw: playDrawScaleAnimation);
             
             // Only play draw sound once per round (first card drawn) - use manager's shared state
             if (!CardFXManager.Instance.DrawSoundPlayed && sfxHelper != null)
@@ -80,6 +79,17 @@ namespace GameItems.Cards.Helpers
                 Debug.Log($"[CardFXHelper] OnCardHover ignored - card '{card.Data?.name ?? "unknown"}' is animating");
                 return;
             }
+
+            if (NetherCardViewHover.Instance != null && NetherCardViewHover.Instance.SuppressesInPlaceHover)
+            {
+                NetherCardViewHover.Instance.ShowForCard(card);
+                if (CardFXManager.Instance.CurrentlyHoveredCard != card)
+                {
+                    CardFXManager.Instance.CurrentlyHoveredCard = card;
+                    sfxHelper?.PlayHover();
+                }
+                return;
+            }
             
             // Only play sound and visuals if this is a NEW hover (not the same card)
             if (CardFXManager.Instance.CurrentlyHoveredCard != card)
@@ -102,6 +112,8 @@ namespace GameItems.Cards.Helpers
                 Debug.LogWarning("[CardFXHelper] OnCardHoverExit called with null card.");
                 return;
             }
+
+            NetherCardViewHover.Instance?.Hide();
             
             // Clear hover tracking when exiting
             if (CardFXManager.Instance.CurrentlyHoveredCard == card)

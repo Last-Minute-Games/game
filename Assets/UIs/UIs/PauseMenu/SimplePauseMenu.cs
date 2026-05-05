@@ -111,9 +111,9 @@ public class SimplePauseMenu : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // Escape closes card catalog first (BattleScene and Overworld), then returns.
-            if (BattleCardCatalogPopup.CloseAnyOpenCatalog())
+            if (RoomMapUI.IsMapVisible)
             {
+                OpenPauseFromMap();
                 return;
             }
 
@@ -137,9 +137,6 @@ public class SimplePauseMenu : MonoBehaviour
 
     void Pause()
     {
-        if (BattleCardCatalogPopup.IsAnyCatalogOpen())
-            return;
-
         isPaused = true;
         GlobalPause.SetPaused(true);
 
@@ -159,9 +156,6 @@ public class SimplePauseMenu : MonoBehaviour
 
     void OpenSettings()
     {
-        if (BattleCardCatalogPopup.IsAnyCatalogOpen())
-            return;
-
         // Just show settings on top of pause menu
         if (settingsPanel)
         {
@@ -176,6 +170,24 @@ public class SimplePauseMenu : MonoBehaviour
         {
             settingsPanel.SetActive(false);
         }
+
+        if (isPaused && pausePanel && !pausePanel.activeSelf)
+        {
+            pausePanel.SetActive(true);
+        }
+    }
+
+    private void OpenPauseFromMap()
+    {
+        var mapUI = FindFirstObjectByType<RoomMapUI>();
+        if (mapUI != null)
+        {
+            mapUI.CloseFromExternal(true);
+        }
+
+        Pause();
+
+        if (settingsPanel) settingsPanel.SetActive(false);
     }
 
     void QuitToMenu()
@@ -283,9 +295,4 @@ public class SimplePauseMenu : MonoBehaviour
     }
 
     public bool IsPaused => isPaused;
-
-    /// <summary>True when the escape-driven pause UI or its settings layer is visible.</summary>
-    public bool IsPauseOrSettingsOpen =>
-        (pausePanel != null && pausePanel.activeSelf) ||
-        (settingsPanel != null && settingsPanel.activeSelf);
 }

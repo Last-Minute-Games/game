@@ -17,6 +17,7 @@ namespace cherrydev
         [SerializeField] private float _dialogCharDelay;
         [SerializeField] private List<KeyCode> _nextSentenceKeyCodes;
         [SerializeField] private bool _isCanSkippingText = true;
+        [SerializeField] private bool _canExitDialog = true; // Allow exiting dialog with E/right-click
 #if UNITY_LOCALIZATION
         [SerializeField] private bool _reloadTextOnLanguageChange = true;
 #endif
@@ -58,6 +59,12 @@ namespace cherrydev
         {
             get => _isCanSkippingText;
             set => _isCanSkippingText = value;
+        }
+        
+        public bool CanExitDialog
+        {
+            get => _canExitDialog;
+            set => _canExitDialog = value;
         }
 
         public event Action SentenceStarted;
@@ -157,6 +164,18 @@ namespace cherrydev
         /// Disable dialog panel
         /// </summary>
         public void Disable() => DialogDisabled?.Invoke();
+
+        /// <summary>
+        /// Force end the dialog immediately (useful for manual dialog closing)
+        /// </summary>
+        public void ForceEndDialog()
+        {
+            if (_isDialogStarted)
+            {
+                EndDialog();
+                Disable();
+            }
+        }
 
         /// <summary>
         /// Setting dialogCharDelay float parameter
@@ -866,6 +885,9 @@ namespace cherrydev
         /// </summary>
         private void CheckForDialogNextNode()
         {
+            // Reset skip flag to prevent double-advance issues
+            _isCurrentSentenceSkipped = false;
+            
             if (_currentNode.GetType() == typeof(SentenceNode))
             {
                 SentenceNode sentenceNode = (SentenceNode)_currentNode;
@@ -944,15 +966,25 @@ namespace cherrydev
 
         /// <summary>
         /// Checking whether at least one key from the nextSentenceKeyCodes was pressed
+        /// Also checks for Space key and left mouse click
         /// </summary>
         /// <returns></returns>
         private bool CheckNextSentenceKeyCodes()
         {
+            // Check configured keys
             for (int i = 0; i < _nextSentenceKeyCodes.Count; i++)
             {
                 if (Input.GetKeyDown(_nextSentenceKeyCodes[i]))
                     return true;
             }
+            
+            // Also check Space key
+            if (Input.GetKeyDown(KeyCode.Space))
+                return true;
+            
+            // Also check left mouse click
+            if (Input.GetMouseButtonDown(0))
+                return true;
 
             return false;
         }

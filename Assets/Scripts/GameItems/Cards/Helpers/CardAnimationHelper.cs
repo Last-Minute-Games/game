@@ -14,8 +14,8 @@ namespace GameItems.Cards.Helpers
         public float selectScale = 1.15f;
         public float dragScale = 1.12f;
         public float returnDuration = 0.25f;
-        public float drawDuration = 0.35f;
-        public float discardDuration = 0.35f;
+        public float drawDuration = 0.15f;
+        public float discardDuration = 0.15f;
 
         [Header("Return to Hand Settings")]
         [Tooltip("Maximum distance (in world units) from original position to automatically return card to hand")]
@@ -43,8 +43,8 @@ namespace GameItems.Cards.Helpers
             }
         }
 
-        // Called by FXHelper.OnCardDrawn()
-        public void AnimateDraw(CardRender card)
+        // Called by FXHelper.OnCardDrawn(). When playScaleFromDraw is false, the card already sits at the draw pile and flies to hand via DeckViewer layout (Overhaul-style).
+        public void AnimateDraw(CardRender card, bool playScaleFromDraw = true)
         {
             var cardTransform = card.transform;
             
@@ -57,6 +57,9 @@ namespace GameItems.Cards.Helpers
                 Debug.Log($"[CardAnimationHelper] AnimateDraw - Initialized base scale: {_baseScale}");
             }
 
+            if (!playScaleFromDraw)
+                return;
+
             cardTransform.localScale = Vector3.zero;
             cardTransform.DOScale(_baseScale, drawDuration).SetEase(Ease.OutBack);
         }
@@ -64,7 +67,8 @@ namespace GameItems.Cards.Helpers
         public void AnimateDiscard(CardRender card)
         {
             var cardTransform = card.transform;
-            cardTransform.DOScale(Vector3.zero, discardDuration).SetEase(Ease.OutBack);
+            cardTransform.DOKill();
+            cardTransform.DOScale(Vector3.zero, discardDuration).SetEase(Ease.InQuad);
         }
 
         // Called by FXHelper.OnCardHover()

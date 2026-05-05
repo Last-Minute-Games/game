@@ -2,6 +2,7 @@ using System.Collections;
 using cherrydev;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Unity.Cinemachine;
 
@@ -9,6 +10,12 @@ namespace Systems.Overworld.Intro
 {
     public class OverworldWakeUpCutscene : MonoBehaviour
     {
+        private const string OverworldSceneName = "Overworld";
+        private const float DialogueFailSafeTimeoutSeconds = 30f;
+
+        public static bool IsWakeUpSequenceActive { get; private set; }
+        public static event System.Action OnWakeUpSequenceCompleted;
+
         private CanvasGroup fadeCanvasGroup;
         private SpriteRenderer sleepingMainSpriteRenderer;
         private SpriteRenderer mainCharSpriteRenderer;
@@ -61,13 +68,80 @@ namespace Systems.Overworld.Intro
         [SerializeField] private bool autoFindEndTransition = true;
         
         private bool hasPlayed = false;
+        private bool wakeUpSequenceCompletionSignaled;
         
         // Add a flag to determine which sequence to play
         private bool shouldPlayFullWakeUpCutscene = false;
+
+        private void OnDisable()
+        {
+            // Safety: if this component is disabled mid-sequence, never leave player locked.
+            RestorePlayerControlSafe();
+            ClearWakeUpSequenceState();
+        }
+
+        private void RestorePlayerControlSafe()
+        {
+            if (playerInput == null)
+            {
+                var mainChar = GameObject.Find("MainCharacter");
+                if (mainChar != null)
+                {
+                    playerInput = mainChar.GetComponent<PlayerInput2D>();
+                }
+
+                if (playerInput == null)
+                {
+                    var taggedPlayer = GameObject.FindGameObjectWithTag("Player");
+                    if (taggedPlayer != null)
+                        playerInput = taggedPlayer.GetComponent<PlayerInput2D>();
+                }
+            }
+
+            if (playerInput != null)
+                playerInput.isInputEnabled = true;
+
+            var playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                var playerMotor = playerObj.GetComponent<CharacterMotor2D>();
+                if (playerMotor != null)
+                    playerMotor.SetDialogueActive(false);
+            }
+        }
+
+        private void MarkWakeUpSequenceStarted()
+        {
+            IsWakeUpSequenceActive = true;
+            wakeUpSequenceCompletionSignaled = false;
+        }
+
+        private void MarkWakeUpSequenceCompleted()
+        {
+            if (wakeUpSequenceCompletionSignaled)
+            {
+                return;
+            }
+
+            wakeUpSequenceCompletionSignaled = true;
+            IsWakeUpSequenceActive = false;
+            OnWakeUpSequenceCompleted?.Invoke();
+        }
+
+        private void ClearWakeUpSequenceState()
+        {
+            IsWakeUpSequenceActive = false;
+            wakeUpSequenceCompletionSignaled = false;
+        }
         
         private IEnumerator BeginWakeUpSequence()
         {
             DebugLogger.LogCutscene("BeginWakeUpSequence started");
+
+            if (!IsWakeUpSequenceActive)
+            {
+                MarkWakeUpSequenceStarted();
+            }
             
             if (hasPlayed) yield break;
             hasPlayed = true;
@@ -119,9 +193,16 @@ namespace Systems.Overworld.Intro
             
             if (mainCamera != null)
             {
-                Vector3 sleepingPosition = sleepingMain.transform.position;
-                mainCamera.transform.position = new Vector3(sleepingPosition.x, sleepingPosition.y, -10f);
-                DebugLogger.LogCutscene($"Main camera position set to {mainCamera.transform.position}");
+                if (sleepingMain != null)
+                {
+                    Vector3 sleepingPosition = sleepingMain.transform.position;
+                    mainCamera.transform.position = new Vector3(sleepingPosition.x, sleepingPosition.y, -10f);
+                    DebugLogger.LogCutscene($"Main camera position set to {mainCamera.transform.position}");
+                }
+                else
+                {
+                    DebugLogger.LogWarning("[OverworldWakeUpCutscene] sleepingMain is null; skipping camera reposition.");
+                }
             }
             
             // Disable player input during cutscene
@@ -232,6 +313,7 @@ namespace Systems.Overworld.Intro
             {
                 fadeCanvasGroup.blocksRaycasts = false;
                 DebugLogger.LogCutscene("Fade complete - character out of bed");
+                MarkWakeUpSequenceCompleted();
                 
                 // Re-enable player input immediately after fade completes
                 if (playerInput != null)
@@ -273,6 +355,16 @@ namespace Systems.Overworld.Intro
         void Start()
         {
             DebugLogger.LogCutscene("Start() called");
+
+            string sceneName = SceneManager.GetActiveScene().name;
+            if (!string.Equals(sceneName, OverworldSceneName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                DebugLogger.LogWarning($"[OverworldWakeUpCutscene] Disabled outside Overworld (current scene: {sceneName}).");
+                ClearWakeUpSequenceState();
+                RestorePlayerControlSafe();
+                enabled = false;
+                return;
+            }
 
             // Find main character components first
             var mainChar = GameObject.Find("MainCharacter");
@@ -357,6 +449,8 @@ namespace Systems.Overworld.Intro
 
             if (playFlag == 1)
             {
+                MarkWakeUpSequenceStarted();
+
                 // Clear the flag
                 PlayerPrefs.SetInt("PlayWakeUpCutscene", 0);
                 PlayerPrefs.Save();
@@ -386,6 +480,7 @@ namespace Systems.Overworld.Intro
             // Check if day.six flag is set - trigger ending instead of dialogue
             else if (GameFlags.HasFlag("day.six"))
             {
+                ClearWakeUpSequenceState();
                 DebugLogger.LogCutscene("day.six detected - triggering ending sequence");
                 StartCoroutine(HandleDayEndingSequence("day.six"));
             }
@@ -393,12 +488,14 @@ namespace Systems.Overworld.Intro
             // Check if we should play day-specific wake-up dialogue
             else if (ShouldPlayDaySpecificWakeUpDialogue())
             {
+                MarkWakeUpSequenceStarted();
                 string currentDay = GetCurrentDay();
                 DebugLogger.LogCutscene($"Day-specific wake-up dialogue detected for {currentDay}, starting...");
                 StartCoroutine(PlayDaySpecificWakeUpDialogue());
             }
             else
             {
+                ClearWakeUpSequenceState();
                 DebugLogger.LogCutscene("No cutscene to play, component will remain inactive");
             }
         }
@@ -579,6 +676,11 @@ namespace Systems.Overworld.Intro
         private IEnumerator PlayDaySpecificWakeUpDialogue()
         {
             DebugLogger.LogCutscene("Starting day-specific wake-up dialogue sequence");
+
+            if (!IsWakeUpSequenceActive)
+            {
+                MarkWakeUpSequenceStarted();
+            }
             
             // Find clock timer
             if (clockTimer == null)
@@ -589,6 +691,7 @@ namespace Systems.Overworld.Intro
             if (clockTimer == null)
             {
                 DebugLogger.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot continue");
+                MarkWakeUpSequenceCompleted();
                 yield break;
             }
 
@@ -600,6 +703,7 @@ namespace Systems.Overworld.Intro
                 // Day.one: Just start timer normally (no reconstruction needed)
                 DebugLogger.LogCutscene("Day.one - starting timer normally without reconstruction");
                 clockTimer.StartTimer(clockTimer.totalTime);
+                MarkWakeUpSequenceCompleted();
                 yield break;
             }
             
@@ -613,9 +717,12 @@ namespace Systems.Overworld.Intro
             
             // Apply battle result time adjustment after reconstruction
             CheckAndApplyBattleResultTimeAdjustment();
-            
+
             // Check for evidence flags and unlock corresponding cards (every day)
             CheckAndSetEvidenceCardFlags();
+
+            // Check for minigame completion flags and unlock corresponding cards (every day)
+            CheckAndSetMinigameCardFlags();
 
             // Get the dialogue for current day
             DialogNodeGraph dialogueGraph = GetDaySpecificWakeUpDialogue();
@@ -640,6 +747,7 @@ namespace Systems.Overworld.Intro
                     clockTimer.StartTimer(clockTimer.totalTime);
                     DebugLogger.LogCutscene("Started clock timer manually (no dialogue to play)");
                 }
+                MarkWakeUpSequenceCompleted();
                 yield break;
             }
             
@@ -653,6 +761,7 @@ namespace Systems.Overworld.Intro
                     clockTimer.StartTimer(clockTimer.totalTime);
                     DebugLogger.LogCutscene("Started clock timer manually (no dialogBehaviour)");
                 }
+                MarkWakeUpSequenceCompleted();
                 yield break;
             }
             
@@ -700,9 +809,19 @@ namespace Systems.Overworld.Intro
             {
                 DebugLogger.LogWarning("[OverworldWakeUpCutscene] Dialogue did not start within 0.5 seconds - may be an issue with dialogue system");
             }
+
+            float dialogueWaitTimer = 0f;
             
             while (!dialogueFinished)
             {
+                // Fail-safe: never hard-lock player if dialog callbacks fail.
+                if (dialogueWaitTimer >= DialogueFailSafeTimeoutSeconds)
+                {
+                    DebugLogger.LogWarning($"[OverworldWakeUpCutscene] Dialogue timeout after {DialogueFailSafeTimeoutSeconds}s. Releasing player control.");
+                    break;
+                }
+
+                dialogueWaitTimer += Time.unscaledDeltaTime;
                 yield return null;
             }
             
@@ -725,6 +844,8 @@ namespace Systems.Overworld.Intro
             {
                 DebugLogger.LogWarning("[OverworldWakeUpCutscene] ClockTimer not found - cannot start timer!");
             }
+
+            MarkWakeUpSequenceCompleted();
 
             DebugLogger.LogCutscene("Day-specific wake-up dialogue complete");
         }
@@ -819,7 +940,79 @@ namespace Systems.Overworld.Intro
             
             DebugLogger.LogCutscene("Evidence flag check complete");
         }
-        
+
+        /// <summary>
+        /// Check for minigame completion flags and set corresponding card flags.
+        /// This runs every day (days 2-5) so cards are unlocked as minigames are completed.
+        /// Mapping:
+        /// - Coin Flip (minigame.coinflip.finish) -> Exchange (card.exchange)
+        /// - Sokoban (minigame.sokoban.finish) -> Double Slash (card.double_slash)
+        /// - Maze (minigame.maze.finish) -> Workout (card.workout)
+        /// - Blackjack (minigame.blackjack.finish) -> Energy Drink (card.energy_drink)
+        /// </summary>
+        private void CheckAndSetMinigameCardFlags()
+        {
+            DebugLogger.LogCutscene("Checking minigame completion flags for card unlocks...");
+
+            // minigame.coinflip.finish -> card.exchange
+            if (GameFlags.HasFlag("minigame.coinflip.finish"))
+            {
+                if (!GameFlags.HasFlag("card.exchange"))
+                {
+                    GameFlags.SetFlag("card.exchange");
+                    DebugLogger.LogCutscene("Minigame: Coin Flip completed -> Unlocked card: exchange");
+                }
+                else
+                {
+                    DebugLogger.LogCutscene("Minigame: Coin Flip completed (card.exchange already unlocked)");
+                }
+            }
+
+            // minigame.sokoban.finish -> card.double_slash
+            if (GameFlags.HasFlag("minigame.sokoban.finish"))
+            {
+                if (!GameFlags.HasFlag("card.double_slash"))
+                {
+                    GameFlags.SetFlag("card.double_slash");
+                    DebugLogger.LogCutscene("Minigame: Sokoban completed -> Unlocked card: double_slash");
+                }
+                else
+                {
+                    DebugLogger.LogCutscene("Minigame: Sokoban completed (card.double_slash already unlocked)");
+                }
+            }
+
+            // minigame.maze.finish -> card.workout
+            if (GameFlags.HasFlag("minigame.maze.finish"))
+            {
+                if (!GameFlags.HasFlag("card.workout"))
+                {
+                    GameFlags.SetFlag("card.workout");
+                    DebugLogger.LogCutscene("Minigame: Maze completed -> Unlocked card: workout");
+                }
+                else
+                {
+                    DebugLogger.LogCutscene("Minigame: Maze completed (card.workout already unlocked)");
+                }
+            }
+
+            // minigame.blackjack.finish -> card.energy_drink
+            if (GameFlags.HasFlag("minigame.blackjack.finish"))
+            {
+                if (!GameFlags.HasFlag("card.energy_drink"))
+                {
+                    GameFlags.SetFlag("card.energy_drink");
+                    DebugLogger.LogCutscene("Minigame: Blackjack completed -> Unlocked card: energy_drink");
+                }
+                else
+                {
+                    DebugLogger.LogCutscene("Minigame: Blackjack completed (card.energy_drink already unlocked)");
+                }
+            }
+
+            DebugLogger.LogCutscene("Minigame flag check complete");
+        }
+
         /// <summary>
         /// Check for nether.win or nether.lose flags and adjust ClockTimer accordingly.
         /// Clears the flags after applying the time adjustment and saves the game.

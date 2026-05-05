@@ -39,6 +39,10 @@ public class RoundManager : MonoBehaviour
 
     private bool timerActive = false;
 
+    [Header("Nether action flow")]
+    [Tooltip("Optional: sequential draw/discard + reaction-system integration. Auto-found if null.")]
+    [SerializeField] private NetherBattleActionBridge netherBattleFlow;
+
     [Header("UI")] [Tooltip("Optional: Deck viewer that shows the current hand.")]
     public GameItems.DeckViewer handViewer;
 
@@ -80,6 +84,48 @@ public class RoundManager : MonoBehaviour
     {
         player = playerManager;
         enemyManager = enemyMgr;
+    }
+
+    private NetherBattleActionBridge ResolveNetherBridge()
+    {
+        if (netherBattleFlow != null)
+            return netherBattleFlow;
+        return FindFirstObjectByType<NetherBattleActionBridge>();
+    }
+
+    private IEnumerator WaitForNetherPerform(OverhaulGameAction action)
+    {
+        var sys = OverhaulActionSystem.Instance;
+        if (sys == null)
+            yield break;
+
+        bool done = false;
+        sys.Perform(action, () => done = true);
+        while (!done)
+            yield return null;
+    }
+
+    /// <summary>Updates draw/discard pile viewers only (hand assumes managed by sequential draw).</summary>
+    public void RefreshPileViewersOnly()
+    {
+        if (player == null)
+            return;
+
+        if (drawPileViewer != null)
+        {
+            drawPileViewer.SetPlayer(player);
+            drawPileViewer.SetSource(GameItems.DeckViewer.Source.DrawPile, rebuild: true);
+        }
+
+        if (discardPileViewer != null)
+        {
+            discardPileViewer.SetPlayer(player);
+            discardPileViewer.SetSource(GameItems.DeckViewer.Source.DiscardPile, rebuild: true);
+        }
+
+        var pileUi = FindObjectOfType<PileCountUI>();
+        if (pileUi != null)
+            pileUi.RefreshCounts();
     }
 
     // -------------------------------------------------------
@@ -174,10 +220,19 @@ public class RoundManager : MonoBehaviour
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
         
-        // Draw starting hand - this happens while transition is still showing/fading out
-        player.StartTurn();
-
-        RefreshDeckViewers();
+        var bridge = ResolveNetherBridge();
+        if (bridge != null && OverhaulActionSystem.Instance != null)
+        {
+            player.ApplyTurnStartResources();
+            yield return WaitForNetherPerform(new NetherDrawCardsGA(player.GetDefaultHandDrawCount()));
+            RefreshPileViewersOnly();
+            RefreshDeckViewers(skipHand: true);
+        }
+        else
+        {
+            player.StartTurn();
+            RefreshDeckViewers();
+        }
 
         // Start turn timer
         StartTurnTimer();
@@ -236,10 +291,19 @@ public class RoundManager : MonoBehaviour
         // Enemies roll their next intents so the player can see them before acting
         enemyManager.RollNextIntents();
         
-        // Draw new hand
-        player.StartTurn();
-
-        RefreshDeckViewers();
+        var bridge = ResolveNetherBridge();
+        if (bridge != null && OverhaulActionSystem.Instance != null)
+        {
+            player.ApplyTurnStartResources();
+            yield return WaitForNetherPerform(new NetherDrawCardsGA(player.GetDefaultHandDrawCount()));
+            RefreshPileViewersOnly();
+            RefreshDeckViewers(skipHand: true);
+        }
+        else
+        {
+            player.StartTurn();
+            RefreshDeckViewers();
+        }
 
         // Start turn timer
         StartTurnTimer();
@@ -298,15 +362,29 @@ public class RoundManager : MonoBehaviour
             handViewer.StopLayoutAnimation();
         }
 
-        // Animate cards discarding BEFORE clearing data
+        var battleBridge = ResolveNetherBridge();
+        var actionSys = OverhaulActionSystem.Instance;
+
+        if (battleBridge != null && actionSys != null && player.cardManager != null && player.cardManager.hand.Count > 0)
+        {
+            actionSys.Perform(new NetherDiscardAllHandGA(), () =>
+            {
+                _isEndingTurn = false;
+                player.EndTurn();
+                RefreshPileViewersOnly();
+                RefreshDeckViewers(skipHand: true);
+                playerTurn = false;
+                StartCoroutine(EnemyPhase());
+            });
+            return;
+        }
+
         if (handViewer != null && handViewer.GetRenders().Count > 0)
         {
             handViewer.ClearSmooth(onComplete: () =>
             {
-                // After animation completes, clear the data and continue
                 _isEndingTurn = false;
                 player.EndTurn();
-                // Refresh other viewers but not hand (already cleared with animation)
                 RefreshDeckViewers(skipHand: true);
                 playerTurn = false;
                 StartCoroutine(EnemyPhase());
@@ -314,9 +392,7 @@ public class RoundManager : MonoBehaviour
         }
         else
         {
-            // No cards to animate, proceed normally
             _isEndingTurn = false;
-            // No cards to animate, proceed normally
             player.EndTurn();
             RefreshDeckViewers();
             playerTurn = false;
@@ -331,19 +407,29 @@ public class RoundManager : MonoBehaviour
     {
         Debug.Log("Enemy turn begins...");
 
-        yield return new WaitForSeconds(.5f);
+        var sys = OverhaulActionSystem.Instance;
+        var bridge = ResolveNetherBridge();
 
-        // Enemies execute their actions with delayed sequence
-        yield return StartCoroutine(enemyManager.ExecuteEnemyTurnSequence(player.playerData));
-
-        yield return new WaitForSeconds(.5f);
-        
-        // Reset enemy block AFTER their turn completes
-        // This means block gained this turn will protect through the NEXT full round
-        if (enemyManager != null)
+        if (bridge != null && sys != null)
         {
-            enemyManager.ResetAllEnemyBlock();
-            Debug.Log("Enemy block reset after enemy turn completes");
+            bool done = false;
+            sys.Perform(new NetherEnemyPhaseGA(), () => done = true);
+            while (!done)
+                yield return null;
+        }
+        else
+        {
+            yield return new WaitForSeconds(.5f);
+
+            yield return StartCoroutine(enemyManager.ExecuteEnemyTurnSequence(player.playerData));
+
+            yield return new WaitForSeconds(.5f);
+
+            if (enemyManager != null)
+            {
+                enemyManager.ResetAllEnemyBlock();
+                Debug.Log("Enemy block reset after enemy turn completes");
+            }
         }
 
         if (player.playerData.isAlive && !enemyManager.AllEnemiesDefeated())
@@ -377,12 +463,26 @@ public class RoundManager : MonoBehaviour
         
         // Roll intents for the upcoming enemy turn so the player can plan accordingly
         enemyManager.RollNextIntents();
-        player.StartTurn();
 
-        RefreshDeckViewers();
+        var bridge = ResolveNetherBridge();
+        var sys = OverhaulActionSystem.Instance;
 
-        // Restart turn timer
-        StartTurnTimer();
+        if (bridge != null && sys != null)
+        {
+            player.ApplyTurnStartResources();
+            sys.Perform(new NetherDrawCardsGA(player.GetDefaultHandDrawCount()), () =>
+            {
+                RefreshPileViewersOnly();
+                RefreshDeckViewers(skipHand: true);
+                StartTurnTimer();
+            });
+        }
+        else
+        {
+            player.StartTurn();
+            RefreshDeckViewers();
+            StartTurnTimer();
+        }
     }
 
     // -------------------------------------------------------

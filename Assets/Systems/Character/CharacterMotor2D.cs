@@ -5,6 +5,7 @@
     {
         private static readonly int Horizontal = Animator.StringToHash("horizontal");
         private static readonly int Vertical   = Animator.StringToHash("vertical");
+        private const string IdleControllerResourcePath = "Animation/NikolausIdle";
 
         [Header("Movement")]
         [SerializeField] private float speed = 2f;
@@ -14,6 +15,8 @@
         [Header("Animation Controllers")]
         [SerializeField] private RuntimeAnimatorController walkController;
         [SerializeField] private RuntimeAnimatorController runController;
+        [SerializeField] private RuntimeAnimatorController idleController;
+        [SerializeField] private bool useAnimatedIdleController = false;
 
         [Header("Idle Sprites (static frames)")]
         [SerializeField] public Sprite idleUp;
@@ -43,6 +46,11 @@
             _anim   = GetComponent<Animator>();
             _sprite = GetComponent<SpriteRenderer>();
             _rb.freezeRotation = true;
+
+            if (useAnimatedIdleController)
+            {
+                ResolveIdleController();
+            }
         }
 
         void Update()
@@ -56,6 +64,9 @@
             {
                 // Ensure Animator is enabled while moving
                 if (!_anim.enabled) _anim.enabled = true;
+
+                // Clear mirrored idle flip while movement animations are active.
+                _sprite.flipX = false;
 
                 // Swap animator controller based on sprint state
                 RuntimeAnimatorController targetController = _isSprinting ? runController : walkController;
@@ -78,14 +89,17 @@
             }
             else
             {
-                // Static idle: disable Animator and set a single sprite
-                // Reset to walk controller when stopping
-                if (_anim.runtimeAnimatorController != walkController && walkController != null)
+                if (!TryApplyDirectionalIdleAnimation())
                 {
-                    _anim.runtimeAnimatorController = walkController;
-                }
+                    // Static idle fallback: disable Animator and set a single sprite.
+                    // Reset to walk controller when stopping.
+                    if (_anim.runtimeAnimatorController != walkController && walkController != null)
+                    {
+                        _anim.runtimeAnimatorController = walkController;
+                    }
 
-                ApplyStaticIdle();
+                    ApplyStaticIdle();
+                }
             }
         }
 
@@ -105,17 +119,89 @@
             ApplyStaticIdle();
         }
 
+        private Facing ResolveFacingFrom(Vector2 direction)
+        {
+            if (direction.sqrMagnitude < 0.0001f)
+            {
+                return _facing;
+            }
+
+            if (Mathf.Abs(direction.y) > Mathf.Abs(direction.x) + axisBias)
+            {
+                return direction.y >= 0f ? Facing.Up : Facing.Down;
+            }
+
+            return direction.x >= 0f ? Facing.Right : Facing.Left;
+        }
+
         private void UpdateFacingFrom(Vector2 v)
         {
             if (v.sqrMagnitude < 0.0001f) return;
+            _facing = ResolveFacingFrom(v);
+        }
 
-            if (Mathf.Abs(v.y) > Mathf.Abs(v.x) + axisBias)
+        private bool TryApplyDirectionalIdleAnimation()
+        {
+            if (!useAnimatedIdleController)
             {
-                _facing = (v.y >= 0f) ? Facing.Up : Facing.Down;
+                return false;
             }
-            else
+
+            if (forceIdleSprite != null)
             {
-                _facing = (v.x >= 0f) ? Facing.Right : Facing.Left;
+                return false;
+            }
+
+            RuntimeAnimatorController resolvedIdleController = ResolveIdleController();
+            if (resolvedIdleController == null)
+            {
+                return false;
+            }
+
+            if (!_anim.enabled) _anim.enabled = true;
+
+            if (_anim.runtimeAnimatorController != resolvedIdleController)
+            {
+                _anim.runtimeAnimatorController = resolvedIdleController;
+                _anim.Rebind();
+            }
+
+            Vector2 facingDirection = FacingToVector(_facing);
+            _anim.speed = 1f;
+            _anim.SetFloat(Horizontal, facingDirection.x);
+            _anim.SetFloat(Vertical, facingDirection.y);
+            ApplyAnimatedIdleFacingVisual();
+            return true;
+        }
+
+        private void ApplyAnimatedIdleFacingVisual()
+        {
+            // Imported idle uses one side orientation; mirror only when facing right.
+            _sprite.flipX = _facing == Facing.Right;
+        }
+
+        private RuntimeAnimatorController ResolveIdleController()
+        {
+            if (idleController == null)
+            {
+                idleController = Resources.Load<RuntimeAnimatorController>(IdleControllerResourcePath);
+            }
+
+            return idleController;
+        }
+
+        private static Vector2 FacingToVector(Facing facing)
+        {
+            switch (facing)
+            {
+                case Facing.Up:
+                    return Vector2.up;
+                case Facing.Left:
+                    return Vector2.left;
+                case Facing.Right:
+                    return Vector2.right;
+                default:
+                    return Vector2.down;
             }
         }
         
@@ -133,6 +219,8 @@
             if (forceIdleSprite)
                 target = forceIdleSprite;
 
+            _sprite.flipX = false;
+
             // Disable animator so it doesn't overwrite SpriteRenderer's sprite this frame
             if (_anim.enabled) _anim.enabled = false;
 
@@ -140,6 +228,31 @@
         }
 
         // ===== Public API =====
+        public Facing GetFacingDirection() => _facing;
+
+        public Facing GetFacingFromVector(Vector2 direction) => ResolveFacingFrom(direction);
+
+        public void SetFacingDirection(Facing facing)
+        {
+            _facing = facing;
+
+            bool isMoving = _moveInput.sqrMagnitude > 0.0001f;
+            if (isMoving && !_isTeleporting && !_isDialogueActive)
+            {
+                return;
+            }
+
+            if (!TryApplyDirectionalIdleAnimation())
+            {
+                if (_anim.runtimeAnimatorController != walkController && walkController != null)
+                {
+                    _anim.runtimeAnimatorController = walkController;
+                }
+
+                ApplyStaticIdle();
+            }
+        }
+
         public void SetMoveInput(Vector2 input) => _moveInput = input;
 
         public void SetDialogueActive(bool active)

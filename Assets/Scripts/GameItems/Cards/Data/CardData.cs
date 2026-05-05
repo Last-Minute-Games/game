@@ -184,7 +184,8 @@ public class CardData : GameItemData
             foreach (var kv in rolledByKey)
             {
                 var e = kv.Value;
-                if (e.operationType == OperationType.Damage || e.operationType == OperationType.Heal)
+                if (e.operationType == OperationType.Damage || e.operationType == OperationType.Heal ||
+                    e.operationType == OperationType.LifeSteal || e.operationType == OperationType.RecoilStrike)
                 {
                     eligibleKeys.Add(kv.Key);
                     baseSum += Mathf.Max(0, e.postCopyValue);
