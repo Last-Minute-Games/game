@@ -624,6 +624,7 @@ public class ClockTimer : MonoBehaviour
         // Normal transition for other days
         string sceneToLoad = nextSceneName;
         string activeSceneName = SceneManager.GetActiveScene().name;
+
         if (!string.IsNullOrEmpty(overworldSceneName)
             && !string.IsNullOrEmpty(overworldTimeoutSceneName)
             && activeSceneName == overworldSceneName)
@@ -632,7 +633,7 @@ public class ClockTimer : MonoBehaviour
             LogDebug($"Overworld timer ended - overriding next scene to '{sceneToLoad}'.");
         }
 
-        // Transition to the next scene - KEEP PANELS CLOSED
+        // Transition to the next scene
         if (string.IsNullOrEmpty(sceneToLoad))
         {
             Debug.LogError("[ClockTimer] Scene name is empty or null - cannot transition.");
@@ -643,9 +644,9 @@ public class ClockTimer : MonoBehaviour
 
         if (screenFader != null)
         {
-            // Use ScreenFader transition coroutine
+            // Eyes should always open in the destination scene
             screenFader.shouldOpenEyesOnSceneLoad = true;
-            LogDebug($"Calling ScreenFader.TransitionToSceneKeepPanelsClosed('{sceneToLoad}')");
+            LogDebug($"Calling ScreenFader.TransitionToSceneKeepPanelsClosed('{sceneToLoad}'), shouldOpenEyesOnSceneLoad=true");
             yield return StartCoroutine(screenFader.TransitionToSceneKeepPanelsClosed(sceneToLoad));
             LogDebug($"Returned from ScreenFader.TransitionToSceneKeepPanelsClosed('{sceneToLoad}')");
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine;
 using System.Collections; 
 using System.Collections.Generic;
 using Entities.Enemies.Manager;
@@ -16,11 +17,16 @@ public class BattleManager : MonoBehaviour
     [Header("Config")]
     [Tooltip("Player configuration asset used to initialize the runtime player.")]
     [SerializeField] private PlayerConfig playerConfig;
-    
+
     [Header("Wave System")]
     [Tooltip("Wave configuration for this battle. If set, uses waves instead of enemyDatabase.")]
     [SerializeField] private WaveConfig waveConfig;
-    
+
+    [Header("Screen Transition")]
+    [SerializeField] private bool openEyesOnStart = true;
+    [Tooltip("Delay before opening eyes (seconds)")]
+    [SerializeField] private float eyeOpenDelay = 0.5f;
+
     private List<WaveData> _battleWaves;
     private int _currentWaveIndex = 0;
     private float _waveMultiplier = 1f;
@@ -30,10 +36,29 @@ public class BattleManager : MonoBehaviour
     // ---------------------------------------------------------
     private IEnumerator Start()
     {
+        // First, handle eye opening if needed
+        if (openEyesOnStart)
+        {
+            var fader = ScreenFader.Instance;
+            if (fader != null && fader.ArePanelsClosed())
+            {
+                Debug.Log("[BattleManager] Eyes are closed - opening them now");
+
+                // Small delay for scene to settle
+                if (eyeOpenDelay > 0)
+                {
+                    yield return new WaitForSeconds(eyeOpenDelay);
+                }
+
+                yield return fader.EyesOpeningEffect();
+                Debug.Log("[BattleManager] Eyes opened!");
+            }
+        }
+
         // Initialize CardFXManager early to ensure it's available
         var cardFXManager = CardFXManager.Instance;
         Debug.Log($"[BattleManager] CardFXManager initialized: {cardFXManager != null}");
-        
+
         if (playerManager == null)
         {
             Debug.LogError("BattleManager: PlayerManager is not assigned.");

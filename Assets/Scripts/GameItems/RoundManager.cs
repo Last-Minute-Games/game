@@ -672,9 +672,17 @@ public class RoundManager : MonoBehaviour
         {
             Debug.Log("[RoundManager] Using ScreenFader for transition");
 
+            // Close eyes if they aren't already closed (though they should be from battle entry)
+            if (!fader.ArePanelsClosed())
+            {
+                Debug.Log("[RoundManager] Eyes not closed - closing them now");
+                yield return fader.EyesClosingEffect();
+            }
+
+            // Set flag to open eyes when Overworld loads
             fader.shouldOpenEyesOnSceneLoad = true;
 
-            yield return fader.TransitionToSceneWithEyesClosing("Overworld");
+            yield return fader.TransitionToSceneKeepPanelsClosed("Overworld");
         }
         else
         {
