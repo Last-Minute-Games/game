@@ -1,7 +1,8 @@
 using UnityEngine;
-using UnityEngine;
 using UnityEngine.Events;
+using System.Collections;
 using cherrydev;
+using DG.Tweening;
 
 public class CatacombsDevilDialogueTrigger : MonoBehaviour
 {
@@ -19,6 +20,16 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
 
         [Tooltip("Resource path as fallback if dialogGraph is not assigned")]
         public string dialogResourcePath;
+
+        [Header("Door Opening")]
+        [Tooltip("Should this dialogue trigger a door opening sequence?")]
+        public bool opensDoor = false;
+
+        [Tooltip("Name of the door GameObject to find and open")]
+        public string doorObjectName = "";
+
+        [Tooltip("Delay before starting door opening sequence")]
+        public float doorOpenDelay = 3.5f;
     }
 
     [Header("Dialogue Steps")]
@@ -52,6 +63,22 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private DialogBehaviour dialogBehaviour;
+
+    [Header("Door Opening Settings")]
+    [Tooltip("Audio source for door sound effects")]
+    [SerializeField] private AudioSource doorAudioSource;
+
+    [Tooltip("Character light to fade out before door opens")]
+    [SerializeField] private UnityEngine.Rendering.Universal.Light2D characterLight2D;
+
+    [Tooltip("Spotlight to enable when door opens")]
+    [SerializeField] private UnityEngine.Rendering.Universal.Light2D doorSpotlight;
+
+    [Tooltip("Blood footsteps parent object")]
+    [SerializeField] private GameObject bloodFootsteps;
+
+    [Tooltip("Environment sound handler for footstep sounds")]
+    [SerializeField] private EnvironmentSoundHandler environmentSoundHandler;
 
     [Header("Auto-Find Components")]
     [SerializeField] private bool autoFindDialogBehaviour = true;
@@ -202,10 +229,136 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
 
             _isDialogPlaying = false;
             _currentStepIndex = FindNextStepIndex();
+
+            if (step.opensDoor)
+            {
+                StartCoroutine(WaitAndOpenBigDoor(step));
+            }
         };
 
         dialogBehaviour.OnDialogFinished.AddListener(onFinished);
         GameFlags.SetFlag(step.flagName);
         dialogBehaviour.StartDialog(dialogGraph);
+    }
+
+    private IEnumerator WaitAndOpenBigDoor(DialogueStep step)
+    {
+        if (string.IsNullOrEmpty(step.doorObjectName))
+        {
+            Debug.LogWarning("[CatacombsDevilDialogueTrigger] Door object name not specified for door opening.");
+            yield break;
+        }
+
+        var door = GameObject.Find(step.doorObjectName);
+        if (door == null)
+        {
+            Debug.LogWarning($"[CatacombsDevilDialogueTrigger] Door object '{step.doorObjectName}' not found in scene.");
+            yield break;
+        }
+
+        var openHash = Animator.StringToHash("OpenDoor");
+        var spotlightClip = Resources.Load<AudioClip>("SFXs/Miscs/Tutorial/Spotlight");
+        var bigDoorOpenClip = Resources.Load<AudioClip>("SFXs/Doors/BigDoorOpen");
+        var bloodFootstepsClips = new System.Collections.Generic.List<AudioClip>();
+
+        for (int i = 1; i <= 4; i++)
+        {
+            var clip = Resources.Load<AudioClip>($"SFXs/Foosteps/BloodFootsteps{i}");
+            if (clip != null) bloodFootstepsClips.Add(clip);
+        }
+
+        if (characterLight2D != null)
+        {
+            characterLight2D.DOIntensity(0, 2f);
+        }
+
+        yield return new WaitForSeconds(step.doorOpenDelay);
+
+        if (characterLight2D != null)
+        {
+            characterLight2D.enabled = false;
+        }
+
+        if (doorSpotlight != null)
+        {
+            doorSpotlight.enabled = true;
+        }
+
+        if (doorAudioSource != null && spotlightClip != null)
+        {
+            doorAudioSource.clip = spotlightClip;
+            doorAudioSource.Play();
+        }
+
+        yield return new WaitForSeconds(0.7f);
+
+        AudioSource footstepSource = null;
+        if (environmentSoundHandler != null)
+        {
+            footstepSource = environmentSoundHandler.CreateCustomSource("BloodFootsteps");
+            if (footstepSource != null)
+            {
+                footstepSource.volume = 0.8f;
+            }
+        }
+
+        if (bloodFootsteps != null && footstepSource != null && bloodFootstepsClips.Count > 0)
+        {
+            foreach (Transform footstepObj in bloodFootsteps.transform)
+            {
+                var footstepRenderer = footstepObj.GetComponent<SpriteRenderer>();
+                if (footstepRenderer != null)
+                {
+                    var newColor = footstepRenderer.color;
+                    newColor.a = 1;
+                    footstepRenderer.color = newColor;
+
+                    var randomFootstepSfx = bloodFootstepsClips[Random.Range(0, bloodFootstepsClips.Count)];
+                    footstepSource.clip = randomFootstepSfx;
+                    footstepSource.Play();
+                }
+
+                yield return new WaitForSeconds(0.7f);
+            }
+        }
+
+        if (doorAudioSource != null && bigDoorOpenClip != null)
+        {
+            doorAudioSource.clip = bigDoorOpenClip;
+            doorAudioSource.Play();
+        }
+
+        GameObject playerObj = _player != null ? _player.gameObject : GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+        {
+            var playerInput = playerObj.GetComponent<PlayerInput2D>();
+            if (playerInput != null)
+            {
+                playerInput.isInputEnabled = true;
+            }
+        }
+
+        var tempBlockerName = step.doorObjectName.Replace("Door", "Block");
+        var tempBlocker = GameObject.Find(tempBlockerName);
+        if (tempBlocker != null)
+        {
+            Destroy(tempBlocker);
+        }
+
+        yield return new WaitForSeconds(0.5f);
+
+        if (footstepSource != null)
+        {
+            Destroy(footstepSource);
+        }
+
+        foreach (Transform doorPart in door.transform)
+        {
+            var animator = doorPart.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.SetTrigger(openHash);
+            }
+        }
     }
 }
