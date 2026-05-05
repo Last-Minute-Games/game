@@ -15,18 +15,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 340
-    y: 240
-    width: 190
-    height: 135
+    x: 393.5
+    y: 150.5
+    width: 170
+    height: 260
   IsDragging: 0
   IsSelected: 0
   _sentence:
     CharacterName: Devil
-    Text: Welcome to the catacombs, HAHAHAHAHAHA
+    Text: Welcome to Hell, Nikolaus.
     CharacterSprite: {fileID: -1127933441503263673, guid: efd84ec86f8ba814ea5b1558f82b9efa, type: 3}
   ParentNodes: []
-  ChildNode: {fileID: 0}
+  ChildNode: {fileID: 2016627553746519873}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -45,9 +45,73 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.DialogNodeGraph
   NodesList:
   - {fileID: -2512345678901234567}
+  - {fileID: 2016627553746519873}
+  - {fileID: 5266149551700753480}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
   NodeToDrawLineFrom: {fileID: 0}
   LinePosition: {x: 0, y: 0}
   IsLocalizationSetUp: 0
+--- !u!114 &2016627553746519873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 757.5
+    y: 158.5
+    width: 190
+    height: 265
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - What the Hell?
+  - Where am I?
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -2512345678901234567}
+  ChildNodes:
+  - {fileID: 5266149551700753480}
+  PanelType: 0
+--- !u!114 &5266149551700753480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1114.5
+    y: 208.5
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 1
+  _sentence:
+    CharacterName: Devil
+    Text: Yes, exactly. Now keep walking up.
+    CharacterSprite: {fileID: -1127933441503263673, guid: efd84ec86f8ba814ea5b1558f82b9efa, type: 3}
+  ParentNodes:
+  - {fileID: 2016627553746519873}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
