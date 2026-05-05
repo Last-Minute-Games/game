@@ -113,6 +113,8 @@ namespace Systems
                 yield break;
             }
 
+            LogDebug($"Transitioning to {sceneName}");
+
             ScreenFader fader = ScreenFader.Instance != null
                 ? ScreenFader.Instance
                 : FindObjectOfType<ScreenFader>();
@@ -121,8 +123,15 @@ namespace Systems
             {
                 if (useEyesClosing)
                 {
+                    // Close eyes
+                    yield return fader.EyesClosingEffect();
+
+                    // Eyes should always open in the destination scene
                     fader.shouldOpenEyesOnSceneLoad = true;
-                    yield return fader.TransitionToSceneWithEyesClosing(sceneName);
+                    LogDebug($"Eyes closing transition - shouldOpenEyesOnSceneLoad=true");
+
+                    // Use the keep-panels-closed transition to maintain state
+                    yield return fader.TransitionToSceneKeepPanelsClosed(sceneName);
                 }
                 else
                 {

@@ -59,26 +59,25 @@ public class ScreenFader : MonoBehaviour
     {
         // If a duplicate ScreenFader existed in the new scene it's already been destroyed in Awake of that instance.
 
-        // If not transitioning, ensure the fade overlay isn't accidentally left active
-        if (fadePanel != null && !isTransitioning)
-        {
-            fadePanel.gameObject.SetActive(false);
-        }
+        // Note: Eye opening is now handled by individual scene managers (CatacombsIntroDialog, BattleManager, etc.)
+        // This prevents timing issues and gives scenes full control over when eyes open
 
-        // Check if we should open eyes on this scene load
+        // Reset the flag if it was set
         if (shouldOpenEyesOnSceneLoad)
         {
-            Debug.Log("[ScreenFader] Scene loaded - opening eyes!");
-            shouldOpenEyesOnSceneLoad = false; // Reset flag
-            StartCoroutine(EyesOpeningEffect());
+            Debug.Log("[ScreenFader] Scene loaded with shouldOpenEyesOnSceneLoad=true, but letting scene handle eye opening");
+            shouldOpenEyesOnSceneLoad = false;
+            isTransitioning = false;
         }
-        else
+        else if (isTransitioning)
         {
             // Only fade in if we just came from a transition
-            if (isTransitioning)
-            {
-                StartCoroutine(FadeIn());
-            }
+            StartCoroutine(FadeIn());
+        }
+        else if (fadePanel != null)
+        {
+            // If not transitioning, ensure the fade overlay isn't accidentally left active
+            fadePanel.gameObject.SetActive(false);
         }
     }
 
@@ -272,8 +271,11 @@ public class ScreenFader : MonoBehaviour
     /// </summary>
     public bool ArePanelsClosed()
     {
+        Debug.Log($"[ScreenFader] ArePanelsClosed check: topPanel={(topPanel != null ? "exists" : "NULL")}, bottomPanel={(bottomPanel != null ? "exists" : "NULL")}");
+
         if (topPanel == null || bottomPanel == null)
         {
+            Debug.Log("[ScreenFader] ArePanelsClosed returning FALSE - panels don't exist");
             return false; // Panels don't exist, so not closed
         }
 
@@ -281,6 +283,9 @@ public class ScreenFader : MonoBehaviour
         // When closed: topPanel.y = 0, bottomPanel.y = 0
         bool topClosed = Mathf.Abs(topPanel.anchoredPosition.y) < 0.1f;
         bool bottomClosed = Mathf.Abs(bottomPanel.anchoredPosition.y) < 0.1f;
+
+        Debug.Log($"[ScreenFader] Panel positions: top.y={topPanel.anchoredPosition.y}, bottom.y={bottomPanel.anchoredPosition.y}");
+        Debug.Log($"[ScreenFader] ArePanelsClosed returning {topClosed && bottomClosed} (topClosed={topClosed}, bottomClosed={bottomClosed})");
 
         return topClosed && bottomClosed;
     }
