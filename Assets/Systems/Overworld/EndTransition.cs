@@ -12,8 +12,9 @@ public class EndTransition : MonoBehaviour
     public float delayBeforeTransition = 1f;
     
     [Header("Flag Settings")]
-    [Tooltip("The flag that must exist to trigger the transition")]
-    public string requiredFlagName = "start.ending";
+    [Tooltip("Either of these flags will trigger the transition")]
+    public string requiredFlagName1 = "ending.start";
+    public string requiredFlagName2 = "start.ending";
     
     // Cache references to avoid repeated FindObjectOfType calls
     private ClockTimer _clockTimer;
@@ -39,14 +40,17 @@ public class EndTransition : MonoBehaviour
     }
 
     /// <summary>
-    /// Trigger the transition to the ending scene (only if the required flag exists)
+    /// Trigger the transition to the ending scene (only if either required flag exists)
     /// </summary>
     public void TriggerEndTransition()
     {
-        // Check if the required flag exists
-        if (!GameFlags.HasFlag(requiredFlagName))
+        // Check if either of the required flags exists
+        bool hasFlag1 = GameFlags.HasFlag(requiredFlagName1);
+        bool hasFlag2 = GameFlags.HasFlag(requiredFlagName2);
+
+        if (!hasFlag1 && !hasFlag2)
         {
-            Debug.Log($"[EndTransition] Flag '{requiredFlagName}' does not exist - transition cancelled");
+            Debug.Log($"[EndTransition] Neither flag '{requiredFlagName1}' nor '{requiredFlagName2}' exists - transition cancelled");
             return;
         }
 
@@ -57,7 +61,8 @@ public class EndTransition : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[EndTransition] Flag '{requiredFlagName}' exists - starting transition");
+        string detectedFlag = hasFlag1 ? requiredFlagName1 : requiredFlagName2;
+        Debug.Log($"[EndTransition] Flag '{detectedFlag}' exists - starting transition");
         _transitionStarted = true;
         StartCoroutine(TransitionToEnding());
     }
@@ -193,12 +198,18 @@ public class EndTransition : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Continuously check if the flag is set and trigger transition if not already started
-        if (!_transitionStarted && GameFlags.HasFlag(requiredFlagName))
+        // Continuously check if either flag is set and trigger transition if not already started
+        if (!_transitionStarted)
         {
-            Debug.Log($"[EndTransition] Flag '{requiredFlagName}' detected - auto-triggering transition");
-            _transitionStarted = true;
-            StartCoroutine(TransitionToEnding());
+            bool hasFlag1 = GameFlags.HasFlag(requiredFlagName1);
+            bool hasFlag2 = GameFlags.HasFlag(requiredFlagName2);
+
+            if (hasFlag1 || hasFlag2)
+            {
+                string detectedFlag = hasFlag1 ? requiredFlagName1 : requiredFlagName2;
+                Debug.Log($"[EndTransition] Flag '{detectedFlag}' detected - auto-triggering transition");
+                _transitionStarted = true;
+                StartCoroutine(TransitionToEnding());
         }
     }
 }
