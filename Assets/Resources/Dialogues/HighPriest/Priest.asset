@@ -607,6 +607,38 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &-2778833584183718392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1005
+    y: 309
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 1
+  _sentence:
+    CharacterName: High Priest
+    Text: Be prepared.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: -1915013307375072134}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &-2269722995316652719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -695,7 +727,7 @@ MonoBehaviour:
   _removeFlag: 0
   ParentNodes:
   - {fileID: -3578637216032778631}
-  ChildNode: {fileID: 0}
+  ChildNode: {fileID: -2778833584183718392}
 --- !u!114 &-1860792530509017503
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -899,6 +931,7 @@ MonoBehaviour:
   - {fileID: 388629258104150739}
   - {fileID: -3578637216032778631}
   - {fileID: -1915013307375072134}
+  - {fileID: -2778833584183718392}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
