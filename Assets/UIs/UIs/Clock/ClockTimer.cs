@@ -841,11 +841,17 @@ public class ClockTimer : MonoBehaviour
             }
 
             // First, play the eyes opening animation if panels are closed
-            if (screenFader != null && screenFader.shouldOpenEyesOnSceneLoad)
+            if (screenFader != null)
             {
-                LogDebug("Playing eyes opening before clock reconstruction");
-                screenFader.shouldOpenEyesOnSceneLoad = false;
-                yield return StartCoroutine(screenFader.EyesOpeningEffect());
+                // Check if eyes should open based on flag OR if panels are actually closed
+                bool shouldOpenEyes = screenFader.shouldOpenEyesOnSceneLoad || screenFader.ArePanelsClosed();
+
+                if (shouldOpenEyes)
+                {
+                    LogDebug("Playing eyes opening before clock reconstruction");
+                    screenFader.shouldOpenEyesOnSceneLoad = false; // Clear the flag
+                    yield return StartCoroutine(screenFader.EyesOpeningEffect());
+                }
             }
 
             // Move clock to center and enlarge while KEEPING frame 19 visible

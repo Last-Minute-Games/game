@@ -62,11 +62,10 @@ public class ScreenFader : MonoBehaviour
         // Note: Eye opening is now handled by individual scene managers (CatacombsIntroDialog, BattleManager, etc.)
         // This prevents timing issues and gives scenes full control over when eyes open
 
-        // Reset the flag if it was set
+        // DON'T clear the flag here - let the scene managers check it and clear it themselves
         if (shouldOpenEyesOnSceneLoad)
         {
-            Debug.Log("[ScreenFader] Scene loaded with shouldOpenEyesOnSceneLoad=true, but letting scene handle eye opening");
-            shouldOpenEyesOnSceneLoad = false;
+            Debug.Log("[ScreenFader] Scene loaded with shouldOpenEyesOnSceneLoad=true - scene will handle eye opening");
             isTransitioning = false;
         }
         else if (isTransitioning)
