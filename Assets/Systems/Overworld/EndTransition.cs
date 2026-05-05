@@ -18,6 +18,7 @@ public class EndTransition : MonoBehaviour
     // Cache references to avoid repeated FindObjectOfType calls
     private ClockTimer _clockTimer;
     private JournalUI _journalUI;
+    private bool _transitionStarted = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -48,8 +49,16 @@ public class EndTransition : MonoBehaviour
             Debug.Log($"[EndTransition] Flag '{requiredFlagName}' does not exist - transition cancelled");
             return;
         }
-        
+
+        // Check if transition already started
+        if (_transitionStarted)
+        {
+            Debug.Log($"[EndTransition] Transition already in progress - ignoring duplicate call");
+            return;
+        }
+
         Debug.Log($"[EndTransition] Flag '{requiredFlagName}' exists - starting transition");
+        _transitionStarted = true;
         StartCoroutine(TransitionToEnding());
     }
 
@@ -184,6 +193,12 @@ public class EndTransition : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        // Continuously check if the flag is set and trigger transition if not already started
+        if (!_transitionStarted && GameFlags.HasFlag(requiredFlagName))
+        {
+            Debug.Log($"[EndTransition] Flag '{requiredFlagName}' detected - auto-triggering transition");
+            _transitionStarted = true;
+            StartCoroutine(TransitionToEnding());
+        }
     }
 }
