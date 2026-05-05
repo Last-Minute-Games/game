@@ -451,7 +451,6 @@ MonoBehaviour:
   raycastLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  enableKeyboardInteraction: 1
 --- !u!61 &497838753
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -816,7 +815,7 @@ MonoBehaviour:
   - endingName: WorkingEnding
     requiredFlags:
     - ending.killer.found
-    - character.avant.heir
+    - character.nikolaus.heir
     forbiddenFlags: []
     priority: 60
     endingDialogGraph: {fileID: 11400000, guid: 9e448aeb32cbc9f4db80e0696c6f2e13, type: 2}
