@@ -34,15 +34,24 @@ namespace cherrydev
                 return;
             }
 
+            // Trim any whitespace or newlines from the flag name
+            string cleanFlagName = _flagName.Trim();
+
+            if (string.IsNullOrEmpty(cleanFlagName))
+            {
+                Debug.LogWarning($"SetGameFlag has whitespace-only flag name: '{_flagName}'");
+                return;
+            }
+
             if (_removeFlag)
             {
-                GameFlags.RemoveFlag(_flagName);
-                Debug.Log($"[SetGameFlag] Removed flag: {_flagName}");
+                GameFlags.RemoveFlag(cleanFlagName);
+                Debug.Log($"[SetGameFlag] Removed flag: {cleanFlagName}");
             }
             else
             {
-                GameFlags.SetFlag(_flagName);
-                Debug.Log($"[SetGameFlag] Set flag: {_flagName}");
+                GameFlags.SetFlag(cleanFlagName);
+                Debug.Log($"[SetGameFlag] Set flag: {cleanFlagName}");
             }
         }
 
