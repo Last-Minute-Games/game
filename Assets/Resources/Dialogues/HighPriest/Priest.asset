@@ -1,32 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-9026225846717431083
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d19e89406c5582438a765fdd212f9da, type: 3}
-  m_Name: Set GameFlag Node
-  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.SetGameFlagNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1271
-    y: 547
-    width: 170
-    height: 170
-  IsDragging: 1
-  IsSelected: 0
-  _flagName: ending.guard
-  _removeFlag: 0
-  ParentNodes:
-  - {fileID: -8992365906145094589}
-  ChildNode: {fileID: 415662432936076414}
---- !u!114 &-8992365906145094589
+--- !u!114 &-8418296811011677937
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,29 +15,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1052
-    y: 451
+    x: -281
+    y: 1102
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Who could've thought? Surely you have evidence correct?
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Because you are Great.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 3455853957455274502}
-  - {fileID: 3867835112098267210}
-  - {fileID: -5466116381163142641}
-  - {fileID: -8358545418798180753}
-  - {fileID: -8475767312743537524}
-  - {fileID: 6319232915445747220}
-  ChildNode: {fileID: -9026225846717431083}
+  - {fileID: -1963682987023065765}
+  ChildNode: {fileID: -6628697167483805595}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-8665484494608333493
+--- !u!114 &-8391454476996149291
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -78,24 +47,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 191
-    y: 960
+    x: 3068
+    y: 580
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Sure.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Then, let us move on to what is important. Who is it?
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: -1615756985702057210}
-  ChildNode: {fileID: -2420617441143055976}
+  - {fileID: 6798366569994558707}
+  ChildNode: {fileID: 4823846458958279546}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-8529382616734068168
+--- !u!114 &-8117365660308560330
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -110,211 +79,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -665
-    y: -794
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: What did you want to ask?
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 2843762133983098608}
-  ChildNode: {fileID: -433461881778340622}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-8475767312743537524
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 524
-    y: 958
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: High Priest...
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 3239350686348674276}
-  ChildNode: {fileID: -8992365906145094589}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-8358545418798180753
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 419
-    y: 626
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: Sebastian...
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 3239350686348674276}
-  ChildNode: {fileID: -8992365906145094589}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-8185051377480936486
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d19e89406c5582438a765fdd212f9da, type: 3}
-  m_Name: Set GameFlag Node
-  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.SetGameFlagNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1757
-    y: 610
-    width: 170
-    height: 170
-  IsDragging: 1
-  IsSelected: 0
-  _flagName: 'start.ending
-
-'
-  _removeFlag: 0
-  ParentNodes:
-  - {fileID: 415662432936076414}
-  ChildNode: {fileID: 0}
---- !u!114 &-7826445454852985070
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1007
-    y: 99
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: You haven't been here for a while, and if you do, I know I can trust you.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -7058248198314114422}
-  ChildNode: {fileID: -1111930915270123154}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-7060158800574720643
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -3009
-    y: -369
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: Hello Nikolaus.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: 7696650829517116745}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-7058248198314114422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 734
+    x: 2622
     y: 71
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: If you can, could you help me with these boxes in the library?
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Helping the New Guard?
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 1346026178328437570}
-  ChildNode: {fileID: -7826445454852985070}
+  - {fileID: 1784509655443831787}
+  ChildNode: {fileID: 2073987822675959299}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-6971602562945474208
+--- !u!114 &-8082300788844817433
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -329,25 +111,25 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1017
-    y: -514
+    x: 2708
+    y: 1601
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: We think that this Kingdom has befallen itself, and is heading the way
-      of the old.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Finding a killer will lift this curse, regardless of who you think the
+      killer is.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 1207460863574744697}
-  ChildNode: {fileID: -2140658851697795940}
+  - {fileID: 7384094199809242666}
+  ChildNode: {fileID: -4570836924184118299}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-5483615223389647408
+--- !u!114 &-7835700864456199716
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -362,53 +144,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -977
-    y: 64
+    x: 4054
+    y: 1447
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: What I do know is that the Kingdom must survive this tragedy.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Sebastian...
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: -4428076566674124778}
-  ChildNode: {fileID: 5281289350507587065}
+  - {fileID: 4823846458958279546}
+  ChildNode: {fileID: 3188222041836203741}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-5466116381163142641
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d19e89406c5582438a765fdd212f9da, type: 3}
-  m_Name: Set GameFlag Node
-  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.SetGameFlagNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1526
-    y: 840
-    width: 170
-    height: 170
-  IsDragging: 1
-  IsSelected: 0
-  _flagName: 'ending.killer.found
-
-'
-  _removeFlag: 0
-  ParentNodes:
-  - {fileID: 8565914687578537036}
-  - {fileID: -5010558910015593975}
-  ChildNode: {fileID: -8992365906145094589}
---- !u!114 &-5010558910015593975
+--- !u!114 &-7665455084847550970
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -423,56 +176,59 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1249
-    y: 807
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: Very well..
-    CharacterSprite: {fileID: 0}
-  ParentNodes:
-  - {fileID: 2643002672103769823}
-  ChildNode: {fileID: -5466116381163142641}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-4583465151405795556
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1220
-    y: 1196
+    x: 3395
+    y: 183
     width: 170
     height: 260
   IsDragging: 0
   IsSelected: 0
   _sentence:
-    CharacterName: 'Charles '
-    Text: Are you sure? This seems.... unlikely.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: You will see soon enough, why the New Guard isn't what you think.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 8565914687578537036}
-  ChildNode: {fileID: 2643002672103769823}
+  - {fileID: 2073987822675959299}
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-4557629594886500532
+--- !u!114 &-7107771864134611480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1208
+    y: 1208
+    width: 190
+    height: 385
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - Why am I the Great One?
+  - What's the Religous Sect's plan?
+  - How do I report the killer?
+  - What happened to me!?
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -426344541116005460}
+  ChildNodes:
+  - {fileID: 7055907420898340221}
+  - {fileID: 8117881341940065228}
+  - {fileID: -2269722995316652719}
+  - {fileID: 3440210991311129366}
+  PanelType: 0
+--- !u!114 &-6839874016680610350
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -487,119 +243,54 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -822
-    y: 1260
+    x: -764
+    y: 741
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Is it a foolish choice? Yes, but the killer is surely among ourselves.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -3062085703003651979}
-  ChildNode: {fileID: -1777067098750926789}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-4428076566674124778
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1229
-    y: 23
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: I do not know much.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -433461881778340622}
-  ChildNode: {fileID: -5483615223389647408}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-4294171387965412117
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -2461
-    y: 309
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: We've been at odds with the Religous Sect over pursuing the killer.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 499337194753624349}
-  ChildNode: {fileID: -3163322228281272008}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-4251127233809455288
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1803
-    y: 139
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: 
-    Text: 
-    CharacterSprite: {fileID: 0}
+    CharacterName: High Priest
+    Text: Blessed thee Great One, how may I be of service?
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes: []
-  ChildNode: {fileID: 415662432936076414}
+  ChildNode: {fileID: 112064385627641370}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-4061555842449492642
+--- !u!114 &-6628697167483805595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -47
+    y: 1018
+    width: 190
+    height: 265
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - Why?
+  - What do you mean?
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -8418296811011677937}
+  ChildNodes:
+  - {fileID: -1860792530509017503}
+  - {fileID: 7697783621381812385}
+  PanelType: 0
+--- !u!114 &-6561878014162717933
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -614,25 +305,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -886
-    y: 406
+    x: 3999
+    y: 980
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Great, who is it?
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Allistair...
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 3190132370905070713}
-  - {fileID: -849664459172761797}
-  ChildNode: {fileID: 3239350686348674276}
+  - {fileID: 4823846458958279546}
+  ChildNode: {fileID: 388629258104150739}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-3163322228281272008
+--- !u!114 &-6409865086013825484
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -647,26 +337,26 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2244
-    y: 308
+    x: 1801
+    y: 894
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: I know you've already been set out to investigate, so please do tell us
-      if you have anything.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Not enough time has passed. Too little, too hasty. I cannot trust your
+      judgement without having Lived.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: -4294171387965412117}
-  - {fileID: -2420617441143055976}
-  ChildNode: {fileID: 4573153483504433887}
+  - {fileID: 7723608880935651190}
+  - {fileID: 4696329991282920993}
+  ChildNode: {fileID: -5734130845412212763}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-3062085703003651979
+--- !u!114 &-6013187917664142710
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -681,25 +371,151 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1034
-    y: 1287
+    x: 2034
+    y: 679
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: You've done something for me no one else has, and I'm inclined to trust
-      you based on that.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Crazy? I was crazy once, but then I saw your light, and you too will Live.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: -2025789614217461021}
-  ChildNode: {fileID: -4557629594886500532}
+  - {fileID: -5734130845412212763}
+  ChildNode: {fileID: -884658017308790317}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-2420617441143055976
+--- !u!114 &-5734130845412212763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 2184
+    y: 922
+    width: 190
+    height: 265
+  IsDragging: 0
+  IsSelected: 0
+  Answers:
+  - What do you mean?
+  - This is crazy.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -6409865086013825484}
+  ChildNodes:
+  - {fileID: 1584535552300434623}
+  - {fileID: -6013187917664142710}
+  PanelType: 0
+--- !u!114 &-5371246627584253290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1917
+    y: 51
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Life cannot progress without God, they are sure to fail.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 4646467232801670112}
+  ChildNode: {fileID: 1784509655443831787}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-5299809127344374771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 3486
+    y: 1379
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Please, focus on your mission.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 8363834289078308632}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-4570836924184118299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 2971
+    y: 1637
+    width: 170
+    height: 260
+  IsDragging: 0
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: The death of the killer will satisfy the curse, and ensure you live.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: -8082300788844817433}
+  ChildNode: {fileID: 8363834289078308632}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-3685599195706937007
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -714,18 +530,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -128
-    y: 780
+    x: 598
+    y: 586
     width: 170
     height: 150
   IsDragging: 1
   IsSelected: 0
-  _flagName: game.test
+  _flagName: character.charles.spoketo
   ParentNodes:
-  - {fileID: -8665484494608333493}
-  TrueChildNode: {fileID: 1134511372510499036}
-  FalseChildNode: {fileID: -3163322228281272008}
---- !u!114 &-2140658851697795940
+  - {fileID: 6182658029825283368}
+  TrueChildNode: {fileID: 8132902411060670679}
+  FalseChildNode: {fileID: 5525630227410351326}
+--- !u!114 &-3578637216032778631
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -740,24 +556,25 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -796
-    y: -521
+    x: 4968
+    y: 665
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Our goal is simple. Restore the Kingdom of Chronomar back to its' glory.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: We will prepare your coronation, and ready everything. You have saved us
+      all.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: -6971602562945474208}
-  ChildNode: {fileID: 1053492316589282993}
+  - {fileID: 3188222041836203741}
+  ChildNode: {fileID: -1915013307375072134}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-2025789614217461021
+--- !u!114 &-3331712984028367639
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -772,25 +589,25 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1249
-    y: 1297
+    x: 1768
+    y: 1587
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: You are the most unbiased person in this castle, as you have not meddled
-      in its' affairs.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: The church swears to protect those it holds dear, and you are one of those
+      people.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: -1753786436718879870}
-  ChildNode: {fileID: -3062085703003651979}
+  - {fileID: 3440210991311129366}
+  ChildNode: {fileID: 3584341279282327882}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-1777067098750926789
+--- !u!114 &-2269722995316652719
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -805,58 +622,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -558
-    y: 1310
-    width: 170
-    height: 260
-  IsDragging: 0
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: I have good reason to know it's not you, and the people in the castle will
-      not react kindly to me asking questions. Hence, you.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -4557629594886500532}
-  ChildNode: {fileID: -994145163285902394}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-1753786436718879870
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1508
-    y: 1277
+    x: 1673
+    y: 1202
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Simply put, there is no choice.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: This is a serious matter, knowing how you've Lived. Are you sure?
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 3190132370905070713}
-  - {fileID: -849664459172761797}
-  ChildNode: {fileID: -2025789614217461021}
+  - {fileID: -7107771864134611480}
+  ChildNode: {fileID: 6798366569994558707}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-1615756985702057210
+--- !u!114 &-1963682987023065765
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -871,23 +654,23 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -42
-    y: 1143
+    x: -250
+    y: 711
     width: 190
     height: 265
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - "Let's go back.\t\t"
-  - Nothing else.
+  - Who said anything about finding the killer?
+  - Why me?
   AnswerKeys: []
   ParentNodes:
-  - {fileID: -994145163285902394}
+  - {fileID: 112064385627641370}
   ChildNodes:
-  - {fileID: -8665484494608333493}
-  - {fileID: 1565039425612643509}
+  - {fileID: 6303716381895070153}
+  - {fileID: -8418296811011677937}
   PanelType: 0
---- !u!114 &-1111930915270123154
+--- !u!114 &-1915013307375072134
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -902,18 +685,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1402
-    y: 90
+    x: 5289
+    y: 758
     width: 170
     height: 170
   IsDragging: 0
   IsSelected: 0
-  _flagName: minigame.sokoban.show
+  _flagName: ending.start
   _removeFlag: 0
   ParentNodes:
-  - {fileID: -7826445454852985070}
+  - {fileID: -3578637216032778631}
   ChildNode: {fileID: 0}
---- !u!114 &-994145163285902394
+--- !u!114 &-1860792530509017503
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -928,59 +711,25 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -191
-    y: 1261
+    x: 217
+    y: 793
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Anything else?
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: You are our Kingdom's future. You define all.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: -1777067098750926789}
-  ChildNode: {fileID: -1615756985702057210}
+  - {fileID: -6628697167483805595}
+  - {fileID: 6303716381895070153}
+  ChildNode: {fileID: 6805857411829111203}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-849664459172761797
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
-  m_Name: Answer Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1569
-    y: 720
-    width: 190
-    height: 385
-  IsDragging: 1
-  IsSelected: 0
-  Answers:
-  - I know who the killer is.
-  - I know who the heir is.
-  - I need more time.
-  - Why do you believe me?
-  AnswerKeys: []
-  ParentNodes:
-  - {fileID: 4805612145871991123}
-  ChildNodes:
-  - {fileID: -4061555842449492642}
-  - {fileID: 2276275809678379473}
-  - {fileID: 4197524547011979343}
-  - {fileID: -1753786436718879870}
-  PanelType: 0
---- !u!114 &-563553571168117983
+--- !u!114 &-884658017308790317
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -995,91 +744,29 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 117
-    y: 42
+    x: 2187
+    y: 471
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: We're prepared. The Religious Sect has nothing on us.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Please, don't trouble yourself by talking to me and focus on your goal
+      of finding the killer.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 3661512634663798547}
-  ChildNode: {fileID: 1346026178328437570}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &-433461881778340622
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
-  m_Name: Answer Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1658
-    y: -377
-    width: 190
-    height: 325
-  IsDragging: 1
-  IsSelected: 0
-  Answers:
-  - What is the New Guard?
-  - How are you trying to keep order in the Kingdom?
-  - What do you know about the murder?
-  AnswerKeys: []
-  ParentNodes:
-  - {fileID: -194670034600006883}
-  - {fileID: -8529382616734068168}
-  ChildNodes:
-  - {fileID: 1207460863574744697}
-  - {fileID: 5178570262756155074}
-  - {fileID: -4428076566674124778}
-  PanelType: 0
---- !u!114 &-428742026652866664
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1812
-    y: 1175
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: 'Charles '
-    Text: Return to me when you are sure, I cannot exact justice when you are unsure.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 2643002672103769823}
-  - {fileID: 6319232915445747220}
+  - {fileID: 7055907420898340221}
+  - {fileID: 8117881341940065228}
+  - {fileID: -6013187917664142710}
+  - {fileID: 7945861416745824325}
+  - {fileID: 1784509655443831787}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-194670034600006883
+--- !u!114 &-506625790109152484
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1094,19 +781,51 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1935
-    y: -339
+    x: 2423
+    y: 1362
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: I'm not sure if you're aware, but we the New Guard are trying to keep order
-      in this kingdom.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Return when you are certain, so we can prepare your rule.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 6798366569994558707}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-426344541116005460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 724
+    y: 1144
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Please, feel free to ask me anything, it is truly an honor for me to speak
+      with you.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes: []
-  ChildNode: {fileID: -433461881778340622}
+  ChildNode: {fileID: -7107771864134611480}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -1121,80 +840,72 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 33f741ea10ebcf842a91c9b871dd032a, type: 3}
-  m_Name: CharlesNew
+  m_Name: Priest
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.DialogNodeGraph
   NodesList:
-  - {fileID: -7060158800574720643}
-  - {fileID: -194670034600006883}
-  - {fileID: -433461881778340622}
-  - {fileID: 1207460863574744697}
-  - {fileID: -6971602562945474208}
-  - {fileID: -2140658851697795940}
-  - {fileID: 5178570262756155074}
-  - {fileID: -4428076566674124778}
-  - {fileID: -5483615223389647408}
-  - {fileID: 5281289350507587065}
-  - {fileID: 1053492316589282993}
-  - {fileID: 3661512634663798547}
-  - {fileID: 3892006879206530772}
-  - {fileID: 2843762133983098608}
-  - {fileID: -8529382616734068168}
-  - {fileID: 6912957163914666656}
-  - {fileID: -563553571168117983}
-  - {fileID: 7696650829517116745}
-  - {fileID: 499337194753624349}
-  - {fileID: 1346026178328437570}
-  - {fileID: -7058248198314114422}
-  - {fileID: -7826445454852985070}
-  - {fileID: -1111930915270123154}
-  - {fileID: -4294171387965412117}
-  - {fileID: -3163322228281272008}
-  - {fileID: 4805612145871991123}
-  - {fileID: 3190132370905070713}
-  - {fileID: 4573153483504433887}
-  - {fileID: -849664459172761797}
-  - {fileID: 6760641099379953130}
-  - {fileID: -4061555842449492642}
-  - {fileID: 3239350686348674276}
-  - {fileID: 2276275809678379473}
-  - {fileID: 4197524547011979343}
-  - {fileID: -1753786436718879870}
-  - {fileID: -2025789614217461021}
-  - {fileID: -3062085703003651979}
-  - {fileID: -4557629594886500532}
-  - {fileID: -1777067098750926789}
-  - {fileID: -2420617441143055976}
-  - {fileID: 1134511372510499036}
-  - {fileID: -994145163285902394}
-  - {fileID: -1615756985702057210}
-  - {fileID: 1565039425612643509}
-  - {fileID: -8665484494608333493}
-  - {fileID: 3455853957455274502}
-  - {fileID: 2883451767758889618}
-  - {fileID: 6049368630420791126}
-  - {fileID: 8565914687578537036}
-  - {fileID: 3867835112098267210}
-  - {fileID: -8358545418798180753}
-  - {fileID: -8475767312743537524}
-  - {fileID: -5466116381163142641}
-  - {fileID: -8992365906145094589}
-  - {fileID: 415662432936076414}
-  - {fileID: -8185051377480936486}
-  - {fileID: -9026225846717431083}
-  - {fileID: -4251127233809455288}
-  - {fileID: -4583465151405795556}
-  - {fileID: 2643002672103769823}
-  - {fileID: -428742026652866664}
-  - {fileID: -5010558910015593975}
-  - {fileID: 6319232915445747220}
-  - {fileID: 4087384796098560537}
+  - {fileID: -6839874016680610350}
+  - {fileID: 4696329991282920993}
+  - {fileID: 6182658029825283368}
+  - {fileID: -7107771864134611480}
+  - {fileID: -426344541116005460}
+  - {fileID: 8132902411060670679}
+  - {fileID: -3685599195706937007}
+  - {fileID: 5525630227410351326}
+  - {fileID: 112064385627641370}
+  - {fileID: -1963682987023065765}
+  - {fileID: 6303716381895070153}
+  - {fileID: -8418296811011677937}
+  - {fileID: -6628697167483805595}
+  - {fileID: -1860792530509017503}
+  - {fileID: 7697783621381812385}
+  - {fileID: 6805857411829111203}
+  - {fileID: 7723608880935651190}
+  - {fileID: 7055907420898340221}
+  - {fileID: 8117881341940065228}
+  - {fileID: -6409865086013825484}
+  - {fileID: -884658017308790317}
+  - {fileID: -5734130845412212763}
+  - {fileID: 1584535552300434623}
+  - {fileID: -6013187917664142710}
+  - {fileID: -2269722995316652719}
+  - {fileID: 3440210991311129366}
+  - {fileID: -3331712984028367639}
+  - {fileID: 3584341279282327882}
+  - {fileID: 8987191442781662773}
+  - {fileID: 7384094199809242666}
+  - {fileID: -8082300788844817433}
+  - {fileID: -4570836924184118299}
+  - {fileID: 8363834289078308632}
+  - {fileID: -5299809127344374771}
+  - {fileID: 7945861416745824325}
+  - {fileID: 6798366569994558707}
+  - {fileID: 4646467232801670112}
+  - {fileID: -5371246627584253290}
+  - {fileID: 1784509655443831787}
+  - {fileID: -8117365660308560330}
+  - {fileID: 2073987822675959299}
+  - {fileID: -7665455084847550970}
+  - {fileID: -8391454476996149291}
+  - {fileID: -506625790109152484}
+  - {fileID: 4823846458958279546}
+  - {fileID: 151235866048415314}
+  - {fileID: 3284665903019374102}
+  - {fileID: 7152889105008127956}
+  - {fileID: 5137100605521505431}
+  - {fileID: -6561878014162717933}
+  - {fileID: 3043207703435071347}
+  - {fileID: -7835700864456199716}
+  - {fileID: 3188222041836203741}
+  - {fileID: 388629258104150739}
+  - {fileID: -3578637216032778631}
+  - {fileID: -1915013307375072134}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
   NodeToDrawLineFrom: {fileID: 0}
   LinePosition: {x: 0, y: 0}
   IsLocalizationSetUp: 0
---- !u!114 &415662432936076414
+--- !u!114 &112064385627641370
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1209,26 +920,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1513
-    y: 536
+    x: -459
+    y: 729
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: In any case, we do not have time and must move forward. For the good of
-      the Kingdom, I hope you are correct.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Finding the killer is an urgent task that must be done soon.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: -9026225846717431083}
-  - {fileID: -4251127233809455288}
-  ChildNode: {fileID: -8185051377480936486}
+  - {fileID: -6839874016680610350}
+  ChildNode: {fileID: -1963682987023065765}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &499337194753624349
+--- !u!114 &151235866048415314
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1243,24 +952,50 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2694
-    y: 293
+    x: 3963
+    y: 23
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Thank you for fixing this for me.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Adrianne...
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 7696650829517116745}
-  ChildNode: {fileID: -4294171387965412117}
+  - {fileID: 4823846458958279546}
+  ChildNode: {fileID: 3188222041836203741}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &1053492316589282993
+--- !u!114 &388629258104150739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d19e89406c5582438a765fdd212f9da, type: 3}
+  m_Name: Set GameFlag Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.SetGameFlagNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 4253
+    y: 895
+    width: 170
+    height: 170
+  IsDragging: 1
+  IsSelected: 0
+  _flagName: ending.killer.found
+  _removeFlag: 0
+  ParentNodes:
+  - {fileID: -6561878014162717933}
+  ChildNode: {fileID: 3188222041836203741}
+--- !u!114 &1584535552300434623
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1275,186 +1010,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -470
-    y: -216
+    x: 2535
+    y: 695
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: The New Guard has a plan, and it always will.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: You wil see, you will see.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: -2140658851697795940}
-  - {fileID: 5178570262756155074}
-  - {fileID: 5281289350507587065}
-  ChildNode: {fileID: 3661512634663798547}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &1134511372510499036
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 548
-    y: 1178
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: How did you get here?
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -2420617441143055976}
+  - {fileID: -5734130845412212763}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &1207460863574744697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1217
-    y: -508
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: The New Guard is cromprised of me, Allistair, Avant, and Elias.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -433461881778340622}
-  ChildNode: {fileID: -6971602562945474208}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &1346026178328437570
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 391
-    y: 71
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: I'm an architect, and I'm here to bring this Kingdom back.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -563553571168117983}
-  ChildNode: {fileID: -7058248198314114422}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &1565039425612643509
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 320
-    y: 1314
-    width: 170
-    height: 260
-  IsDragging: 0
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: Carry on.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -1615756985702057210}
-  ChildNode: {fileID: 0}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &2276275809678379473
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1143
-    y: 1009
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: Who is it?
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -849664459172761797}
-  ChildNode: {fileID: 0}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &2643002672103769823
+--- !u!114 &1784509655443831787
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1469,49 +1042,23 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1438
-    y: 1095
+    x: 2304
+    y: 59
     width: 190
     height: 265
-  IsDragging: 1
+  IsDragging: 0
   IsSelected: 0
   Answers:
-  - Yes, with no doubt Allistair is the killer.
-  - No, I have my doubts.
+  - I see
+  - What if I help them?
   AnswerKeys: []
   ParentNodes:
-  - {fileID: -4583465151405795556}
+  - {fileID: -5371246627584253290}
   ChildNodes:
-  - {fileID: -5010558910015593975}
-  - {fileID: -428742026652866664}
+  - {fileID: -884658017308790317}
+  - {fileID: -8117365660308560330}
   PanelType: 0
---- !u!114 &2843762133983098608
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 040c7688b61812647b338495939d2824, type: 3}
-  m_Name: GameFlag Condition Node
-  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.GameFlagConditionNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 295
-    y: -234
-    width: 170
-    height: 150
-  IsDragging: 1
-  IsSelected: 0
-  _flagName: game.test
-  ParentNodes:
-  - {fileID: 3892006879206530772}
-  TrueChildNode: {fileID: 6912957163914666656}
-  FalseChildNode: {fileID: -8529382616734068168}
---- !u!114 &2883451767758889618
+--- !u!114 &2073987822675959299
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1526,24 +1073,222 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -124
-    y: 283
+    x: 3091
+    y: 123
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Avant..
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Blasphemy. Blasphemy. Blasphemy.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 3239350686348674276}
-  ChildNode: {fileID: 4087384796098560537}
+  - {fileID: -8117365660308560330}
+  ChildNode: {fileID: -7665455084847550970}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &3190132370905070713
+--- !u!114 &3043207703435071347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 3879
+    y: 1191
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Marco...
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 4823846458958279546}
+  ChildNode: {fileID: 3188222041836203741}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &3188222041836203741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 4751
+    y: 659
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Very well..
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 151235866048415314}
+  - {fileID: 7152889105008127956}
+  - {fileID: 3284665903019374102}
+  - {fileID: 5137100605521505431}
+  - {fileID: 3043207703435071347}
+  - {fileID: -7835700864456199716}
+  - {fileID: 388629258104150739}
+  ChildNode: {fileID: -3578637216032778631}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &3284665903019374102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 3938
+    y: 417
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Avant...
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 4823846458958279546}
+  ChildNode: {fileID: 3188222041836203741}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &3440210991311129366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1570
+    y: 1590
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Judging from what you're saying, you Lived.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: -7107771864134611480}
+  ChildNode: {fileID: -3331712984028367639}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &3584341279282327882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1994
+    y: 1573
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: A curse has been set, and we sought to protect you by making a deal.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: -3331712984028367639}
+  ChildNode: {fileID: 8987191442781662773}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &4646467232801670112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1584
+    y: 140
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: They are simply put, idealists who cannot see what is in front of them.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 4696329991282920993}
+  ChildNode: {fileID: -5371246627584253290}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &4696329991282920993
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1558,25 +1303,27 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1567
-    y: 313
+    x: 1247
+    y: 744
     width: 190
-    height: 325
+    height: 385
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - I know who the killer is.
-  - I need more time.
-  - Why do you believe me?
+  - Why am I the Great One?
+  - What's the Religious Sect's plan?
+  - How do I report the killer?
+  - What do you think of the New Guard?
   AnswerKeys: []
   ParentNodes:
-  - {fileID: 6760641099379953130}
+  - {fileID: 8132902411060670679}
   ChildNodes:
-  - {fileID: -4061555842449492642}
-  - {fileID: 4197524547011979343}
-  - {fileID: -1753786436718879870}
+  - {fileID: 7055907420898340221}
+  - {fileID: 8117881341940065228}
+  - {fileID: -6409865086013825484}
+  - {fileID: 4646467232801670112}
   PanelType: 0
---- !u!114 &3239350686348674276
+--- !u!114 &4823846458958279546
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1591,33 +1338,33 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -495
-    y: 248
+    x: 3395
+    y: 508
     width: 190
     height: 565
   IsDragging: 1
   IsSelected: 0
   Answers:
   - Adrianne, the Maid.
+  - Charles, the Architect.
   - Avant, the Senechal.
   - Elias, the Spymaster.
   - Allistair, the Advisor.
   - Marco, the Jester.
-  - Sebastian, the Grand Knight
-  - The High Priest.
+  - Sebastian, the Grand Knight.
   AnswerKeys: []
   ParentNodes:
-  - {fileID: -4061555842449492642}
+  - {fileID: -8391454476996149291}
   ChildNodes:
-  - {fileID: 3455853957455274502}
-  - {fileID: 2883451767758889618}
-  - {fileID: 6049368630420791126}
-  - {fileID: 8565914687578537036}
-  - {fileID: 3867835112098267210}
-  - {fileID: -8358545418798180753}
-  - {fileID: -8475767312743537524}
+  - {fileID: 151235866048415314}
+  - {fileID: 7152889105008127956}
+  - {fileID: 3284665903019374102}
+  - {fileID: 5137100605521505431}
+  - {fileID: -6561878014162717933}
+  - {fileID: 3043207703435071347}
+  - {fileID: -7835700864456199716}
   PanelType: 1
---- !u!114 &3455853957455274502
+--- !u!114 &5137100605521505431
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1632,374 +1379,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -237
-    y: 63
+    x: 3938
+    y: 704
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Adrianne...
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 3239350686348674276}
-  ChildNode: {fileID: -8992365906145094589}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &3661512634663798547
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
-  m_Name: Answer Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -201
-    y: -197
-    width: 190
-    height: 265
-  IsDragging: 1
-  IsSelected: 0
-  Answers:
-  - Let me ask you again some more questions.
-  - And what of it?
-  AnswerKeys: []
-  ParentNodes:
-  - {fileID: 1053492316589282993}
-  ChildNodes:
-  - {fileID: 3892006879206530772}
-  - {fileID: -563553571168117983}
-  PanelType: 0
---- !u!114 &3867835112098267210
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 194
-    y: 367
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: Marco...
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 3239350686348674276}
-  ChildNode: {fileID: -8992365906145094589}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &3892006879206530772
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 90
-    y: -342
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: Sure, go ahead.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 3661512634663798547}
-  ChildNode: {fileID: 2843762133983098608}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &4087384796098560537
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 694
-    y: 384
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: Are you sure? This is a fellow New Guard Member.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 2883451767758889618}
-  - {fileID: 6049368630420791126}
-  ChildNode: {fileID: 6319232915445747220}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &4197524547011979343
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1111
-    y: 726
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: That's fine, reach back out when you know.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 3190132370905070713}
-  - {fileID: -849664459172761797}
-  ChildNode: {fileID: 0}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &4573153483504433887
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 040c7688b61812647b338495939d2824, type: 3}
-  m_Name: GameFlag Condition Node
-  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.GameFlagConditionNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -2061
-    y: 486
-    width: 170
-    height: 150
-  IsDragging: 1
-  IsSelected: 0
-  _flagName: 'character.nikolaus.heir
-
-'
-  ParentNodes:
-  - {fileID: 4805612145871991123}
-  - {fileID: -3163322228281272008}
-  TrueChildNode: {fileID: 4805612145871991123}
-  FalseChildNode: {fileID: 6760641099379953130}
---- !u!114 &4805612145871991123
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -1948
-    y: 679
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: The New Guard trusts and believes in you.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 4573153483504433887}
-  ChildNode: {fileID: -849664459172761797}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &5178570262756155074
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -890
-    y: -194
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: We aim to put in strong leaders while we find the true heir.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -433461881778340622}
-  ChildNode: {fileID: 1053492316589282993}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &5281289350507587065
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: -719
-    y: 21
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: To do that, we must restore the Kingdom of Chronomar back to its' former
-      glory.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: -5483615223389647408}
-  ChildNode: {fileID: 1053492316589282993}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &6049368630420791126
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 63
-    y: 591
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
+    CharacterName: High Priest
     Text: Elias...
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 3239350686348674276}
-  ChildNode: {fileID: 4087384796098560537}
+  - {fileID: 4823846458958279546}
+  ChildNode: {fileID: 3188222041836203741}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &6319232915445747220
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
-  m_Name: Answer Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1000
-    y: 683
-    width: 190
-    height: 265
-  IsDragging: 1
-  IsSelected: 1
-  Answers:
-  - Yes, without a doubt...
-  - No, I have my doubts.
-  AnswerKeys: []
-  ParentNodes:
-  - {fileID: 4087384796098560537}
-  ChildNodes:
-  - {fileID: -8992365906145094589}
-  - {fileID: -428742026652866664}
-  PanelType: 0
---- !u!114 &6760641099379953130
+--- !u!114 &5525630227410351326
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2014,56 +1411,25 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1825
-    y: 305
+    x: 889
+    y: 363
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: The New Guard trusts and believes in you.
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: Please, feel free to ask me anything, it is truly an honor for me to speak
+      with you.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 4573153483504433887}
-  ChildNode: {fileID: 3190132370905070713}
+  - {fileID: -3685599195706937007}
+  ChildNode: {fileID: 7723608880935651190}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &6912957163914666656
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 449
-    y: -603
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 0
-  _sentence:
-    CharacterName: Charles
-    Text: How did you get here?
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
-  ParentNodes:
-  - {fileID: 2843762133983098608}
-  ChildNode: {fileID: 0}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &7696650829517116745
+--- !u!114 &6182658029825283368
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2078,17 +1444,18 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2398
-    y: -165
+    x: 659
+    y: 873
     width: 170
     height: 150
   IsDragging: 1
   IsSelected: 0
-  _flagName: minigame.sokoban.finish
-  ParentNodes: []
-  TrueChildNode: {fileID: 499337194753624349}
-  FalseChildNode: {fileID: -194670034600006883}
---- !u!114 &8565914687578537036
+  _flagName: day.two
+  ParentNodes:
+  - {fileID: 6805857411829111203}
+  TrueChildNode: {fileID: -426344541116005460}
+  FalseChildNode: {fileID: -3685599195706937007}
+--- !u!114 &6303716381895070153
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2103,20 +1470,408 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 858
-    y: 1138
+    x: 72
+    y: 515
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Charles
-    Text: Allistair...
-    CharacterSprite: {fileID: -5665405108467540286, guid: b60aaaa87db018846be02af70d357078, type: 3}
+    CharacterName: High Priest
+    Text: It is your God given duty, and you shall see soon enough.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
   ParentNodes:
-  - {fileID: 3239350686348674276}
-  ChildNode: {fileID: -4583465151405795556}
+  - {fileID: -1963682987023065765}
+  ChildNode: {fileID: -1860792530509017503}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &6798366569994558707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 2789
+    y: 826
+    width: 190
+    height: 265
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - Yes, with certainty.
+  - No.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -2269722995316652719}
+  ChildNodes:
+  - {fileID: -8391454476996149291}
+  - {fileID: -506625790109152484}
+  PanelType: 0
+--- !u!114 &6805857411829111203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 405
+    y: 919
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Finding the killer will usher in a new era for your throne.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: -1860792530509017503}
+  - {fileID: 7697783621381812385}
+  ChildNode: {fileID: 6182658029825283368}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &7055907420898340221
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1792
+    y: 330
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: You are great because you are you. The Heavens chose you to rule, and we
+      will do our best to ensure it.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 7723608880935651190}
+  - {fileID: 4696329991282920993}
+  - {fileID: -7107771864134611480}
+  ChildNode: {fileID: -884658017308790317}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &7152889105008127956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 3877
+    y: 157
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Charles..
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 4823846458958279546}
+  ChildNode: {fileID: 3188222041836203741}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &7384094199809242666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 2476
+    y: 1564
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: Yes, unless you find the killer.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 8987191442781662773}
+  ChildNode: {fileID: -8082300788844817433}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &7697783621381812385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 199
+    y: 1098
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: You are our Kingdom's future. You define all.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: -6628697167483805595}
+  ChildNode: {fileID: 6805857411829111203}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &7723608880935651190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1233
+    y: 339
+    width: 190
+    height: 325
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - Why am I the Great One?
+  - What's the Religous Sect's plan?
+  - How do I report the killer?
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 5525630227410351326}
+  ChildNodes:
+  - {fileID: 7055907420898340221}
+  - {fileID: 8117881341940065228}
+  - {fileID: -6409865086013825484}
+  PanelType: 0
+--- !u!114 &7945861416745824325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 2886
+    y: 1195
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: What is necessary.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 8363834289078308632}
+  ChildNode: {fileID: -884658017308790317}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &8117881341940065228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1791
+    y: 589
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: High Priest
+    Text: The plan is to crown you as ruler, simple as is.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 7723608880935651190}
+  - {fileID: 4696329991282920993}
+  - {fileID: -7107771864134611480}
+  ChildNode: {fileID: -884658017308790317}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &8132902411060670679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 920
+    y: 778
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Priest
+    Text: Please, feel free to ask me anything, it is truly an honor for me to speak
+      with you.
+    CharacterSprite: {fileID: -7902679760657589128, guid: 0879ab6ee60dc334a9826193f118a19c, type: 3}
+  ParentNodes:
+  - {fileID: 6182658029825283368}
+  - {fileID: -3685599195706937007}
+  ChildNode: {fileID: 4696329991282920993}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &8363834289078308632
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 3193
+    y: 1624
+    width: 190
+    height: 265
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - I see.
+  - What have you done?
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -4570836924184118299}
+  ChildNodes:
+  - {fileID: -5299809127344374771}
+  - {fileID: 7945861416745824325}
+  PanelType: 0
+--- !u!114 &8987191442781662773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 2206
+    y: 1560
+    width: 190
+    height: 205
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - A deal with the Devil?!
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: 3584341279282327882}
+  ChildNodes:
+  - {fileID: 7384094199809242666}
+  PanelType: 0
