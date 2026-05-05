@@ -15,8 +15,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1483.8335
-    y: 1308.3334
+    x: 855.8335
+    y: 1490.3334
     width: 170
     height: 260
   IsDragging: 1
@@ -28,6 +28,39 @@ MonoBehaviour:
     CharacterSprite: {fileID: 1919691424312299089, guid: 3dc94aacbc1d6b94db175170fd85926c, type: 3}
   ParentNodes: []
   ChildNode: {fileID: 4872792342144325402}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-8405340590497002437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1330
+    y: 339
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Marco
+    Text: No idea, but  we both knew we wanted to keep it out of the hands of the
+      others.
+    CharacterSprite: {fileID: 1919691424312299089, guid: 3dc94aacbc1d6b94db175170fd85926c, type: 3}
+  ParentNodes:
+  - {fileID: -2072135356797870896}
+  ChildNode: {fileID: 1456707425460469881}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -47,8 +80,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 408.5
-    y: 1324.9999
+    x: -219.5
+    y: 1506.9999
     width: 170
     height: 260
   IsDragging: 1
@@ -79,8 +112,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 2062
-    y: 1240
+    x: 1434
+    y: 1422
     width: 170
     height: 260
   IsDragging: 1
@@ -111,8 +144,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1345
-    y: 1180
+    x: -1973
+    y: 1362
     width: 170
     height: 260
   IsDragging: 1
@@ -142,8 +175,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1776
-    y: 1726
+    x: 1148
+    y: 1908
     width: 170
     height: 260
   IsDragging: 1
@@ -175,8 +208,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 212.49951
-    y: 1445.9996
+    x: -415.5005
+    y: 1627.9996
     width: 170
     height: 260
   IsDragging: 1
@@ -208,8 +241,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 668.4995
-    y: 1240
+    x: 40.49951
+    y: 1422
     width: 190
     height: 265
   IsDragging: 1
@@ -239,8 +272,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1247
-    y: 1242
+    x: 619
+    y: 1424
     width: 170
     height: 170
   IsDragging: 1
@@ -266,8 +299,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1240.501
-    y: 991.0001
+    x: 612.501
+    y: 1173.0001
     width: 170
     height: 260
   IsDragging: 1
@@ -298,8 +331,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -960.99927
-    y: 1545.4994
+    x: -1588.9993
+    y: 1727.4994
     width: 170
     height: 260
   IsDragging: 1
@@ -330,8 +363,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 952.501
-    y: 944
+    x: 324.50098
+    y: 1126
     width: 170
     height: 260
   IsDragging: 1
@@ -363,8 +396,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1124
-    y: 421
+    x: 471
+    y: 578
     width: 170
     height: 260
   IsDragging: 1
@@ -376,7 +409,7 @@ MonoBehaviour:
     CharacterSprite: {fileID: 1919691424312299089, guid: 3dc94aacbc1d6b94db175170fd85926c, type: 3}
   ParentNodes:
   - {fileID: -3072614258331771715}
-  ChildNode: {fileID: 1017709869046235523}
+  ChildNode: {fileID: -108882616069341965}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -396,15 +429,16 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1917
-    y: 472
-    width: 190
-    height: 135
-  IsDragging: 0
-  IsSelected: 0
-  _flagName: 
+    x: 1887
+    y: 469
+    width: 170
+    height: 170
+  IsDragging: 1
+  IsSelected: 1
+  _flagName: character.marco.trust
   _removeFlag: 0
-  ParentNodes: []
+  ParentNodes:
+  - {fileID: 1456707425460469881}
   ChildNode: {fileID: 0}
 --- !u!114 &-3072614258331771715
 MonoBehaviour:
@@ -421,8 +455,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 847.5049
-    y: 441.00012
+    x: 219.50488
+    y: 623.0001
     width: 170
     height: 260
   IsDragging: 1
@@ -438,6 +472,37 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &-2072135356797870896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1717f3c6dba9fa40844ddacac301510, type: 3}
+  m_Name: Answer Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.AnswerNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1052
+    y: 356
+    width: 190
+    height: 265
+  IsDragging: 1
+  IsSelected: 0
+  Answers:
+  - What could this be for?
+  - Thank you for this Marco.
+  AnswerKeys: []
+  ParentNodes:
+  - {fileID: -108882616069341965}
+  ChildNodes:
+  - {fileID: -8405340590497002437}
+  - {fileID: 1456707425460469881}
+  PanelType: 0
 --- !u!114 &-2010781584201838092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -453,8 +518,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -908.6665
-    y: 1146.6666
+    x: -1536.6665
+    y: 1328.6666
     width: 170
     height: 260
   IsDragging: 1
@@ -485,8 +550,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1025.334
-    y: 1645.3331
+    x: 397.33398
+    y: 1827.333
     width: 170
     height: 150
   IsDragging: 1
@@ -511,8 +576,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -155.49854
-    y: 1618.9991
+    x: -783.49854
+    y: 1800.999
     width: 190
     height: 205
   IsDragging: 1
@@ -540,8 +605,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -412.49927
-    y: 1338.9999
+    x: -1040.4993
+    y: 1520.9999
     width: 170
     height: 260
   IsDragging: 1
@@ -572,8 +637,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1505.501
-    y: 1611.4999
+    x: 877.501
+    y: 1793.5
     width: 170
     height: 260
   IsDragging: 1
@@ -605,8 +670,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -408.49927
-    y: 1605.9996
+    x: -1036.4993
+    y: 1787.9995
     width: 170
     height: 260
   IsDragging: 1
@@ -638,8 +703,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1152
-    y: 691
+    x: -1780
+    y: 873
     width: 190
     height: 205
   IsDragging: 1
@@ -650,6 +715,39 @@ MonoBehaviour:
   ParentNodes: []
   ChildNodes: []
   PanelType: 0
+--- !u!114 &-108882616069341965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 829
+    y: 453
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Marco
+    Text: And also, have this document, Adrianne found it on the King's body and
+      handed it to me, it seems important.
+    CharacterSprite: {fileID: 1919691424312299089, guid: 3dc94aacbc1d6b94db175170fd85926c, type: 3}
+  ParentNodes:
+  - {fileID: -3892892715537209817}
+  ChildNode: {fileID: -2072135356797870896}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -684,8 +782,6 @@ MonoBehaviour:
   - {fileID: 686040632385932405}
   - {fileID: 5409757444667838987}
   - {fileID: -3072614258331771715}
-  - {fileID: 1017709869046235523}
-  - {fileID: 3943907011577301893}
   - {fileID: -4579170059128944035}
   - {fileID: -4163551971546040269}
   - {fileID: -7098719791789187555}
@@ -703,6 +799,10 @@ MonoBehaviour:
   - {fileID: -749389934277140061}
   - {fileID: -5871859990533405600}
   - {fileID: -3677330099277823853}
+  - {fileID: -108882616069341965}
+  - {fileID: -2072135356797870896}
+  - {fileID: -8405340590497002437}
+  - {fileID: 1456707425460469881}
   VariablesConfig: {fileID: 11400000, guid: 9403ea219f3ed594d9ef4700e92854bc, type: 2}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -724,8 +824,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1900.9998
-    y: 929.1665
+    x: -2528.9998
+    y: 1111.1665
     width: 170
     height: 150
   IsDragging: 1
@@ -749,8 +849,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1916
-    y: 1276.6666
+    x: -2544
+    y: 1458.6666
     width: 170
     height: 260
   IsDragging: 1
@@ -783,8 +883,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -629.4971
-    y: 755
+    x: -1257.4971
+    y: 937
     width: 170
     height: 260
   IsDragging: 1
@@ -799,7 +899,7 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &1017709869046235523
+--- !u!114 &1456707425460469881
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -814,19 +914,20 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1356.5039
-    y: 392.00012
+    x: 1530
+    y: 544
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Nikolaus
-    Text: (Allistair and Charles... interesting.)
-    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+    CharacterName: Marco
+    Text: You take care now, and keep yourself safe out there Nikolaus.
+    CharacterSprite: {fileID: 0}
   ParentNodes:
-  - {fileID: -3892892715537209817}
-  ChildNode: {fileID: 3943907011577301893}
+  - {fileID: -2072135356797870896}
+  - {fileID: -8405340590497002437}
+  ChildNode: {fileID: -3677330099277823853}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -846,8 +947,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1214.666
-    y: 930.3334
+    x: -1842.666
+    y: 1112.3334
     width: 170
     height: 150
   IsDragging: 1
@@ -871,8 +972,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1490.3335
-    y: 1049
+    x: 862.3335
+    y: 1231
     width: 170
     height: 260
   IsDragging: 0
@@ -903,8 +1004,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -113.498535
-    y: 1285.0001
+    x: -741.49854
+    y: 1467.0001
     width: 190
     height: 205
   IsDragging: 1
@@ -932,8 +1033,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1176.4993
-    y: 1574.9999
+    x: -1804.4993
+    y: 1756.9999
     width: 170
     height: 260
   IsDragging: 1
@@ -946,38 +1047,6 @@ MonoBehaviour:
   ParentNodes:
   - {fileID: 8673683264142681336}
   ChildNode: {fileID: -4163551971546040269}
-  _isExternalFunc: 0
-  _externalFunctionName: 
-  CharacterNameKey: 
-  SentenceTextKey: 
---- !u!114 &3943907011577301893
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
-  m_Name: Sentence Node
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
-  NodeGraph: {fileID: 11400000}
-  Rect:
-    serializedVersion: 2
-    x: 1607.5029
-    y: 379.99988
-    width: 170
-    height: 260
-  IsDragging: 1
-  IsSelected: 1
-  _sentence:
-    CharacterName: Nikolaus
-    Text: Thank you a lot Marco! Stay safe.
-    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
-  ParentNodes:
-  - {fileID: 1017709869046235523}
-  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -997,8 +1066,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1491
-    y: 815
+    x: -2119
+    y: 997
     width: 170
     height: 260
   IsDragging: 1
@@ -1029,8 +1098,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1809.3335
-    y: 1210
+    x: 1181.3335
+    y: 1392
     width: 170
     height: 260
   IsDragging: 1
@@ -1061,8 +1130,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2454.1667
-    y: 954.3334
+    x: -3082.1667
+    y: 1136.3334
     width: 170
     height: 260
   IsDragging: 1
@@ -1092,8 +1161,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -735.4995
-    y: 1416.9996
+    x: -1363.4995
+    y: 1598.9996
     width: 190
     height: 265
   IsDragging: 1
@@ -1123,8 +1192,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 580.50244
-    y: 581.0001
+    x: -47.49756
+    y: 763.0001
     width: 170
     height: 260
   IsDragging: 1
@@ -1156,8 +1225,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 988.501
-    y: 1241.0002
+    x: 360.50098
+    y: 1423.0002
     width: 170
     height: 260
   IsDragging: 1
@@ -1189,8 +1258,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1276.334
-    y: 1783.3324
+    x: 648.334
+    y: 1965.3325
     width: 170
     height: 260
   IsDragging: 1
@@ -1222,8 +1291,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 820.334
-    y: 1414.9999
+    x: 192.33398
+    y: 1596.9999
     width: 170
     height: 260
   IsDragging: 1
@@ -1254,8 +1323,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1491.1658
-    y: 1463.3331
+    x: -2119.1658
+    y: 1645.3331
     width: 190
     height: 265
   IsDragging: 1

@@ -15,8 +15,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -666.5005
-    y: 157.99994
+    x: 99.49951
+    y: -206.00006
     width: 170
     height: 260
   IsDragging: 1
@@ -26,8 +26,8 @@ MonoBehaviour:
     Text: (Seems I should leave her alone.)
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
-  - {fileID: 5362745953541671061}
-  ChildNode: {fileID: 0}
+  - {fileID: -7709744830568839141}
+  ChildNode: {fileID: -6834038779605765439}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -47,8 +47,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1209.0005
-    y: 527.49994
+    x: -599.0005
+    y: 475.5
     width: 170
     height: 150
   IsDragging: 1
@@ -57,6 +57,32 @@ MonoBehaviour:
   ParentNodes: []
   TrueChildNode: {fileID: 1305919116598701323}
   FalseChildNode: {fileID: 5362745953541671061}
+--- !u!114 &-7709744830568839141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 040c7688b61812647b338495939d2824, type: 3}
+  m_Name: GameFlag Condition Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.GameFlagConditionNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: -234
+    y: -83
+    width: 170
+    height: 150
+  IsDragging: 1
+  IsSelected: 0
+  _flagName: character.elias.trust
+  ParentNodes:
+  - {fileID: 5362745953541671061}
+  TrueChildNode: {fileID: -995721790366215849}
+  FalseChildNode: {fileID: -8049341999096993714}
 --- !u!114 &-7479912034770189435
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -72,8 +98,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 621.999
-    y: 311.50003
+    x: 1299.999
+    y: 99.5
     width: 170
     height: 260
   IsDragging: 1
@@ -104,8 +130,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -268.0005
-    y: 912.9999
+    x: 409.9995
+    y: 700.9999
     width: 190
     height: 265
   IsDragging: 1
@@ -135,8 +161,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -124.50049
-    y: 543.5
+    x: 553.4995
+    y: 331.5
     width: 170
     height: 260
   IsDragging: 1
@@ -168,8 +194,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1570.5
-    y: 707.49994
+    x: 2248.5
+    y: 495.5
     width: 170
     height: 260
   IsDragging: 1
@@ -200,15 +226,16 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -365.5
-    y: 149
+    x: 486.5
+    y: -315
     width: 170
     height: 170
   IsDragging: 1
   IsSelected: 0
-  _flagName: character.
+  _flagName: character.adrianne.nolike
   _removeFlag: 0
-  ParentNodes: []
+  ParentNodes:
+  - {fileID: -8049341999096993714}
   ChildNode: {fileID: 0}
 --- !u!114 &-6698988496953393724
 MonoBehaviour:
@@ -225,12 +252,12 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 646.999
-    y: 737.50006
+    x: 1325.999
+    y: 525.5
     width: 170
     height: 260
   IsDragging: 1
-  IsSelected: 0
+  IsSelected: 1
   _sentence:
     CharacterName: Adrianne
     Text: At least it was an instant death and he did not suffer. Grover was a good
@@ -259,14 +286,14 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -689.5005
-    y: 831.5
+    x: -11.500488
+    y: 619.5
     width: 190
     height: 205
   IsDragging: 1
   IsSelected: 0
   Answers:
-  - Adrianne, I hope you are okay. I heard from Elias.
+  - Adrianne, I hope you are okay. I heard from Marco.
   AnswerKeys: []
   ParentNodes:
   - {fileID: 1305919116598701323}
@@ -288,8 +315,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 349.49927
-    y: 396.5
+    x: 1027.4993
+    y: 184.5
     width: 170
     height: 260
   IsDragging: 1
@@ -321,8 +348,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 98.499756
-    y: 478.50006
+    x: 776.49976
+    y: 266.50006
     width: 190
     height: 325
   IsDragging: 1
@@ -354,8 +381,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1385.5
-    y: 864.9999
+    x: 2063.5
+    y: 652.9999
     width: 170
     height: 260
   IsDragging: 1
@@ -373,6 +400,32 @@ MonoBehaviour:
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
+--- !u!114 &-3546519448446314943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d19e89406c5582438a765fdd212f9da, type: 3}
+  m_Name: Set GameFlag Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.SetGameFlagNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 544
+    y: 66
+    width: 170
+    height: 170
+  IsDragging: 0
+  IsSelected: 0
+  _flagName: character.adrianne.better
+  _removeFlag: 0
+  ParentNodes:
+  - {fileID: -995721790366215849}
+  ChildNode: {fileID: 0}
 --- !u!114 &-2186291023301471932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -388,8 +441,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 846.749
-    y: 915.9999
+    x: 1532.749
+    y: 556.9999
     width: 190
     height: 265
   IsDragging: 1
@@ -407,6 +460,38 @@ MonoBehaviour:
   - {fileID: 520138227263441538}
   - {fileID: 3843203973738420518}
   PanelType: 0
+--- !u!114 &-995721790366215849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 166
+    y: 86
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Adrianne
+    Text: If you want to help me feel better, help my dear friend Marco.
+    CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
+  ParentNodes:
+  - {fileID: -7709744830568839141}
+  ChildNode: {fileID: -3546519448446314943}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &-115188968503141482
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -422,8 +507,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1476
-    y: 504.5
+    x: -916
+    y: 364.5
     width: 170
     height: 260
   IsDragging: 1
@@ -478,6 +563,9 @@ MonoBehaviour:
   - {fileID: 7699575241972746348}
   - {fileID: -6834038779605765439}
   - {fileID: -115188968503141482}
+  - {fileID: -7709744830568839141}
+  - {fileID: -995721790366215849}
+  - {fileID: -3546519448446314943}
   VariablesConfig: {fileID: 11400000, guid: ddd8fa02b66f28546bcc9a98be882d63, type: 2}
   _localizationTableName: 
   _characterNamesLocalizationName: 
@@ -499,8 +587,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -493.5005
-    y: 862.9999
+    x: 184.49951
+    y: 650.9999
     width: 170
     height: 260
   IsDragging: 1
@@ -531,8 +619,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1081.499
-    y: 884.9999
+    x: 1778.499
+    y: 618.9999
     width: 170
     height: 260
   IsDragging: 1
@@ -564,8 +652,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -859.5005
-    y: 513
+    x: -181.50049
+    y: 301
     width: 170
     height: 260
   IsDragging: 1
@@ -596,8 +684,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 101.99951
-    y: 1235.4999
+    x: 779.9995
+    y: 1023.4999
     width: 170
     height: 260
   IsDragging: 1
@@ -628,15 +716,15 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1096.249
-    y: 1204.5
+    x: 1774.249
+    y: 992.5
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Adrianne
-    Text: "The high priest has arrived to bless the body as well as prepare the royal
+    Text: "The High Priest has arrived to bless the body as well as prepare the royal
       funeral rites. He is meant to also try to act as a witness to the investigation
       and calm political tensions since the neighboring Kingdoms all respect the
       church. He got here as soon as he could. He\u2019s in the throne room right
@@ -664,8 +752,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -2370.2505
-    y: 610.6666
+    x: -1692.2505
+    y: 398.66663
     width: 170
     height: 260
   IsDragging: 1
@@ -695,8 +783,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -960.2505
-    y: 146.99994
+    x: -541.2505
+    y: -60.00006
     width: 170
     height: 260
   IsDragging: 1
@@ -706,7 +794,7 @@ MonoBehaviour:
     Text: I am busy right now Nikolaus. This is not the best time.
     CharacterSprite: {fileID: 4461092905613535732, guid: c1a60bcc610457e4db42b0b844ba18df, type: 3}
   ParentNodes: []
-  ChildNode: {fileID: -8049341999096993714}
+  ChildNode: {fileID: -7709744830568839141}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -726,12 +814,12 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1910.999
-    y: 441.99994
+    x: 2588.999
+    y: 229.99994
     width: 170
     height: 170
   IsDragging: 1
-  IsSelected: 1
+  IsSelected: 0
   _flagName: character.adrianne.trust
   _removeFlag: 0
   ParentNodes:
@@ -753,8 +841,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1468.999
-    y: 190.5
+    x: 2146.999
+    y: -21.5
     width: 170
     height: 260
   IsDragging: 1
@@ -785,8 +873,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -1730.5
-    y: 562.5
+    x: -1052.5
+    y: 350.5
     width: 170
     height: 170
   IsDragging: 1
@@ -812,8 +900,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 853.4995
-    y: 284.5
+    x: 1531.4995
+    y: 72.5
     width: 170
     height: 260
   IsDragging: 1
@@ -844,8 +932,8 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 442.49927
-    y: 690
+    x: 1120.4993
+    y: 478
     width: 170
     height: 260
   IsDragging: 1
