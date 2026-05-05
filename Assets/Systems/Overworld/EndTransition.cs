@@ -210,6 +210,7 @@ public class EndTransition : MonoBehaviour
                 Debug.Log($"[EndTransition] Flag '{detectedFlag}' detected - auto-triggering transition");
                 _transitionStarted = true;
                 StartCoroutine(TransitionToEnding());
+            }
         }
     }
 }
