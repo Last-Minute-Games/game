@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33f741ea10ebcf842a91c9b871dd032a, type: 3}
+  m_Name: KNHGuard
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.DialogNodeGraph
+  NodesList:
+  - {fileID: 1579629915873123483}
+  - {fileID: 6672598523324662127}
+  VariablesConfig: {fileID: 0}
+  _localizationTableName: 
+  _characterNamesLocalizationName: 
+  NodeToDrawLineFrom: {fileID: 0}
+  LinePosition: {x: 0, y: 0}
+  IsLocalizationSetUp: 0
+--- !u!114 &1579629915873123483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1029
+    y: 368
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: 
+    Text: A strong regency council rules over the Kingdom, as its' main cause of
+      chaos, Allistair has been imprisoned.
+    CharacterSprite: {fileID: 0}
+  ParentNodes: []
+  ChildNode: {fileID: 6672598523324662127}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &6672598523324662127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1455
+    y: 431
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 1
+  _sentence:
+    CharacterName: 
+    Text: Nikolaus assumes the title of Regent, and is crowned while the New Guard
+      attempt to find the king.
+    CharacterSprite: {fileID: 0}
+  ParentNodes:
+  - {fileID: 1579629915873123483}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
