@@ -524,6 +524,7 @@ public class RoundManager : MonoBehaviour
         AdvanceDayFlag();
 
         GameFlags.SetFlag("nether.win"); // game flag to notify clock timer
+        GameFlags.SetFlag(NetherProgressFlags.HasVisitedNether);
 
         // Fade screen + show text
         if (endScreenUI != null)
@@ -550,6 +551,7 @@ public class RoundManager : MonoBehaviour
         AdvanceDayFlag();
 
         GameFlags.SetFlag("nether.lose"); // game flag to notify clock timer
+        GameFlags.SetFlag(NetherProgressFlags.HasVisitedNether);
 
         if (endScreenUI != null)
             endScreenUI.ShowMessage("YOU LOSE", Color.red);

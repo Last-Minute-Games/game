@@ -131,6 +131,9 @@ public class SimplePauseMenu : MonoBehaviour
 
     void Pause()
     {
+        if (BattleCardCatalogPopup.IsAnyCatalogOpen())
+            return;
+
         isPaused = true;
         GlobalPause.SetPaused(true);
 
@@ -150,6 +153,9 @@ public class SimplePauseMenu : MonoBehaviour
 
     void OpenSettings()
     {
+        if (BattleCardCatalogPopup.IsAnyCatalogOpen())
+            return;
+
         // Just show settings on top of pause menu
         if (settingsPanel)
         {
@@ -271,4 +277,9 @@ public class SimplePauseMenu : MonoBehaviour
     }
 
     public bool IsPaused => isPaused;
+
+    /// <summary>True when the escape-driven pause UI or its settings layer is visible.</summary>
+    public bool IsPauseOrSettingsOpen =>
+        (pausePanel != null && pausePanel.activeSelf) ||
+        (settingsPanel != null && settingsPanel.activeSelf);
 }

@@ -5,8 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Battle-scene card codex: opens a panel listing all catalog cards and refreshes
-/// locked/unlocked state when <see cref="GameFlags"/> change.
+/// Card catalog UI (Nether / <c>BattleScene</c> and Overworld): opens a panel listing all catalog cards
+/// and refreshes locked/unlocked state when <see cref="GameFlags"/> change.
 /// </summary>
 public class BattleCardCatalogPopup : MonoBehaviour
 {
@@ -86,6 +86,25 @@ public class BattleCardCatalogPopup : MonoBehaviour
         RefreshAllEntries();
     }
 
+    public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
+
+    /// <summary>True if any <see cref="BattleCardCatalogPopup"/> in the scene has its panel open.</summary>
+    public static bool IsAnyCatalogOpen()
+    {
+        foreach (var p in Object.FindObjectsByType<BattleCardCatalogPopup>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (p != null && p.IsOpen)
+                return true;
+        }
+        return false;
+    }
+
+    private static bool IsPauseOrSettingsMenuOpen()
+    {
+        var pauseMenu = Object.FindFirstObjectByType<SimplePauseMenu>(FindObjectsInactive.Include);
+        return pauseMenu != null && pauseMenu.IsPauseOrSettingsOpen;
+    }
+
     /// <summary>
     /// Matches catalog display expectations: default-unlocked cards, otherwise flag from <see cref="CardData.unlockFlag"/>.
     /// </summary>
@@ -102,6 +121,9 @@ public class BattleCardCatalogPopup : MonoBehaviour
 
     public void Open()
     {
+        if (IsPauseOrSettingsMenuOpen())
+            return;
+
         bool alreadyOpen = panelRoot != null && panelRoot.activeSelf;
         if (!alreadyOpen)
         {
