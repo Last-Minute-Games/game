@@ -1,98 +1,90 @@
 using UnityEngine;
+using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.SceneManagement;
 using cherrydev;
 
 public class CatacombsDevilDialogueTrigger : MonoBehaviour
 {
-    private const string SceneName = "Catacombs";
-
-    private readonly struct DialogueStep
+    [System.Serializable]
+    public class DialogueStep
     {
-        public readonly float TriggerY;
-        public readonly string FlagName;
-        public readonly string DialogResourcePath;
+        [Tooltip("Y position threshold where this dialogue triggers")]
+        public float triggerY;
 
-        public DialogueStep(float triggerY, string flagName, string dialogResourcePath)
-        {
-            TriggerY = triggerY;
-            FlagName = flagName;
-            DialogResourcePath = dialogResourcePath;
-        }
+        [Tooltip("Game flag to check/set for this dialogue")]
+        public string flagName;
+
+        [Tooltip("Dialogue graph to play for this step")]
+        public DialogNodeGraph dialogGraph;
+
+        [Tooltip("Resource path as fallback if dialogGraph is not assigned")]
+        public string dialogResourcePath;
     }
 
-    private static readonly DialogueStep[] Steps =
+    [Header("Dialogue Steps")]
+    [SerializeField] private DialogueStep[] dialogueSteps = new DialogueStep[]
     {
-        new DialogueStep(0f, "catacombs.devil.dialog.shown", "Dialogues/Monologues/CatacombsDevilWelcome"),
-        new DialogueStep(13f, "catacombs.devil.king.dead.shown", "Dialogues/Monologues/CatacombsDevilKingDead"),
-        new DialogueStep(26f, "catacombs.devil.fault.shown", "Dialogues/Monologues/CatacombsDevilFault"),
-        new DialogueStep(38f, "catacombs.devil.survive.shown", "Dialogues/Monologues/CatacombsDevilSurvive"),
+        new DialogueStep
+        {
+            triggerY = 0f,
+            flagName = "catacombs.devil.dialog.shown",
+            dialogResourcePath = "Dialogues/Monologues/CatacombsDevilWelcome"
+        },
+        new DialogueStep
+        {
+            triggerY = 13f,
+            flagName = "catacombs.devil.king.dead.shown",
+            dialogResourcePath = "Dialogues/Monologues/CatacombsDevilKingDead"
+        },
+        new DialogueStep
+        {
+            triggerY = 26f,
+            flagName = "catacombs.devil.fault.shown",
+            dialogResourcePath = "Dialogues/Monologues/CatacombsDevilFault"
+        },
+        new DialogueStep
+        {
+            triggerY = 38f,
+            flagName = "catacombs.devil.survive.shown",
+            dialogResourcePath = "Dialogues/Monologues/CatacombsDevilSurvive"
+        },
     };
 
-    private static bool s_created;
+    [Header("References")]
+    [SerializeField] private DialogBehaviour dialogBehaviour;
 
-    private bool _isWatching;
+    [Header("Auto-Find Components")]
+    [SerializeField] private bool autoFindDialogBehaviour = true;
+    [SerializeField] private bool autoFindPlayer = true;
+
     private bool _isDialogPlaying;
     private bool _warnedMissingDialog;
     private Transform _player;
-    private DialogBehaviour _dialogBehaviour;
     private int _currentStepIndex = -1;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void Initialize()
+    private void Start()
     {
-        if (s_created)
+        _currentStepIndex = FindNextStepIndex();
+
+        if (autoFindDialogBehaviour && dialogBehaviour == null)
         {
-            return;
-        }
-
-        s_created = true;
-        GameObject runner = new GameObject("CatacombsDevilDialogueTrigger");
-        DontDestroyOnLoad(runner);
-        runner.AddComponent<CatacombsDevilDialogueTrigger>();
-    }
-
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
-    }
-
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (scene.name == SceneName)
-        {
-            _isWatching = true;
-            _isDialogPlaying = false;
-            _warnedMissingDialog = false;
-            _player = null;
-            _dialogBehaviour = null;
-            _currentStepIndex = FindNextStepIndex();
-        }
-        else
-        {
-            _isWatching = false;
+            dialogBehaviour = FindObjectOfType<DialogBehaviour>(true);
         }
     }
 
     private void Update()
     {
-        if (!_isWatching || _isDialogPlaying)
+        if (_isDialogPlaying)
         {
             return;
         }
 
-        if (_currentStepIndex < 0 || _currentStepIndex >= Steps.Length)
+        if (_currentStepIndex < 0 || _currentStepIndex >= dialogueSteps.Length)
         {
             return;
         }
 
-        if (_player == null)
+        if (_player == null && autoFindPlayer)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj == null)
@@ -103,20 +95,29 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
             _player = playerObj.transform;
         }
 
-        DialogueStep step = Steps[_currentStepIndex];
-        if (_player.position.y < step.TriggerY)
+        if (_player == null)
         {
             return;
         }
 
-        if (_dialogBehaviour == null)
+        DialogueStep step = dialogueSteps[_currentStepIndex];
+        if (_player.position.y < step.triggerY)
         {
-            _dialogBehaviour = Object.FindObjectOfType<DialogBehaviour>(true);
-            if (_dialogBehaviour == null)
+            return;
+        }
+
+        if (dialogBehaviour == null)
+        {
+            if (autoFindDialogBehaviour)
+            {
+                dialogBehaviour = FindObjectOfType<DialogBehaviour>(true);
+            }
+
+            if (dialogBehaviour == null)
             {
                 if (!_warnedMissingDialog)
                 {
-                    Debug.LogWarning("[CatacombsDevilDialogueTrigger] DialogBehaviour not found in scene. Add a dialog UI prefab to Catacombs.");
+                    Debug.LogWarning("[CatacombsDevilDialogueTrigger] DialogBehaviour not found. Please assign it in the inspector or enable auto-find.");
                     _warnedMissingDialog = true;
                 }
 
@@ -129,9 +130,9 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
 
     private int FindNextStepIndex()
     {
-        for (int i = 0; i < Steps.Length; i++)
+        for (int i = 0; i < dialogueSteps.Length; i++)
         {
-            if (!GameFlags.HasFlag(Steps[i].FlagName))
+            if (!GameFlags.HasFlag(dialogueSteps[i].flagName))
             {
                 return i;
             }
@@ -144,10 +145,15 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
     {
         _isDialogPlaying = true;
 
-        DialogNodeGraph dialogGraph = Resources.Load<DialogNodeGraph>(step.DialogResourcePath);
+        DialogNodeGraph dialogGraph = step.dialogGraph;
+        if (dialogGraph == null && !string.IsNullOrEmpty(step.dialogResourcePath))
+        {
+            dialogGraph = Resources.Load<DialogNodeGraph>(step.dialogResourcePath);
+        }
+
         if (dialogGraph == null)
         {
-            Debug.LogWarning($"[CatacombsDevilDialogueTrigger] Dialog graph not found at Resources/{step.DialogResourcePath}.");
+            Debug.LogWarning($"[CatacombsDevilDialogueTrigger] Dialog graph not found for step with flag '{step.flagName}'. Please assign it in the inspector or provide a valid resource path.");
             _isDialogPlaying = false;
             return;
         }
@@ -179,9 +185,9 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
         UnityAction onFinished = null;
         onFinished = () =>
         {
-            if (_dialogBehaviour != null)
+            if (dialogBehaviour != null)
             {
-                _dialogBehaviour.OnDialogFinished.RemoveListener(onFinished);
+                dialogBehaviour.OnDialogFinished.RemoveListener(onFinished);
             }
 
             if (playerInput != null)
@@ -198,8 +204,8 @@ public class CatacombsDevilDialogueTrigger : MonoBehaviour
             _currentStepIndex = FindNextStepIndex();
         };
 
-        _dialogBehaviour.OnDialogFinished.AddListener(onFinished);
-        GameFlags.SetFlag(step.FlagName);
-        _dialogBehaviour.StartDialog(dialogGraph);
+        dialogBehaviour.OnDialogFinished.AddListener(onFinished);
+        GameFlags.SetFlag(step.flagName);
+        dialogBehaviour.StartDialog(dialogGraph);
     }
 }

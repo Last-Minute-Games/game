@@ -1,63 +1,70 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.SceneManagement;
 using cherrydev;
 
-public static class CatacombsIntroDialog
+public class CatacombsIntroDialog : MonoBehaviour
 {
-    private const string SceneName = "Catacombs";
     private const string FlagName = "catacombs.intro.dialog.shown";
-    private const string DialogResourcePath = "Dialogues/Monologues/CatacombsIntro";
 
-    private static bool _subscribed;
+    [Header("Dialogue")]
+    [SerializeField] private DialogBehaviour dialogBehaviour;
+    [SerializeField] private DialogNodeGraph introDialogGraph;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void Initialize()
+    [Header("Auto-Find Components")]
+    [SerializeField] private bool autoFindDialogBehaviour = true;
+    [SerializeField] private bool autoFindPlayer = true;
+
+    private bool hasPlayed = false;
+    private PlayerInput2D playerInput;
+    private CharacterMotor2D motor;
+
+    private void Start()
     {
-        if (_subscribed)
-        {
-            return;
-        }
-
-        _subscribed = true;
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        TryPlay(SceneManager.GetActiveScene());
-    }
-
-    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        TryPlay(scene);
-    }
-
-    private static void TryPlay(Scene scene)
-    {
-        if (scene.name != SceneName)
+        if (hasPlayed)
         {
             return;
         }
 
         if (GameFlags.HasFlag(FlagName))
         {
+            hasPlayed = true;
             return;
         }
 
-        DialogNodeGraph dialogGraph = Resources.Load<DialogNodeGraph>(DialogResourcePath);
-        if (dialogGraph == null)
+        if (autoFindDialogBehaviour && dialogBehaviour == null)
         {
-            Debug.LogWarning($"[CatacombsIntroDialog] Dialog graph not found at Resources/{DialogResourcePath}.");
-            return;
+            dialogBehaviour = FindObjectOfType<DialogBehaviour>(true);
         }
 
-        DialogBehaviour dialogBehaviour = Object.FindObjectOfType<DialogBehaviour>(true);
         if (dialogBehaviour == null)
         {
-            Debug.LogWarning("[CatacombsIntroDialog] DialogBehaviour not found in scene. Add a dialog UI prefab to Catacombs.");
+            Debug.LogWarning("[CatacombsIntroDialog] DialogBehaviour not found. Please assign it in the inspector or enable auto-find.");
             return;
         }
 
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        PlayerInput2D playerInput = null;
-        CharacterMotor2D motor = null;
+        if (introDialogGraph == null)
+        {
+            introDialogGraph = Resources.Load<DialogNodeGraph>("Dialogues/Monologues/CatacombsIntro");
+            if (introDialogGraph == null)
+            {
+                Debug.LogWarning("[CatacombsIntroDialog] Dialog graph not found. Please assign it in the inspector.");
+                return;
+            }
+        }
+
+        PlayIntroDialog();
+    }
+
+    private void PlayIntroDialog()
+    {
+        hasPlayed = true;
+
+        GameObject player = null;
+        if (autoFindPlayer)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
+
         bool prevInputEnabled = true;
         bool prevDialogueActive = false;
 
@@ -100,6 +107,6 @@ public static class CatacombsIntroDialog
 
         dialogBehaviour.OnDialogFinished.AddListener(onFinished);
         GameFlags.SetFlag(FlagName);
-        dialogBehaviour.StartDialog(dialogGraph);
+        dialogBehaviour.StartDialog(introDialogGraph);
     }
 }
