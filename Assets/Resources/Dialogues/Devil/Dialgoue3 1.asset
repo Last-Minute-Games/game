@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7649608281528507042
+--- !u!114 &-5058018412019046656
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -15,24 +15,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 636.5
-    y: 230.5
+    x: 652
+    y: 277
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Nikolaus
-    Text: 'I must ask around and see what the others have heard or seen. '
-    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+    CharacterName: Devil
+    Text: I shall see to it that you win.
+    CharacterSprite: {fileID: -1127933441503263673, guid: efd84ec86f8ba814ea5b1558f82b9efa, type: 3}
   ParentNodes:
-  - {fileID: -3375295318079355940}
-  ChildNode: {fileID: 2795222156398586207}
+  - {fileID: 307662372234580238}
+  ChildNode: {fileID: -814200065611332782}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-3375295318079355940
+--- !u!114 &-4448152182798075971
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -47,24 +47,23 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 377
-    y: 222
+    x: -480.5
+    y: 103.5
     width: 170
-    height: 280
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Nikolaus
-    Text: Why do I have this journal? What's this timer?
-    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
-  ParentNodes:
-  - {fileID: 5350302045027927052}
-  ChildNode: {fileID: -7649608281528507042}
-  _isExternalFunc: 1
-  _externalFunctionName: Hudintializer
+    CharacterName: Devil
+    Text: You are given health.
+    CharacterSprite: {fileID: -1127933441503263673, guid: efd84ec86f8ba814ea5b1558f82b9efa, type: 3}
+  ParentNodes: []
+  ChildNode: {fileID: 601566501573515376}
+  _isExternalFunc: 0
+  _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-2121948123013081152
+--- !u!114 &-1878229367108847054
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -79,24 +78,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1261
-    y: 247.5
+    x: 1128.5
+    y: 432.5
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 1
   _sentence:
-    CharacterName: Nikolaus
-    Text: What's this map I have? Why does it say press M to access it?
-    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+    CharacterName: Devil
+    Text: Now go to the door, and face what's coming.
+    CharacterSprite: {fileID: -1127933441503263673, guid: efd84ec86f8ba814ea5b1558f82b9efa, type: 3}
   ParentNodes:
-  - {fileID: -1635392063187247940}
+  - {fileID: -814200065611332782}
   ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &-1635392063187247940
+--- !u!114 &-814200065611332782
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -111,20 +110,19 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 1054
-    y: 246
+    x: 881
+    y: 384.5
     width: 170
     height: 260
-  IsDragging: 1
+  IsDragging: 0
   IsSelected: 0
   _sentence:
-    CharacterName: Nikolaus
-    Text: "I\u2019ll use my journal to keep track of any important people as well
-      as information I come across."
-    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+    CharacterName: Devil
+    Text: More cards will show up based on what you do and how you Live.
+    CharacterSprite: {fileID: -1127933441503263673, guid: efd84ec86f8ba814ea5b1558f82b9efa, type: 3}
   ParentNodes:
-  - {fileID: 2795222156398586207}
-  ChildNode: {fileID: -2121948123013081152}
+  - {fileID: -5058018412019046656}
+  ChildNode: {fileID: -1878229367108847054}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -139,22 +137,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 33f741ea10ebcf842a91c9b871dd032a, type: 3}
-  m_Name: OV Monologue
+  m_Name: Dialgoue3 1
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.DialogNodeGraph
   NodesList:
-  - {fileID: 5350302045027927052}
-  - {fileID: -3375295318079355940}
-  - {fileID: -7649608281528507042}
-  - {fileID: -1635392063187247940}
-  - {fileID: 2795222156398586207}
-  - {fileID: -2121948123013081152}
+  - {fileID: -4448152182798075971}
+  - {fileID: 601566501573515376}
+  - {fileID: -5058018412019046656}
+  - {fileID: 307662372234580238}
+  - {fileID: -814200065611332782}
+  - {fileID: -1878229367108847054}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
   NodeToDrawLineFrom: {fileID: 0}
   LinePosition: {x: 0, y: 0}
   IsLocalizationSetUp: 0
---- !u!114 &2795222156398586207
+--- !u!114 &307662372234580238
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -169,25 +167,24 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 830
-    y: 381.5
+    x: 141.5
+    y: 364.5
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Nikolaus
-    Text: "I have to be careful though surely one of them was the murderer, I can\u2019t
-      tip them off to the fact I am investigating."
-    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+    CharacterName: Devil
+    Text: And you are given cards.
+    CharacterSprite: {fileID: -1127933441503263673, guid: efd84ec86f8ba814ea5b1558f82b9efa, type: 3}
   ParentNodes:
-  - {fileID: -7649608281528507042}
-  ChildNode: {fileID: -1635392063187247940}
+  - {fileID: 601566501573515376}
+  ChildNode: {fileID: -5058018412019046656}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
---- !u!114 &5350302045027927052
+--- !u!114 &601566501573515376
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -202,18 +199,19 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 94.5
-    y: 227.5
+    x: 177.5
+    y: 63
     width: 170
     height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
-    CharacterName: Nikolaus
-    Text: "The king! He\u2019s dead, I saw it! But it cannot have been real can it?"
-    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
-  ParentNodes: []
-  ChildNode: {fileID: -3375295318079355940}
+    CharacterName: Devil
+    Text: You are given time.
+    CharacterSprite: {fileID: -1127933441503263673, guid: efd84ec86f8ba814ea5b1558f82b9efa, type: 3}
+  ParentNodes:
+  - {fileID: -4448152182798075971}
+  ChildNode: {fileID: 307662372234580238}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
