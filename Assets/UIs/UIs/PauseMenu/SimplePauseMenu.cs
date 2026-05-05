@@ -111,6 +111,12 @@ public class SimplePauseMenu : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            // Escape closes card catalog first (BattleScene and Overworld), then returns.
+            if (BattleCardCatalogPopup.CloseAnyOpenCatalog())
+            {
+                return;
+            }
+
             if (settingsPanel && settingsPanel.activeSelf)
             {
                 // Close settings, back to pause menu

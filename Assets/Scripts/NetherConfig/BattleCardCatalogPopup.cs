@@ -99,6 +99,23 @@ public class BattleCardCatalogPopup : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Closes one open catalog if present. Returns true when Escape should be considered consumed.
+    /// </summary>
+    public static bool CloseAnyOpenCatalog()
+    {
+        foreach (var p in Object.FindObjectsByType<BattleCardCatalogPopup>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (p == null || !p.IsOpen)
+                continue;
+
+            p.Close();
+            return true;
+        }
+
+        return false;
+    }
+
     private static bool IsPauseOrSettingsMenuOpen()
     {
         var pauseMenu = Object.FindFirstObjectByType<SimplePauseMenu>(FindObjectsInactive.Include);
