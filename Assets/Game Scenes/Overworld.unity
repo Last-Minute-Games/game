@@ -211241,7 +211241,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::JournalEntry
   entryId: character.elias
   progressiveTextField: {fileID: 1582074394}
-  progressiveUpdates: []
+  progressiveUpdates:
+  - flag: character.elias.trust
+    textToShow: Adrianne saw the King get killed, I must talk to her.
+    priority: 0
+    orderIndex: 0
   defaultText: 
 --- !u!1 &1086425251
 GameObject:
@@ -401444,7 +401448,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::JournalEntry
   entryId: character.sebastian
   progressiveTextField: {fileID: 874705797}
-  progressiveUpdates: []
+  progressiveUpdates:
+  - flag: character.sebastian.trust
+    textToShow: Not finding the Heir to the Kingdom will be disastrous, even if we
+      find the killer. The killer must be found hastily.
+    priority: 0
+    orderIndex: 0
   defaultText: 
 --- !u!1 &2123907171
 GameObject:
