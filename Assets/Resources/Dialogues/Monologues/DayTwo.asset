@@ -15,18 +15,50 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 456
-    y: 145.5
-    width: 190
-    height: 135
+    x: 178.5
+    y: 272
+    width: 170
+    height: 260
   IsDragging: 0
   IsSelected: 0
   _sentence:
     CharacterName: Nikolaus
-    Text: I survived another day
+    Text: What was that?
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes: []
   ChildNode: {fileID: -1762902784713653806}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-6959145298037922534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 963.5
+    y: 444
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Nikolaus
+    Text: Is this what the High Priest was talking about?
+    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+  ParentNodes:
+  - {fileID: 71143603925580645}
+  ChildNode: {fileID: 0}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -46,20 +78,19 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 801
-    y: 293.5
-    width: 190
-    height: 135
-  IsDragging: 0
+    x: 451.5
+    y: 305
+    width: 170
+    height: 260
+  IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Nikolaus
-    Text: Who have I not spoken to or what I have not investigated? I must make the
-      most of my time.
+    Text: This is getting scary...
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
   - {fileID: -7670737664662672508}
-  ChildNode: {fileID: 0}
+  ChildNode: {fileID: 71143603925580645}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -79,9 +110,70 @@ MonoBehaviour:
   NodesList:
   - {fileID: -7670737664662672508}
   - {fileID: -1762902784713653806}
+  - {fileID: -6959145298037922534}
+  - {fileID: 71143603925580645}
+  - {fileID: 8053904067890900328}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
   NodeToDrawLineFrom: {fileID: 0}
   LinePosition: {x: 0, y: 0}
   IsLocalizationSetUp: 0
+--- !u!114 &71143603925580645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 040c7688b61812647b338495939d2824, type: 3}
+  m_Name: GameFlag Condition Node
+  m_EditorClassIdentifier: Assembly-CSharp::cherrydev.GameFlagConditionNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 536.5
+    y: 602
+    width: 170
+    height: 150
+  IsDragging: 1
+  IsSelected: 0
+  _flagName: character.highpriest.spoketo
+  ParentNodes:
+  - {fileID: -1762902784713653806}
+  TrueChildNode: {fileID: -6959145298037922534}
+  FalseChildNode: {fileID: 8053904067890900328}
+--- !u!114 &8053904067890900328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 883.5
+    y: 179.5
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 1
+  _sentence:
+    CharacterName: Nikolaus
+    Text: I must ask questions and figure out what's happening.
+    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+  ParentNodes:
+  - {fileID: 71143603925580645}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 

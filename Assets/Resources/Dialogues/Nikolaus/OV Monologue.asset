@@ -15,21 +15,19 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 397
-    y: 234
-    width: 190
-    height: 135
+    x: 636.5
+    y: 230.5
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
     CharacterName: Nikolaus
-    Text: "I must ask around and see what the others have heard or seen. I have to
-      be careful though surely one of them was the murderer, I can\u2019t tip them
-      off to the fact I am investigating."
+    Text: 'I must ask around and see what the others have heard or seen. '
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
   - {fileID: -3375295318079355940}
-  ChildNode: {fileID: -1635392063187247940}
+  ChildNode: {fileID: 2795222156398586207}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -49,10 +47,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 137.5
-    y: 225.5
-    width: 190
-    height: 155
+    x: 377
+    y: 222
+    width: 170
+    height: 280
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -64,6 +62,38 @@ MonoBehaviour:
   ChildNode: {fileID: -7649608281528507042}
   _isExternalFunc: 1
   _externalFunctionName: Hudintializer
+  CharacterNameKey: 
+  SentenceTextKey: 
+--- !u!114 &-2121948123013081152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 1261
+    y: 247.5
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 1
+  _sentence:
+    CharacterName: Nikolaus
+    Text: What's this map I have? Why does it say press M to access it?
+    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+  ParentNodes:
+  - {fileID: -1635392063187247940}
+  ChildNode: {fileID: 0}
+  _isExternalFunc: 0
+  _externalFunctionName: 
   CharacterNameKey: 
   SentenceTextKey: 
 --- !u!114 &-1635392063187247940
@@ -81,10 +111,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: 672
-    y: 260
-    width: 190
-    height: 135
+    x: 1054
+    y: 246
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
@@ -93,8 +123,8 @@ MonoBehaviour:
       as information I come across."
     CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
   ParentNodes:
-  - {fileID: -7649608281528507042}
-  ChildNode: {fileID: 0}
+  - {fileID: 2795222156398586207}
+  ChildNode: {fileID: -2121948123013081152}
   _isExternalFunc: 0
   _externalFunctionName: 
   CharacterNameKey: 
@@ -116,12 +146,47 @@ MonoBehaviour:
   - {fileID: -3375295318079355940}
   - {fileID: -7649608281528507042}
   - {fileID: -1635392063187247940}
+  - {fileID: 2795222156398586207}
+  - {fileID: -2121948123013081152}
   VariablesConfig: {fileID: 0}
   _localizationTableName: 
   _characterNamesLocalizationName: 
   NodeToDrawLineFrom: {fileID: 0}
   LinePosition: {x: 0, y: 0}
   IsLocalizationSetUp: 0
+--- !u!114 &2795222156398586207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a32a464d8ccff4e40a60c45b40a1e648, type: 3}
+  m_Name: Sentence Node
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::cherrydev.SentenceNode
+  NodeGraph: {fileID: 11400000}
+  Rect:
+    serializedVersion: 2
+    x: 830
+    y: 381.5
+    width: 170
+    height: 260
+  IsDragging: 1
+  IsSelected: 0
+  _sentence:
+    CharacterName: Nikolaus
+    Text: "I have to be careful though surely one of them was the murderer, I can\u2019t
+      tip them off to the fact I am investigating."
+    CharacterSprite: {fileID: -5828640485074749218, guid: b0953f4b6178cc94fa70502eaa914060, type: 3}
+  ParentNodes:
+  - {fileID: -7649608281528507042}
+  ChildNode: {fileID: -1635392063187247940}
+  _isExternalFunc: 0
+  _externalFunctionName: 
+  CharacterNameKey: 
+  SentenceTextKey: 
 --- !u!114 &5350302045027927052
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,10 +202,10 @@ MonoBehaviour:
   NodeGraph: {fileID: 11400000}
   Rect:
     serializedVersion: 2
-    x: -145
-    y: 231
-    width: 190
-    height: 135
+    x: 94.5
+    y: 227.5
+    width: 170
+    height: 260
   IsDragging: 1
   IsSelected: 0
   _sentence:
