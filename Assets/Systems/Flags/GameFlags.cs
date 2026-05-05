@@ -105,7 +105,8 @@ public class GameFlags : PersistentSingleton<GameFlags>
             "minigame.sokoban.show",
             "minigame.coinflip.show",
             "character.avant.heir",
-            "minigame.maze.show"
+            "minigame.maze.show",
+            "minigame.sokoban.finish"
         };
 
         DebugLogger.LogGameFlags("DEBUG: Force-adding card/minigame unlock flags (P pressed)");

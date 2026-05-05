@@ -41,8 +41,57 @@ public class EndTransition : MonoBehaviour
 
     /// <summary>
     /// Trigger the transition to the ending scene (only if either required flag exists)
+    /// This version waits a frame to allow flags to be set by dialog system
     /// </summary>
     public void TriggerEndTransition()
+    {
+        StartCoroutine(TriggerEndTransitionDelayed());
+    }
+
+    /// <summary>
+    /// Delayed version to allow flags to be set first
+    /// </summary>
+    private IEnumerator TriggerEndTransitionDelayed()
+    {
+        Debug.Log($"[EndTransition] TriggerEndTransitionDelayed started - waiting one frame");
+
+        // Wait one frame to allow SetGameFlag nodes to execute
+        yield return null;
+
+        Debug.Log($"[EndTransition] After waiting one frame, checking flags...");
+        Debug.Log($"[EndTransition] Looking for flag1: '{requiredFlagName1}'");
+        Debug.Log($"[EndTransition] Looking for flag2: '{requiredFlagName2}'");
+
+        // Check if either of the required flags exists
+        bool hasFlag1 = GameFlags.HasFlag(requiredFlagName1);
+        bool hasFlag2 = GameFlags.HasFlag(requiredFlagName2);
+
+        Debug.Log($"[EndTransition] Flag '{requiredFlagName1}' exists: {hasFlag1}");
+        Debug.Log($"[EndTransition] Flag '{requiredFlagName2}' exists: {hasFlag2}");
+
+        if (!hasFlag1 && !hasFlag2)
+        {
+            Debug.Log($"[EndTransition] Neither flag '{requiredFlagName1}' nor '{requiredFlagName2}' exists - transition cancelled");
+            yield break;
+        }
+
+        // Check if transition already started
+        if (_transitionStarted)
+        {
+            Debug.Log($"[EndTransition] Transition already in progress - ignoring duplicate call");
+            yield break;
+        }
+
+        string detectedFlag = hasFlag1 ? requiredFlagName1 : requiredFlagName2;
+        Debug.Log($"[EndTransition] Flag '{detectedFlag}' exists - starting transition");
+        _transitionStarted = true;
+        StartCoroutine(TransitionToEnding());
+    }
+
+    /// <summary>
+    /// Immediate transition check (for Update loop)
+    /// </summary>
+    private void TriggerEndTransitionImmediate()
     {
         // Check if either of the required flags exists
         bool hasFlag1 = GameFlags.HasFlag(requiredFlagName1);
